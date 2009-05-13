@@ -1,0 +1,5 @@
+#!/bin/bash
+
+eus2 `rospack find roseus`/scripts/genmsg-main-eus.l -c "(prog1 (genmsg-eus \"$@\")(exit))"
+
+
