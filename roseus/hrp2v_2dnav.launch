@@ -1,0 +1,7 @@
+<launch>
+
+  <include file="$(find roseus)/hrp2v_hardware.launch" />
+  <include file="$(find roseus)/2dnav/hrp2v_amcl.launch" />
+  <include file="$(find roseus)/2dnav/hrp2v_move_base.launch" />
+</launch>
+
