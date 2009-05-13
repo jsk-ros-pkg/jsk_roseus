@@ -40,8 +40,11 @@
     (setq msgs (nreverse msgs))))
 
 (defun generate-msg-output-file-name (fname pkg name)
-  (let (oname)
-    (setq oname (format nil "~A/msg/eus/~A/" (read-line (piped-fork (format nil "rospack find ~A" pkg))) pkg))
+  (let (l oname)
+    (setq l (read-line (piped-fork (format nil "rospack find ~A" pkg)) nil))
+    (unless l
+      (warning-message 1 ";; ERROR could not find ~A package~%" pkg)(exit 1))
+    (setq oname (format nil "~A/msg/eus/~A/" l pkg))
     (unless (lisp::directory-p oname)
       (warning-message 6 ";; mkdir ~A~%" oname)
       (unix::system (format nil "mkdir -p ~A" oname)))
@@ -178,7 +181,7 @@
        (t (error "undefined type ~A~%" msg)))
       (cond
        ((and vec-size (zerop vec-size)) 
-	(format strm " (length ~A))" var))
+	(format strm " (length ~A)) 4" var))
        (vec-size
 	(format strm " ~A)" vec-size)))
       (format strm "~%")
@@ -196,8 +199,13 @@
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 3))
       (cond 
+       ((and vec-size (zerop vec-size)) 
+	(format strm "     ;; ~A[] ~A~%" type var)
+	(format strm "     (write-long (length ~A) s)~%" var)
+	(format strm "     (dotimes (i (length ~A))~%  " var)
+	(setq var (format nil "(elt ~A i)" var)))
        (vec-size
-	(format strm "     ;; ~A[~A] ~A~%" type (if (zerop vec-size) "" vec-size) var)
+	(format strm "     ;; ~A[~A] ~A~%" type vec-size var)
 	(format strm "     (dotimes (i ~A)~%  " vec-size)
 	(setq var (format nil "(elt ~A i)" var)))
        (t
@@ -237,8 +245,23 @@
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 3))
       (cond 
+       ((and vec-size (zerop vec-size)) 
+	(format strm "     ;; ~A[] ~A~%" type var)
+	(format strm "     (let (n)~%")
+	(format strm "       (setq n (sys::peek buf cnt :integer)) (incf cnt 4)~%")
+	(case
+	 (generate-variable-type type)
+	 ((:int8 :int16 :int32 :int64)
+	  (format strm "       (setq ~A (instantiate integer-vector n))~%" var))
+	 ((:float32 :float64)
+	  (format strm "       (setq ~A (instantiate float-vector n))~%" var))
+	 (:rostype
+	  (format strm "       (setq ~A (make-list n)) " var)))
+	(format strm "       (dotimes (i n)~%" var)
+	(format strm "         ")
+	(setq set "setf" var (format nil "(elt ~A i)" var)))
        (vec-size
-	(format strm "     ;; ~A[~A] ~A~%" type (if (zerop vec-size) "" vec-size) var)
+	(format strm "     ;; ~A[~A] ~A~%" type vec-size var)
 	(format strm "     (dotimes (i (length ~A))~%" var)
 	(format strm "       ")
 	(setq set "setf" var (format nil "(elt ~A i)" var)))
@@ -246,6 +269,7 @@
         (format strm "     ;; ~A ~A~%" type var)
         (format strm "     ")
 	(setq set "setq")))
+      
       (case
        (generate-variable-type type)
        (:int8
@@ -267,7 +291,11 @@
        (:rostype
 	(format strm "(~A ~A (send ~A :deserialize (subseq buf cnt))) (incf cnt (send ~A :serialization-length))~%" set var var var))
        (t (error "undefined type ~A~%" msg)))
-      (if vec-size (format strm "       )~%"))
+      (cond 
+       ((and vec-size (zerop vec-size))
+	(format strm "         ))~%"))
+       (vec-size
+	(format strm "       )~%")))
       )
     (format strm "     ;;~%")
     (format strm "     self))~%")))
@@ -292,6 +320,8 @@
     (setq name (pathname-name fname))
     (warning-message 6 ";; generate message for ~A/~A~%" pkg name)
     (warning-message 6 ";; parsing ~A~%" fname)
+    (unless (probe-file fname)
+      (warning-message 1 ";; ERROR message file ~A not found~%" fname)(exit 1))
     (with-open-file
      (strm fname :direction :input)
      (setq msgs (generate-msg-type-name-list strm)))
