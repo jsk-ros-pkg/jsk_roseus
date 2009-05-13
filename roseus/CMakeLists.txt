@@ -3,7 +3,6 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 add_definitions(-Wall)
 rospack(roseus)
 
-genmsg()
 
 #set( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE )
 #
@@ -47,6 +46,7 @@ rospack_link_boost(roseus thread)
 #gensrv()
 genmsg()
 
+rospack_add_executable(hrp2v_odom hrp2_odom.cpp)
 #add_subdirectory(test EXCLUDE_FROM_ALL)
 
 #########
