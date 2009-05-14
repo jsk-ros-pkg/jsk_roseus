@@ -1,15 +1,20 @@
 <launch>
 
   <group name="wg">
+    <!-- node pkg="roseus" type="wii.sh" / -->
+    <!-- node pkg="roseus" type="odometry-talker.sh" / -->
+
     <node name="hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" output="screen" >
       <param name="frameid" value="base_laser"/>
+      <param name="intensity" value="false"/>
+      <param name="skip" value="0"/>
       <remap from="scan" to="base_scan"/>
     </node>
 
     <node pkg="tf" type="transform_sender" args="0.288 0 0.428 0 0 0 base_laser base_link 40" />
     <node pkg="tf" type="transform_sender" args="0 0 0 0 0 0 base_footprint base_link 40" /> 
     <node pkg="joy" type="joy" />
-    <node pkg="roseus" type="hrp2v_odom" />
+    <node pkg="roseus" type="hrp2v_odom" output="screen"/>
   </group>
 </launch>
 

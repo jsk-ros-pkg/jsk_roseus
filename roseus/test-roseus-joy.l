@@ -1,6 +1,7 @@
-(require :orbixif (format nil "~A/hrp2/corba/orbixif.l" (unix:getenv "CVSDIR")))
-(require :plugins (format nil "~A/hrp2/plugins/plugins.l" (unix:getenv "CVSDIR")))
-(need-thread 6)
+(progn
+  (require :orbixif (format nil "~A/hrp2/corba/orbixif.l" (unix:getenv "CVSDIR")))
+  (require :plugins (format nil "~A/hrp2/plugins/plugins.l" (unix:getenv "CVSDIR")))
+  (need-thread 6))
 
 (load "roseus.l")
 
@@ -12,8 +13,9 @@
 (setq ros::*debug* t)
 ;;;
 
-(unless (boundp '*hrp2*) (hrp2v-simple))
-(unless (boundp '*ci*) (eusorbix-init))
+(progn
+  (unless (boundp '*hrp2*) (hrp2v-simple))
+  (unless (boundp '*ci*) (eusorbix-init)))
 
 ;;;
 ;;;
@@ -22,14 +24,15 @@
 (roseus "clear")
 
 (defun test (msg)
-  (let  (axes buttons)
+  (let  (axes buttons s)
     (setq axes (send msg :axes) 
 	  buttons (send msg :buttons))
     (print (list (sys::thread-self) msg))
     (print (list axes buttons))
-    (when (> (length buttons) 0)
+    (when (and (> (length buttons) 0) (>= (length axes) 4))
+      (setq s (min (* 5.0 (abs (elt axes 1))) 1.0))
       (if (eq (elt buttons 3) 1)
-	  (send *ci* :go-velocity (* (elt axes 2) -0.1) (* (elt axes 3) 0.1) (* (elt axes 0) 10.0))
+	  (send *ci* :go-velocity (* (elt axes 2) s -0.2) (* (elt axes 3) s 0.2) (* (elt axes 0) 60.0))
       (send *ci* :go-velocity 0 0 0)))
     ))
 (ros::subscribe "joy" joy::Joy #'test 10)

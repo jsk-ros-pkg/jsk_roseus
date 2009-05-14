@@ -123,7 +123,7 @@
 			   )))))
 
 ;;(ros::init-ros-wakeup-worker-itimer)
-(ros::init-ros-wakeup-worker-thread)
+;;(ros::init-ros-wakeup-worker-thread)
 
 
 

@@ -2,6 +2,7 @@
 #include "tf/transform_broadcaster.h"
 
 #include <roseus/Odometry.h>
+#include <iostream>
 
 class HRP2Odom
 {
@@ -18,6 +19,12 @@ public:
 
   void odomEusReceived() {
     // Translate from Euslisp data to ROS data
+    //ros::Time stamp = ros::Time::now();
+    
+    //std::cerr << stamp.toNSec() << " --> " ;
+    //stamp = stamp + ros::Duration(0.0);
+    //std::cerr << stamp.toNSec() << std::endl;
+
 
     //odom_.header.frame_id = "odom";
     //odom_.header.stamp.sec = (long long unsigned int)floor(hdr->timestamp); 
@@ -31,10 +38,12 @@ public:
 				    tf::Point(odom_.xyr[0], 
 					      odom_.xyr[1], 
 					      0.0) 
-				    ).inverse(),
+				    ),
 		      odom_.header.stamp,
-		      "odom", 
-		      "base_link");
+                      //ros::Time::now(),
+                      //stamp, 	
+		      "base_link",
+		      "odom");
   }
 };
 
