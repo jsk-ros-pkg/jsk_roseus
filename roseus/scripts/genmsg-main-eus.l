@@ -112,8 +112,12 @@
 	      (case var-type
 		    ((:int8 :int16 :int32 :int64) 0)
 		    ((:float32 :float64) 0.0)
-		    (:string "\"\"") (:time "(instance ros::rostime :init)")
-		    (:rostype (format nil "(instance ~A :init)" type))
+		    (:string "\"\"")
+		    (:time "(instance ros::rostime :init)")
+		    (:rostype (format nil "(instance ~A :init)" 
+				      (if (substringp "::" type) 
+					  type
+					(concatenate string pkg "::" type))))
 		    (t (error "undefined type ~A~%" msg)))))
       (cond 
        ((and vec-size (memq var-type '(:int8 :int16 :int32 :int64)))
