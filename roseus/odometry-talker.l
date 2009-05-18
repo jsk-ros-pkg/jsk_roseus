@@ -5,7 +5,7 @@
 (roseus-add-msgs "roseus")
 ;;;
 
-(setq ros::*debug* t)
+(setq ros::*debug* nil)
 ;;;
 ;;;
 (roseus "clear")

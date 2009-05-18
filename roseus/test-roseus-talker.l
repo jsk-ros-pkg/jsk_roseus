@@ -1,5 +1,6 @@
 (load "roseus.l")
 
+(roseus-add-msgs "roslib")
 (roseus-add-msgs "roseus")
 ;;;
 

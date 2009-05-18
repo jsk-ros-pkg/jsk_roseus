@@ -85,6 +85,7 @@
 		 (send msg :deserialize s)
 		 (funcall ',func msg)
 		 )))))
+    (setq *subscribe-func* subscribe-func *ros-subscribe-func* func);;tokutsu
     (if (boundp 'ros::*roseus-walkup-thread*)
 	(push subscribe-func ros::*roseus-walkup-thread-funcs*))
     (ros::roseus_subscribe topic md5sum type subscribe-func queuesize)
