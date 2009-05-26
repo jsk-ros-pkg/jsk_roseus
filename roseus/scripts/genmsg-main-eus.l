@@ -30,13 +30,12 @@
 		    (read-from-string (subseq type (1+ pos))))
 		  type (subseq type 0 pos))
 	  (setq vec-size nil))
-	;; sometims variable has initial element..
+	;; constants
 	(if (setq pos (position #\= var))
 	    (progn
 	      (setq init-elem (subseq var (1+ pos)))
 	      (setq var (subseq var 0 pos)))
-	  (setq init-elem nil))
-	(push (list type var init-elem vec-size) msgs)))
+	  (push (list type var vec-size) msgs))))
     (setq msgs (nreverse msgs))))
 
 (defun generate-msg-output-file-name (fname pkg name)
@@ -105,20 +104,19 @@
     (format strm "   (&optional~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
-	    init-elem (elt msg 2) vec-size (elt msg 3))
+	    vec-size (elt msg 2))
       (setq var-type (generate-variable-type type))
-      (unless init-elem
-	(setq init-elem
-	      (case var-type
-		    ((:int8 :int16 :int32 :int64) 0)
-		    ((:float32 :float64) 0.0)
-		    (:string "\"\"")
-		    (:time "(instance ros::rostime :init)")
-		    (:rostype (format nil "(instance ~A :init)" 
-				      (if (substringp "::" type) 
-					  type
-					(concatenate string pkg "::" type))))
-		    (t (error "undefined type ~A~%" msg)))))
+      (setq init-elem
+	    (case var-type
+		  ((:int8 :int16 :int32 :int64) 0)
+		  ((:float32 :float64) 0.0)
+		  (:string "\"\"")
+		  (:time "(instance ros::rostime :init)")
+		  (:rostype (format nil "(instance ~A :init)" 
+				    (if (substringp "::" type) 
+					type
+				      (concatenate string pkg "::" type))))
+		  (t (error "undefined type ~A~%" msg))))
       (cond 
        ((and vec-size (memq var-type '(:int8 :int16 :int32 :int64)))
 	(format strm "    (_~A (make-array ~A :initial-element ~A :element-type :integer))~%" var vec-size init-elem))
@@ -132,7 +130,7 @@
     (format strm "   (send-super :init)~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
-	    init-elem (elt msg 2) vec-size (elt msg 3))
+	    vec-size (elt msg 2))
       (let ((s1 "") (s2 ""))
 	(unless vec-size
 	  (case 
@@ -167,7 +165,7 @@
     (format strm "   (+~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
-	    vec-size (elt msg 3))
+	    vec-size (elt msg 2))
       (cond 
        (vec-size (format strm "    ;; ~A[~A] ~A~%" type (if (zerop vec-size) "" vec-size) var))
        (t        (format strm "    ;; ~A ~A~%" type var)))
@@ -201,7 +199,7 @@
     (format strm "     (setq s (make-string-output-stream (send self :serialization-length)))~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
-	    vec-size (elt msg 3))
+	    vec-size (elt msg 2))
       (cond 
        ((and vec-size (zerop vec-size)) 
 	(format strm "     ;; ~A[] ~A~%" type var)
@@ -247,7 +245,7 @@
     (format strm "   (let ((cnt 0))~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
-	    vec-size (elt msg 3))
+	    vec-size (elt msg 2))
       (cond 
        ((and vec-size (zerop vec-size)) 
 	(format strm "     ;; ~A[] ~A~%" type var)
