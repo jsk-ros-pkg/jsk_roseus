@@ -1,5 +1,0 @@
-#!/bin/bash
-
-eus2 `rospack find genmsg_cpp`/genmsg-main-eus.l -c "(prog1 (genmsg-eus \"$@\")(exit))"
-
-
