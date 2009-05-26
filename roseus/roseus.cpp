@@ -428,7 +428,7 @@ static int roseus_hook(void)
   return 0;
 }
 
-static int roseus_hook_thread (void) {
+int roseus_hook_thread (void) {
   while (1) {
     roseus_hook();
     usleep(100*1000);
@@ -538,7 +538,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
     boost::shared_ptr<RoscppSubscription> subs(new RoscppSubscription(pnode, topicname, md5sum, type, fncallback, queuesize));
     s_subscriptions[topicname] = subs;
 
-    ROS_INFO("subscribed to %s(%d@%d)", topicname.c_str(), fncallback, ctx);
+    ROS_INFO("subscribed to %s(%p@%p)", topicname.c_str(), fncallback, ctx);
   }
   catch(...) {
     // failed
