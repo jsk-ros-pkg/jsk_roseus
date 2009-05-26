@@ -291,7 +291,6 @@ class RoseusStaticData
 public:
   RoseusStaticData() : nSessionHandleId(1) {}
   ~RoseusStaticData() {
-    reset_all();
   }
   list<boost::shared_ptr<RoscppWorkExecutor> > listWorkerItems;
   map<string, pair<string, string> > mapAdvertised; ///< advertised topics
