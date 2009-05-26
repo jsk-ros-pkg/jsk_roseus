@@ -189,7 +189,7 @@ public:
   virtual uint8_t *serialize(uint8_t *writePtr, uint32_t seqid) const
   {
     if( seqid != 0 )
-      // if you get this message, define SERVICE_SERIALIZE_SEQID and change rosoct_service_call.m and rosoct_session_call.m
+      // if you get this message, define SERVICE_SERIALIZE_SEQID and change roseus_service_call.m and roseus_session_call.m
       ROS_DEBUG("ignoring service sequence id %d!", seqid);
 
     if( _vdata.size() > 0 )
@@ -286,11 +286,11 @@ private:
   bool _bDropWork;
 };
 
-class RosoctStaticData
+class RoseusStaticData
 {
 public:
-  RosoctStaticData() : nSessionHandleId(1) {}
-  ~RosoctStaticData() {
+  RoseusStaticData() : nSessionHandleId(1) {}
+  ~RoseusStaticData() {
     reset_all();
   }
   list<boost::shared_ptr<RoscppWorkExecutor> > listWorkerItems;
@@ -301,12 +301,11 @@ public:
   //map<int, session::abstractSessionHandle> sessions;
   int nSessionHandleId; ///< counter of unique session ids to assign
   boost::mutex mutexWorker, mutexWorking;
-  //map<string,FunctionPtr> mapFunctions;
   vector<char*> argv;
   vector<string> vargv;
 };
 
-static RosoctStaticData s_staticdata;
+static RoseusStaticData s_staticdata;
 
 #define s_listWorkerItems s_staticdata.listWorkerItems
 #define s_mapAdvertised s_staticdata.mapAdvertised
@@ -316,7 +315,7 @@ static RosoctStaticData s_staticdata;
 #define s_nSessionHandleId s_staticdata.nSessionHandleId
 #define s_mutexWorker s_staticdata.mutexWorker
 #define s_mutexWorking s_staticdata.mutexWorking
-//#define s_mapFunctions s_staticdata.mapFunctions
+
 #define s_vargv s_staticdata.vargv
 
 void AddWorker(RoscppWorker* psub, void* userdata)
@@ -364,7 +363,7 @@ ros::Node* check_roscpp()
   if (!pnode) {
     char strname[256] = "nohost";
     gethostname(strname, sizeof(strname));
-    strcat(strname,"_rosoct");
+    strcat(strname,"_roseus");
 
     int argc = (int)s_vargv.size();
     vector<string> vargv = s_vargv;
@@ -641,13 +640,13 @@ pointer TIME_NOW(register context *ctx,int n,pointer *argv)
 bool install_roseus(bool bRegisterHook)
 {
   if( bRegisterHook ) {
-    //ROS_INFO("registering rosoct hook");
+    //ROS_INFO("registering roseus hook");
     //boost::thread thr_event_hook(&roseus_hook_thread);
   }
 
   // register octave exit function
   //octave_value_list args; args.resize(1);
-  //args(0) = "rosoct_exit";
+  //args(0) = "roseus_exit";
   //feval("atexit", args);
   return 1;
 }
@@ -669,7 +668,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
     }
   }
 
-  fprintf(stderr, "ROSEUS %s\n", cmd);
+  ROS_INFO("ROSEUS %s", cmd);
   if ( strcmp(cmd, "clear") == 0 ) {
     reset_all();
   } else if ( strcmp(cmd, "shutdown") == 0 ) {
@@ -684,7 +683,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
       if( install_roseus(bRegisterHook) )
         s_bInstalled = true;
       else {
-        ROS_FATAL("rosoct failed to initialize");
+        ROS_FATAL("roseus failed to initialize");
         bSuccess = false;
       }
     }
@@ -694,7 +693,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
     if( install_roseus(bRegisterHook) )
       s_bInstalled = true;
     else {
-      ROS_FATAL("rosoct failed to initialize");
+      ROS_FATAL("roseus failed to initialize");
       bSuccess = false;
     }
   }
