@@ -1,8 +1,9 @@
 (load "roseus.l")
-(load "festival.l")
-(print 'sinit0)
-(unless (boundp '*festival*) (sinit :host "hrp2018v" :user "hrpuser"))
-(print 'sinit1)
+(when (probe-file "festival.l")
+  (load "festival.l")
+  (print 'sinit-start)
+  (unless (boundp '*festival*) (sinit :host "hrp2018v" :user "hrpuser"))
+  (print 'sinit-finished))
 
 (roseus-add-msgs "roslib")
 (roseus-add-msgs "roseus")
