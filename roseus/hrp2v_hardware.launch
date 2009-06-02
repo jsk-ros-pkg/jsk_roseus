@@ -2,7 +2,7 @@
 
   <group name="wg">
     <!-- node pkg="roseus" type="wii.sh" / -->
-    <!-- node pkg="roseus" type="odometry-talker.sh" / -->
+    <node pkg="roseus" type="odometry-talker.sh" />
 
     <node name="hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" output="screen" >
       <param name="frameid" value="base_laser"/>
