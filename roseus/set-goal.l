@@ -49,7 +49,9 @@
   (setq *move-base-state* nil)
   (setq i 1)
   (setq state :stop pre-state nil)
-  (do-until-key
+  ;;(do-until-key
+  (while t
+    (if (select-stream (list *standard-input*) 0.0000001) (return nil))
    (unix:sleep 3)
    ;; goal check
    (if *move-base-state*
