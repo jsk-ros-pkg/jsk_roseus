@@ -50,7 +50,7 @@ public:
     node_->param("~/sigma", sigma_, 0.5);
     node_->param("~/kernelSize", kernelSize_, 1);
     node_->param("~/lstep", lstep_, 0.5);
-    node_->param("~/astep", astep_, 0.2);
+    node_->param("~/astep", astep_, 0.5);
     node_->param("~/iterations", iterations_, 5);
     node_->param("~/lsigma", lsigma_, 0.075);
     node_->param("~/ogain", ogain_, 3.0);
@@ -113,9 +113,12 @@ public:
     m_matcher.computeActiveArea(smap, init, ranges_double_prev);
     double ret = m_matcher.optimize(pnew, smap, init, ranges_double_now);
 
-    odom_.x += pnew.x;
-    odom_.y += pnew.y;
-    odom_.theta += pnew.theta;
+    //cerr << init.x << ", " << init.y << ", " << init.theta << "> " << m_matcher.score(smap, init, ranges_double_now) << endl;;
+    //cerr << pnew.x << ", " << pnew.y << ", " << pnew.theta << "> " << m_matcher.score(smap, pnew, ranges_double_now) << endl;;
+    double alpha = 0.5;
+    odom_.x = odom_.x + pnew.x*alpha;
+    odom_.y = odom_.y + pnew.y*alpha;
+    odom_.theta = odom_.theta + pnew.theta*alpha;
 
     for(unsigned int i=0; i < scan_.ranges.size(); i++)
       ranges_double_prev[i] = ranges_double_now[i];
@@ -132,6 +135,7 @@ public:
                       scan_.header.stamp,
 		      "base_link",
 		      "odom");
+#if 0
     tf_.sendTransform(tf::Transform(tf::Quaternion(0.0, 0.0, 0.0), 
 				    tf::Point(0.0, 0.0, 0.0)),
                       scan_.header.stamp, "base_laser", "base_link");
@@ -139,7 +143,7 @@ public:
     tf_.sendTransform(tf::Transform(tf::Quaternion(0.0, 0.0, 0.0), 
 				    tf::Point(0.0, 0.0, 0.0)),
                       scan_.header.stamp, "base_footprint", "base_link");
-    
+#endif
   }
 };
 
