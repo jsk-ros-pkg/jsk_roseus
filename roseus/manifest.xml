@@ -9,6 +9,8 @@
   <depend package="roslib"/>
   <depend package="std_msgs"/>
   <depend package="robot_msgs"/>
+  <depend package="gmapping"/>
+  <depend package="slam_gmapping"/>
   <sysdepend os="ubuntu" version="8.04-hardy" package="octave3.0-headers"/>
   <sysdepend os="centos" version="5.2" package="octave-devel"/>
   <sysdepend os="centos" version="5.2" package="ncurses-devel"/>
