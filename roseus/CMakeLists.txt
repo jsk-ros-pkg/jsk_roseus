@@ -47,6 +47,7 @@ rospack_link_boost(roseus thread)
 genmsg()
 
 rospack_add_executable(hrp2v_odom hrp2_odom.cpp)
+rospack_add_executable(slam_odometry slam_odometry.cpp)
 #add_subdirectory(test EXCLUDE_FROM_ALL)
 
 #########
