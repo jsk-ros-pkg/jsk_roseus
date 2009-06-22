@@ -136,6 +136,10 @@ public:
 				    tf::Point(0.0, 0.0, 0.0)),
                       scan_.header.stamp, "base_laser", "base_link");
     
+    tf_.sendTransform(tf::Transform(tf::Quaternion(0.0, 0.0, 0.0), 
+				    tf::Point(0.0, 0.0, 0.0)),
+                      scan_.header.stamp, "base_footprint", "base_link");
+    
   }
 };
 
