@@ -13,11 +13,13 @@
 
 (unless (boundp '*vi*)
   (setq *vi* (instance vmax-interface :init :host "hrp2018w")))
+(send *vi* :reset-pos)
 
 ;;(do-until-key
 (while t
   (if (select-stream (list *standard-input*) 0.0000001) (return nil))
- (setq xyr (send *vi* :vmax-worldpos))
+ ;;(setq xyr (send *vi* :vmax-worldpos))
+  (setq xyr (send *vi* :worldpos))
  (setf (elt xyr 2) (deg2rad (elt xyr 2)))
  (setq msg (instance roseus::Odometry :init))
  (send msg :xyr xyr)
@@ -31,6 +33,7 @@
  (send msg :header :stamp ts)
  (ros::publish "odometry" msg)
  (print (send msg :xyr))
+ (sys::gc)
  (unix:usleep 1000)
  )
 ;(roseus "shutdown")
