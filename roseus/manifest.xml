@@ -1,21 +1,17 @@
 <package>
-  <description brief="An Octave implementation of ROS using roscpp">Octave implementation for Robot Operating System.</description>
-  <author>Rosen Diankov (rdiankov@cs.cmu.edu)</author>
+  <description brief="An EusLisp implementation of ROS using roscpp">EusLisp implementation for Robot Operating System.</description>
+  <author>Kei Okada (k-okada@jsk.t.u-tokyo.ac.jp)</author>
   <license>BSD</license>
   <review status="experimental" notes=""/>
-  <depend package="roscpp"/>
-  <depend package="tf" />
+  <depend package="roslang"/>
+  <depend package="roscpp" />
   <depend package="roscpp_sessions"/>
-  <depend package="roslib"/>
-  <depend package="std_msgs"/>
-  <depend package="robot_msgs"/>
+  <depend package="tf" />
   <depend package="gmapping"/>
-  <depend package="slam_gmapping"/>
-  <sysdepend os="ubuntu" version="8.04-hardy" package="octave3.0-headers"/>
-  <sysdepend os="centos" version="5.2" package="octave-devel"/>
-  <sysdepend os="centos" version="5.2" package="ncurses-devel"/>
-  <sysdepend os="macports" package="octave"/>
-  <url>http://pr.willowgarage.com/wiki/rosoct</url>
+  <export>
+    <roslang cmake="${prefix}/cmake/roseus.cmake"/>
+  </export>
+  <url>http://pr.willowgarage.com/wiki/roseus</url>
   <export>
     <cpp cflags="-I${prefix}/msg/cpp" />
   </export>

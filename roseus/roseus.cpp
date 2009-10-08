@@ -73,9 +73,9 @@
 #include "eus.h"
 extern "C" {
   pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env);
-int register_roseus(){
-  char modname[] = "___roseus";
-  return add_module_initializer(modname, (pointer (*)())___roseus);}
+  void register_roseus(){
+    char modname[] = "___roseus";
+    return add_module_initializer(modname, (pointer (*)())___roseus);}
 }
 
 #undef float_t

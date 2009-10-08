@@ -10,8 +10,7 @@ public:
   tf::TransformBroadcaster tf_;
   roseus::Odometry odom_;
   
-  HRP2Odom(ros::Node& node)
-    : tf_(node)
+  HRP2Odom(ros::Node& node) /*: tf_(node) */
   {
     //node.advertise<deprecated_msgs::RobotBase2DOdom>("odom");
     node.subscribe("odometry", odom_, &HRP2Odom::odomEusReceived, this, 10);
