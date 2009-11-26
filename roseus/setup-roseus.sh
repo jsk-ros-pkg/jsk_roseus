@@ -2,6 +2,7 @@
 
 # patch for rosbuild
 #(cd ${HOME}/ros/ros/core/rosbuild;patch < ${OLDPWD}/rosbuild.cmake.for-roseus.diff)
+(cd ${HOME}/prog/roseus;mkdir cmake;cat ${HOME}/ros/pkgs/ros_experimental/rosoct/cmake/rosoct.cmake | sed -e 's/oct/eus/g' -e 's/".m"/".l"/g' > cmake/roseus.cmake)
 
 # generate link
 ln -s ${HOME}/prog/roseus ${HOME}/ros/pkgs/ros_experimental/roseus
