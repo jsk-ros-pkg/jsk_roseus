@@ -4,7 +4,7 @@
 ;  (sys::wait-thread ros::*roseus-walkup-thread*)
 ;  (print ros::*roseus-walkup-thread*))
 
-(load-library "lib/libroseus.so" '("roseus"))
+(load-library "roseus.so" '("roseus"))
 (when (and (boundp 'ros::*roseus-walkup-thread*)
 	   ros::*roseus-walkup-thread*)
   (ros::roseus-exit))
@@ -51,18 +51,20 @@
 
 (defun ros::advertise (topic msg-class &optional (queuesize 1))
   (let ((md5sum (get msg-class :md5sum))
-	(type (get msg-class :type)))
+	(type (get msg-class :type))
+        (definition (or (get msg-class :definition) "")))
     (when ros::*debug*
       (warn "ros::advertise ~A ~A~%" topic type))
-    (unless (and (stringp md5sum) (stringp type))
-      (error "ros::advertise md5sum(~A) and type(~A) of ~A must be string~%"
-	     md5sum type msg-class))
-    (ros::roseus_advertise topic md5sum type queuesize)))
+    (unless (and (stringp md5sum) (stringp type) (stringp definition))
+      (error "ros::advertise md5sum(~A), type(~A) and definition(~A) of ~A must be string~%"
+	     md5sum type definition msg-class))
+    (ros::roseus_advertise topic md5sum type definition queuesize)))
 
 (defun ros::publish (topic msg)
-  (let (buf buflen)
-    (setq buf (send msg :serialize)
-	  buflen (send msg :serialization-length))
+  (let ((md5sum (get (class msg) :md5sum))
+        (type (get (class msg) :type))
+        (buf (send msg :serialize))
+        (buflen (send msg :serialization-length)))
     (when ros::*debug*
       (let (c)
 	(warn "ros::publish ~A [~d] " topic buflen)
@@ -70,7 +72,7 @@
 	  (setq c (elt buf i))
 	  (if (alphanumericp c)	(warn "~c" c) (warn "~0,2x" c)))
 	(warn "(~d)~%" (length buf))))
-    (ros::roseus_publish topic buf buflen)))
+    (ros::roseus_publish topic md5sum buf buflen type)))
 
 (defun ros::subscribe (topic msg-class func &optional (queuesize 1))
   (let ((md5sum (get msg-class :md5sum))
