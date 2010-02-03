@@ -1,3 +1,6 @@
+(pushnew (format nil "~A/euslisp/"
+                 (read (piped-fork "rospack find roseus")))
+         *load-path* :test #'equal)
 (load "roseus.l")
 
 (roseus-add-msgs "roslib")
@@ -16,6 +19,6 @@
   (print (send msg :data))
   (unix:usleep (* 200 1000))
   )
-(roseus "shutdown")
-(exit)
+;(roseus "shutdown")
+;(exit)
 

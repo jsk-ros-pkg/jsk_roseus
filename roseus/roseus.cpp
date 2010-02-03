@@ -58,12 +58,13 @@
 #include <boost/thread/condition.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <ros/node.h>
+#include <ros/node_handle.h>
+#include <ros/master.h>
+#include <ros/this_node.h>
 #include <ros/service.h>
 #include <ros/session.h>
 
 // for eus.h
-#define float_t eus_float_t
 #define class   eus_class
 #define throw   eus_throw
 #define export  eus_export
@@ -78,7 +79,6 @@ extern "C" {
     return add_module_initializer(modname, (pointer (*)())___roseus);}
 }
 
-#undef float_t
 #undef class
 #undef throw
 #undef export
@@ -88,15 +88,60 @@ extern "C" {
 using namespace ros;
 using namespace std;
 
-// copy from rosoct.cpp
-class RoscppWorker
+// executes a worker
+class RoscppWorkExecutor;
+class RoscppSubscription;
+
+void reset_all();
+class RoseusStaticData
+{
+public:
+  RoseusStaticData() : nSessionHandleId(1) {}
+  ~RoseusStaticData() {
+  }
+  list<boost::shared_ptr<RoscppWorkExecutor> > listWorkerItems;
+  map<string, Publisher > mapAdvertised; ///< advertised topics
+
+  boost::shared_ptr<ros::NodeHandle> node;
+  map<string, boost::shared_ptr<RoscppSubscription> > subscriptions;
+  //map<string, boost::shared_ptr<RoscppService> > services;
+  //map<int, session::abstractSessionHandle> sessions;
+  int nSessionHandleId; ///< counter of unique session ids to assign
+  boost::mutex mutexWorker, mutexWorking;
+  vector<char*> argv;
+  vector<string> vargv;
+  boost::thread rosthread;
+};
+
+static RoseusStaticData s_staticdata;
+static bool s_bInstalled = false;
+static bool s_bHookRegistered = false;
+
+#define s_listWorkerItems s_staticdata.listWorkerItems
+#define s_mapAdvertised s_staticdata.mapAdvertised
+#define s_subscriptions s_staticdata.subscriptions
+//#define s_services s_staticdata.services
+//#define s_sessions s_staticdata.sessions
+#define s_nSessionHandleId s_staticdata.nSessionHandleId
+#define s_mutexWorker s_staticdata.mutexWorker
+#define s_mutexWorking s_staticdata.mutexWorking
+#define s_vargv s_staticdata.vargv
+#define s_node s_staticdata.node
+#define s_rosthread s_staticdata.rosthread
+
+class RoscppWorker : public boost::enable_shared_from_this<RoscppWorker>
 {
 public:
   virtual ~RoscppWorker() {}
   virtual void workerthread(void* userdata) = 0;
+  virtual void init() = 0;
+
+  template <class T> boost::shared_ptr<T> as() {
+    return boost::dynamic_pointer_cast<T>(shared_from_this()); 
+  }
 };
 
-// executes a worker
+// executes a worker                                                            
 class RoscppWorkExecutor
 {
 public:
@@ -107,14 +152,9 @@ private:
   void* _userdata;
 };
 
-void reset_all();
-ros::Node* check_roscpp_nocreate();
 void AddWorker(RoscppWorker* psub, void* userdata);
 void __roseus_worker(int num);
 
-// getstring, getdata, serialize, deserialize...
-
-// it is necessary to call the octave serialize function directly since a sequence id is needed
 
 class EuslispMsgSerializer : public Message
 {
@@ -210,31 +250,36 @@ public:
  */
 
 class RoscppSubscription : public RoscppWorker
+#ifndef ROS_NEW_SERIALIZATION_API
+                         , public SubscriptionMessageHelper
+#endif
 {
 public:
-  RoscppSubscription(Node* pnode, const string& topicname, const string& md5sum, const string& type, /*int (* pfn)(int)*/pointer pfn, int maxqueue = 1)
+  RoscppSubscription(const string& topicname, const string& md5sum, const string& type, pointer pfn, int maxqueue = 1)
+    : _opts(topicname,maxqueue,md5sum,type)
   {
     _bDropWork = false;
+    assert( pfn != NULL);
 
-    _msg._md5sum = md5sum;
-    _msg._type = type;
-    _topicname = topicname;
-    _fncallback = pfn;
-
-    assert( pnode != NULL && pfn != NULL );
-
-    if( !pnode->subscribe(_topicname, _msg, &RoscppSubscription::cb, this, maxqueue) )
-      throw;
+    fncallback = pfn;
   }
   virtual ~RoscppSubscription()
   {
-    ros::Node* pnode = check_roscpp_nocreate();
-    if( pnode != NULL ) {
-      if( !pnode->unsubscribe(_topicname) )
-        ROS_WARN("failed to unsubscribe from %s", _topicname.c_str());
-
+    _sub.shutdown();
+    if ( !!s_node )
       __roseus_worker(0); // flush
-    }
+  }
+
+  virtual void init()
+  {
+#ifdef ROS_NEW_SERIALIZATION_API
+    _opts.helper.reset(new SubscriptionMessageHelperT<const boost::shared_ptr<OctaveMsgDeserializer const>&>(boost::bind(&RoscppSubscription::callback, this, _1), boost::bind(&RoscppSubscription::create, this)));
+#else
+    _opts.helper = as<SubscriptionMessageHelper>();
+    ROS_ASSERT(_opts.helper);
+#endif
+
+    _sub = s_node->subscribe(_opts);
   }
 
   virtual void workerthread(void* userdata)
@@ -244,16 +289,35 @@ public:
     dowork(pmsg.get());
   }
 
-private:
-  void cb()
+#ifdef ROS_NEW_SERIALIZATION_API
+  boost::shared_ptr<EuslispMsgDeserializer> create()
+  {
+    return boost::shared_ptr<EuslispMsgDeserializer>(new OctaveMsgDeserializer(_opts.md5sum, _opts.datatype));
+  }
+
+  void callback(const boost::shared_ptr<EuslispMsgDeserializer const>& msg)
   {
     if( _bDropWork )
       return;
-    //boost::mutex::scoped_lock lockserv(_mutexService); // lock simultaneous service calls out
     boost::mutex::scoped_lock lock(_mutex);
-    AddWorker(this, new EuslispMsgDeserializer(_msg));
+    AddWorker(this, new EuslispMsgDeserializer(*msg));
   }
+#else
+  virtual MessagePtr create() { return MessagePtr(new EuslispMsgDeserializer(_opts.md5sum,_opts.datatype)); }
+  virtual std::string getMD5Sum() { return _opts.md5sum; }
+  virtual std::string getDataType() { return _opts.datatype; }
 
+
+  virtual void call(const MessagePtr& msg)
+  {
+    if( _bDropWork )
+      return;
+    boost::mutex::scoped_lock lock(_mutex);
+    AddWorker(this, new EuslispMsgDeserializer(*dynamic_cast<EuslispMsgDeserializer*>(msg.get())));
+  }
+#endif
+
+private:
   virtual void dowork(EuslispMsgDeserializer* pmsg)
   {
     if( pmsg->_vdata.size() > 0 ) {
@@ -263,59 +327,20 @@ private:
       context *ctx = euscontexts[thr_self()];
       vpush((pointer)makestring((char *)(&pmsg->_vdata[0]),pmsg->_vdata.size()));
       //ROS_INFO("ufuncall for  %s(%d@%d)", _topicname.c_str(), _fncallback, ctx);
-      ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_fncallback,(pointer)(ctx->vsp-1),NULL,1);
+      ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),fncallback,(pointer)(ctx->vsp-1),NULL,1);
+
       //ufuncall(ctx,_fncallback,_fncallback,(pointer)(ctx->vsp-1),ctx->bindfp,1);
       //ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_fncallback,(pointer)(ctx->vsp-1),ctx->bindfp,1);
       vpop();
     }
-#if 0
-    args.resize(1);
-    if( pmsg->_vdata.size() > 0 ) {
-      odata.resize_no_fill(pmsg->_vdata.size());
-      memcpy(odata.fortran_vec(),&pmsg->_vdata[0],pmsg->_vdata.size());
-    }
-    args(0) = odata;
-    octave_value_list retval = ovfncallback.user_function_value()->do_multi_index_op(0, args);
-#endif
   }
 
-  string _topicname;
-  EuslispMsgDeserializer _msg;
-  pointer _fncallback;
+  pointer fncallback;
+  SubscribeOptions _opts;
+  ros::Subscriber _sub;
   boost::mutex _mutex;
   bool _bDropWork;
 };
-
-class RoseusStaticData
-{
-public:
-  RoseusStaticData() : nSessionHandleId(1) {}
-  ~RoseusStaticData() {
-  }
-  list<boost::shared_ptr<RoscppWorkExecutor> > listWorkerItems;
-  map<string, pair<string, string> > mapAdvertised; ///< advertised topics
-
-  map<string, boost::shared_ptr<RoscppSubscription> > subscriptions;
-  //map<string, boost::shared_ptr<RoscppService> > services;
-  //map<int, session::abstractSessionHandle> sessions;
-  int nSessionHandleId; ///< counter of unique session ids to assign
-  boost::mutex mutexWorker, mutexWorking;
-  vector<char*> argv;
-  vector<string> vargv;
-};
-
-static RoseusStaticData s_staticdata;
-
-#define s_listWorkerItems s_staticdata.listWorkerItems
-#define s_mapAdvertised s_staticdata.mapAdvertised
-#define s_subscriptions s_staticdata.subscriptions
-//#define s_services s_staticdata.services
-//#define s_sessions s_staticdata.sessions
-#define s_nSessionHandleId s_staticdata.nSessionHandleId
-#define s_mutexWorker s_staticdata.mutexWorker
-#define s_mutexWorking s_staticdata.mutexWorking
-
-#define s_vargv s_staticdata.vargv
 
 void AddWorker(RoscppWorker* psub, void* userdata)
 {
@@ -348,58 +373,6 @@ void __roseus_worker(int num)
   listworkers.clear(); // do all the work in the destructors
 }
 
-ros::Node* check_roscpp()
-{
-  // start roscpp
-  ros::Node* pnode = ros::Node::instance();
-  if( pnode && !pnode->checkMaster() ) {
-    reset_all();
-
-    delete pnode;
-    return NULL;
-  }
-
-  if (!pnode) {
-    char strname[256] = "nohost";
-    gethostname(strname, sizeof(strname));
-    strcat(strname,"_roseus");
-
-    int argc = (int)s_vargv.size();
-    vector<string> vargv = s_vargv;
-    vector<char*> argv(vargv.size());
-    for(size_t i = 0; i < argv.size(); ++i)
-      argv[i] = &vargv[i][0];
-    ros::init(argc,argv.size() > 0 ? &argv[0] : NULL);
-
-    pnode = new ros::Node(strname, ros::Node::DONT_HANDLE_SIGINT|ros::Node::ANONYMOUS_NAME|ros::Node::DONT_ADD_ROSOUT_APPENDER);
-    bool bCheckMaster = pnode->checkMaster();
-
-    delete pnode;
-
-    if( !bCheckMaster ) {
-      ROS_INFO("ros not present");
-      return NULL;
-    }
-
-    argc = (int)s_vargv.size();
-    vargv = s_vargv;
-    for(size_t i = 0; i < argv.size(); ++i)
-      argv[i] = &vargv[i][0];
-    ros::init(argc,argv.size() > 0 ? &argv[0] : NULL);
-    pnode = new ros::Node(strname, ros::Node::DONT_HANDLE_SIGINT|ros::Node::ANONYMOUS_NAME);
-    ROS_INFO("new roscpp node started");
-  }
-
-  return pnode;
-}
-
-//
-ros::Node* check_roscpp_nocreate()
-{
-  ros::Node* pnode = ros::Node::instance();
-  return (pnode && pnode->checkMaster()) ? pnode : NULL;
-}
-
 void reset_all()
 {
   ROS_INFO("%s", __PRETTY_FUNCTION__);
@@ -407,12 +380,6 @@ void reset_all()
   s_subscriptions.clear();
   //s_services.clear();
   //s_sessions.clear();
-
-  ros::Node* pnode = check_roscpp_nocreate();
-  if( pnode != NULL ) {
-    for(map<string, pair<string,string> >::iterator it = s_mapAdvertised.begin(); it != s_mapAdvertised.end(); ++it)
-      pnode->unadvertise(it->first);
-  }
   s_mapAdvertised.clear();
 }
 
@@ -428,37 +395,50 @@ static int roseus_hook(void)
 
 int roseus_hook_thread (void) {
   while (1) {
+    cerr << "---------hook >>" << endl;
     roseus_hook();
     usleep(100*1000);
   }
+  return 0;
 }
 
 void roseus_exit()
 {
-  reset_all();
-  if( ros::Node::instance() ) {
-    delete ros::Node::instance();
+  if( s_bInstalled ) {
+    ROS_INFO("exiting roseus");
+    ros::shutdown();
+    reset_all();
+    s_node.reset();
+    s_rosthread.join();
+
+    if( s_bHookRegistered ) {
+      ROS_INFO("unregistering roseus hook");
+      s_bHookRegistered = false;
+    }
+    s_bInstalled = false;
   }
 }
+
 ///
 ///
 ///
 pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
 { 
-  string topicname, md5sum, type;
+  string topicname, md5sum, type,definition;
   int queuesize = 0;
 
-  ckarg(4);
+  ckarg(5);
   if (isstring(argv[0])) topicname.assign((char *)(argv[0]->c.str.chars));
   else error(E_NOSTRING);
-  if (isstring(argv[1]))  md5sum.assign((char *)(argv[1]->c.str.chars));
+  if (isstring(argv[1])) md5sum.assign((char *)(argv[1]->c.str.chars));
   else error(E_NOSTRING);
-  if (isstring(argv[2]))  type.assign((char *)(argv[2]->c.str.chars));
+  if (isstring(argv[2])) type.assign((char *)(argv[2]->c.str.chars));
   else error(E_NOSTRING);
-  queuesize = ckintval(argv[3]);
+  if (isstring(argv[3])) definition.assign((char *)(argv[3]->c.str.chars));
+  else error(E_NOSTRING);
+  queuesize = ckintval(argv[4]);
 
-  ros::Node* pnode = check_roscpp();
-  if( !pnode ) {
+  if( !s_node ) {
     return (NIL);
   }
 
@@ -467,38 +447,40 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
     return (NIL);
   }
 
-  EuslispMsgSerializer msgcloner(md5sum, "", 0, type);
-  bool bSuccess = pnode->advertise(topicname, msgcloner, queuesize);
+  AdvertiseOptions opts(topicname,queuesize,md5sum,type,definition);
+  Publisher pub = s_node->advertise(opts);
+  if ( !!pub )
+    s_mapAdvertised[topicname] = pub;
 
-  if( bSuccess )
-    s_mapAdvertised[topicname] = pair<string,string>(md5sum,type);
-  
   return (T);
 }
 
 pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
 { 
-  string topicname;
-  char *msgstr = 0;
-  int msglen;
+  string topicname, md5sum, type;
+  char *serptr = 0;
+  int serlen;
 
-  ckarg(3);
+  ckarg(5);
   if (isstring(argv[0])) topicname.assign((char *)(argv[0]->c.str.chars));
   else error(E_NOSTRING);
-  if (isstring(argv[1])) msgstr = (char *)(argv[1]->c.str.chars);
+  if (isstring(argv[1])) md5sum.assign((char *)(argv[1]->c.str.chars));
   else error(E_NOSTRING);
-  msglen = ckintval(argv[2]);
+  if (isstring(argv[2])) serptr = (char *)(argv[2]->c.str.chars);
+  else error(E_NOSTRING);
+  serlen = ckintval(argv[3]);
+  if (isstring(argv[4])) type.assign((char *)(argv[4]->c.str.chars));
+  else error(E_NOSTRING);
 
-  ros::Node* pnode = check_roscpp();
-  if( !pnode ) {
+   if( !s_node ) {
     return (NIL);
   }
 
   bool bSuccess = false;
-  map<string,pair<string,string> >::iterator it = s_mapAdvertised.find(topicname);
+  map<string,Publisher>::iterator it = s_mapAdvertised.find(topicname);
   if( it != s_mapAdvertised.end() ) {
-    EuslispMsgSerializer msgcloner(it->second.first, msgstr, msglen, it->second.second);
-    pnode->publish(topicname, msgcloner);
+    EuslispMsgSerializer msgcloner(md5sum, serptr, serlen, type);
+    it->second.publish(msgcloner);
     bSuccess = true;
   }
   
@@ -526,14 +508,14 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   else error(E_NOSTRING);
   fncallback = argv[3];
   queuesize = ckintval(argv[4]);
-  
-  ros::Node* pnode = check_roscpp();
-  if( !pnode ) {
+
+  if( !s_node ) {
     return (NIL);
   }
 
   try {
-    boost::shared_ptr<RoscppSubscription> subs(new RoscppSubscription(pnode, topicname, md5sum, type, fncallback, queuesize));
+    boost::shared_ptr<RoscppSubscription> subs(new RoscppSubscription(topicname, md5sum, type, fncallback, queuesize));
+    subs->init();
     s_subscriptions[topicname] = subs;
 
     ROS_INFO("subscribed to %s(%p@%p)", topicname.c_str(), fncallback, ctx);
@@ -638,21 +620,23 @@ pointer TIME_NOW(register context *ctx,int n,pointer *argv)
 
 bool install_roseus(bool bRegisterHook)
 {
-  if( bRegisterHook ) {
-    //ROS_INFO("registering roseus hook");
-    //boost::thread thr_event_hook(&roseus_hook_thread);
-  }
+  int argc = s_vargv.size();
+  vector<char*> argv(argc);
+  for(int i = 0; i < argc; ++i)
+    argv[i] = &s_vargv[i][0];
 
-  // register octave exit function
-  //octave_value_list args; args.resize(1);
-  //args(0) = "roseus_exit";
-  //feval("atexit", args);
+  char strname[256] = "nohost";
+  //gethostname(strname, sizeof(strname)); // since k-okada is invalid name
+  strcat(strname,"_roseus");
+  ros::init(argc,argc > 0 ? &argv[0] : NULL,strname, ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
+  s_node.reset(new ros::NodeHandle());
+  s_rosthread = boost::thread(boost::bind(ros::spin));
+
   return 1;
 }
 
 pointer ROSEUS(register context *ctx,int n,pointer *argv)
 { 
-  static bool s_bInstalled = false;
   bool bRegisterHook = true;
   bool bSuccess = true;
 
@@ -672,9 +656,6 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
     reset_all();
   } else if ( strcmp(cmd, "shutdown") == 0 ) {
     reset_all();
-    if( ros::Node::instance() ) {
-      delete ros::Node::instance();
-    }
   } else if( strcmp(cmd, "nohook") == 0 ) {
     bRegisterHook = false;
   } else {
