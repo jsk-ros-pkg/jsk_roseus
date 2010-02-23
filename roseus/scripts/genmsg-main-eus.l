@@ -1,5 +1,5 @@
 (defun generate-msg-type-name-list (strm)
-  (let (msgs line pos type var init-elem vec-size)
+  (let (msgs consts line pos type var init-elem vec-size)
     (while (not (eq :eof (setq line (read-line strm nil :eof))))
       (setq line (nstring-downcase line))
       ;; remove comments
@@ -33,10 +33,11 @@
 	;; constants
 	(if (setq pos (position #\= var))
 	    (progn
-	      (setq init-elem (subseq var (1+ pos)))
-	      (setq var (subseq var 0 pos)))
+              (setq init-elem (string-trim " " (subseq var (1+ pos))))
+              (setq var (string-trim " " (subseq var 0 pos)))
+              (push (list type var init-elem vec-size) consts))
 	  (push (list type var vec-size) msgs))))
-    (setq msgs (nreverse msgs))))
+    (list (setq msgs (nreverse msgs)) (setq consts (nreverse consts)))))
 
 (defun generate-msg-output-file-name (fname pkg name)
   (let (l oname)
@@ -85,6 +86,13 @@
     (format strm "~%")
     (format strm "(if (boundp '~A::~A)~%" pkg name)
     (format strm "  (shadow '~A (find-package \"~A\")))~%" name (string-upcase pkg))
+    (format strm "~%")
+    ))
+
+(defun generate-msg-defconstants (strm pkg name consts)
+  (let ()
+    (dolist (const consts)
+      (format strm "(defconstant ~A::~A ~A)~%" pkg (cadr const) (caddr const)))
     (format strm "~%")
     ))
 
@@ -317,7 +325,7 @@
 ;;;
 
 (defun genmsg-eus (fname)
-  (let (msgs pkg name oname)
+  (let (msgs consts pkg name oname)
     (setq pkg (car (last (butlast (pathname-directory fname)))))
     (setq name (pathname-name fname))
     (warning-message 6 ";; generate message for ~A/~A~%" pkg name)
@@ -326,13 +334,15 @@
       (warning-message 1 ";; ERROR message file ~A not found~%" fname)(exit 1))
     (with-open-file
      (strm fname :direction :input)
-     (setq msgs (generate-msg-type-name-list strm)))
+     (multiple-value-setq (msgs consts) (generate-msg-type-name-list strm)))
     ;;
     (setq oname (generate-msg-output-file-name fname pkg name))
     (warning-message 6 ";; writing to ~A~%" oname)
     (with-open-file
      (strm oname :direction :output)
      (generate-msg-headers strm pkg name msgs)
+     ;; defconstants
+     (generate-msg-defconstants strm pkg name consts)
      ;; defclass
      (generate-msg-defclass strm pkg name msgs)
      ;; defmethod
