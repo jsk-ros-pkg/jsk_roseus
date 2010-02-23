@@ -9,9 +9,9 @@
       (setq line (nsubstitute #\space #\tab line))
       ;; remove whitespaces
       (setq line (string-trim " " line))
-      (setq pos (count #\space line))
-      ;; 
-      (setq line (remove-duplicates  line :test #'(lambda (a b) (if (eq a #\space) (equal a b) nil))))
+      
+      ;;(setq pos (count #\space line))
+      ;;(setq line (remove-duplicates  line :test #'(lambda (a b) (if (eq a #\space) (equal a b) nil))))
       ;;
       (when (> (length line) 0)
 	;; split line into type and var
