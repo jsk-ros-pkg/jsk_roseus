@@ -1,3 +1,4 @@
+(pushnew (format nil "~A/euslisp/" (read-line (unix::piped-fork "rospack find roseus"))) *load-path*)
 (load "roseus.l")
 
 (roseus-add-msgs "roslib")
@@ -9,13 +10,10 @@
 ;;;
 ;;;
 (roseus "clear")
-(ros::advertise "clientserver" std_msgs::ColorRGBA 1)
+(ros::advertise "clientserver" roseus::String 1)
 (dotimes (i 100)
-  (setq msg (instance std_msgs::ColorRGBA :init))
-  (send msg :r (+ 10 (* i 0.1)))
-  (send msg :g (+ 11 (* i 0.1)))
-  (send msg :b (+ 12 (* i 0.1)))
-  (send msg :a (+ 100 (* i 0.1)))
+  (setq msg (instance roseus::String :init))
+  (send msg :data (format nil "(scale ~A (float-vector 1 2 3 4 5)" i))
   (ros::publish "clientserver" msg)
   (unix:usleep (* 200 1000))
   )
