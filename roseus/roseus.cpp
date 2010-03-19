@@ -91,6 +91,7 @@ using namespace std;
 // executes a worker
 class RoscppWorkExecutor;
 class RoscppSubscription;
+class RoscppService;
 
 void reset_all();
 class RoseusStaticData
@@ -104,7 +105,7 @@ public:
 
   boost::shared_ptr<ros::NodeHandle> node;
   map<string, boost::shared_ptr<RoscppSubscription> > subscriptions;
-  //map<string, boost::shared_ptr<RoscppService> > services;
+  map<string, boost::shared_ptr<RoscppService> > services;
   //map<int, session::abstractSessionHandle> sessions;
   int nSessionHandleId; ///< counter of unique session ids to assign
   boost::mutex mutexWorker, mutexWorking;
@@ -120,7 +121,7 @@ static bool s_bHookRegistered = false;
 #define s_listWorkerItems s_staticdata.listWorkerItems
 #define s_mapAdvertised s_staticdata.mapAdvertised
 #define s_subscriptions s_staticdata.subscriptions
-//#define s_services s_staticdata.services
+#define s_services s_staticdata.services
 //#define s_sessions s_staticdata.sessions
 #define s_nSessionHandleId s_staticdata.nSessionHandleId
 #define s_mutexWorker s_staticdata.mutexWorker
@@ -137,11 +138,11 @@ public:
   virtual void init() = 0;
 
   template <class T> boost::shared_ptr<T> as() {
-    return boost::dynamic_pointer_cast<T>(shared_from_this()); 
+    return boost::dynamic_pointer_cast<T>(shared_from_this());
   }
 };
 
-// executes a worker                                                            
+// executes a worke
 class RoscppWorkExecutor
 {
 public:
@@ -342,6 +343,146 @@ private:
   bool _bDropWork;
 };
 
+
+class RoscppService : public RoscppWorker
+#ifndef ROS_NEW_SERIALIZATION_API
+                    , public ServiceMessageHelper
+#endif
+{
+public:
+  RoscppService(const string& servicename, const string& md5sum, const string& reqtype, const string& restype, const string& datatype, const pointer pservicefn)
+  {
+    _bDropWork = false;
+    assert( pservicefn != NULL);
+
+    fnservice = pservicefn;
+
+    _opts.service = servicename;
+    _opts.md5sum = md5sum;
+    _opts.datatype = datatype;
+    _opts.req_datatype = reqtype;
+    _opts.res_datatype = restype;
+  }
+  virtual ~RoscppService()
+  {
+    _service.shutdown();
+    if( !!s_node )
+      __roseus_worker(0); // flush
+  }
+
+  virtual void init()
+  {
+#ifdef ROS_NEW_SERIALIZATION_API
+    _opts.helper.reset(new ServiceCallbackHelperT<ServiceSpec<EuslispMsgDeserializer, EuslispMsgDeserializer> >(boost::bind(&RoscppService::callback, this, _1, _2),
+                                                                                                                boost::bind(&RoscppService::createRequest, this),
+                                                                                                                boost::bind(&RoscppService::createResponse, this)));
+#else
+    ROS_ASSERT(!!as<ServiceMessageHelper>());
+    _opts.helper = as<ServiceMessageHelper>();
+#endif
+    _service = s_node->advertiseService(_opts);
+    if( !_service )
+      throw;
+
+    ROS_INFO("advertised service %s", _opts.service.c_str());
+
+  }
+
+  virtual void workerthread(void* userdata)
+  {
+    boost::mutex::scoped_lock lock(_mutex);
+    dowork();
+    _control.notify_all();
+  }
+
+#ifdef ROS_NEW_SERIALIZATION_API
+  virtual boost::shared_ptr<EuslispMsgDeserializer> createRequest() { return boost::shared_ptr<EuslispMsgDeserializer>(new EuslispMsgDeserializer(_opts.md5sum, _opts.req_datatype)); }
+  virtual boost::shared_ptr<EuslispMsgDeserializer> createResponse() { return boost::shared_ptr<EuslispMsgDeserializer>(new EuslispMsgDeserializer(_opts.md5sum, _opts.res_datatype)); }
+
+  bool callback(EuslispMsgDeserializer& req, EuslispMsgDeserializer& res)
+  {
+    if( _bDropWork )
+      return false;
+
+    boost::mutex::scoped_lock lockserv(_mutexService); // lock simultaneous service calls out
+    boost::mutex::scoped_lock lock(_mutex);
+    preq = &req;
+    pres = &res;
+    AddWorker(this, NULL);
+    _control.wait(lock);
+
+    return _bSuccess;
+  }
+#else
+  virtual MessagePtr createRequest() { return MessagePtr(new EuslispMsgDeserializer(_opts.md5sum, _opts.req_datatype)); }
+  virtual MessagePtr createResponse() { return MessagePtr(new EuslispMsgDeserializer(_opts.md5sum, _opts.res_datatype)); }
+
+  virtual bool call(const MessagePtr& req, const MessagePtr& res)
+  {
+    if( _bDropWork )
+      return false;
+
+    boost::mutex::scoped_lock lockserv(_mutexService); // lock simultaneous service calls out
+    boost::mutex::scoped_lock lock(_mutex);
+    preq = boost::dynamic_pointer_cast<EuslispMsgDeserializer>(req);
+    pres = boost::dynamic_pointer_cast<EuslispMsgDeserializer>(res);
+    AddWorker(this, NULL);
+    _control.wait(lock);
+
+    // done so fill res
+    preq.reset();
+    pres.reset();
+    return _bSuccess;
+  }
+
+  virtual std::string getMD5Sum() { return _opts.md5sum; }
+  virtual std::string getDataType() { return _opts.datatype; }
+  virtual std::string getRequestDataType() { return _opts.req_datatype; }
+  virtual std::string getResponseDataType() { return _opts.res_datatype; }
+#endif
+
+private:
+  virtual void dowork()
+  {
+    if( preq->_vdata.size() > 0 ) {
+      //char buf[pmsg->_vdata.size()];
+      //memcpy(buf,&pmsg->_vdata[0],pmsg->_vdata.size());
+      //(*_fncallback)(10);
+      context *ctx = euscontexts[thr_self()];
+      vpush((pointer)makestring((char *)(&preq->_vdata[0]),preq->_vdata.size()));
+      //ROS_INFO("ufuncall for  %s(%d@%d)", _topicname.c_str(), _fncallback, ctx);
+      pointer result = ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),fnservice,(pointer)(ctx->vsp-1),NULL,1);
+
+      //ufuncall(ctx,_fncallback,_fncallback,(pointer)(ctx->vsp-1),ctx->bindfp,1);
+      //ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_fncallback,(pointer)(ctx->vsp-1),ctx->bindfp,1);
+      if (!isstring(result)) {
+        ROS_ERROR("ufuncall retuns non string");
+      }
+      pres->_vdata.resize(strlength(result));
+      if( pres->_vdata.size() > 0 ) {
+        memcpy(&pres->_vdata[0],result->c.str.chars,pres->_vdata.size());
+      }
+      vpop();
+    }
+  }
+
+  bool _bSuccess; // success of the service call
+
+  ServiceServer _service;
+  AdvertiseServiceOptions _opts;
+
+#ifdef ROS_NEW_SERIALIZATION_API
+  EuslispMsgDeserializer* preq;
+  EuslispMsgDeserializer* pres;
+#else
+  boost::shared_ptr<EuslispMsgDeserializer> preq, pres;
+#endif
+  pointer fnservice;
+  boost::condition _control;
+  boost::mutex _mutex, _mutexService;
+  bool _bDropWork;
+};
+
 void AddWorker(RoscppWorker* psub, void* userdata)
 {
   boost::mutex::scoped_lock lock(s_mutexWorker);
@@ -351,7 +492,7 @@ void AddWorker(RoscppWorker* psub, void* userdata)
 void __roseus_worker(int num)
 {
   list<boost::shared_ptr<RoscppWorkExecutor> > listworkers;
-  
+
   int nItemsToProcess = -1;
   if( num > 0 )
     nItemsToProcess = num;
@@ -368,7 +509,7 @@ void __roseus_worker(int num)
       listworkers.splice(listworkers.end(),s_listWorkerItems, s_listWorkerItems.begin(),itlast);
     }
   }
-  
+
   boost::mutex::scoped_lock lock(s_mutexWorking);
   listworkers.clear(); // do all the work in the destructors
 }
@@ -378,7 +519,7 @@ void reset_all()
   ROS_INFO("%s", __PRETTY_FUNCTION__);
   __roseus_worker(0); // flush all
   s_subscriptions.clear();
-  //s_services.clear();
+  s_services.clear();
   //s_sessions.clear();
   s_mapAdvertised.clear();
 }
@@ -423,7 +564,7 @@ void roseus_exit()
 ///
 ///
 pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
-{ 
+{
   string topicname, md5sum, type,definition;
   int queuesize = 0;
 
@@ -455,8 +596,22 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   return (T);
 }
 
+pointer ROSEUS_UNADVERTISE(register context *ctx,int n,pointer *argv)
+{
+  string topicname;
+
+  ckarg(1);
+  if (isstring(argv[0])) topicname.assign((char *)(argv[0]->c.str.chars));
+  else error(E_NOSTRING);
+
+  s_mapAdvertised.erase(topicname);
+
+  return (T);
+}
+
+
 pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
-{ 
+{
   string topicname, md5sum, type;
   char *serptr = 0;
   int serlen;
@@ -483,7 +638,7 @@ pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
     it->second.publish(msgcloner);
     bSuccess = true;
   }
-  
+
   if ( ! bSuccess ) {
     ROS_ERROR("attempted to publish to topic %s, which was not "        \
               "previously advertised. call (ros::advertise \"%s\") first.",
@@ -494,7 +649,7 @@ pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
 }
 
 pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
-{ 
+{
   string topicname, md5sum, type;
   int queuesize = 1;
   pointer fncallback;
@@ -528,8 +683,130 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   return (T);
 }
 
+pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
+{
+  string service;
+  ckarg2(1,2);
+  if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
+  else error(E_NOSTRING);
+
+  if( !s_node ) {
+    return (NIL);
+  }
+
+  int32_t timeout = -1;
+
+  if( n > 1 )
+    timeout = (int32_t)ckintval(argv[1]);
+
+  bool bSuccess = service::waitForService(service, timeout);
+
+  return (bSuccess?T:NIL);
+}
+
+pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
+{
+  string service, md5sum, type;
+  char *req_serptr = 0, *res_serptr = 0;
+  int req_serlen, res_serlen;
+
+  ckarg(7);
+  if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
+  else error(E_NOSTRING);
+  if (isstring(argv[1])) md5sum.assign((char *)(argv[1]->c.str.chars));
+  else error(E_NOSTRING);
+  if (isstring(argv[2])) req_serptr = (char *)(argv[2]->c.str.chars);
+  else error(E_NOSTRING);
+  req_serlen = ckintval(argv[3]);
+  if (isstring(argv[4])) res_serptr = (char *)(argv[4]->c.str.chars);
+  else error(E_NOSTRING);
+  res_serlen = ckintval(argv[5]);
+  if (isstring(argv[6])) type.assign((char *)(argv[6]->c.str.chars));
+  else error(E_NOSTRING);
+
+   if( !s_node ) {
+    return (NIL);
+  }
+#ifdef SERVICE_SERIALIZE_SEQID
+   EuslispMsgSerializer servreq(md5sum, req_serptr, req_serlen, type);
+#else
+   EuslispMsgDeserializer servreq(md5sum, type);
+   servreq._vdata.resize(req_serlen);
+   memcpy(&servreq._vdata[0], req_serptr, req_serlen);
+#endif
+   EuslispMsgDeserializer servres(md5sum, type);
+
+   bool bSuccess = ros::service::call(service, servreq, servres);
+
+   if ( ! bSuccess ) {
+     ROS_ERROR("ros:service::call(%s) failed\n", service.c_str());
+     return (NIL);
+   }
+   if ( (int)(servres._vdata.size()) != res_serlen ) {
+     ROS_ERROR("ros:service::call(%s) resnpose data size %d %d\n", service.c_str(), servres._vdata.size(), res_serlen);
+     return (NIL);
+   }
+   if( servres._vdata.size() > 0 )
+     memcpy(res_serptr,&servres._vdata[0],servres._vdata.size());
+   return (T);
+}
+
+pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
+{
+  string servicename, md5sum, req_type, res_type, type;
+  pointer fncallback;
+
+  ckarg(6);
+  if (isstring(argv[0])) servicename.assign((char *)(argv[0]->c.str.chars));
+  else error(E_NOSTRING);
+  if (isstring(argv[1]))  md5sum.assign((char *)(argv[1]->c.str.chars));
+  else error(E_NOSTRING);
+  if (isstring(argv[2]))  req_type.assign((char *)(argv[2]->c.str.chars));
+  else error(E_NOSTRING);
+  if (isstring(argv[3]))  res_type.assign((char *)(argv[3]->c.str.chars));
+  else error(E_NOSTRING);
+  if (isstring(argv[4]))  type.assign((char *)(argv[4]->c.str.chars));
+  else error(E_NOSTRING);
+  fncallback = argv[5];
+
+  if( !s_node ) {
+    return (NIL);
+  }
+
+  if( s_services.find(servicename) != s_services.end() ) {
+    ROS_INFO("service already advertised %s", servicename.c_str());
+  }
+
+  try {
+    boost::shared_ptr<RoscppService> serv(new RoscppService(servicename, md5sum, req_type, res_type, type, fncallback));
+    serv->init();
+    s_services[servicename] = serv;
+
+    ROS_INFO("advertise service %s(%p@%p)", servicename.c_str(), fncallback, ctx);
+  }
+  catch(...) {
+    // failed
+    ROS_ERROR("failed to advertise %s", servicename.c_str());
+  }
+
+  return(T);
+}
+
+pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
+{
+  string service;
+  ckarg(1);
+  if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
+  else error(E_NOSTRING);
+
+  s_services.erase(service);
+
+  return (T);
+}
+
+
 pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
-{ 
+{
   roseus_exit();
   return (NIL);
 }
@@ -539,82 +816,57 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
  */
 
 pointer CREATE_SESSION(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer SESSION_CALL(register context *ctx,int n,pointer *argv)
-{ 
-  return (NIL);
-}
-
-pointer SERVICE_CALL(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer MSG_SUBSCRIBE(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer MSG_UNSUBSCRIBE(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer SET_PARAM(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer GET_PARAM(register context *ctx,int n,pointer *argv)
-{ 
-  return (NIL);
-}
-
-pointer UNADVERTISE(register context *ctx,int n,pointer *argv)
-{ 
-  return (NIL);
-}
-
-pointer ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
-{ 
-  return (NIL);
-}
-
-pointer UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer TERMINATE_SESSION(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer GET_TOPICS(register context *ctx,int n,pointer *argv)
-{ 
-  return (NIL);
-}
-
-pointer WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer CHECK_MASTER(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer WORKER(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
 pointer TIME_NOW(register context *ctx,int n,pointer *argv)
-{ 
+{
   return (NIL);
 }
 
@@ -636,7 +888,7 @@ bool install_roseus(bool bRegisterHook)
 }
 
 pointer ROSEUS(register context *ctx,int n,pointer *argv)
-{ 
+{
   bool bRegisterHook = true;
   bool bSuccess = true;
 
@@ -668,7 +920,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
       }
     }
   }
-    
+
   if( !s_bInstalled ) {
     if( install_roseus(bRegisterHook) )
       s_bInstalled = true;
@@ -682,7 +934,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
 }
 
 pointer ROSEUS_WORKER(register context *ctx,int n,pointer *argv)
-{ 
+{
   __roseus_worker(0); // flush all
   return (T);
 }
@@ -695,31 +947,29 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   Spevalof(PACKAGE)=rospkg;
 
   defun(ctx,"ROSEUS_ADVERTISE",argv[0],(pointer (*)())ROSEUS_ADVERTISE);
+  defun(ctx,"ROSEUS_UNADVERTISE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE);
   defun(ctx,"ROSEUS_PUBLISH",argv[0],(pointer (*)())ROSEUS_PUBLISH);
   defun(ctx,"ROSEUS_SUBSCRIBE",argv[0],(pointer (*)())ROSEUS_SUBSCRIBE);
   defun(ctx,"ROSEUS_WORKER",argv[0],(pointer (*)())ROSEUS_WORKER);
   defun(ctx,"ROSEUS_EXIT",argv[0],(pointer (*)())ROSEUS_EXIT);
+  defun(ctx,"ROSEUS_WAIT_FOR_SERVICE",argv[0],(pointer (*)())ROSEUS_WAIT_FOR_SERVICE);
+  defun(ctx,"ROSEUS_SERVICE_CALL",argv[0],(pointer (*)())ROSEUS_SERVICE_CALL);
+  defun(ctx,"ROSEUS_ADVERTISE_SERVICE",argv[0],(pointer (*)())ROSEUS_ADVERTISE_SERVICE);
+  defun(ctx,"ROSEUS_UNADVERTISE_SERVICE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE_SERVICE);
 
   defun(ctx,"CREATE_SESSION",argv[0],(pointer (*)())CREATE_SESSION);
   defun(ctx,"SESSION_CALL",argv[0],(pointer (*)())SESSION_CALL);
-  defun(ctx,"SERVICE_CALL",argv[0],(pointer (*)())SERVICE_CALL);
   defun(ctx,"MSG_UNSUBSCRIBE",argv[0],(pointer (*)())MSG_UNSUBSCRIBE);
   defun(ctx,"SET_PARAM",argv[0],(pointer (*)())SET_PARAM);
   defun(ctx,"GET_PARAM",argv[0],(pointer (*)())GET_PARAM);
-  defun(ctx,"UNADVERTISE",argv[0],(pointer (*)())UNADVERTISE);
-  defun(ctx,"ADVERTISE_SERVICE",argv[0],(pointer (*)())ADVERTISE_SERVICE);
-  defun(ctx,"UNADVERTISE_SERVICE",argv[0],(pointer (*)())UNADVERTISE_SERVICE);
   defun(ctx,"TERMINATE_SESSION",argv[0],(pointer (*)())TERMINATE_SESSION);
   defun(ctx,"GET_TOPICS",argv[0],(pointer (*)())GET_TOPICS);
-  defun(ctx,"WAIT_FOR_SERVICE",argv[0],(pointer (*)())WAIT_FOR_SERVICE);
   defun(ctx,"CHECK_MASTER",argv[0],(pointer (*)())CHECK_MASTER);
   defun(ctx,"TIME_NOW",argv[0],(pointer (*)())TIME_NOW);
 
   pointer_update(Spevalof(PACKAGE),p);
   defun(ctx,"ROSEUS",argv[0],(pointer (*)())ROSEUS);
-  
+
   return 0;
 }
-
-
 

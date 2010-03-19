@@ -3,13 +3,14 @@
     (while (not (eq :eof (setq line (read-line strm nil :eof))))
       (setq line (nstring-downcase line))
       ;; remove comments
+      (if (string= line "---") (return))
       (setq pos (position #\# line))
       (if pos (setq line (subseq line 0 pos)))
       ;; replcae tab to whitespace
       (setq line (nsubstitute #\space #\tab line))
       ;; remove whitespaces
       (setq line (string-trim " " line))
-      
+
       ;;(setq pos (count #\space line))
       ;;(setq line (remove-duplicates  line :test #'(lambda (a b) (if (eq a #\space) (equal a b) nil))))
       ;;
@@ -25,7 +26,7 @@
 	    (setq type (format nil "~A::~A" (subseq type 0 pos) (subseq type (1+ pos)))))
 	;; when variable is list
 	(if (setq pos (position #\[ type))
-	    (setq vec-size 
+	    (setq vec-size
 		  (if (= (1+ pos) (position #\] type)) 0
 		    (read-from-string (subseq type (1+ pos))))
 		  type (subseq type 0 pos))
@@ -39,12 +40,12 @@
 	  (push (list type var vec-size) msgs))))
     (list (setq msgs (nreverse msgs)) (setq consts (nreverse consts)))))
 
-(defun generate-msg-output-file-name (fname pkg name)
+(defun generate-msg-output-file-name (fname pkg name dir)
   (let (l oname)
     (setq l (read-line (piped-fork (format nil "rospack find ~A" pkg)) nil))
     (unless l
       (warning-message 1 ";; ERROR could not find ~A package~%" pkg)(exit 1))
-    (setq oname (format nil "~A/msg/eus/~A/" l pkg))
+    (setq oname (format nil "~A/~A/eus/~A/" l dir pkg))
     (unless (lisp::directory-p oname)
       (warning-message 6 ";; mkdir ~A~%" oname)
       (unix::system (format nil "mkdir -p ~A" oname)))
@@ -79,7 +80,7 @@
 ;;
 ;;
 
-(defun generate-msg-headers (strm pkg name msgs)
+(defun generate-msg-headers (strm pkg name)
   (let ()
     (format strm ";; Auto-generated. Do not edit~%" name)
     (format strm ";;~%")
@@ -103,7 +104,7 @@
     (format strm "  :slots (")
     (dolist (msg msgs) (format strm "~A " (cadr msg)))
     (format strm "))~%")
-    (format strm "~%")    
+    (format strm "~%")
     ))
 
 (defun generate-msg-init (strm pkg name msgs)
@@ -120,12 +121,12 @@
 		  ((:float32 :float64) 0.0)
 		  (:string "\"\"")
 		  (:time "(instance ros::rostime :init)")
-		  (:rostype (format nil "(instance ~A :init)" 
-				    (if (substringp "::" type) 
+		  (:rostype (format nil "(instance ~A :init)"
+				    (if (substringp "::" type)
 					type
 				      (concatenate string pkg "::" type))))
 		  (t (error "undefined type ~A~%" msg))))
-      (cond 
+      (cond
        ((and vec-size (memq var-type '(:int8 :int16 :int32 :int64)))
 	(format strm "    (_~A (make-array ~A :initial-element ~A :element-type :integer))~%" var vec-size init-elem))
        ((and vec-size (memq var-type '(:float32 :float64)))
@@ -141,7 +142,7 @@
 	    vec-size (elt msg 2))
       (let ((s1 "") (s2 ""))
 	(unless vec-size
-	  (case 
+	  (case
 	   (generate-variable-type type)
 	   ((:int8 :int16 :int32 :int64) (setq s1 "(round " s2 ")"))
 	   ((:float32 :float64) (setq s1 "(float " s2 ")"))
@@ -165,7 +166,7 @@
 	  (format strm "   (&optional _~A)~%" var)
 	  (format strm "   (if _~A (setq ~A _~A)) ~A)~%" var var var var))))
     ))
-    
+
 (defun generate-msg-serialization-length (strm pkg name msgs)
   (let (type var vec-size)
     (format strm "  (:serialization-length~%")
@@ -174,7 +175,7 @@
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 2))
-      (cond 
+      (cond
        (vec-size (format strm "    ;; ~A[~A] ~A~%" type (if (zerop vec-size) "" vec-size) var))
        (t        (format strm "    ;; ~A ~A~%" type var)))
       (format strm "    ")
@@ -190,7 +191,7 @@
        (:rostype (format strm "(send ~A :serialization-length)" var))
        (t (error "undefined type ~A~%" msg)))
       (cond
-       ((and vec-size (zerop vec-size)) 
+       ((and vec-size (zerop vec-size))
 	(format strm " (length ~A)) 4" var))
        (vec-size
 	(format strm " ~A)" vec-size)))
@@ -208,8 +209,8 @@
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 2))
-      (cond 
-       ((and vec-size (zerop vec-size)) 
+      (cond
+       ((and vec-size (zerop vec-size))
 	(format strm "     ;; ~A[] ~A~%" type var)
 	(format strm "     (write-long (length ~A) s)~%" var)
 	(format strm "     (dotimes (i (length ~A))~%  " var)
@@ -254,8 +255,8 @@
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 2))
-      (cond 
-       ((and vec-size (zerop vec-size)) 
+      (cond
+       ((and vec-size (zerop vec-size))
 	(format strm "     ;; ~A[] ~A~%" type var)
 	(format strm "     (let (n)~%")
 	(format strm "       (setq n (sys::peek buf cnt :integer)) (incf cnt 4)~%")
@@ -279,7 +280,7 @@
         (format strm "     ;; ~A ~A~%" type var)
         (format strm "     ")
 	(setq set "setq")))
-      
+ 
       (case
        (generate-variable-type type)
        (:int8
@@ -301,7 +302,7 @@
        (:rostype
 	(format strm "(~A ~A (send ~A :deserialize (subseq buf cnt))) (incf cnt (send ~A :serialization-length))~%" set var var var))
        (t (error "undefined type ~A~%" msg)))
-      (cond 
+      (cond
        ((and vec-size (zerop vec-size))
 	(format strm "         ))~%"))
        (vec-size
@@ -312,13 +313,55 @@
 
 (defun generate-msg-md5sum (strm pkg name fname)
   (let ()
-    (format strm "(setf (get ~A::~A :md5sum) \"~A\")~%" pkg name 
+    (format strm "(setf (get ~A::~A :md5sum) \"~A\")~%" pkg name
 	    (read-line (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --md5 ~A" fname))))
     ))
 
-(defun generate-msg-type (strm pkg name)   
+(defun generate-msg-type (strm pkg name)
   (let ()
     (format strm "(setf (get ~A::~A :type) \"~A/~A\")~%" pkg name pkg name)))
+
+(defun generate-srv-type (strm pkg name)
+  (let ()
+    (format strm "(setf (get ~A::~A :type) \"~A/~A\")~%" pkg name pkg name)
+    (format strm "(setf (get ~A::~A :request-type) \"~A/~ARequest\")~%" pkg name pkg name)
+    (format strm "(setf (get ~A::~A :response-type) \"~A/~AResponse\")~%" pkg name pkg name)))
+
+
+;;;
+;;;
+;;;
+
+(defun genfile-header (fname)
+  (let (pkg name)
+    (setq pkg (car (last (butlast (pathname-directory fname)))))
+    (setq name (pathname-name fname))
+    (warning-message 6 ";; generate message for ~A/~A~%" pkg name)
+    (warning-message 6 ";; parsing ~A~%" fname)
+    (unless (probe-file fname)
+      (warning-message 1 ";; ERROR message file ~A not found~%" fname)(exit 1))
+    (list pkg name)))
+
+(defun genfile-body (pkg name msgs strm)
+  (let ()
+    ;;
+    ;; defclass
+    (generate-msg-defclass strm pkg name msgs)
+    ;; defmethod
+    (format strm "(defmethod ~A::~A~%" pkg name)
+    ;; :init
+    (generate-msg-init strm pkg name msgs)
+    ;; :accessors
+    (generate-msg-accessors strm pkg name msgs)
+    ;; serialization-length
+    (generate-msg-serialization-length strm pkg name msgs)
+    ;; serialize
+    (generate-msg-serialize strm pkg name msgs)
+    ;; deserialize
+    (generate-msg-deserialize strm pkg name msgs)
+    (format strm "  )~%~%")
+    ;;
+    ))
 
 ;;;
 ;;;
@@ -326,42 +369,67 @@
 
 (defun genmsg-eus (fname)
   (let (msgs consts pkg name oname)
-    (setq pkg (car (last (butlast (pathname-directory fname)))))
-    (setq name (pathname-name fname))
-    (warning-message 6 ";; generate message for ~A/~A~%" pkg name)
-    (warning-message 6 ";; parsing ~A~%" fname)
-    (unless (probe-file fname)
-      (warning-message 1 ";; ERROR message file ~A not found~%" fname)(exit 1))
+    (multiple-value-setq (pkg name) (genfile-header fname))
     (with-open-file
      (strm fname :direction :input)
      (multiple-value-setq (msgs consts) (generate-msg-type-name-list strm)))
-    ;;
-    (setq oname (generate-msg-output-file-name fname pkg name))
+
+    (setq oname (generate-msg-output-file-name fname pkg name "msg"))
     (warning-message 6 ";; writing to ~A~%" oname)
+
     (with-open-file
      (strm oname :direction :output)
-     (generate-msg-headers strm pkg name msgs)
+     (generate-msg-headers strm pkg name)
      ;; defconstants
      (generate-msg-defconstants strm pkg name consts)
-     ;; defclass
-     (generate-msg-defclass strm pkg name msgs)
-     ;; defmethod
-     (format strm "(defmethod ~A::~A~%" pkg name)
-     ;; :init
-     (generate-msg-init strm pkg name msgs)
-     ;; :accessors
-     (generate-msg-accessors strm pkg name msgs)
-     ;; serialization-length
-     (generate-msg-serialization-length strm pkg name msgs)
-     ;; serialize
-     (generate-msg-serialize strm pkg name msgs)
-     ;; deserialize
-     (generate-msg-deserialize strm pkg name msgs)
-     (format strm "  )~%~%")
      ;;
+     (genfile-body pkg name msgs strm)
+     ;; md5sum/type
      (generate-msg-md5sum strm pkg name fname)
      (generate-msg-type strm pkg name)
-     (format strm "~%")
-     (format strm "~%")
-     )
+     (format strm "~%~%")
+     )))
+
+(defun genfile-srvs (pkg name strm)
+  (let ()
+    (format strm "(defclass ~A::~A~%" pkg name)
+    (format strm "  :super ros::object~%")
+    (format strm "  :slots (request response))~%~%")
+    (format strm "(defmethod ~A::~A~%" pkg name)
+    (format strm "  (:init ()~%")
+    (format strm "   (setq request (instance ~A::~ARequest :init)~%" pkg name)
+    (format strm "         response (instance ~A::~AResponse :init)))~%" pkg name)
+    (format strm "  (:request  (&rest args) (if args (send* request args) request))~%")
+    (format strm "  (:response (&rest args) (if args (send* response args) response))~%")
+    (format strm ")~%~%")
     ))
+
+(defun gensrv-eus (fname)
+  (let (req-msgs res-msgs consts pkg name req-name res-name oname)
+    (multiple-value-setq (pkg name) (genfile-header fname))
+    (setq req-name (format nil "~ARequest"  name)
+          res-name (format nil "~AResponse" name))
+    (with-open-file
+     (strm fname :direction :input)
+     (multiple-value-setq (req-msgs consts) (generate-msg-type-name-list strm))
+     (setq res-msgs (car (generate-msg-type-name-list strm))))
+
+    (setq oname (generate-msg-output-file-name fname pkg name "srv"))
+    (warning-message 6 ";; writing to ~A~%" oname)
+
+    (with-open-file
+     (strm oname :direction :output)
+     (generate-msg-headers strm pkg name)
+     ;; defconstants
+     (generate-msg-defconstants strm pkg name consts)
+     ;;
+     (genfile-srvs pkg name strm)
+     (genfile-body pkg req-name req-msgs strm)
+     (genfile-body pkg res-name res-msgs strm)
+     ;; md5sum/type
+     (generate-msg-md5sum strm pkg name fname)
+     (generate-srv-type strm pkg name)
+     (format strm "~%~%")
+     )))
+
+

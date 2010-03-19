@@ -23,7 +23,7 @@ set_target_properties(roseus PROPERTIES PREFIX "" SUFFIX ".so")
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/euslisp)
 
-#rosbuild_gensrv()
+rosbuild_gensrv()
 rosbuild_genmsg()
 
 #add_subdirectory(test EXCLUDE_FROM_ALL)

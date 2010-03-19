@@ -9,6 +9,8 @@
 	   ros::*roseus-walkup-thread*)
   (ros::roseus-exit))
 
+(if (not (boundp 'ros::*debug*)) (setq ros::*debug* nil))
+
 (defclass ros::object
   :super propertied-object
   :slots ())
@@ -27,13 +29,11 @@
   (:nsec (&optional s) (if s (setq nsec s)) nsec)
   )
 
-(defun roseus-add-msgs (pkg)
-  (let (dir dirfile tmpfile)
-    ;;(setq dir (format nil "~A/msg/eus/~A/" (read-line (piped-fork (format nil "rospack find ~A" pkg))) pkg))
-    (setq tmpfile (format nil "/tmp/roseus-rospack-find-~A.tmp" (unix::getpid)))
-    (unix::system (format nil "rospack find ~A > ~A" pkg tmpfile))
-    (setq dir (format nil "~A/msg/eus/~A/" (with-open-file (f tmpfile :direction :input) (read-line f)) pkg))
-    (unix::unlink tmpfile)
+(defun roseus-add-files (pkg type)
+  (let (dir dirfile)
+    (setq dir (format nil "~A/~A/eus/~A/"
+                      (read (piped-fork (format nil "rospack find ~A" pkg)))
+                      type pkg))
     (unless (probe-file dir)
       (warning-message 1 (format nil ";; can not find ~A directory for [~A] packages~%" dir pkg))
       (exit))
@@ -46,7 +46,18 @@
 	(warning-message 6 ";; loading ~A~%" dirfile)
 	(load dirfile)))))
 
+(defun roseus-add-msgs (pkg) (roseus-add-files pkg "msg"))
+(defun roseus-add-srvs (pkg) (roseus-add-files pkg "srv"))
+
 ;;;
+;;;
+(defun ros::print-buf (name type buf buflen)
+  (let (c)
+    (warn "~A ~A [~d] " type name buflen)
+    (dotimes (i buflen)
+      (setq c (elt buf i))
+      (if (alphanumericp c)	(warn "~c" c) (warn "~0,2x" c)))
+    (warn "(~d)~%" (length buf))))
 ;;;
 
 (defun ros::advertise (topic msg-class &optional (queuesize 1))
@@ -60,18 +71,15 @@
 	     md5sum type definition msg-class))
     (ros::roseus_advertise topic md5sum type definition queuesize)))
 
+(defun ros::unadvertise (topic)
+  (ros::roseus_advertise topic))
+
 (defun ros::publish (topic msg)
   (let ((md5sum (get (class msg) :md5sum))
         (type (get (class msg) :type))
         (buf (send msg :serialize))
         (buflen (send msg :serialization-length)))
-    (when ros::*debug*
-      (let (c)
-	(warn "ros::publish ~A [~d] " topic buflen)
-	(dotimes (i buflen)
-	  (setq c (elt buf i))
-	  (if (alphanumericp c)	(warn "~c" c) (warn "~0,2x" c)))
-	(warn "(~d)~%" (length buf))))
+    (when ros::*debug* (ros::print-buf "ros::publish" topic buf buflen))
     (ros::roseus_publish topic md5sum buf buflen type)))
 
 (defun ros::subscribe (topic msg-class func &optional (queuesize 1))
@@ -87,13 +95,51 @@
 		 (send msg :deserialize s)
 		 (funcall ',func msg)
 		 )))))
-    (setq *subscribe-func* subscribe-func *ros-subscribe-func* func);;tokutsu
+    (setq *subscribe-func* subscribe-func *ros-subscribe-func* func)
     (if (boundp 'ros::*roseus-walkup-thread*)
 	(push subscribe-func ros::*roseus-walkup-thread-funcs*))
     (ros::roseus_subscribe topic md5sum type subscribe-func queuesize)
     ))
 
+(defun ros::wait-for-service (service)
+  (ros::roseus_wait_for_service service))
 
+(defun ros::service-call (service msg)
+  (let ((md5sum (get (class msg) :md5sum))
+        (type (get (class msg) :type))
+        (req-buf (send msg :request :serialize))
+        (req-buflen (send msg :request :serialization-length))
+        (res-buf (send msg :response :serialize))
+        (res-buflen (send msg :response :serialization-length)))
+    (when ros::*debug* (ros::print-buf "ros::service-call->request" service req-buf req-buflen))
+    (ros::roseus_service_call service md5sum req-buf req-buflen res-buf res-buflen type)
+    (when ros::*debug* (ros::print-buf "ros::service-call->response" service res-buf res-buflen))
+    (send msg :response :deserialize res-buf)
+    msg))
+
+(defun ros::advertise-service (service msg-class func)
+  (let ((md5sum (get msg-class :md5sum))
+	(req-type (get msg-class :response-type))
+	(res-type (get msg-class :request-type))
+	(type (get msg-class :type))
+	service-func)
+    (when ros::*debug*
+      (warn "ros::advertise-service ~A ~A~%" service type))
+    (setq advertise-func
+     (eval `(function
+	     (lambda (s)
+	       (let ((msg (instance ,(send msg-class :name) :init)))
+		 (send msg :request :deserialize s)
+		 (funcall ',func msg)
+                 (send msg :response :serialize))))))
+    (setq *advertise-func* advertise-func *ros-service-func* func)
+    (if (boundp 'ros::*roseus-walkup-thread*)
+	(push subscribe-func ros::*roseus-walkup-thread-funcs*))
+    (ros::roseus_advertise_service service md5sum req-type res-type type advertise-func)
+    ))
+
+(defun ros::unadvertise-service (service)
+  (ros::roseus_advertise-service service))
 ;;;
 ;;;
 (defun ros::roseus-exit ()
