@@ -273,7 +273,7 @@ public:
   virtual void init()
   {
 #ifdef ROS_NEW_SERIALIZATION_API
-    _opts.helper.reset(new SubscriptionMessageHelperT<const boost::shared_ptr<OctaveMsgDeserializer const>&>(boost::bind(&RoscppSubscription::callback, this, _1), boost::bind(&RoscppSubscription::create, this)));
+    _opts.helper.reset(new SubscriptionCallbackHelperT<const boost::shared_ptr<EuslispMsgDeserializer const>&>(boost::bind(&RoscppSubscription::callback, this, _1), boost::bind(&RoscppSubscription::create, this)));
 #else
     _opts.helper = as<SubscriptionMessageHelper>();
     ROS_ASSERT(_opts.helper);
@@ -292,7 +292,7 @@ public:
 #ifdef ROS_NEW_SERIALIZATION_API
   boost::shared_ptr<EuslispMsgDeserializer> create()
   {
-    return boost::shared_ptr<EuslispMsgDeserializer>(new OctaveMsgDeserializer(_opts.md5sum, _opts.datatype));
+    return boost::shared_ptr<EuslispMsgDeserializer>(new EuslispMsgDeserializer(_opts.md5sum, _opts.datatype));
   }
 
   void callback(const boost::shared_ptr<EuslispMsgDeserializer const>& msg)
