@@ -3,7 +3,7 @@
 ;;;
 
 (pushnew (format nil "~A/euslisp/"
-                 (read (piped-fork "rospack find roseus")))
+                 (read-line (piped-fork "rospack find roseus")))
          *load-path* :test #'equal)
 (load "roseus.l")
 
