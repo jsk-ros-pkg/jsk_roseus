@@ -171,6 +171,15 @@
 			     (ros::roseus_worker) (unix:usleep (* 100 1000)))
 			   )))))
 
+;; rosconsole api
+(defun ros::info (str &rest args)
+  (roseus_rosinfo (apply #'format nil str args)))
+(defun ros::warn (str &rest args)
+  (roseus_roswarn (apply #'format nil str args)))
+(defun ros::error (str &rest args)
+  (roseus_roserror (apply #'format nil str args)))
+(defun ros::fatal (str &rest args)
+  (roseus_rosfatal (apply #'format nil str args)))
 ;;(ros::init-ros-wakeup-worker-itimer)
 ;;(ros::init-ros-wakeup-worker-thread)
 

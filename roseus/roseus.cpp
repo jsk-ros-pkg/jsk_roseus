@@ -939,6 +939,27 @@ pointer ROSEUS_WORKER(register context *ctx,int n,pointer *argv)
   return (T);
 }
 
+#define def_rosconsole_formatter(funcname, rosfuncname)         \
+  pointer funcname(register context *ctx,int n,pointer *argv)   \
+  {                                                             \
+    char *msg = "";                                             \
+    ckarg2(0,1);                                                \
+    if (n == 1 ) {                                              \
+      if (isstring(argv[0])) {                                  \
+        msg = (char *)(argv[0]->c.str.chars);                   \
+      } else {                                                  \
+        error(E_NOSTRING);                                      \
+      }                                                         \
+    }                                                           \
+    rosfuncname(msg);                                           \
+    return T;                                                   \
+  }
+
+def_rosconsole_formatter(ROSEUS_ROSINFO, ROS_INFO)
+def_rosconsole_formatter(ROSEUS_ROSWARN, ROS_WARN)
+def_rosconsole_formatter(ROSEUS_ROSERROR, ROS_ERROR)
+def_rosconsole_formatter(ROSEUS_ROSFATAL, ROS_FATAL)
+
 pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 {
   pointer rospkg,p=Spevalof(PACKAGE);
@@ -969,7 +990,11 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   pointer_update(Spevalof(PACKAGE),p);
   defun(ctx,"ROSEUS",argv[0],(pointer (*)())ROSEUS);
-
+  // formatter
+  defun(ctx,"ROSEUS_ROSINFO",argv[0],(pointer (*)())ROSEUS_ROSINFO);
+  defun(ctx,"ROSEUS_ROSWARN",argv[0],(pointer (*)())ROSEUS_ROSWARN);
+  defun(ctx,"ROSEUS_ROSERROR",argv[0],(pointer (*)())ROSEUS_ROSERROR);
+  defun(ctx,"ROSEUS_ROSFATAL",argv[0],(pointer (*)())ROSEUS_ROSFATAL);
   return 0;
 }
 
