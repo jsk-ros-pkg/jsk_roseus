@@ -2,17 +2,25 @@
 ;; this file makes a ros-node to take the public /move_base_simple/goal
 ;; and exec go-pos toward goal
 
-;;
+;; ...
 (defvar *real* nil)
 (defvar *go-pos-debug* t)
 
+;; donot change!
+(defvar *ros-lock* (sys::make-mutex-lock))
+
 ;; bootstrap
+;; roeus
 (pushnew (format nil "~A/euslisp/"
                  (read-line (piped-fork "rospack find roseus")))
          *load-path* :test #'equal)
-
 (load "roseus.l")
 
+;; hrp2
+(load (format nil "~A/hrp2/corba/orbixif.l" (unix::getenv "CVSDIR")))
+(load (format nil "~A/hrp2/plugins/plugins.l" (unix::getenv "CVSDIR")))
+
+;; ros messages
 (roseus-add-msgs "roslib")
 (roseus-add-msgs "roseus")
 (roseus-add-msgs "geometry_msgs")
@@ -38,15 +46,36 @@ example:
     (let ((x (send position :x))
           (y (send position :y))
           (z (send position :z)))
+      ;;NB: x, y, z are relative values?
+      ;;NB: x, y, z's unit is [mm]?
       (when *go-pos-debug*
         (warn* :info "x: => ~A" x)
         (warn* :info "y: => ~A" y)
         (warn* :info "z: => ~A" z))
       ))
+  (when *real*
+    (ros::info "send go-pos ~A ~A ~A" (* 0.001 x) (* 0.001 y) 0)
+    (send *ci* :go-pos (* 0.001 x) (* 0.001 y) 0))
   t)
 
 ;; initialize function
 (defun init ()
+  ;; format
+  (if *real*
+      (ros::info "base-node.l works in non-real mode")
+    (ros::info "base-node.l works in real mode"))
+  (ros::info "you can use /move_base_simple/goal to move hrp2!")
+  (ros::info "the value must be relative and in mm")
+  ;; hrp2 initialization
+  (when *real*
+    (setq *hrp2* (case (intern (unix:getenv "ROBOT"))
+                   (hrp2jsk
+                    (hrp2jsk-simple-detail))
+                   (hrp2jsknt
+                    (hrp2jsknt-simple-detail))
+                   (hrp2w
+                    (hrp2jskw-simple-detail))))
+    (setq *ci* (eusorbix-init)))
   ;; ros initialization
   (roseus "clear")
   ;; set ros callback for "/move_base_simple/goal"
