@@ -5,9 +5,8 @@
   <review status="experimental" notes=""/>
   <depend package="roslang"/>
   <depend package="roscpp" />
-  <depend package="roscpp_sessions"/>
-  <depend package="tf" />
-  <depend package="gmapping"/>
+  <depend package="actionlib"/>
+  <depend package="actionlib_msgs"/>
   <export>
     <roslang cmake="${prefix}/cmake/roseus.cmake"/>
   </export>

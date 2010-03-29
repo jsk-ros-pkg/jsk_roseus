@@ -1,0 +1,6 @@
+<launch>
+<node name="fibonacci-client.l"   pkg="roseus" type="runeus"  output="screen"
+      launch-prefix="xterm -T clinet -geometry 80x10 -e " />
+<node name="fibonacci" pkg="actionlib_tutorials" type="fibonacci_server.py" output="screen"
+      launch-prefix="xterm -T server -geometry 80x10 -e " />
+</launch>

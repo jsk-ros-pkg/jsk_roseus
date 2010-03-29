@@ -1,0 +1,6 @@
+<launch>
+<node name="talker.l"   pkg="roseus" type="runeus"  output="screen"
+      launch-prefix="xterm -T talker -geometry 80x10 -e " />
+<node name="listener.l" pkg="roseus" type="runeus"  output="screen"
+      launch-prefix="xterm -T listener -geometry 80x10 -e " />
+</launch>

@@ -1,7 +1,6 @@
 ;;;
 ;;; euslisp version of ros_tutorials/rospy_tutorials/005_add_two_ints
 ;;;
-
 (pushnew (format nil "~A/euslisp/"
                  (read-line (piped-fork "rospack find roseus")))
          *load-path* :test #'equal)
@@ -12,24 +11,19 @@
 (roseus-add-srvs "rospy_tutorials")
 ;;;
 
-(setq ros::*debug* t)
-(setq *add-two-ints-lock* (sys::make-mutex-lock))
-(setq *data* nil)
-(defun add-two-ints (msg)
-  (send msg :response :sum
-        (+ (send msg :request :a)
-           (send msg :request :b)))
-  (print (list (sys::thread-self) (send msg :response :sum)))
-  )
+(defun add-two-ints (req)
+  (setq m (send req :response))
+  (format t "Returning [~d + ~d = ~d]~%" 
+          (send req :a) (send req :b)
+          (+ (send req :a) (send req :b)))
+  (send m :sum  (+ (send req :a) (send req :b)))
+  m)
 ;;;
 ;;;
-(roseus "clear")
+(roseus "add_two_ints_server")
 (ros::advertise-service "add_two_ints" rospy_tutorials::AddTwoInts #'add-two-ints)
-(ros::init-ros-wakeup-worker-thread)
+(ros::spin)
 
-(do-until-key
- (print *data*)
- (unix:usleep 100000))
 
 
 

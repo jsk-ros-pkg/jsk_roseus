@@ -1,0 +1,7 @@
+#!/bin/sh
+FILE=`rospack find roseus`/test/${1##__name:=}
+irteusgl -e "(prog1 (load \"$FILE\")(exit))"
+
+
+
+
