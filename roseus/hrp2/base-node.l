@@ -34,7 +34,7 @@ example:
   (apply #'warn (format nil "~A~%" str) args))
 
 (defun go-pos-callback (msg)
-  "ros callback function"
+  "ros callback function. DONT call this function from lisp top-level."
   (if *go-pos-debug* (warn* :info "go-pos-callback is called with ~A" msg))
   ;; msg = geometry_msgs::PoseStamped
   ;; geometry_msgs::PoseStamped = <header pose>
@@ -54,18 +54,20 @@ example:
         (warn* :info "z: => ~A" z))
       ))
   (when *real*
-    (ros::info "send go-pos ~A ~A ~A" (* 0.001 x) (* 0.001 y) 0)
+    (ros::ros-info "send go-pos ~A ~A ~A" (* 0.001 x) (* 0.001 y) 0)
     (send *ci* :go-pos (* 0.001 x) (* 0.001 y) 0))
   t)
 
 ;; initialize function
 (defun init ()
+  "initialize function"
   ;; format
   (if *real*
-      (ros::info "base-node.l works in non-real mode")
-    (ros::info "base-node.l works in real mode"))
-  (ros::info "you can use /move_base_simple/goal to move hrp2!")
-  (ros::info "the value must be relative and in mm")
+      (ros::ros-info "base-node.l works in non-real mode")
+    (ros::ros-info "base-node.l works in real mode"))
+  (ros::ros-info "you can use /move_base_simple/goal to move hrp2!")
+  (ros::ros-info "the value must be relative and in mm")
+  (ros::ros-info "HRP2-> ~A" (unix:getenv "ROBOT"))
   ;; hrp2 initialization
   (when *real*
     (setq *hrp2* (case (intern (unix:getenv "ROBOT"))
@@ -79,8 +81,7 @@ example:
   ;; ros initialization
   (roseus "clear")
   ;; set ros callback for "/move_base_simple/goal"
-  (ros::subscribe "/move_base_simple/goal" geometry_msgs::PoseStamped
-    #'go-pos-callback)
+  (ros::subscribe "/move_base_simple/goal" geometry_msgs::PoseStamped #'go-pos-callback)
   (ros::init-ros-wakeup-worker-thread)
   )
 
