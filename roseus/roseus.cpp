@@ -618,7 +618,7 @@ pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
   emessage = argv[1];
 
   if( !s_node ) {
-    ROS_ERROR("could not foind node handle");
+    ROS_ERROR("could not find node handle");
     return (NIL);
   }
 

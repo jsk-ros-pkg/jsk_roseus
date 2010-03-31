@@ -128,13 +128,15 @@
   (:execute-cb
    ()
    (let (msg status-list)
-     (if (and goal-id execute-cb) (funcall execute-cb self goal))
+     (if (and goal execute-cb) (funcall execute-cb self goal))
      (setq msg (instance actionlib_msgs::GoalStatusArray :init))
      (when goal-id
        (send msg :status_list
              (list (instance actionlib_msgs::goalstatus :init
                              :goal_id goal-id
-                             :status status))))
+                             :status status
+                             :text (goal-status-to-string status))))
+       )
      (send msg :header :seq (incf seq-id))
      (send msg :header :stamp (ros::rostime))
      (ros::publish (format nil "~A/status" name-space) msg)
@@ -153,7 +155,7 @@
    (send msg :status :status status)
    (send msg :header :stamp (ros::rostime))
    (ros::publish (format nil "~A/result" name-space) msg)
-   (setq goal-id nil goal nil)
+   (setq goal nil)
    (setq status actionlib_msgs::pending)
    )
   ;;

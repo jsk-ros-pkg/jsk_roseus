@@ -112,7 +112,7 @@
 (defun generate-msg-init (strm pkg name msgs)
   (let (type var var-type init-elem vec-size)
     (format strm "  (:init~%")
-    (format strm "   (&key ~%")
+    (format strm "   (&key~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 2))
@@ -198,7 +198,7 @@
        (t (error "undefined type ~A~%" msg)))
       (cond
        ((and vec-size (zerop vec-size))
-	(format strm " 1) 4"))
+	(format strm " (length ~A)) 4" var))
        (vec-size
 	(format strm " ~A)" vec-size)))
       (format strm "~%")
