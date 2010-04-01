@@ -191,5 +191,7 @@
    )
   ;;
   (:worker () (send self :execute-cb))
+  (:name-space () name-space)
+  (:next-seq-id () (incf seq-id))
   )
 
