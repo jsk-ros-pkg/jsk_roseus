@@ -32,15 +32,14 @@
 (roseus-add-msgs "roseus")
 (roseus-add-msgs "geometry_msgs") ;move_base_msgs depends on geometry_msgs
 (roseus-add-msgs "move_base_msgs")
-(roseus "move_base_msgs")
+(roseus "move_base")
 
 ;; hrp2 setup
 (load (format nil "~A/hrp2/corba/orbixif.l" (unix::getenv "CVSDIR")))
 (load (format nil "~A/hrp2/plugins/plugins.l" (unix::getenv "CVSDIR")))
 
 ;; parameters for this script
-(defvar *real* nil)
-(defvar *navigation-debug* nil)
+(defvar *real* t)
 
 ;; global variables
 (defvar *app* nil)
@@ -124,7 +123,6 @@ examples:
   )
 
 (defun navigation-update-feedback-until-arrival (server)
-  ;; not implemented now...
   (ros::ros-info "navigation-update-feedback-until-arrival is called")
   (when *real*
     (while (not (send *ci* :walkingp)) (unix:usleep 100000)) ;wait until walkingp is true
@@ -136,8 +134,8 @@ examples:
           (let ((msg (instance move_base_msgs::MoveBaseActionFeedback :init 
                                :feedback 
                                (instance move_base_msgs::MoveBaseFeedback :init
-                                         :base_position pose))))
-            (ros::publish (ros::append-name-space (send server :name-space) "result") msg)))))))
+                                         :base_position (instance geometry_msgs::PoseStamped :init :pose pose)))))
+            (ros::publish (ros::append-name-space (send server :name-space) "feedback") msg)))))))
 
 (defun init-real ()
   (unless (boundp '*hrp2*)
@@ -155,7 +153,6 @@ examples:
   (when *real* (init-real))
   (ros::ros-info "actionlib-base-node is started now!")
   (setq *app* (instance ros::simple-action-server :init
-                        ;;"/move_base_msgs"                   ;namespace
                         "/move_base"                   ;namespace
                         move_base_msgs::MoveBaseAction      ;spec
                         :execute-cb #'navigation-execute-cb)) ;callback
