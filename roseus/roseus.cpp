@@ -127,7 +127,7 @@ string getString(pointer message, pointer method) {
     r = csend(ctx,message,K_ROSEUS_GET,1,method);
   } else {
     r = NULL;
-    ROS_ERROR("could not found method %s for pointer %x",
+    ROS_ERROR("could not find method %s for pointer %x",
               get_string(method), (unsigned int)message);
   }
   ROS_ASSERT(isstring(r));
@@ -143,7 +143,7 @@ int getInteger(pointer message, pointer method) {
     pointer r = csend(ctx,message,method,0);
     return (ckintval(r));
   } else {
-    ROS_ERROR("could not found method %s for pointer %x",
+    ROS_ERROR("could not find method %s for pointer %x",
               get_string(method), (unsigned int)message);
   }
   return 0;
@@ -521,7 +521,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
 
   if( !s_node ) {
-    ROS_ERROR("could not found node handle");
+    ROS_ERROR("could not find node handle");
     return (NIL);
   }
 
@@ -569,7 +569,7 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   }
 
   if( !s_node ) {
-    ROS_ERROR("could not found node handle");
+    ROS_ERROR("could not find node handle");
     return (NIL);
   }
 
@@ -652,7 +652,7 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
   else error(E_NOSTRING);
 
   if( !s_node ) {
-    ROS_ERROR("could not found node handle");
+    ROS_ERROR("could not find node handle");
     return (NIL);
   }
 
@@ -678,7 +678,7 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   emessage = argv[1];
 
   if( !s_node ) {
-    ROS_ERROR("could not found node handle");
+    ROS_ERROR("could not find node handle");
     return (NIL);
   }
 
@@ -715,7 +715,7 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   fncallback = argv[2];
 
   if( !s_node ) {
-    ROS_ERROR("could not found node handle");
+    ROS_ERROR("could not find node handle");
     return (NIL);
   }
 
