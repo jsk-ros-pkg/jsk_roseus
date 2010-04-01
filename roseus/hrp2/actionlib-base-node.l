@@ -13,6 +13,9 @@
 ;; result:
 ;;   not used, but update when arriving at goal
 
+;; how to use:
+;; NOP, NOP, NOP... 
+
 ;; we can run navigation stack
 ;;  $ ROBOT=sim roslaunch pr2_2dnav_gazebo pr2-armless-wg-fake_localization.launch
 ;;  $ roslaunch 2dnav_pr2 rviz_move_base.launch
@@ -115,11 +118,11 @@ examples:
     (let ((x (x (send coords :worldpos)))
           (y (y (send coords :worldpos)))
           (r (caar (send coords :rpy-angle))))
-      (ros::ros-warn "currently does not support rotation")
       (ros::ros-info (format nil "go toward (~A ~A ~A) -- relative" x y r))
       (when *real*
         (send *ci* :go-pos-no-wait (* 0.001 x) (* 0.001 y) (rad2deg r)))))
-)
+  )
+
 (defun navigation-update-feedback-until-arrival (server)
   ;; not implemented now...
   (ros::ros-info "navigation-update-feedback-until-arrival is called")
