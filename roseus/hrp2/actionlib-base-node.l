@@ -14,7 +14,7 @@
 ;;   not used, but update when arriving at goal
 
 ;; we can run navigation stack
-;;  $ roslaunch pr2_2dnav_gazebo pr2-armless-wg-fake_localization.launch
+;;  $ ROBOT=sim roslaunch pr2_2dnav_gazebo pr2-armless-wg-fake_localization.launch
 ;;  $ roslaunch 2dnav_pr2 rviz_move_base.launch
 
 ;; ros setup
@@ -24,18 +24,57 @@
 (load "roseus.l")
 (load "actionlib.l")
 
+;; require 
 (roseus-add-msgs "roslib")
 (roseus-add-msgs "roseus")
 (roseus-add-msgs "geometry_msgs") ;move_base_msgs depends on geometry_msgs
 (roseus-add-msgs "move_base_msgs")
+(roseus "move_base_msgs")
 
 ;; hrp2 setup
 (load (format nil "~A/hrp2/corba/orbixif.l" (unix::getenv "CVSDIR")))
 (load (format nil "~A/hrp2/plugins/plugins.l" (unix::getenv "CVSDIR")))
+
+;; parameters for this script
+(defvar *real* nil)
+(defvar *navigation-debug* nil)
+
 ;; global variables
 (defvar *app* nil)
 
-(defun navigation-set-status (server status)
+;; util, i think these function can be used in ros-eus application in common
+;; convert unit....
+;; eus [mm], ros[m]
+(defun coords->geometry-msgs-pose (coords)
+  (let ((x (* 0.001 (x (send coords :worldpos)))) ;mm -> m
+        (y (* 0.001 (y (send coords :worldpos)))) ;mm -> m
+        (z (* 0.001 (z (send coords :worldpos)))) ;mm -> m
+        (rot (send coords :worldrot)))
+    (let ((q (matrix2quaternion rot)))
+      (let ((qx (elt q 0))
+            (qy (elt q 1))
+            (qz (elt q 2))
+            (qw (elt q 3)))
+        (instance geometry_msgs::pose :init 
+                  :position (instance geometry_msgs::point :init :x x :y y :z z)
+                  :orientation
+                  (instance geometry_msgs::quaternion :init :x qx :y qy :z qz :w qw))))))
+
+(defun geometry-msgs-pose->coords (pose)
+  (let ((position (send pose :position))
+        (orientation (send pose :orientation)))
+    (let ((x (* 1000.0 (send position :x))) ;m -> mm
+          (y (* 1000.0 (send position :y))) ;m -> mm
+          (z (* 1000.0 (send position :z))) ;m -> mm
+          (q (float-vector (send orientation :x)
+                           (send orientation :y)
+                           (send orientation :z)
+                           (send orientation :w))))
+    (make-coords :pos (float-vector x y z)
+                 :rot (quaternion2matrix q)))))
+  
+
+(defun navigation-set-status (server status &optional (text nil))
   "temp function.
 set the current status to `status'.
 examples:
@@ -44,30 +83,79 @@ examples:
     ;; setup header of msg
     (send msg :header :stamp (ros::rostime))
     (send msg :header :seq (send server :next-seq-id))
-    (send msg :status_list)
-    (ros::publish (format nil "~a/status" (send server :name-space)) msg))
-  )
+    ;;NB: need to append status_list
+    (send msg :status_list (list (instance actionlib_msgs::goalstatus :init
+                                           :status status
+                                           :text (or text (goal-status-to-string status)))))
+    (ros::publish (ros::append-name-space (send server :name-space) "status") msg)))
 
 ;; Header header
 ;; actionlib_msgs/GoalID goal_id
 ;; MoveBaseGoal goal -> geometry_msgs/PoseStamped target_pose?
 (defun navigation-execute-cb (server goal)
   "`goal' is an instance of move_base_msgs::move-base-goal, i think..."
-  ;; not implemented now
+  (ros::ros-info "navigation-execute-cb is called")
   ;; this function is called everytime when clients set the new goal.
   ;; first, we need to set the `status' to PENDING
   (navigation-set-status server actionlib_msgs::pending)
-  (let ((pose-stamped (send goal :goal)))
-    
-    ))
+  (navigation-go-pos goal)     ;does not wait interpolation
+  (navigation-update-feedback-until-arrival server)
+  (let ((msg (send server :result)))
+    ;; NB: ??
+    (send server :set-succeeded msg))
+  t)
+
+(defun navigation-go-pos (msg)
+  "`goal' is an instance of MoveBaseActionGoal"
+  ;; not implemented now
+  (ros::ros-info "navigation-go-pos is called")
+  (let* ((goal (send msg :goal))
+         (pose (send (send goal :target_pose) :pose))
+         (coords (geometry-msgs-pose->coords pose)))
+    (let ((x (x (send coords :worldpos)))
+          (y (y (send coords :worldpos)))
+          (r (caar (send coords :rpy-angle))))
+      (ros::ros-warn "currently does not support rotation")
+      (ros::ros-info (format nil "go toward (~A ~A ~A) -- relative" x y r))
+      (when *real*
+        (send *ci* :go-pos-no-wait (* 0.001 x) (* 0.001 y) (rad2deg r)))))
+)
+(defun navigation-update-feedback-until-arrival (server)
+  ;; not implemented now...
+  (ros::ros-info "navigation-update-feedback-until-arrival is called")
+  (when *real*
+    (while (not (send *ci* :walkingp)) (unix:usleep 100000)) ;wait until walkingp is true
+    (while (send *ci* :walkingp)                             ;update feedback until walkingp is nil
+      (let ((current-coords (send *ci* :state :reference-worldcoords)))
+        ;; stamp??
+        (let ((pose (coords->geometry-msgs-pose current-coords)))
+          ;; NB: need to add goal status
+          (let ((msg (instance move_base_msgs::MoveBaseActionFeedback :init 
+                               :feedback 
+                               (instance move_base_msgs::MoveBaseFeedback :init
+                                         :base_position pose))))
+            (ros::publish (ros::append-name-space (send server :name-space) "result") msg)))))))
+
+(defun init-real ()
+  (unless (boundp '*hrp2*)
+    ;; make a robot model for crating *ci*
+    (case (intern (unix:getenv "ROBOT"))
+          (hrp2jsk
+           (hrp2jsk-simple-detail))
+          (hrp2jsknt
+           (hrp2jsknt-simple-detail))
+          (hrp2w
+           (hrp2w-simple-detail))))
+  (eusorbix-init))
 
 (defun init ()
+  (when *real* (init-real))
   (ros::ros-info "actionlib-base-node is started now!")
   (setq *app* (instance ros::simple-action-server :init
-                        "/move_base_msgs"                   ;namespace
+                        ;;"/move_base_msgs"                   ;namespace
+                        "/move_base"                   ;namespace
                         move_base_msgs::MoveBaseAction      ;spec
-                        :execute-cb #'navigation-execute-cb ;callback
-                        ))
+                        :execute-cb #'navigation-execute-cb)) ;callback
   (ros::rate 1)                         ;setup rate
   )
 
@@ -77,5 +165,6 @@ examples:
    (ros::spin-once)
    (ros::sleep)))
 
-;;(init)
-;;(main)
+(init)
+(main)
+;; (load "actionlib-base-node.l")
