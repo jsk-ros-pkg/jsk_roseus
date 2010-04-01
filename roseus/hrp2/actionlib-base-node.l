@@ -34,47 +34,19 @@
 (roseus-add-msgs "move_base_msgs")
 (roseus "move_base")
 
+(load "geometry-util.l")
+
 ;; hrp2 setup
 (load (format nil "~A/hrp2/corba/orbixif.l" (unix::getenv "CVSDIR")))
 (load (format nil "~A/hrp2/plugins/plugins.l" (unix::getenv "CVSDIR")))
 
 ;; parameters for this script
-(defvar *real* t)
+(defvar *real* nil)
 
 ;; global variables
 (defvar *app* nil)
 
 ;; util, i think these function can be used in ros-eus application in common
-;; convert unit....
-;; eus [mm], ros[m]
-(defun coords->geometry-msgs-pose (coords)
-  (let ((x (* 0.001 (x (send coords :worldpos)))) ;mm -> m
-        (y (* 0.001 (y (send coords :worldpos)))) ;mm -> m
-        (z (* 0.001 (z (send coords :worldpos)))) ;mm -> m
-        (rot (send coords :worldrot)))
-    (let ((q (matrix2quaternion rot)))
-      (let ((qx (elt q 0))
-            (qy (elt q 1))
-            (qz (elt q 2))
-            (qw (elt q 3)))
-        (instance geometry_msgs::pose :init 
-                  :position (instance geometry_msgs::point :init :x x :y y :z z)
-                  :orientation
-                  (instance geometry_msgs::quaternion :init :x qx :y qy :z qz :w qw))))))
-
-(defun geometry-msgs-pose->coords (pose)
-  (let ((position (send pose :position))
-        (orientation (send pose :orientation)))
-    (let ((x (* 1000.0 (send position :x))) ;m -> mm
-          (y (* 1000.0 (send position :y))) ;m -> mm
-          (z (* 1000.0 (send position :z))) ;m -> mm
-          (q (float-vector (send orientation :x)
-                           (send orientation :y)
-                           (send orientation :z)
-                           (send orientation :w))))
-    (make-coords :pos (float-vector x y z)
-                 :rot (quaternion2matrix q)))))
-  
 
 (defun navigation-set-status (server status &optional (text nil))
   "temp function.
@@ -128,7 +100,6 @@ examples:
     (while (not (send *ci* :walkingp)) (unix:usleep 100000)) ;wait until walkingp is true
     (while (send *ci* :walkingp)                             ;update feedback until walkingp is nil
       (let ((current-coords (send *ci* :state :reference-worldcoords)))
-        ;; stamp??
         (let ((pose (coords->geometry-msgs-pose current-coords)))
           ;; NB: need to add goal status
           (let ((msg (instance move_base_msgs::MoveBaseActionFeedback :init 
@@ -140,6 +111,7 @@ examples:
 (defun init-real ()
   (unless (boundp '*hrp2*)
     ;; make a robot model for crating *ci*
+    (ros::ros-info (format nil "ROBOT=~A" (unix:getenv "ROBOT")))
     (case (intern (unix:getenv "ROBOT"))
           (hrp2jsk
            (hrp2jsk-simple-detail))
@@ -147,7 +119,10 @@ examples:
            (hrp2jsknt-simple-detail))
           (hrp2w
            (hrp2w-simple-detail))))
-  (eusorbix-init))
+  (ros::ros-info (format nil "connecting hrp2 No. ~A" (unix:getenv "HRP2NO")))
+  (eusorbix-init)
+  (ros::ros-info (format nil "connected to ~A" (send *ci* :host)))
+  )
 
 (defun init ()
   (when *real* (init-real))
@@ -167,4 +142,5 @@ examples:
 
 (init)
 (main)
+
 ;; (load "actionlib-base-node.l")
