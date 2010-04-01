@@ -44,5 +44,9 @@
 (defun roseus-add-msgs (pkg) (roseus-add-files pkg "msg"))
 (defun roseus-add-srvs (pkg) (roseus-add-files pkg "srv"))
 
+(defun ros::append-name-space (&rest args)
+  (subseq (apply #'concatenate string
+                 (mapcan #'(lambda (x) (list "/" x)) args)) 1)) ;remove /
+
 (setq sys::*exit-hook* 'ros::exit)
 
