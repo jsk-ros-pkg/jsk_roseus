@@ -209,9 +209,8 @@
 (defun generate-msg-serialize (strm pkg name msgs)
   (let (type var vec-size)
     (format strm "  (:serialize~%")
-    (format strm "   ()~%")
-    (format strm "   (let (s)~%")
-    (format strm "     (setq s (make-string-output-stream (send self :serialization-length)))~%")
+    (format strm "   (&optional (s (make-string-output-stream (send self :serialization-length))))~%")
+    (format strm "   (let ()~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 2))
@@ -246,7 +245,7 @@
        (:time
 	(format strm "     (write-long (send ~A :sec) s) (write-long (send ~A :nsec) s)~%" var var))
        (:rostype
-	(format strm "     (princ (send ~A :serialize) s)~%" var))
+	(format strm "     (send ~A :serialize s)~%" var))
        (t (error "undefined type ~A~%" msg)))
       (if vec-size (format strm "       )~%"))
       )
