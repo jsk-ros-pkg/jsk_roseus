@@ -171,20 +171,21 @@
     ))
 
 (defun generate-msg-serialization-length (strm pkg name msgs)
-  (let (type var vec-size)
+  (let (type var vec-size gen-type)
     (format strm "  (:serialization-length~%")
     (format strm "   ()~%")
     (format strm "   (+~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
-	    vec-size (elt msg 2))
+	    vec-size (elt msg 2)
+            gen-type (generate-variable-type type))
       (cond
        (vec-size (format strm "    ;; ~A[~A] ~A~%" type (if (zerop vec-size) "" vec-size) var))
        (t        (format strm "    ;; ~A ~A~%" type var)))
       (format strm "    ")
-      (if vec-size (format strm "(* "))
+      (if (and vec-size (not (eq gen-type :rostype))) (format strm "(* "))
       (case
-       (generate-variable-type type)
+       gen-type
        (:int8 (format strm "1"))
        (:int16 (format strm "2"))
        ((:int32 :float32) (format strm "4"))
@@ -197,10 +198,12 @@
           (format strm "(send ~A :serialization-length)" var)))
        (t (error "undefined type ~A~%" msg)))
       (cond
-       ((and vec-size (zerop vec-size))
-	(format strm " (length ~A)) 4" var))
-       (vec-size
-	(format strm " ~A)" vec-size)))
+       ((and vec-size (eq gen-type :rostype) (zerop vec-size))
+        (format strm " 4"))
+       ((and vec-size (not (eq gen-type :rostype)) (zerop vec-size))
+        (format strm " (length ~A)) 4" var))
+       ((and vec-size (not (eq gen-type :rostype)))
+        (format strm " ~A)" vec-size)))
       (format strm "~%")
       )
     (format strm "    ))~%")
