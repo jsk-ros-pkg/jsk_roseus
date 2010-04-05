@@ -1,7 +1,6 @@
 (defun generate-msg-type-name-list (strm)
   (let (msgs consts line pos type var init-elem vec-size)
     (while (not (eq :eof (setq line (read-line strm nil :eof))))
-      (setq line (nstring-downcase line))
       ;; remove comments
       (if (string= line "---") (return))
       (setq pos (position #\# line))
@@ -18,9 +17,9 @@
 	;; split line into type and var
 	(setq pos (position #\space line))
 	(setq type (subseq line 0 pos))
-	(setq var (subseq line (1+ pos)))
+	(setq var (string-left-trim " \t" (subseq line (1+ pos))))
 	;; format type
-	(if (string= "header" type)
+	(if (string= "header" (string-downcase type))
 	    (setq type (concatenate string "roslib::" type)))
 	(if (setq pos (position #\/ type))
 	    (setq type (format nil "~A::~A" (subseq type 0 pos) (subseq type (1+ pos)))))
@@ -91,6 +90,19 @@
     (format strm "  (shadow '~A (find-package \"~A\")))~%" name (string-upcase pkg))
     (format strm "~%")
     ))
+
+(defun generate-msg-loaders (strm msgs name)
+  (let ()
+    (format strm ";;~%")
+    (dolist (msg msgs)
+      (when (substringp "::" (car msg))
+        (let ((pkg (subseq (car msg) 0 (position #\: (car msg))))
+              (file (subseq (car msg) (+ (position #\: (car msg)) 2))))
+          (format strm "(if (not (find-package \"~A\"))~%" (string-upcase pkg))
+          (format strm "  (roseus-add-msgs \"~A\"))~%" pkg))))
+    (format strm "~%")
+    ))
+
 
 (defun generate-msg-defconstants (strm pkg name consts)
   (let ()
@@ -392,6 +404,8 @@
     (with-open-file
      (strm oname :direction :output)
      (generate-msg-headers strm pkg name)
+     ;;
+     (generate-msg-loaders strm msgs name)
      ;; defconstants
      (generate-msg-defconstants strm pkg name consts)
      ;;
