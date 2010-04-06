@@ -48,7 +48,7 @@
     (unless (lisp::directory-p oname)
       (warning-message 6 ";; mkdir ~A~%" oname)
       (unix::system (format nil "mkdir -p ~A" oname)))
-    (setq oname (concatenate string oname (format nil "~A-~A.l" pkg name)))))
+    (setq oname (concatenate string oname (format nil "~A.l" name)))))
 
 ;;
 ;;
