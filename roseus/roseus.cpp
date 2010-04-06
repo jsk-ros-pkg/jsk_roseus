@@ -554,6 +554,58 @@ pointer ROSEUS_UNSUBSCRIBE(register context *ctx,int n,pointer *argv)
   return (bSuccess?T:NIL);
 }
 
+pointer ROSEUS_GETNUMPUBLISHERS(register context *ctx,int n,pointer *argv)
+{
+  string topicname;
+  int ret;
+
+  ckarg(1);
+  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  bool bSuccess = false;
+  map<string, boost::shared_ptr<Subscriber> >::iterator it = s_mapSubscribed.find(topicname);
+  if( it != s_mapSubscribed.end() ) {
+    boost::shared_ptr<Subscriber> subscriber = (it->second);
+    ret = subscriber->getNumPublishers();
+    bSuccess = true;
+  }
+
+  if ( ! bSuccess ) {
+    ROS_ERROR("attempted to getNumPublishers to topic %s, which was not " \
+              "previously advertised. call (ros::advertise \"%s\") first.",
+              topicname.c_str(), topicname.c_str());
+  }
+
+  return (bSuccess?(makeint(ret)):NIL);
+}
+
+pointer ROSEUS_GETTOPICSUBSCRIBER(register context *ctx,int n,pointer *argv)
+{
+  string topicname;
+  string ret;
+
+  ckarg(1);
+  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  bool bSuccess = false;
+  map<string, boost::shared_ptr<Subscriber> >::iterator it = s_mapSubscribed.find(topicname);
+  if( it != s_mapSubscribed.end() ) {
+    boost::shared_ptr<Subscriber> subscriber = (it->second);
+    ret = subscriber->getTopic();
+    bSuccess = true;
+  }
+
+  if ( ! bSuccess ) {
+    ROS_ERROR("attempted to getTopic to topic %s, which was not " \
+              "previously advertised. call (ros::advertise \"%s\") first.",
+              topicname.c_str(), topicname.c_str());
+  }
+
+  return (bSuccess?(makestring((char *)ret.c_str(), ret.length())):NIL);
+}
+
 pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
 {
   string topicname;
@@ -638,6 +690,58 @@ pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
   }
 
   return (T);
+}
+
+pointer ROSEUS_GETNUMSUBSCRIBERS(register context *ctx,int n,pointer *argv)
+{
+  string topicname;
+  int ret;
+
+  ckarg(1);
+  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  bool bSuccess = false;
+  map<string, boost::shared_ptr<Publisher> >::iterator it = s_mapAdvertised.find(topicname);
+  if( it != s_mapAdvertised.end() ) {
+    boost::shared_ptr<Publisher> publisher = (it->second);
+    ret = publisher->getNumSubscribers();
+    bSuccess = true;
+  }
+
+  if ( ! bSuccess ) {
+    ROS_ERROR("attempted to getNumSubscribers to topic %s, which was not " \
+              "previously advertised. call (ros::advertise \"%s\") first.",
+              topicname.c_str(), topicname.c_str());
+  }
+
+  return (bSuccess?(makeint(ret)):NIL);
+}
+
+pointer ROSEUS_GETTOPICPUBLISHER(register context *ctx,int n,pointer *argv)
+{
+  string topicname;
+  string ret;
+
+  ckarg(1);
+  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  bool bSuccess = false;
+  map<string, boost::shared_ptr<Publisher> >::iterator it = s_mapAdvertised.find(topicname);
+  if( it != s_mapAdvertised.end() ) {
+    boost::shared_ptr<Publisher> publisher = (it->second);
+    ret = publisher->getTopic();
+    bSuccess = true;
+  }
+
+  if ( ! bSuccess ) {
+    ROS_ERROR("attempted to getTopic to topic %s, which was not " \
+              "previously advertised. call (ros::advertise \"%s\") first.",
+              topicname.c_str(), topicname.c_str());
+  }
+
+  return (bSuccess?(makestring((char *)ret.c_str(), ret.length())):NIL);
 }
 
 /************************************************************
@@ -777,9 +881,14 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   defun(ctx,"SUBSCRIBE",argv[0],(pointer (*)())ROSEUS_SUBSCRIBE);
   defun(ctx,"UNSUBSCRIBE",argv[0],(pointer (*)())ROSEUS_UNSUBSCRIBE);
+  defun(ctx,"GET-NUM-PUBLISHERS",argv[0],(pointer (*)())ROSEUS_GETNUMPUBLISHERS);
+  defun(ctx,"GET-TOPIC-SUBSCRIBER",argv[0],(pointer (*)())ROSEUS_GETTOPICSUBSCRIBER);
+
   defun(ctx,"ADVERTISE",argv[0],(pointer (*)())ROSEUS_ADVERTISE);
   defun(ctx,"UNADVERTISE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE);
   defun(ctx,"PUBLISH",argv[0],(pointer (*)())ROSEUS_PUBLISH);
+  defun(ctx,"GET-NUM-SUBSCRIBERS",argv[0],(pointer (*)())ROSEUS_GETNUMSUBSCRIBERS);
+  defun(ctx,"GET-TOPIC-PUBLISHER",argv[0],(pointer (*)())ROSEUS_GETTOPICPUBLISHER);
 
   defun(ctx,"WAIT-FOR-SERVICE",argv[0],(pointer (*)())ROSEUS_WAIT_FOR_SERVICE);
   defun(ctx,"SERVICE-CALL",argv[0],(pointer (*)())ROSEUS_SERVICE_CALL);

@@ -88,7 +88,15 @@
                    action-feedback-class #'send self :action-feedback-cb)
    (setq simple-state 'ros::*simple-goal-state-done*)
    self)
-  (:wait-for-server () (unix:sleep 2)) ;; // TODO
+  (:wait-for-server
+   ()
+   (let ((goal-topic (format nil "~A/goal" name-space))
+         (cancel-topic (format nil "~A/cancel" name-space)))
+     (ros::rate 10)
+     (while (and (= (ros::get-num-subscribers goal-topic) 0)
+                 (= (ros::get-num-subscribers cancel-topic) 0))
+       (ros::spin-once)
+       (ros::sleep))))
   (:send-goal
    (goal)
    (let ((now (ros::time-now)))
