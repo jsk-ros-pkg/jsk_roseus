@@ -1,4 +1,3 @@
-(if (not (find-package "ROSLIB")) (roseus-add-msgs "roslib"))
 (if (not (find-package "ACTIONLIB_MSGS")) (roseus-add-msgs "actionlib_msgs"))
 
 (defun roseus-add-actionlibs (pkg)
@@ -98,7 +97,7 @@
      (send goal :goal_id goal_id)
      (setq simple-state 'ros::*simple-goal-state-pending*)
      (ros::publish (format nil "~A/goal" name-space) goal)))
-  (:send-goal-and-wait 
+  (:send-goal-and-wait
    (goal)
    (send self :send-goal goal)
    (send self :wait-for-result))
