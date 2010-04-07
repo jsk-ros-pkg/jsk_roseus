@@ -2,7 +2,7 @@
   (let (msgs consts line pos type var init-elem vec-size)
     (while (not (eq :eof (setq line (read-line strm nil :eof))))
       ;; remove comments
-      (if (string= line "---") (return))
+      (if (string= line "---" :start1 0 :end1 3) (return))
       (setq pos (position #\# line))
       (if pos (setq line (subseq line 0 pos)))
       ;; replcae tab to whitespace
