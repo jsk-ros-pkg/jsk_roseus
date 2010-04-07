@@ -2,6 +2,13 @@
 ;; for euslisp coordination system interface and 
 ;; ros coordination system interface
 
+;; include ros messages packages
+(roseus-add-msgs "roslib")
+(roseus-add-msgs "std_msgs")
+(roseus-add-msgs "roseus")
+(roseus-add-msgs "nav_msgs")
+(roseus-add-msgs "geometry_msgs") ;move_base_msgs depends on geometry_msgs
+
 ;; convert unit....
 ;; eus [mm], ros[m]
 (defun coords->geometry-msgs-pose (coords)
@@ -39,3 +46,11 @@
     (instance geometry_msgs::PoseStamped :init
               :header (instance roslib::header :init :frame_id id)
               :pose pose)))
+
+(defun nav-msgs-odometry->coords (odom)
+  ;; NB: does not consider about frame_id
+  ;; NB: coordinates is projected x-y plane.
+  ;; Odometry = Header:header + string:child_frame_id
+  ;;                          + geometry_msgs/PoseWithCovariance:pose
+  ;;                          + geometry_msgs/TwistWithCovariance:twist
+  (geometry-msgs-pose->coords (send (send odom :pose) :pose)))
