@@ -1,4 +1,6 @@
 (load-library "roseus.so" '("roseus"))
+(pushnew :ros *features*)
+
 (when (and (boundp 'ros::*roseus-walkup-thread*)
 	   ros::*roseus-walkup-thread*)
   (ros::exit))
