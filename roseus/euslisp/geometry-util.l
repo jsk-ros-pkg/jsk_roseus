@@ -31,3 +31,11 @@
                            (send orientation :w))))
     (make-coords :pos (float-vector x y z)
                  :rot (quaternion2matrix q)))))
+
+(defun coords->geometry-msgs-stamped-pose (coords id)
+  (let ((pose (coords->geometry-msgs-pose coords)))
+    ;; PoseStamped = Header + Pose
+    ;; Header = seq + frame_id
+    (instance geometry_msgs::PoseStamped :init
+              :header (instance roslib::header :init :frame_id id)
+              :pose pose)))
