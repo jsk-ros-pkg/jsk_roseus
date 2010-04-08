@@ -54,3 +54,16 @@
   ;;                          + geometry_msgs/PoseWithCovariance:pose
   ;;                          + geometry_msgs/TwistWithCovariance:twist
   (geometry-msgs-pose->coords (send (send odom :pose) :pose)))
+
+(defun geometry-msgs-transform->coords (pose)
+  (let ((position (send pose :ranslation))
+        (orientation (send pose :rotation)))
+    (let ((x (* 1000.0 (send position :x))) ;m -> mm
+          (y (* 1000.0 (send position :y))) ;m -> mm
+          (z (* 1000.0 (send position :z))) ;m -> mm
+          (q (float-vector (send orientation :w)
+                           (send orientation :x)
+                           (send orientation :y)
+                           (send orientation :z))))
+    (make-coords :pos (float-vector x y z)
+                 :rot (quaternion2matrix q)))))
