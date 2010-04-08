@@ -222,15 +222,20 @@
     ))
 
 (defun generate-msg-serialize (strm pkg name msgs)
-  (let (type var vec-size)
+  (let (type var-type var vec-size)
     (format strm "  (:serialize~%")
     (format strm "   (&optional strm)~%")
     (format strm "   (let ((s (if strm strm~%")
     (format strm "              (make-string-output-stream (send self :serialization-length)))))~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
-	    vec-size (elt msg 2))
+	    vec-size (elt msg 2) var-type (generate-variable-type type))
       (cond
+       ((and vec-size (zerop vec-size) (memq var-type '(:time :string :rostype)))
+	(format strm "     ;; ~A[] ~A~%" type var)
+	(format strm "     (write-long (length ~A) s)~%" var)
+        (format strm "     (dolist (elem ~A)~%  " var)
+        (setq var "elem"))
        ((and vec-size (zerop vec-size))
 	(format strm "     ;; ~A[] ~A~%" type var)
 	(format strm "     (write-long (length ~A) s)~%" var)
@@ -243,7 +248,7 @@
        (t
         (format strm "     ;; ~A ~A~%" type var)))
       (case
-       (generate-variable-type type)
+       var-type
        (:int8
 	(format strm "     (write-byte ~A s)~%" var))
        (:int16
