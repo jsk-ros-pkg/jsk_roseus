@@ -1,9 +1,7 @@
 (load-library "roseus.so" '("roseus"))
 (pushnew :ros *features*)
 
-(when (and (boundp 'ros::*roseus-walkup-thread*)
-	   ros::*roseus-walkup-thread*)
-  (ros::exit))
+(setq ros::*compile-message* nil)
 
 (defclass ros::object
   :super propertied-object
@@ -22,7 +20,7 @@
   (:sec (&optional s) (if s (setq sec s)) sec)
   (:nsec (&optional s) (if s (setq nsec s)) nsec)
   )
-(defun ros::rostime () 
+(defun ros::rostime ()
   (let ((now (ros::time-now)))
     (instance ros::rostime :init :sec (elt now 0) :nsec (elt now 1))))
 
@@ -40,8 +38,21 @@
       (when (and (string= (pathname-type file) "l")
 		 (not (= #\. (elt (pathname-name file) 0))))
 	(setq dirfile (concatenate string dir file))
-	(warning-message 6 ";; loading ~A~%" dirfile)
-	(load dirfile)))))
+        (if ros::*compile-message*
+            (let* ((fname (format nil "~A" (pathname-name file)))
+                   (old-module (find fname *loaded-modules*
+                                     :key #'lisp::load-module-file-name :test #'equal)))
+              (if old-module (sys::unbinload old-module))
+              (let ((pwd (unix::pwd)) lname)
+                (unix::cd (string-right-trim "/" dir))
+                (comp:compile-file-if-src-newer file)
+                (setq lname (load fname))
+                (warning-message 6 ";; loading   ~A~%" lname)
+                (unix::cd pwd)))
+          (progn
+            (warning-message 6 ";; loading ~A~%" dirfile)
+            (load dirfile)))))
+    ))
 
 (defun roseus-add-msgs (pkg) (roseus-add-files pkg "msg"))
 (defun roseus-add-srvs (pkg) (roseus-add-files pkg "srv"))
