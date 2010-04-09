@@ -855,6 +855,117 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   return (bSuccess?T:NIL);
 }
 
+pointer ROSEUS_SET_PARAM(register context *ctx,int n,pointer *argv)
+{
+  numunion nu;
+  string key;
+  string s;
+  double d;
+  int i;
+
+  if( !s_node ) {
+    ROS_ERROR("could not find node handle");
+    return (NIL);
+  }
+
+  ckarg(2);
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+  if ( isstring(argv[1]) ) {
+    s.assign((char *)get_string(argv[1]));
+    s_node->setParam(key,s);
+  } else if (isint(argv[1])) {
+    i = intval(argv[1]);
+    s_node->setParam(key,i);
+  } else if (isflt(argv[1])) {
+    d = fltval(argv[1]);
+    s_node->setParam(key,d);
+  } else {
+    error(E_MISMATCHARG);
+  }
+  return (T);
+}
+
+pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
+{
+  numunion nu;
+  string key;
+
+  ckarg(1);
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  if( !s_node ) {
+    ROS_ERROR("could not find node handle");
+    return (NIL);
+  }
+
+  string s;
+  double d;
+  int i;
+  pointer ret;
+
+  if ( s_node->getParam(key, s) ) {
+    ret = makestring((char *)s.c_str(), s.length());
+  } else if ( s_node->getParam(key, d) ) {
+    ret = makeflt(d);
+  } else if ( s_node->getParam(key, i) ) {
+    ret = makeint(i);
+  } else {
+    ROS_ERROR("unknown getParam type");
+    return (NIL);
+  }
+  return (ret);
+}
+
+pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
+{
+  numunion nu;
+  string key;
+
+  ckarg(1);
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  if( !s_node ) {
+    ROS_ERROR("could not find node handle");
+    return (NIL);
+  }
+
+  string s;
+  double d;
+  int i;
+  pointer ret;
+
+  if ( s_node->getParamCached(key, s) ) {
+    ret = makestring((char *)s.c_str(), s.length());
+  } else if ( s_node->getParamCached(key, d) ) {
+    ret = makeflt(d);
+  } else if ( s_node->getParamCached(key, i) ) {
+    ret = makeint(i);
+  } else {
+    ROS_ERROR("unknown getParam type");
+    return (NIL);
+  }
+  return (ret);
+}
+
+pointer ROSEUS_HAS_PARAM(register context *ctx,int n,pointer *argv)
+{
+  string key;
+
+  ckarg(1);
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  if( !s_node ) {
+    ROS_ERROR("could not find node handle");
+    return (NIL);
+  }
+
+  return((s_node->hasParam(key))?(T):(NIL));
+}
+
 /************************************************************
  *   __roseus
  ************************************************************/
@@ -894,6 +1005,11 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"SERVICE-CALL",argv[0],(pointer (*)())ROSEUS_SERVICE_CALL);
   defun(ctx,"ADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_ADVERTISE_SERVICE);
   defun(ctx,"UNADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE_SERVICE);
+
+  defun(ctx,"SET-PARAM",argv[0],(pointer (*)())ROSEUS_SET_PARAM);
+  defun(ctx,"GET-PARAM",argv[0],(pointer (*)())ROSEUS_GET_PARAM);
+  defun(ctx,"GET-PARAM-CASHED",argv[0],(pointer (*)())ROSEUS_GET_PARAM_CASHED);
+  defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM);
 
   pointer_update(Spevalof(PACKAGE),p);
   defun(ctx,"ROSEUS",argv[0],(pointer (*)())ROSEUS);
