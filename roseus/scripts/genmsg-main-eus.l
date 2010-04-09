@@ -17,7 +17,7 @@
 	;; split line into type and var
 	(setq pos (position #\space line))
 	(setq type (subseq line 0 pos))
-	(setq var (string-left-trim " \t" (subseq line (1+ pos))))
+	(setq var (string-left-trim '(#\space #\tab) (subseq line (1+ pos))))
 	;; format type
 	(if (string= "header" (string-downcase type))
 	    (setq type (concatenate string "roslib::" type)))
