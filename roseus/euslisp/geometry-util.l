@@ -8,6 +8,7 @@
 (roseus-add-msgs "roseus")
 (roseus-add-msgs "nav_msgs")
 (roseus-add-msgs "geometry_msgs") ;move_base_msgs depends on geometry_msgs
+(roseus-add-msgs "checkerboard_detector")
 
 ;; convert unit....
 ;; eus [mm], ros[m]
@@ -67,3 +68,23 @@
                            (send orientation :z))))
     (make-coords :pos (float-vector x y z)
                  :rot (quaternion2matrix q)))))
+
+(defun coords->checkerboard-detector-object6dpose (coords type id)
+  (instance checkerboard_detector::object6dpose :init
+            :pose (coords->geometry-msgs-pose coords)
+            :ype type
+            :uid id))
+
+(defun compose-detected-objects-to-Object-Detection (obj-alist id)
+  ;; obj-alist := ((name id coords) (name id coords) (name id coords) ...)
+  (instance checkerboard_detector::ObjectDetection :init
+            :header (instance roslib::header :init :frame_id id)
+            :objects (mapcar 
+                      #'(lambda (x)
+                          (let ((name (car x))
+                                (id (cadr x))
+                                (coords (caddr x)))
+                            (coords->checkerboard-detector-object6dpose
+                             coords name id)))
+                      obj-alist)))
+  
