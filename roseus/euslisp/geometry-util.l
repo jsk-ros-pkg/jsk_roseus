@@ -18,14 +18,16 @@
         (z (* 0.001 (z (send coords :worldpos)))) ;mm -> m
         (rot (send coords :worldrot)))
     (let ((q (matrix2quaternion rot)))
-      (let ((qx (elt q 0))
+      (let ((qx (elt q 3))
             (qy (elt q 1))
             (qz (elt q 2))
-            (qw (elt q 3)))
+            (qw (elt q 0)))
         (instance geometry_msgs::pose :init 
-                  :position (instance geometry_msgs::point :init :x x :y y :z z)
+                  :position (instance geometry_msgs::point :init 
+                                      :x x :y y :z z)
                   :orientation
-                  (instance geometry_msgs::quaternion :init :x qx :y qy :z qz :w qw))))))
+                  (instance geometry_msgs::quaternion :init
+                            :x qx :y qy :z qz :w qw))))))
 
 (defun geometry-msgs-pose->coords (pose)
   (let ((position (send pose :position))
@@ -45,7 +47,9 @@
     ;; PoseStamped = Header + Pose
     ;; Header = seq + frame_id
     (instance geometry_msgs::PoseStamped :init
-              :header (instance roslib::header :init :frame_id id)
+              :header (instance roslib::header :init 
+                                :frame_id id
+                                :stamp (ros::rostime))
               :pose pose)))
 
 (defun nav-msgs-odometry->coords (odom)
@@ -57,7 +61,7 @@
   (geometry-msgs-pose->coords (send (send odom :pose) :pose)))
 
 (defun geometry-msgs-transform->coords (pose)
-  (let ((position (send pose :ranslation))
+  (let ((position (send pose :translation))
         (orientation (send pose :rotation)))
     (let ((x (* 1000.0 (send position :x))) ;m -> mm
           (y (* 1000.0 (send position :y))) ;m -> mm
@@ -72,13 +76,15 @@
 (defun coords->checkerboard-detector-object6dpose (coords type id)
   (instance checkerboard_detector::object6dpose :init
             :pose (coords->geometry-msgs-pose coords)
-            :ype type
-            :uid id))
+            :type type))
+            ;;:uid id))
 
 (defun compose-detected-objects-to-Object-Detection (obj-alist id)
   ;; obj-alist := ((name id coords) (name id coords) (name id coords) ...)
   (instance checkerboard_detector::ObjectDetection :init
-            :header (instance roslib::header :init :frame_id id)
+            :header (instance roslib::header :init 
+                              :frame_id id
+                              :stamp (ros::rostime))
             :objects (mapcar 
                       #'(lambda (x)
                           (let ((name (car x))
