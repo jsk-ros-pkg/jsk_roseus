@@ -14,12 +14,15 @@ endif()
 include_directories(/usr/include /usr/X11R6/include /$(EUSDIR)/include)
 #link_directories()
 rosbuild_add_library(roseus roseus.cpp)
+rosbuild_add_library(eustf eustf.cpp)
 rosbuild_add_compile_flags(roseus "-O2 -Di486 -DLinux -D_REENTRANT -DVERSION=\"8.26\" -DTHREADED -DPTHREAD -DX11R6_1 -Wno-write-strings -Wno-comment")
-#rosbuild_add_link_flags(roseus)
+rosbuild_add_compile_flags(eustf "-O2 -Di486 -DLinux -D_REENTRANT -DVERSION=\"8.26\" -DTHREADED -DPTHREAD -DX11R6_1 -Wno-write-strings -Wno-comment")
+rosbuild_add_link_flags(eustf)
 #target_link_libraries(roseus)
 #rosbuild_link_boost(roseus thread)
 
 set_target_properties(roseus PROPERTIES PREFIX "" SUFFIX ".so")
+set_target_properties(eustf PROPERTIES PREFIX "" SUFFIX ".so")
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/euslisp)
 
