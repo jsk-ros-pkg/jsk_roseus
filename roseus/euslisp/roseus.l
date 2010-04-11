@@ -61,5 +61,16 @@
   (subseq (apply #'concatenate string
                  (mapcan #'(lambda (x) (list "/" x)) args)) 1)) ;remove /
 
-(setq sys::*exit-hook* 'ros::exit)
+(defmacro rosparam-bind (params &rest args)
+  "this macro, locally bind rosparams like `let' syntax.
+NB: This macro resolve parameter when macro expanding. It should 
+resolve parameters in evaluation time"
+  ;; params := (param)
+  ;; param := (symbol parameter-name)
+  `(let ,(mapcar #'(lambda (param)
+                     (list (car param)  ;symbol
+                           (ros::get-param (cadr param))))
+                 params)
+     ,@args))
 
+(setq sys::*exit-hook* 'ros::exit)
