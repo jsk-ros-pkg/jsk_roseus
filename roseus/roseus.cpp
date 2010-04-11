@@ -912,7 +912,6 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
   } else if ( s_node->getParam(key, i) ) {
     ret = makeint(i);
   } else {
-    ROS_ERROR("unknown getParam type");
     return (NIL);
   }
   return (ret);
