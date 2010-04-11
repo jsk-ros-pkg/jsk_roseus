@@ -62,6 +62,10 @@
                  (mapcan #'(lambda (x) (list "/" x)) args)) 1)) ;remove /
 
 (defmacro defrosparam (sym param-name &optional (default-value nil))
+  ;;  defrosparam takes 3 arguments:
+  ;;    1. symbol :: to bind
+  ;;    2. param-name :: rosparameter name
+  ;;    3. default-value :: default value when ros::get-param returns nil
   `(progn
      (if (boundp ',sym)
          (warn ";; re-definition ~A" ',sym))
@@ -69,9 +73,9 @@
      ',sym))
 
 (defmacro rosparam-bind (params &rest args)
-  "this macro, locally bind rosparams like `let' syntax.
-NB: This macro resolve parameter when macro expanding. It should 
-resolve parameters in evaluation time"
+  ;;  this macro, locally bind rosparams like `let' syntax.
+  ;; NB: This macro resolve parameter when macro expanding. It should 
+  ;; resolve parameters in evaluation time
   ;; params := (param)
   ;; param := (symbol parameter-name)
   `(let ,(mapcar #'(lambda (param)
