@@ -61,6 +61,13 @@
   (subseq (apply #'concatenate string
                  (mapcan #'(lambda (x) (list "/" x)) args)) 1)) ;remove /
 
+(defmacro defrosparam (sym param-name &optional (default-value nil))
+  `(progn
+     (if (boundp ',sym)
+         (warn ";; re-definition ~A" ',sym))
+     (setq ,sym (or (ros::get-param ,param-name) ,default-value))
+     ',sym))
+
 (defmacro rosparam-bind (params &rest args)
   "this macro, locally bind rosparams like `let' syntax.
 NB: This macro resolve parameter when macro expanding. It should 
