@@ -7,6 +7,7 @@
   <depend package="roscpp" />
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>
+  <depend package="tf"/>
   <export>
     <roslang cmake="${prefix}/cmake/roseus.cmake"/>
   </export>
