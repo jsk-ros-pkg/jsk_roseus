@@ -87,6 +87,9 @@ extern "C" {
 #undef vector
 #undef string
 
+extern int mainargc;
+extern char* mainargv[32];
+
 using namespace ros;
 using namespace std;
 
@@ -390,7 +393,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   s_mapSubscribed.clear();
   s_mapServiced.clear();
 
-  ros::init(n, NULL, name, options);
+  ros::init(mainargc, mainargv, name, options);
 
   s_node.reset(new ros::NodeHandle());
 
@@ -890,6 +893,7 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
   string key;
+  ros::NodeHandle nh("~");
 
   ckarg(1);
   if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
@@ -899,17 +903,17 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
     ROS_ERROR("could not find node handle");
     return (NIL);
   }
-
+  
   string s;
   double d;
   int i;
   pointer ret;
 
-  if ( s_node->getParam(key, s) ) {
+  if ( nh.getParam(key, s) ) {
     ret = makestring((char *)s.c_str(), s.length());
-  } else if ( s_node->getParam(key, d) ) {
+  } else if ( nh.getParam(key, d) ) {
     ret = makeflt(d);
-  } else if ( s_node->getParam(key, i) ) {
+  } else if ( nh.getParam(key, i) ) {
     ret = makeint(i);
   } else {
     return (NIL);
@@ -921,7 +925,7 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
   string key;
-
+  ros::NodeHandle nh("~");
   ckarg(1);
   if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
@@ -936,11 +940,11 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
   int i;
   pointer ret;
 
-  if ( s_node->getParamCached(key, s) ) {
+  if ( nh.getParamCached(key, s) ) {
     ret = makestring((char *)s.c_str(), s.length());
-  } else if ( s_node->getParamCached(key, d) ) {
+  } else if ( nh.getParamCached(key, d) ) {
     ret = makeflt(d);
-  } else if ( s_node->getParamCached(key, i) ) {
+  } else if ( nh.getParamCached(key, i) ) {
     ret = makeint(i);
   } else {
     ROS_ERROR("unknown getParam type");
