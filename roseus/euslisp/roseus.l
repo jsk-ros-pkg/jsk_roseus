@@ -1,6 +1,14 @@
 (load-library "roseus.so" '("roseus"))
 (pushnew :ros *features*)
 
+(defun ros::roseus-sigint-handler (sig code)
+   (warning-message 1 "ros::interrupt")
+   (ros::exit)
+   (exit))
+
+(when (not (unix:isatty *standard-input*))
+  (unix:signal unix::sighup 'ros::roseus-sigint-handler 2))
+
 (setq ros::*compile-message* nil)
 
 (defclass ros::object
