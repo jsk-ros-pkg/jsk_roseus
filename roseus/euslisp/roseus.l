@@ -7,7 +7,9 @@
    (exit))
 
 (when (not (unix:isatty *standard-input*))
-  (unix:signal unix::sighup 'ros::roseus-sigint-handler 2))
+  (unix:signal unix::sighup 'ros::roseus-sigint-handler 2)
+  (defmacro do-until-key (&rest forms) `(while t ,@forms))
+  (defun y-or-n-p (&rest args) t))
 
 (setq ros::*compile-message* nil)
 
