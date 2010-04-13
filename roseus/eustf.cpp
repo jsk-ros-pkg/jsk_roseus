@@ -101,9 +101,7 @@ pointer EUSTF_LOOKUP_TRANSFORM(register context *ctx,int n,pointer *argv)
   //NB: currently, only support NOW
   char from_id[256] = "";
   char to_id[256] = "";
-  int frame_time;
   pointer vs;
-  numunion nu;                  // for makeflt
   tf::TransformListener tf;
   tf::StampedTransform ret_transform;
   // tf::lookup-transform(from-id to-if)
