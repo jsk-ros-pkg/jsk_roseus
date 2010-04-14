@@ -88,6 +88,18 @@
      (setq ,sym (or (ros::get-param ,param-name) ,default-value))
      ',sym))
 
+(defmacro defrosparams (&rest param-specs)
+  ;; bind some rosparameters using defrosparam.
+  ;; example:
+  ;;  (defrosparams (*hoge* "hoge" 0.0)
+  ;;                (*fuga* "/piyo/fuga" 0.0))
+  `(progn
+    ,@(mapcar #'(lambda (param)
+                  `(defrosparam ,@param))
+              param-specs)
+    t)
+  )
+
 (defmacro rosparam-bind (params &rest args)
   ;;  this macro, locally bind rosparams like `let' syntax.
   ;; NB: This macro resolve parameter when macro expanding. It should 
