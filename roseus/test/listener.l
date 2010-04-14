@@ -1,3 +1,4 @@
+#!/usr/bin/env runeus
 ;;;
 ;;; euslisp version of ros_tutorials/rospy_tutorials/001_talker_listener
 ;;;

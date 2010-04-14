@@ -1,6 +1,6 @@
 <launch>
-<node name="add-two-ints-server.l" pkg="roseus" type="runeus"  output="screen"
+<node name="add_two_ints_server" pkg="roseus" type="add-two-ints-server.l"  output="screen"
       launch-prefix="xterm -T server -geometry 80x10 -e " />
-<node name="add-two-ints-client.l" pkg="roseus" type="runeus"  output="screen"
+<node name="add_two_ints_client" pkg="roseus" type="add-two-ints-client.l"  output="screen"
       launch-prefix="xterm -T client -geometry 80x10 -e " />
 </launch>
