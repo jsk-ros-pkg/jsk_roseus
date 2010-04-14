@@ -2,14 +2,20 @@
 (pushnew :ros *features*)
 
 (defun ros::roseus-sigint-handler (sig code)
-   (warning-message 1 "ros::interrupt")
-   (ros::exit)
-   (exit))
+  (ros::ROS-WARN (format nil "ros::roseus-sigint-handler ~A" sig))
+  (exit))
 
 (when (not (unix:isatty *standard-input*))
-  (unix:signal unix::sighup 'ros::roseus-sigint-handler 2)
+  (ros::ROS-INFO "install ros::roseus-sigint-handler")
+  (unix:signal unix::sigint 'ros::roseus-sigint-handler)
+  (unix:signal unix::sighup 'ros::roseus-sigint-handler)
   (defmacro do-until-key (&rest forms) `(while t ,@forms))
   (defun y-or-n-p (&rest args) t))
+
+(defun roseus (name &key
+                    (option (list ros::*no-sigint-handler* ros::*anonymous-name*))
+                    (args lisp::*eustop-argument*))
+  (roseus-raw name (apply #'logior option) args))
 
 (setq ros::*compile-message* nil)
 

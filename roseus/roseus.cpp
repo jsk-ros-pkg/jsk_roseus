@@ -115,7 +115,7 @@ static bool s_bInstalled = false;
 #define s_mapSubscribed s_staticdata.mapSubscribed
 #define s_mapServiced s_staticdata.mapServiced
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_TYPE,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_TYPE,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOINT,QNOOUT;
 
 /***********************************************************
  *   Message wrapper
@@ -360,24 +360,29 @@ public:
 pointer ROSEUS(register context *ctx,int n,pointer *argv)
 {
   char name[256] = "";
-  uint32_t options = ros::init_options::AnonymousName | ros::init_options::NoSigintHandler;
+  uint32_t options = 0;
+  int cargc = 0;
+  char *cargv[32];
 
   if( s_bInstalled ) return (T);
 
-  ckarg2(0,2);
-  while ( --n >= 0 ) {
-    if ( isstring(argv[n])) {
-      strncpy(name,(char *)(argv[n]->c.str.chars),255);
-    } else if ( isint(argv[n]) ) {
-      options = intval(argv[n]);
+  ckarg(3);
+  if (isstring(argv[0]))
+    strncpy(name,(char *)(argv[0]->c.str.chars),255);
+  else error(E_NOSTRING);
+  options = ckintval(argv[1]);
+  pointer p = argv[2];
+  if (islist(p)) {
+    while (1) {
+      if (!iscons(p)) break;
+      cargv[cargc]=(char *)((ccar(p))->c.str.chars);
+      cargc++;
+      p=ccdr(p);
     }
-  }
-  if ( strlen(name) == 0 ) {
-    strncpy(name,"nohost",255);
-    gethostname(name, sizeof(name));
-    for (unsigned int i=0; i < strlen(name); i++) if ( ! isalpha(name[i]) ) name[i] = '_';
-    strcat(name,"_roseus");
-  }
+  } else error(E_NOSEQ);
+
+  for (unsigned int i=0; i < strlen(name); i++)
+    if ( ! isalpha(name[i]) ) name[i] = '_';
 
   K_ROSEUS_MD5SUM = defkeyword(ctx,"MD5SUM");
   K_ROSEUS_TYPE   = defkeyword(ctx,"TYPE");
@@ -393,7 +398,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   s_mapSubscribed.clear();
   s_mapServiced.clear();
 
-  ros::init(mainargc, mainargv, name, options);
+  ros::init(cargc, cargv, name, options);
 
   s_node.reset(new ros::NodeHandle());
 
@@ -980,6 +985,10 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   if (rospkg == 0) rospkg=makepkg(ctx,makestring("ROS", 3),NIL,NIL);
   Spevalof(PACKAGE)=rospkg;
 
+  QANON=defvar(ctx,"*ANONYMOUS-NAME*",makeint(ros::init_options::AnonymousName),rospkg);
+  QNOINT=defvar(ctx,"*NO-SIGINT-HANDLER*",makeint(ros::init_options::NoSigintHandler),rospkg);
+  QNOOUT=defvar(ctx,"*NO-ROSOUT*",makeint(ros::init_options::NoRosout),rospkg);
+
   defun(ctx,"SPIN",argv[0],(pointer (*)())ROSEUS_SPIN);
   defun(ctx,"SPIN-ONCE",argv[0],(pointer (*)())ROSEUS_SPINONCE);
   defun(ctx,"TIME-NOW",argv[0],(pointer (*)())ROSEUS_TIME_NOW);
@@ -1015,7 +1024,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM);
 
   pointer_update(Spevalof(PACKAGE),p);
-  defun(ctx,"ROSEUS",argv[0],(pointer (*)())ROSEUS);
+  defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
 
   return 0;
 }
