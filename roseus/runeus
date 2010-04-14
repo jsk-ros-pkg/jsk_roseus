@@ -1,0 +1,18 @@
+#!/bin/sh 
+
+# file
+FILE="\"$1\"";
+shift
+# argc
+ARGV="(list"
+while [ $# -ne 0 ]; do
+    ARGV=$ARGV"\"$1\" ";
+    shift;
+done
+ARGV=$ARGV")"
+
+echo "(progn (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))"| jskeusgl &
+PID=$!
+trap 'echo \"kill -s INT $PID ' CHLD INT TERM
+wait $PID
+
