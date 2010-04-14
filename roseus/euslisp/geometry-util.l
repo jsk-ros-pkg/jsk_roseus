@@ -42,6 +42,12 @@
     (make-coords :pos (float-vector x y z)
                  :rot (quaternion2matrix q)))))
 
+(defun geometry-msgs-point->coords (point)
+  (let ((x (* 1000.0 (send point :x))) ;m -> mm
+        (y (* 1000.0 (send point :y))) ;m -> mm
+        (z (* 1000.0 (send point :z)))) ;m -> mm
+    (make-coords :pos (float-vector x y z))))
+
 (defun coords->geometry-msgs-stamped-pose (coords id)
   (let ((pose (coords->geometry-msgs-pose coords)))
     ;; PoseStamped = Header + Pose
