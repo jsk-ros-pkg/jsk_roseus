@@ -11,7 +11,7 @@ while [ $# -ne 0 ]; do
 done
 ARGV=$ARGV")"
 
-echo "(progn (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))"| jskeusgl &
+echo "(progn (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))"| jskrbeusgl &
 PID=$!
 trap 'kill -s INT $PID ' CHLD INT TERM
 wait $PID
