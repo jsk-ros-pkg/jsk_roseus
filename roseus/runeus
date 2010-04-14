@@ -13,6 +13,6 @@ ARGV=$ARGV")"
 
 echo "(progn (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))"| jskeusgl &
 PID=$!
-trap 'echo \"kill -s INT $PID ' CHLD INT TERM
+trap 'kill -s INT $PID ' CHLD INT TERM
 wait $PID
 
