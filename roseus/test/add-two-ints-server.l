@@ -23,7 +23,8 @@
 ;;;
 (roseus "add_two_ints_server")
 (ros::advertise-service "add_two_ints" rospy_tutorials::AddTwoInts #'add-two-ints)
-(ros::spin)
+(do-until-key
+ (ros::spin-once))
 
 
 
