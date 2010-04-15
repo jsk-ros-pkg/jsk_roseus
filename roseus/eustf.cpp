@@ -64,8 +64,8 @@
 #include <ros/node_handle.h>
 #include <ros/service.h>
 #include <tf/tf.h>
-#include "tf/transform_listener.h"
-#include "tf/transform_datatypes.h"
+#include <tf/transform_listener.h>
+#include <tf/transform_datatypes.h>
 
 // for eus.h
 #define class   eus_class
@@ -96,37 +96,29 @@ using namespace std;
  *   TF wrapper
  ************************************************************/
 
-pointer EUSTF_LOOKUP_TRANSFORM(register context *ctx,int n,pointer *argv)
+pointer _EUSTF_LOOKUP_TRANSFORM(register context *ctx,int n,pointer *argv)
 {
   //NB: currently, only support NOW
-  char from_id[256] = "";
-  char to_id[256] = "";
   pointer vs;
   tf::TransformListener tf;
   tf::StampedTransform ret_transform;
   // tf::lookup-transform(from-id to-if)
   // take 2 arguments
   ckarg(2);
-  // store ids
-  if ( isstring(argv[0]) )
-    strncpy(from_id, (char*)(argv[0]->c.str.chars),255);
-  else
-    error(E_NOSTRING);
-  if ( isstring(argv[1]) )
-    strncpy(to_id, (char*)(argv[1]->c.str.chars),255);
-  else
-    error(E_NOSTRING);
+  // check frame ids
+  if ( !isstring(argv[0]) ) error(E_NOSTRING);
+  if ( !isstring(argv[1]) ) error(E_NOSTRING);
   //TODO: Error Check
-  std::string from_id_string = std::string(from_id);
-  std::string to_id_string = std::string(to_id);
+  std::string from_id_string = std::string((char*)(argv[0]->c.str.chars));
+  std::string to_id_string = std::string((char*)(argv[1]->c.str.chars));
   tf.waitForTransform(from_id_string, to_id_string,
                       ros::Time(), ros::Duration(1.0));
   tf.lookupTransform(from_id_string, to_id_string, ros::Time(), ret_transform);
-  
+
   // return as array, i dont know create coordinates in C...
   vs = makefvector(7);          //pos[3] + rot[4](angle-axis quaternion)
   tf::Vector3 p = ret_transform.getOrigin();
-  tf::Quaternion q = ret_transform.getRotation(); 
+  tf::Quaternion q = ret_transform.getRotation();
   vs->c.fvec.fv[0] = p.getX();
   vs->c.fvec.fv[1] = p.getY();
   vs->c.fvec.fv[2] = p.getZ();
@@ -137,13 +129,403 @@ pointer EUSTF_LOOKUP_TRANSFORM(register context *ctx,int n,pointer *argv)
   return(vs);
 }
 
+/* */
+pointer EUSTF_TRANSFORMER(register context *ctx,int n,pointer *argv)
+{
+  numunion nu;
+  ckarg(2);
+  bool interpolating = ((argv[0]==T)?true:false);
+  float cache_time = ckfltval(argv[1]);
+  return((pointer)(new tf::Transformer(interpolating, ros::Duration(cache_time))));
+}
+
+pointer EUSTF_ALLFRAMESASSTRING(register context *ctx,int n,pointer *argv)
+{
+  ckarg(1);
+  tf::Transformer *tf = (tf::Transformer *)argv[0];
+  string str = tf->allFramesAsString();
+  return(makestring((char *)(str.c_str()), str.length()));
+}
+
+pointer EUSTF_SETTRANSFORM(register context *ctx,int n,pointer *argv)
+{
+  ROS_ERROR("%s is not implemented yet", __PRETTY_FUNCTION__);
+  return(T);
+}
+
+#define set_ros_time(time,argv) \
+  {time.sec = intval(ccar(argv)); time.nsec = intval(ccdr(argv));}
+
+pointer EUSTF_WAITFORTRANSFORM(register context *ctx,int n,pointer *argv)
+{
+  numunion nu;
+  ckarg(6);
+  tf::Transformer *tf;
+  std::string target_frame, source_frame;
+  ros::Time time;
+  float timeout = 0, duration = 0;
+  bool ret;
+
+  tf = (tf::Transformer *)argv[0];
+  if (isstring(argv[1]))
+    target_frame = std::string((char*)(argv[1]->c.str.chars));
+  else error(E_NOSTRING);
+
+  if (isstring(argv[2]))
+    source_frame = std::string((char*)(argv[2]->c.str.chars));
+  else error(E_NOSTRING);
+
+  if (iscons(argv[3])) { set_ros_time(time,argv[3]); }
+  else error(E_NONUMBER);
+
+  if (isint(argv[4])) timeout = (float)intval(argv[4]);
+  else if (isflt(argv[4])) timeout = (float)fltval(argv[4]);
+  else error(E_NONUMBER);
+
+  if (isint(argv[5])) duration = (float)intval(argv[5]);
+  else if (isflt(argv[5])) duration = (float)fltval(argv[5]);
+  else error(E_NONUMBER);
+
+  ret = tf->waitForTransform(target_frame, source_frame, time,
+                             ros::Duration(timeout), ros::Duration(duration));
+
+  return((ret==true)?(T):(NIL));
+}
+
+pointer EUSTF_WAITFORTRANSFORMFULL(register context *ctx,int n,pointer *argv)
+{
+  numunion nu;
+  ckarg(8);
+  tf::Transformer *tf;
+  std::string target_frame, source_frame, fixed_frame;
+  ros::Time target_time, source_time;
+  float timeout = 0, duration = 0;
+  bool ret;
+
+  tf = (tf::Transformer *)argv[0];
+  if (isstring(argv[1]))
+    target_frame = std::string((char*)(argv[1]->c.str.chars));
+  else error(E_NOSTRING);
+
+  if (iscons(argv[2])) { set_ros_time(target_time,argv[2]); }
+  else error(E_NONUMBER);
+
+  if (isstring(argv[3]))
+    source_frame = std::string((char*)(argv[3]->c.str.chars));
+  else error(E_NOSTRING);
+
+  if (iscons(argv[4])) { set_ros_time(source_time,argv[4]); }
+  else error(E_NONUMBER);
+
+  if (isstring(argv[5]))
+    fixed_frame = std::string((char*)(argv[5]->c.str.chars));
+  else error(E_NOSTRING);
+
+  if (isint(argv[6])) timeout = (float)intval(argv[6]);
+  else if (isflt(argv[6])) timeout = (float)fltval(argv[6]);
+  else error(E_NONUMBER);
+
+  if (isint(argv[7])) duration = (float)intval(argv[7]);
+  else if (isflt(argv[7])) duration = (float)fltval(argv[7]);
+  else error(E_NONUMBER);
+
+  ret = tf->waitForTransform(target_frame, target_time,
+                             source_frame, source_time,
+                             fixed_frame,
+                             ros::Duration(timeout), ros::Duration(duration));
+
+  return((ret==true)?(T):(NIL));
+}
+
+pointer EUSTF_CANTRANSFORM(register context *ctx,int n,pointer *argv)
+{
+  ckarg(4);
+  tf::Transformer *tf;
+  std::string target_frame, source_frame;
+  ros::Time time;
+  bool ret;
+
+  tf = (tf::Transformer *)argv[0];
+  if (isstring(argv[1]))
+    target_frame = std::string((char*)(argv[1]->c.str.chars)); 
+  else error(E_NOSTRING);
+
+  if (isstring(argv[2]))
+    source_frame = std::string((char*)(argv[2]->c.str.chars));
+  else error(E_NOSTRING);
+
+  if (iscons(argv[3])) { set_ros_time(time,argv[3]); }
+  else error(E_NONUMBER);
+
+  ret = tf->canTransform(target_frame, source_frame, time);
+
+  return((ret==true)?(T):(NIL));
+}
+
+pointer EUSTF_CANTRANSFORMFULL(register context *ctx,int n,pointer *argv)
+{
+  ckarg(7);
+  tf::Transformer *tf;
+  std::string target_frame, source_frame, fixed_frame;
+  ros::Time target_time, source_time;
+  bool ret;
+
+  tf = (tf::Transformer *)argv[0];
+  if (isstring(argv[1]))
+    target_frame = std::string((char*)(argv[1]->c.str.chars));
+  else error(E_NOSTRING);
+
+  if (iscons(argv[2])) { set_ros_time(target_time,argv[3]); }
+  else error(E_NONUMBER);
+
+  if (isstring(argv[3]))
+    source_frame = std::string((char*)(argv[3]->c.str.chars));
+  else error(E_NOSTRING);
+
+  if (iscons(argv[4])) { set_ros_time(source_time,argv[4]); }
+  else error(E_NONUMBER);
+
+  if (isstring(argv[5]))
+    fixed_frame = std::string((char*)(argv[5]->c.str.chars));
+  else error(E_NOSTRING);
+
+  ret = tf->canTransform(target_frame, target_time,
+                         source_frame, source_time,
+                         fixed_frame);
+
+  return((ret==true)?(T):(NIL));
+}
+
+pointer EUSTF_CHAIN(register context *ctx,int n,pointer *argv)
+{
+  ROS_ERROR("%s is not implemented yet", __PRETTY_FUNCTION__);
+  return(T);
+}
+
+pointer EUSTF_CLEAR(register context *ctx,int n,pointer *argv)
+{
+  ckarg(1);
+  tf::Transformer *tf = (tf::Transformer *)argv[0];
+  tf->clear();
+  return(T);
+}
+
+pointer EUSTF_FRAMEEXISTS(register context *ctx,int n,pointer *argv)
+{
+  ckarg(2);
+  tf::Transformer *tf;
+  std::string frame_id;
+
+  tf = (tf::Transformer *)argv[0];
+  if (!isstring(argv[1])) error(E_NOSTRING);
+  frame_id = std::string((char*)(argv[1]->c.str.chars));
+  return(tf->frameExists(frame_id)?T:NIL);
+}
+
+pointer EUSTF_GETFRAMESTRINGS(register context *ctx,int n,pointer *argv)
+{
+  ckarg(1);
+  tf::Transformer *tf = (tf::Transformer *)argv[0];
+  std::vector< std::string > ids;
+  pointer str = NIL;
+
+  tf->getFrameStrings(ids);
+  for (std::vector< std::string >::iterator s = ids.begin(); s != ids.end(); s++) {
+    str=cons(ctx,makestring((char *)(s->c_str()),s->length()),str);
+  }
+
+  return(str);
+}
+
+pointer EUSTF_GETLATERSTCOMMONTIME(register context *ctx,int n,pointer *argv)
+{
+  ckarg(3);
+  tf::Transformer *tf;
+  std::string source_frame, target_frame, error_string;
+
+  tf = (tf::Transformer *)argv[0];
+  if (!isstring(argv[1])) error(E_NOSTRING);
+  source_frame = std::string((char*)(argv[1]->c.str.chars));
+  if (!isstring(argv[2])) error(E_NOSTRING);
+  target_frame = std::string((char*)(argv[2]->c.str.chars));
+
+  ros::Time time;
+  int r = tf->getLatestCommonTime(source_frame, target_frame, time, &error_string);
+  if ( r == 0 ) {
+    return(cons(ctx,makeint(time.sec),makeint(time.nsec)));
+  } else {
+    ROS_ERROR("%s", error_string.c_str());
+    return(NIL);
+  }
+}
+
+pointer EUSTF_LOOKUPTRANSFORM(register context *ctx,int n,pointer *argv)
+{
+  ckarg(4);
+  tf::Transformer *tf;
+  std::string target_frame, source_frame;
+  ros::Time time;
+
+  tf = (tf::Transformer *)argv[0];
+  if (!isstring(argv[1])) error(E_NOSTRING);
+  target_frame = std::string((char*)(argv[1]->c.str.chars));
+  if (!isstring(argv[2])) error(E_NOSTRING);
+  source_frame = std::string((char*)(argv[2]->c.str.chars));
+
+  if (iscons(argv[3])) { set_ros_time(time,argv[3]); }
+  else error(E_NONUMBER);
+
+  tf::StampedTransform transform;
+  tf->lookupTransform(target_frame, source_frame, time, transform);
+
+  pointer vs = makefvector(7);          //pos[3] + rot[4](angle-axis quaternion)
+  vpush(vs);
+  tf::Vector3 p = transform.getOrigin();
+  tf::Quaternion q = transform.getRotation();
+  vs->c.fvec.fv[0] = p.getX();
+  vs->c.fvec.fv[1] = p.getY();
+  vs->c.fvec.fv[2] = p.getZ();
+  vs->c.fvec.fv[3] = q.getW();
+  vs->c.fvec.fv[4] = q.getX();
+  vs->c.fvec.fv[5] = q.getY();
+  vs->c.fvec.fv[6] = q.getZ();
+  vpop();
+  return(vs);
+}
+
+pointer EUSTF_LOOKUPTRANSFORMFULL(register context *ctx,int n,pointer *argv)
+{
+  ckarg(6);
+  tf::Transformer *tf;
+  std::string target_frame, source_frame, fixed_frame;
+  ros::Time target_time, source_time;
+
+  tf = (tf::Transformer *)argv[0];
+  if (!isstring(argv[1])) error(E_NOSTRING);
+  target_frame = std::string((char*)(argv[1]->c.str.chars));
+
+  if (iscons(argv[2])) { set_ros_time(target_time,argv[2]); }
+  else error(E_NONUMBER);
+
+  if (!isstring(argv[3])) error(E_NOSTRING);
+  source_frame = std::string((char*)(argv[3]->c.str.chars));
+
+  if (iscons(argv[4])) { set_ros_time(source_time,argv[4]); }
+  else error(E_NONUMBER);
+
+  if (!isstring(argv[5])) error(E_NOSTRING);
+  fixed_frame = std::string((char*)(argv[5]->c.str.chars));
+
+  tf::StampedTransform transform;
+  tf->lookupTransform(target_frame, target_time,
+                      source_frame, source_time, fixed_frame, transform);
+
+  pointer vs = makefvector(7);          //pos[3] + rot[4](angle-axis quaternion)
+  vpush(vs);
+  tf::Vector3 p = transform.getOrigin();
+  tf::Quaternion q = transform.getRotation();
+  vs->c.fvec.fv[0] = p.getX();
+  vs->c.fvec.fv[1] = p.getY();
+  vs->c.fvec.fv[2] = p.getZ();
+  vs->c.fvec.fv[3] = q.getW();
+  vs->c.fvec.fv[4] = q.getX();
+  vs->c.fvec.fv[5] = q.getY();
+  vs->c.fvec.fv[6] = q.getZ();
+  vpop();
+  return(vs);
+}
+
+pointer EUSTF_LOOKUPVELOCITY(register context *ctx,int n,pointer *argv)
+{
+  numunion nu;
+  ckarg(4);
+  tf::Transformer *tf;
+  std::string reference_frame, moving_frame;
+  float time = 0, duration = 0;
+
+  tf = (tf::Transformer *)argv[0];
+  if (!isstring(argv[1])) error(E_NOSTRING);
+  reference_frame = std::string((char*)(argv[1]->c.str.chars));
+
+  if (!isstring(argv[2])) error(E_NOSTRING);
+  moving_frame = std::string((char*)(argv[2]->c.str.chars));
+
+  if (isint(argv[3])) time = (float)intval(argv[3]);
+  else if (isflt(argv[3])) time = (float)fltval(argv[3]);
+  else error(E_NONUMBER);
+
+  if (isint(argv[4])) duration = (float)intval(argv[4]);
+  else if (isflt(argv[4])) duration = (float)fltval(argv[4]);
+  else error(E_NONUMBER);
+
+  geometry_msgs::TwistStamped velocity;
+  ROS_ERROR("%s is not implemented yet since lookupVelocity seems obsoluted", __PRETTY_FUNCTION__);
+  /* tf->lookupVelocity(reference_frame, moving_frame, ros::Time(time), ros::Time(duration), velocity); */
+
+  pointer vs = makefvector(6);          //pos[3] + rot[4](angle-axis quaternion)
+  vpush(vs);
+  vs->c.fvec.fv[0] = velocity.twist.linear.x;
+  vs->c.fvec.fv[1] = velocity.twist.linear.y;
+  vs->c.fvec.fv[2] = velocity.twist.linear.z;
+  vs->c.fvec.fv[3] = velocity.twist.angular.x;
+  vs->c.fvec.fv[4] = velocity.twist.angular.x;
+  vs->c.fvec.fv[5] = velocity.twist.angular.x;
+  vpop();
+  return(vs);
+}
+
+/* */
+pointer EUSTF_TRANSFORM_LISTENER(register context *ctx,int n,pointer *argv)
+{
+  numunion nu;
+  ckarg(2);
+  float cache_time = ckfltval(argv[0]);
+  bool spin_thread = ((argv[1]==T)?true:false);
+  return((pointer)(new tf::TransformListener(ros::Duration(cache_time), spin_thread)));
+}
+
+/* */
+pointer EUSTF_SETEXTRAPOLATIONLIMIT(register context *ctx,int n,pointer *argv)
+{
+  numunion nu;
+  ckarg(2);
+  tf::Transformer *tf;
+  tf = (tf::Transformer *)argv[0];
+  float distance = ckfltval(argv[1]);
+
+  tf->setExtrapolationLimit(ros::Duration(distance));
+  return(T);
+}
+
 pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
 {
   pointer rospkg,p=Spevalof(PACKAGE);
   rospkg=findpkg(makestring("TF",2));
   if (rospkg == 0) rospkg=makepkg(ctx,makestring("TF", 2),NIL,NIL);
   Spevalof(PACKAGE)=rospkg;
-  defun(ctx,"_LOOKUP-TRANSFORM",argv[0],(pointer (*)())EUSTF_LOOKUP_TRANSFORM);
+  defun(ctx,"_LOOKUP-TRANSFORM",argv[0],(pointer (*)())_EUSTF_LOOKUP_TRANSFORM);
+  rospkg=findpkg(makestring("ROS",3));
+  Spevalof(PACKAGE)=rospkg;
+  defun(ctx,"EUSTF-TRANSFORMER",argv[0],(pointer (*)())EUSTF_TRANSFORMER);
+  defun(ctx,"EUSTF-ALL-FRAMES-AS-STRING",argv[0],(pointer (*)())EUSTF_ALLFRAMESASSTRING);
+  defun(ctx,"EUSTF-SETT-RANSFORM",argv[0],(pointer (*)())EUSTF_SETTRANSFORM);
+  defun(ctx,"EUSTF-WAIT-FOR-TRANSFORM",argv[0],(pointer (*)())EUSTF_WAITFORTRANSFORM);
+  defun(ctx,"EUSTF-WAIT-FOR-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_WAITFORTRANSFORMFULL);
+  defun(ctx,"EUSTF-CAN-TRANSFORM",argv[0],(pointer (*)())EUSTF_CANTRANSFORM);
+  defun(ctx,"EUSTF-CAN-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_CANTRANSFORMFULL);
+  defun(ctx,"EUSTF-CHAIN",argv[0],(pointer (*)())EUSTF_CHAIN);
+  defun(ctx,"EUSTF-CLEAR",argv[0],(pointer (*)())EUSTF_CLEAR);
+  defun(ctx,"EUSTF-FRAME-EXISTS",argv[0],(pointer (*)())EUSTF_FRAMEEXISTS);
+  defun(ctx,"EUSTF-GET-FRAME-STRINGS",argv[0],(pointer (*)())EUSTF_GETFRAMESTRINGS);
+  defun(ctx,"EUSTF-GET-LATEST-COMMON-TIME",argv[0],(pointer (*)())EUSTF_GETLATERSTCOMMONTIME);
+  defun(ctx,"EUSTF-LOOKUP-TRANSFORM",argv[0],(pointer (*)())EUSTF_LOOKUPTRANSFORM);
+  defun(ctx,"EUSTF-LOOKUP-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_LOOKUPTRANSFORMFULL);
+  defun(ctx,"EUSTF-LOOKUP-VELOCITY",argv[0],(pointer (*)())EUSTF_LOOKUPVELOCITY);
+  /* */
+  defun(ctx,"EUSTF-TRANSFORM-LISTENER",argv[0],(pointer (*)())EUSTF_TRANSFORM_LISTENER);
+  /* */
+  defun(ctx,"EUSTF-SET-EXTRAPOLATION-LIMIT",argv[0],(pointer (*)())EUSTF_SETEXTRAPOLATIONLIMIT);
+
   pointer_update(Spevalof(PACKAGE),p);
   return 0;
 }
