@@ -142,7 +142,8 @@
                    (float-vector (elt ret 3)
                                  (elt ret 4)
                                  (elt ret 5)
-                                 (elt ret 6))))))
+                                 (elt ret 6)))
+                  :name target-frame)))
   (:lookup-transform-full
    (target-frame target-time source-frame source-time fixed-frame)
    (let (ret)
@@ -159,7 +160,8 @@
                    (float-vector (elt ret 3)
                                  (elt ret 4)
                                  (elt ret 5)
-                                 (elt ret 6))))))
+                                 (elt ret 6)))
+                  :name target-frame)))
   (:lookup-velocity
    (reference-frame moving-frame time duration)
    (ros::eustf-lookup-velocity cobject reference-frame moving-frame time duration))
