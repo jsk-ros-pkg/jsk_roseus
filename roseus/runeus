@@ -15,4 +15,5 @@ echo "(progn (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))"| jskr
 PID=$!
 trap 'kill -s INT $PID ' CHLD INT TERM
 wait $PID
+if [ $? -ne 0 ] ; then read line ; fi
 
