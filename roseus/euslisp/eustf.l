@@ -10,9 +10,6 @@
 (roseus-add-msgs "std_msgs")
 (roseus-add-msgs "geometry_msgs")
 
-(defmethod ros::rostime
-  (:time () (cons sec nsec)))
-
 ;; convert unit....
 ;; position convert : WG use [m], JSK use eus [mm]
 ;; quaternion convert: WG use axis-angle quaternion, JSK use angle-axis quaternion
@@ -40,7 +37,7 @@
     (instance geometry_msgs::PoseStamped :init
               :header (instance roslib::header :init
                                 :frame_id id
-                                :stamp (ros::rostime))
+                                :stamp (ros::time-now))
               :pose pose)))
 
 (defun ros::coords->tf-transform (coords) (ros::coords->tf-pose coords))
@@ -104,22 +101,22 @@
    (target-frame source-frame time timeout &optional (duration 0.01))
    (ros::eustf-wait-for-transform cobject
                                   target-frame source-frame
-                                  (send time :time) timeout duration))
+                                  (send time :sec-nsec) timeout duration))
   (:wait-for-transform-full
    (target-frame target-time source-frame source-time fixed-frame timeout &optional (duration 0.01))
    (ros::eustf-wait-for-transform-full cobject
-                                       target-frame (send target-time :time)
-                                       source-frame (send source-time :time)
+                                       target-frame (send target-time :sec-nsec)
+                                       source-frame (send source-time :sec-nsec)
                                        fixed-frame timeout duration))
   (:can-transform
    (tareget-frame source-frame time)
    (ros::eustf-can-transform cobject
-                             target-frame source-frame (send time :time)))
+                             target-frame source-frame (send time :sec-nsec)))
   (:can-transform-full
    (tareget-frame target-time source-frame source-time fixed-frame)
    (ros::eustf-can-transform-full cobject
-                                  target-frame (send target-time :time)
-                                  source-frame (send source-time :time)
+                                  target-frame (send target-time :sec-nsec)
+                                  source-frame (send source-time :sec-nsec)
                                   fixed-frame))
   (:chain
    (target-frame target-time source-frame source-time fixed-frame)
@@ -135,7 +132,7 @@
    (let (ret)
      (setq ret (ros::eustf-lookup-transform cobject
                                             target-frame source-frame
-                                            (send time :time)))
+                                            (send time :sec-nsec)))
      (make-coords :pos (float-vector
                         (* 1000.0 (elt ret 0))
                         (* 1000.0 (elt ret 1))
@@ -150,8 +147,8 @@
    (target-frame target-time source-frame source-time fixed-frame)
    (let (ret)
      (setq ret (ros::eustf-lookup-transform-full cobject
-                                                 target-frame (send target-time :time)
-                                                 source-frame (send source-time :time)
+                                                 target-frame (send target-time :sec-nsec)
+                                                 source-frame (send source-time :sec-nsec)
                                                  fixed-frame))
      (make-coords :pos (float-vector
                         (* 1000.0 (elt ret 0))

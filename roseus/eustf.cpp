@@ -129,6 +129,14 @@ pointer _EUSTF_LOOKUP_TRANSFORM(register context *ctx,int n,pointer *argv)
   return(vs);
 }
 
+#define set_ros_time(time,argv)                         \
+  if (isvector(argv) && (elmtypeof(argv)==ELM_INT)) {   \
+    time.sec  = argv->c.ivec.iv[0];                     \
+    time.nsec = argv->c.ivec.iv[1];                     \
+  } else {                                              \
+    error(E_NOVECTOR);                                  \
+  }
+
 /* */
 pointer EUSTF_TRANSFORMER(register context *ctx,int n,pointer *argv)
 {
@@ -153,9 +161,6 @@ pointer EUSTF_SETTRANSFORM(register context *ctx,int n,pointer *argv)
   return(T);
 }
 
-#define set_ros_time(time,argv) \
-  {time.sec = intval(ccar(argv)); time.nsec = intval(ccdr(argv));}
-
 pointer EUSTF_WAITFORTRANSFORM(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
@@ -175,8 +180,7 @@ pointer EUSTF_WAITFORTRANSFORM(register context *ctx,int n,pointer *argv)
     source_frame = std::string((char*)(argv[2]->c.str.chars));
   else error(E_NOSTRING);
 
-  if (iscons(argv[3])) { set_ros_time(time,argv[3]); }
-  else error(E_NONUMBER);
+  set_ros_time(time,argv[3]);
 
   if (isint(argv[4])) timeout = (float)intval(argv[4]);
   else if (isflt(argv[4])) timeout = (float)fltval(argv[4]);
@@ -207,15 +211,13 @@ pointer EUSTF_WAITFORTRANSFORMFULL(register context *ctx,int n,pointer *argv)
     target_frame = std::string((char*)(argv[1]->c.str.chars));
   else error(E_NOSTRING);
 
-  if (iscons(argv[2])) { set_ros_time(target_time,argv[2]); }
-  else error(E_NONUMBER);
+  set_ros_time(target_time,argv[2]);
 
   if (isstring(argv[3]))
     source_frame = std::string((char*)(argv[3]->c.str.chars));
   else error(E_NOSTRING);
 
-  if (iscons(argv[4])) { set_ros_time(source_time,argv[4]); }
-  else error(E_NONUMBER);
+  set_ros_time(source_time,argv[4]);
 
   if (isstring(argv[5]))
     fixed_frame = std::string((char*)(argv[5]->c.str.chars));
@@ -254,8 +256,7 @@ pointer EUSTF_CANTRANSFORM(register context *ctx,int n,pointer *argv)
     source_frame = std::string((char*)(argv[2]->c.str.chars));
   else error(E_NOSTRING);
 
-  if (iscons(argv[3])) { set_ros_time(time,argv[3]); }
-  else error(E_NONUMBER);
+  set_ros_time(time,argv[3]);
 
   ret = tf->canTransform(target_frame, source_frame, time);
 
@@ -275,15 +276,13 @@ pointer EUSTF_CANTRANSFORMFULL(register context *ctx,int n,pointer *argv)
     target_frame = std::string((char*)(argv[1]->c.str.chars));
   else error(E_NOSTRING);
 
-  if (iscons(argv[2])) { set_ros_time(target_time,argv[3]); }
-  else error(E_NONUMBER);
+  set_ros_time(target_time,argv[3]);
 
   if (isstring(argv[3]))
     source_frame = std::string((char*)(argv[3]->c.str.chars));
   else error(E_NOSTRING);
 
-  if (iscons(argv[4])) { set_ros_time(source_time,argv[4]); }
-  else error(E_NONUMBER);
+  set_ros_time(source_time,argv[4]);
 
   if (isstring(argv[5]))
     fixed_frame = std::string((char*)(argv[5]->c.str.chars));
@@ -372,8 +371,7 @@ pointer EUSTF_LOOKUPTRANSFORM(register context *ctx,int n,pointer *argv)
   if (!isstring(argv[2])) error(E_NOSTRING);
   source_frame = std::string((char*)(argv[2]->c.str.chars));
 
-  if (iscons(argv[3])) { set_ros_time(time,argv[3]); }
-  else error(E_NONUMBER);
+  set_ros_time(time,argv[3]);
 
   tf::StampedTransform transform;
   tf->lookupTransform(target_frame, source_frame, time, transform);
@@ -404,14 +402,12 @@ pointer EUSTF_LOOKUPTRANSFORMFULL(register context *ctx,int n,pointer *argv)
   if (!isstring(argv[1])) error(E_NOSTRING);
   target_frame = std::string((char*)(argv[1]->c.str.chars));
 
-  if (iscons(argv[2])) { set_ros_time(target_time,argv[2]); }
-  else error(E_NONUMBER);
+  set_ros_time(target_time,argv[2]);
 
   if (!isstring(argv[3])) error(E_NOSTRING);
   source_frame = std::string((char*)(argv[3]->c.str.chars));
 
-  if (iscons(argv[4])) { set_ros_time(source_time,argv[4]); }
-  else error(E_NONUMBER);
+  set_ros_time(source_time,argv[4]);
 
   if (!isstring(argv[5])) error(E_NOSTRING);
   fixed_frame = std::string((char*)(argv[5]->c.str.chars));

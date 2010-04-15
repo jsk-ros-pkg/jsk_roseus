@@ -523,6 +523,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   if (isint(argv[n-1])) {queuesize = ckintval(argv[n-1]);n--;}
   if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
+  // TODO:need error checking
   message = argv[1];
   fncallback = argv[2];
   args=NIL;
@@ -991,7 +992,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   defun(ctx,"SPIN",argv[0],(pointer (*)())ROSEUS_SPIN);
   defun(ctx,"SPIN-ONCE",argv[0],(pointer (*)())ROSEUS_SPINONCE);
-  defun(ctx,"TIME-NOW",argv[0],(pointer (*)())ROSEUS_TIME_NOW);
+  defun(ctx,"TIME-NOW-RAW",argv[0],(pointer (*)())ROSEUS_TIME_NOW);
   defun(ctx,"RATE",argv[0],(pointer (*)())ROSEUS_RATE);
   defun(ctx,"SLEEP",argv[0],(pointer (*)())ROSEUS_SLEEP);
   defun(ctx,"OK",argv[0],(pointer (*)())ROSEUS_OK);

@@ -32,13 +32,26 @@
   :super propertied-object
   :slots (sec nsec))
 (defmethod ros::rostime
-  (:init (&key ((:sec _sec) 0) ((:nsec _nsec) 0)) (setq sec _sec nsec _nsec) self)
+  (:init (&key ((:sec _sec) 0) ((:nsec _nsec) 0))
+   (ros::ros-error "ros::rostime is no longer supported")
+   (setq sec _sec nsec _nsec) self)
   (:sec (&optional s) (if s (setq sec s)) sec)
   (:nsec (&optional s) (if s (setq nsec s)) nsec)
   )
-(defun ros::rostime ()
-  (let ((now (ros::time-now)))
-    (instance ros::rostime :init :sec (elt now 0) :nsec (elt now 1))))
+
+(defclass ros::time
+  :super propertied-object
+  :slots (sec-nsec))
+(defmethod ros::time
+  (:init (&key ((:sec _sec) 0) ((:nsec _nsec) 0)) (setq sec-nsec (integer-vector _sec _nsec)) self)
+  (:sec  (&optional s) (if s (setf (elt sec-nsec 0) s)) (elt sec-nsec 0))
+  (:nsec (&optional s) (if s (setf (elt sec-nsec 1) s)) (elt sec-nsec 1))
+  (:sec-nsec () sec-nsec)
+  (:now () (setq sec-nsec (ros::time-now-raw)) self)
+  )
+
+(defun ros::time () (instance ros::time :init))
+(defun ros::time-now () (send (instance ros::time :init) :now))
 
 (defun roseus-add-files (pkg type)
   (let (dir dirfile)

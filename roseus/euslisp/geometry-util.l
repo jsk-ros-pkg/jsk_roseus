@@ -55,7 +55,7 @@
     (instance geometry_msgs::PoseStamped :init
               :header (instance roslib::header :init 
                                 :frame_id id
-                                :stamp (ros::rostime))
+                                :stamp (ros::time-now))
               :pose pose)))
 
 (defun nav-msgs-odometry->coords (odom)
@@ -90,7 +90,7 @@
   (instance checkerboard_detector::ObjectDetection :init
             :header (instance roslib::header :init 
                               :frame_id id
-                              :stamp (ros::rostime))
+                              :stamp (ros::time-now))
             :objects (mapcar 
                       #'(lambda (x)
                           (let ((name (car x))

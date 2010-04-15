@@ -101,7 +101,7 @@
    (goal)
    (let ((now (ros::time-now)))
      (setq goal_id (instance actionlib_msgs::GoalID :init
-                             :id (format nil "~a~a" (elt now 0) (elt now 1))))
+                             :id (format nil "~a" (send now :sec-nsec))))
      (send goal :goal_id goal_id)
      (setq simple-state 'ros::*simple-goal-state-pending*)
      (ros::publish (format nil "~A/goal" name-space) goal)))
@@ -145,7 +145,7 @@
                              :text (goal-status-to-string status))))
        )
      (send msg :header :seq (incf seq-id))
-     (send msg :header :stamp (ros::rostime))
+     (send msg :header :stamp (ros::time-now))
      (ros::publish (format nil "~A/status" name-space) msg)
      ))
   (:goal-callback
@@ -160,7 +160,7 @@
    (setq status actionlib_msgs::succeeded)
    (send msg :status :goal_id  goal-id)
    (send msg :status :status status)
-   (send msg :header :stamp (ros::rostime))
+   (send msg :header :stamp (ros::time-now))
    (ros::publish (format nil "~A/result" name-space) msg)
    (setq goal nil)
    (setq status actionlib_msgs::pending)

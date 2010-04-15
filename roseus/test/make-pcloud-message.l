@@ -29,7 +29,7 @@
                                    :name "rgb" :values channel-col)))
 
     (setq hdr (instance roslib::header :init
-                        :stamp (ros::rostime) :frame_id frame))
+                        :stamp (ros::time-now) :frame_id frame))
 
     (setq msg (instance sensor_msgs::PointCloud :init
                         :header hdr

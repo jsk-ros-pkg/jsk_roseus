@@ -55,7 +55,7 @@ examples:
   (navigation-set-status server actionlib_msgs::pending)"
   (let ((msg (instance actionlib_msgs::GoalStatusArray :init)))
     ;; setup header of msg
-    (send msg :header :stamp (ros::rostime))
+    (send msg :header :stamp (ros::time-now))
     (send msg :header :seq (send server :next-seq-id))
     ;;NB: need to append status_list
     (send msg :status_list (list (instance actionlib_msgs::goalstatus :init

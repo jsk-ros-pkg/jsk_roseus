@@ -136,7 +136,7 @@
 		  ((:int8 :int16 :int32 :int64) 0)
 		  ((:float32 :float64) 0.0)
 		  (:string "\"\"")
-		  (:time "(instance ros::rostime :init)")
+		  (:time "(instance ros::time :init)")
 		  (:rostype (format nil "(instance ~A :init)"
 				    (if (substringp "::" type)
 					type
