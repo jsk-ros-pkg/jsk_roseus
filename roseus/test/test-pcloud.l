@@ -30,36 +30,6 @@
 (load "roseus.l")
 
 (setq ros::*compile-message* t) ;; switch for compile
-(defun roseus-add-files (pkg type)
- (let (dir dirfile)
-   (setq dir (format nil "~A/~A/eus/~A/"
-                     (read (piped-fork (format nil "rospack find ~A" pkg)))
-                     type pkg))
-   (unless (probe-file dir)
-     (warning-message 1 (format nil ";; can not find ~A directory for [~A] pac\
-kages~%" dir pkg))
-     (exit))
-   (unless (find-package (string-upcase pkg))
-     (make-package (string-upcase pkg)))
-   (dolist (file (directory dir))
-     (when (and (string= (pathname-type file) "l")
-                (not (= #\. (elt (pathname-name file) 0))))
-       (setq dirfile (concatenate string dir file))
-       (if ros::*compile-message*
-           (let* ((fname (format nil "~A" (pathname-name file)))
-                  (old-module (find fname *loaded-modules*
-                                    :key #'lisp::load-module-file-name :test #'equal)))
-             (if old-module (sys::unbinload old-module))
-             (let ((pwd (unix::pwd)) lname)
-               (unix::chdir (string-right-trim "/" dir))
-               (comp:compile-file-if-src-newer file)
-               (setq lname (load fname))
-               (warning-message 6 ";; loading   ~A~%" lname)
-               (unix::chdir pwd)))
-         (progn
-           (warning-message 6 ";; loading ~A~%" dirfile)
-           (load dirfile)))))
-   ))
 
 (roseus-add-msgs "roslib")
 (roseus-add-msgs "geometry_msgs")
