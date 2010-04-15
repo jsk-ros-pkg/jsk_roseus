@@ -163,6 +163,9 @@
   (:lookup-velocity
    (reference-frame moving-frame time duration)
    (ros::eustf-lookup-velocity cobject reference-frame moving-frame time duration))
+  (:get-parent
+   (frame_id time)
+   (ros::eustf-get-parent cobject frame_id (send time :sec-nsec)))
   ;;
   (:set-extrapolation-limit
    (distance)

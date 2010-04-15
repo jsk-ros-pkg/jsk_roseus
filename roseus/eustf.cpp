@@ -493,6 +493,26 @@ pointer EUSTF_SETEXTRAPOLATIONLIMIT(register context *ctx,int n,pointer *argv)
   return(T);
 }
 
+pointer EUSTF_GETPARENT(register context *ctx,int n,pointer *argv)
+{
+  ckarg(3);
+  tf::Transformer *tf;
+  std::string frame_id, parent;
+  ros::Time time;
+
+  tf = (tf::Transformer *)argv[0];
+
+  if (isstring(argv[1]))
+    frame_id = std::string((char*)(argv[1]->c.str.chars));
+  else error(E_NOSTRING);
+
+  set_ros_time(time,argv[2]);
+
+  bool ret = tf->getParent(frame_id, time, parent);
+
+  return(ret?makestring((char *)parent.c_str(),parent.length()):NIL);
+}
+
 pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
 {
   pointer rospkg,p=Spevalof(PACKAGE);
@@ -521,6 +541,7 @@ pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"EUSTF-TRANSFORM-LISTENER",argv[0],(pointer (*)())EUSTF_TRANSFORM_LISTENER);
   /* */
   defun(ctx,"EUSTF-SET-EXTRAPOLATION-LIMIT",argv[0],(pointer (*)())EUSTF_SETEXTRAPOLATIONLIMIT);
+  defun(ctx,"EUSTF-GET-PARENT",argv[0],(pointer (*)())EUSTF_GETPARENT);
 
   pointer_update(Spevalof(PACKAGE),p);
   return 0;
