@@ -521,6 +521,10 @@ pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
   Spevalof(PACKAGE)=rospkg;
   defun(ctx,"_LOOKUP-TRANSFORM",argv[0],(pointer (*)())_EUSTF_LOOKUP_TRANSFORM);
   rospkg=findpkg(makestring("ROS",3));
+  if (rospkg == 0 ) {
+    ROS_ERROR("Coudld not found ROS package; Please load eusros.so");
+    exit(2);
+  }
   Spevalof(PACKAGE)=rospkg;
   defun(ctx,"EUSTF-TRANSFORMER",argv[0],(pointer (*)())EUSTF_TRANSFORMER);
   defun(ctx,"EUSTF-ALL-FRAMES-AS-STRING",argv[0],(pointer (*)())EUSTF_ALLFRAMESASSTRING);
