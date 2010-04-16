@@ -65,6 +65,7 @@
 #include <ros/this_node.h>
 #include <ros/node_handle.h>
 #include <ros/service.h>
+#include <rospack/rospack.h>
 
 // for eus.h
 #define class   eus_class
@@ -975,6 +976,23 @@ pointer ROSEUS_HAS_PARAM(register context *ctx,int n,pointer *argv)
   return((s_node->hasParam(key))?(T):(NIL));
 }
 
+pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
+{
+  ckarg(1);
+
+  string pkg;
+  if (isstring(argv[0])) pkg.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  rospack::ROSPack rp;
+  try {
+    rospack::Package *p = rp.get_pkg(pkg);
+    if (p!=NULL) return(makestring((char *)p->path.c_str(),p->path.length()));
+  } catch (runtime_error &e) {
+  }
+  return(NIL);
+}
+
 /************************************************************
  *   __roseus
  ************************************************************/
@@ -1023,6 +1041,8 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"GET-PARAM",argv[0],(pointer (*)())ROSEUS_GET_PARAM);
   defun(ctx,"GET-PARAM-CASHED",argv[0],(pointer (*)())ROSEUS_GET_PARAM_CASHED);
   defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM);
+
+  defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND);
 
   pointer_update(Spevalof(PACKAGE),p);
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);

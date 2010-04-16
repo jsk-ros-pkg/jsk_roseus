@@ -55,9 +55,7 @@
 
 (defun roseus-add-files (pkg type)
   (let (dir dirfile)
-    (setq dir (format nil "~A/~A/eus/~A/"
-                      (read (piped-fork (format nil "rospack find ~A" pkg)))
-                      type pkg))
+    (setq dir (format nil "~A/~A/eus/~A/" (ros::rospack-find pkg) type pkg))
     (unless (probe-file dir)
       (warning-message 1 (format nil ";; can not find ~A directory for [~A] packages~%" dir pkg))
       (exit))
