@@ -18,16 +18,19 @@
 (defun ros::pos->tf-point (pos)
   (instance geometry_msgs::point :init
             :x (* 0.001 (x pos)) :y (* 0.001 (y pos)) :z (* 0.001 (z pos))))
+(defun ros::pos->tf-translation (pos)
+  (instance geometry_msgs::vector3 :init
+            :x (* 0.001 (x pos)) :y (* 0.001 (y pos)) :z (* 0.001 (z pos))))
 
-(defun ros::rot->tf-quaternion (coords)
+(defun ros::rot->tf-quaternion (rot)
   (let* ((q (matrix2quaternion rot))
-         (qx (elt q 3)) (qy (elt q 1)) (qz (elt q 2)) (qw (elt q 0)))
+         (qx (elt q 1)) (qy (elt q 2)) (qz (elt q 3)) (qw (elt q 0)))
     (instance geometry_msgs::quaternion :init
               :x qx :y qy :z qz :w qw)))
 
 (defun ros::coords->tf-pose (coords)
   (instance geometry_msgs::pose :init
-            :position (ros::pos->tf-position (send coords :worldpos))
+            :position (ros::pos->tf-point (send coords :worldpos))
             :orientation (ros::rot->tf-quaternion (send coords :worldrot))))
 
 (defun ros::coords->tf-pose-stamped (coords id)
@@ -40,7 +43,16 @@
                                 :stamp (ros::time-now))
               :pose pose)))
 
-(defun ros::coords->tf-transform (coords) (ros::coords->tf-pose coords))
+(defun ros::coords->tf-transform (coords)
+  (instance geometry_msgs::transform :init
+            :translation (ros::pos->tf-translation (send coords :worldpos))
+            :rotation (ros::rot->tf-quaternion (send coords :worldrot))))
+
+(defun ros::coords->tf-transform-stamped (coords id &optional (child_id ""))
+    (let ((trans (ros::coords->tf-transform coords)))
+      (instance geometry_msgs::TransformStamped :init
+                :header (instance roslib::header :init :frame_id id :stamp (ros::time-now))
+                :child_frame_id child_id :transform trans)))
 
 ;; tf->eus
 (defun ros::tf-point->pos (point)
@@ -76,7 +88,7 @@
 
 (defun ros::create-quaternion-msg-from-rpy (roll pitch yaw)
   (let* ((q (ros::create-quaternion-from-rpy roll pitch yaw))
-         (qx (elt q 3)) (qy (elt q 1)) (qz (elt q 2)) (qw (elt q 0)))
+         (qx (elt q 1)) (qy (elt q 2)) (qz (elt q 3)) (qw (elt q 0)))
     (instance geometry_msgs::quaternion :init :x qx :y qy :z qz :w qw)))
 
 ;;
