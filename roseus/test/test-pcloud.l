@@ -1,12 +1,13 @@
+#!/usr/bin/env /home/leus/prog/roseus/runeus
 ;; -*- mode: EusLisp; coding: utf-8-unix; -*-
 
-(setq *real* nil) ;; switch for using real camera
+(setq *real* t) ;; switch for using real camera
 (defun init-cr-cap (&optional (real *real*))
   (cond
    (real
     (load (format nil "~A/prog/jvl/app/test-cr-save.l" (unix:getenv "HOME")))
     (test-cr-capture
-     :param-prefix (format nil "~A/prog/jvl/app/sr4000/2010-02-16-15-14-42" (unix:getenv "HOME")))
+     :param-prefix (format nil "~A/prog/jvl/app/sr4000/2010-04-20-19-14-52" (unix:getenv "HOME")))
     (defun proc-pcloud ()
       (proc-cr)
       (setq *3dp* (send *cr* :point-cloud))
@@ -36,7 +37,8 @@
 (roseus-add-msgs "sensor_msgs")
 
 (if ros::*compile-message*
-    (let* ((file "make-pcloud-message.l")
+    (let* ((file (format nil "~A/prog/roseus/test/make-pcloud-message.l"
+                         (unix:getenv "HOME")))
            (fname (format nil "~A" (pathname-name file)))
            (old-module (find fname *loaded-modules*
                              :key #'lisp::load-module-file-name :test #'equal)))
@@ -50,8 +52,8 @@
 (defvar P_HEIGHT 144)
 (setq *points-num* (* P_WIDTH P_HEIGHT))
 
-(roseus "test_pcloud")
-(ros::advertise "pcloud" sensor_msgs::PointCloud 5)
+(roseus "pcloud_publisher")
+(ros::advertise "color_pcloud" sensor_msgs::PointCloud 5)
 (ros::rate 15)
 
 (setq *tm* (instance mtimer :init))
@@ -66,16 +68,15 @@
     (proc-pcloud)
     (format t ";;;; proc pointcloud ~4,1F [ms]~%" (* (send *tm* :stop) 1000))
 
-    (setq msg (make-pointcloud-message *3dp* points))
+    (setq msg (make-pointcloud-message *3dp* points "/base_pcloud"))
     (format t ";;;; make-message    ~4,1F [ms]~%" (* (send *tm* :stop) 1000))
 
     (ros::publish "pcloud" msg)
     (format t ";;;; publish-message ~4,1F [ms]~%" (* (send *tm* :stop) 1000))
 
-    (ros::sleep)
+    ;; (ros::sleep)
     (incf count)
     )
   )
-
 (roseus "shutdown")
 (exit)
