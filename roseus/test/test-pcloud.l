@@ -50,10 +50,11 @@
 
 (defvar P_WIDTH 176)
 (defvar P_HEIGHT 144)
+(defvar *topic-name* "color_pcloud")
 (setq *points-num* (* P_WIDTH P_HEIGHT))
 
-(roseus "pcloud_publisher")
-(ros::advertise "color_pcloud" sensor_msgs::PointCloud 5)
+(roseus "cr_capture")
+(ros::advertise *topic-name* sensor_msgs::PointCloud 5)
 (ros::rate 15)
 
 (setq *tm* (instance mtimer :init))
@@ -71,7 +72,7 @@
     (setq msg (make-pointcloud-message *3dp* points "/base_pcloud"))
     (format t ";;;; make-message    ~4,1F [ms]~%" (* (send *tm* :stop) 1000))
 
-    (ros::publish "pcloud" msg)
+    (ros::publish *topic-name* msg)
     (format t ";;;; publish-message ~4,1F [ms]~%" (* (send *tm* :stop) 1000))
 
     ;; (ros::sleep)
