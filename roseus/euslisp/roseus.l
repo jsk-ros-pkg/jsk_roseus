@@ -71,11 +71,11 @@
                                      :key #'lisp::load-module-file-name :test #'equal)))
               (if old-module (sys::unbinload old-module))
               (let ((pwd (unix::pwd)) lname)
-                (unix::cd (string-right-trim "/" dir))
+                (unix::chdir (string-right-trim "/" dir))
                 (comp:compile-file-if-src-newer file)
                 (setq lname (load fname))
                 (warning-message 6 ";; loading   ~A~%" lname)
-                (unix::cd pwd)))
+                (unix::chdir pwd)))
           (progn
             (warning-message 6 ";; loading ~A~%" dirfile)
             (load dirfile)))))
