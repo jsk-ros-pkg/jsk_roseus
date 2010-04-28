@@ -60,7 +60,10 @@
 
 (defun ros::tf-quaternion->rot (quaternion)
   (quaternion2matrix
-   (float-vector (send quaternion :x) (send quaternion :y) (send quaternion :z) (send quaternion :w))))
+   (float-vector (send quaternion :w)
+                 (send quaternion :x)
+                 (send quaternion :y) 
+                 (send quaternion :z))))
 
 (defun ros::tf-pose->coords (pose)
   (make-coords :pos (ros::tf-point->pos (send pose :position))
