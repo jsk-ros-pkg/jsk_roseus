@@ -70,6 +70,8 @@
 	 :float64)
 	((string= type "string")
 	 :string)
+        ((string= type "bool") ;; bool is used as byte
+         :boolean)
 	((or (string= type "time") (string= type "duration"))
 	 :time)
 	(t
@@ -136,6 +138,7 @@
 		  ((:int8 :int16 :int32 :int64) 0)
 		  ((:float32 :float64) 0.0)
 		  (:string "\"\"")
+                  (:boolean "nil")
 		  (:time "(instance ros::time :init)")
 		  (:rostype (format nil "(instance ~A :init)"
 				    (if (substringp "::" type)
@@ -143,7 +146,7 @@
 				      (concatenate string pkg "::" type))))
 		  (t (error "undefined type ~A~%" msg))))
       (cond
-       ((and vec-size (memq var-type '(:int8 :int16 :int32 :int64)))
+       ((and vec-size (memq var-type '(:int8 :int16 :int32 :int64 :boolean)))
 	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :integer))~%" var var vec-size init-elem))
        ((and vec-size (memq var-type '(:float32 :float64)))
 	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :float))~%" var var vec-size init-elem))
@@ -200,7 +203,7 @@
       (if (and vec-size (not (eq gen-type :rostype))) (format strm "(* "))
       (case
        gen-type
-       (:int8 (format strm "1"))
+       ((:int8 :boolean) (format strm "1"))
        (:int16 (format strm "2"))
        ((:int32 :float32) (format strm "4"))
        ((:int64 :float64) (format strm "8"))
@@ -265,6 +268,8 @@
 	(format strm "     (sys::poke ~A (send s :buffer) (send s :count) :double) (incf (stream-count s) 8)~%" var))
        (:string
 	(format strm "     (write-long (length ~A) s) (princ ~A s)~%" var var))
+       (:boolean
+        (format strm "     (if ~A (write-byte -1 s) (write-byte 0 s))~%" var))
        (:time
 	(format strm "     (write-long (send ~A :sec) s) (write-long (send ~A :nsec) s)~%" var var))
        (:rostype
@@ -325,6 +330,8 @@
 	(format strm "(~A ~A (sys::peek buf cnt :double)) (incf cnt 8)~%" set var))
        (:string
 	(format strm "(let (n) (setq n (sys::peek buf cnt :integer)) (incf cnt 4) (~A ~A (subseq buf cnt (+ cnt n))) (incf cnt n))~%" set var))
+       (:boolean
+	(format strm "(~A ~A (not (= 0 (sys::peek buf cnt :char)))) (incf cnt 1)~%" set var))
        (:time
 	(format strm "(send ~A :sec (sys::peek buf cnt :integer)) (incf cnt 4)  (send ~A :nsec (sys::peek buf cnt :integer)) (incf cnt 4)~%" var var))
        (:rostype
