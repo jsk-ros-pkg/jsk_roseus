@@ -63,8 +63,8 @@
    (float-vector (send quaternion :x) (send quaternion :y) (send quaternion :z) (send quaternion :w))))
 
 (defun ros::tf-pose->coords (pose)
-  (make-coords (ros::tf-point->pos (send pose :position))
-               (ros::tf-quaternion->rot (send pose :orientation))))
+  (make-coords :pos (ros::tf-point->pos (send pose :position))
+               :rot (ros::tf-quaternion->rot (send pose :orientation))))
 
 (defun ros::tf-pose-stamped->coords (pose-stamped)
   (make-cascoords :coords (ros::tf-pose->coords (send pose-stamped :pose))
