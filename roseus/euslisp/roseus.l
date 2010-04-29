@@ -24,8 +24,8 @@
   :slots ())
 (defmethod ros::object
   (:init () self)
-  (:md5sum () (get (class self) :md5sum))
-  (:type ()  (get (class self) :type))
+  (:md5sum- () (get (class self) :md5sum-))
+  (:datatype- ()  (get (class self) :datatype-))
   )
 
 (defclass ros::rostime

@@ -1,4 +1,4 @@
-(defun generate-msg-type-name-list (strm)
+(defun generate-msg-datatype-name-list (strm)
   (let (msgs consts line pos type var init-elem vec-size)
     (while (not (eq :eof (setq line (read-line strm nil :eof))))
       ;; remove comments
@@ -348,12 +348,12 @@
 
 (defun generate-msg-md5sum (strm pkg name fname)
   (let ()
-    (format strm "(setf (get ~A::~A :md5sum) \"~A\")~%" pkg name
+    (format strm "(setf (get ~A::~A :md5sum-) \"~A\")~%" pkg name
 	    (read-line (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --md5 ~A" fname))))))
 
-(defun generate-msg-type (strm pkg name)
+(defun generate-msg-datatype (strm pkg name)
   (let ()
-    (format strm "(setf (get ~A::~A :type) \"~A/~A\")~%" pkg name pkg name)
+    (format strm "(setf (get ~A::~A :datatype-) \"~A/~A\")~%" pkg name pkg name)
     (format strm "~%")))
 
 (defun generate-srv-type (strm pkg name req-msgs res-msgs)
@@ -410,7 +410,7 @@
     (multiple-value-setq (pkg name) (genfile-header fname))
     (with-open-file
      (strm fname :direction :input)
-     (multiple-value-setq (msgs consts) (generate-msg-type-name-list strm)))
+     (multiple-value-setq (msgs consts) (generate-msg-datatype-name-list strm)))
 
     (setq oname (generate-msg-output-file-name fname pkg name "msg"))
     (warning-message 6 ";; writing to ~A~%" oname)
@@ -426,7 +426,7 @@
      (genfile-body pkg name msgs strm)
      ;; md5sum/type
      (generate-msg-md5sum strm pkg name fname)
-     (generate-msg-type strm pkg name)
+     (generate-msg-datatype strm pkg name)
      (format strm "~%~%")
      )))
 
@@ -453,8 +453,8 @@
           res-name (format nil "~AResponse" name))
     (with-open-file
      (strm fname :direction :input)
-     (multiple-value-setq (req-msgs consts) (generate-msg-type-name-list strm))
-     (setq res-msgs (car (generate-msg-type-name-list strm))))
+     (multiple-value-setq (req-msgs consts) (generate-msg-datatype-name-list strm))
+     (setq res-msgs (car (generate-msg-datatype-name-list strm))))
 
     (setq oname (generate-msg-output-file-name fname pkg name "srv"))
     (warning-message 6 ";; writing to ~A~%" oname)
@@ -470,12 +470,12 @@
      ;; md5sum/type
      (genfile-srvs pkg name strm)
      (generate-msg-md5sum strm pkg name fname)
-     (generate-msg-type strm pkg name)
+     (generate-msg-datatype strm pkg name)
      (generate-srv-type strm pkg name req-name res-name)
      (generate-msg-md5sum strm pkg req-name fname)
-     (generate-msg-type   strm pkg req-name)
+     (generate-msg-datatype   strm pkg req-name)
      (generate-msg-md5sum strm pkg res-name fname)
-     (generate-msg-type   strm pkg res-name)
+     (generate-msg-datatype   strm pkg res-name)
      (format strm "~%~%")
      )))
 

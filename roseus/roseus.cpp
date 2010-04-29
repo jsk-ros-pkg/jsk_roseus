@@ -116,7 +116,7 @@ static bool s_bInstalled = false;
 #define s_mapSubscribed s_staticdata.mapSubscribed
 #define s_mapServiced s_staticdata.mapServiced
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_TYPE,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOINT,QNOOUT;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOINT,QNOOUT;
 
 /***********************************************************
  *   Message wrapper
@@ -179,14 +179,14 @@ public:
   }
 
   virtual const string __getDataType() const {
-    return getString(_message, K_ROSEUS_TYPE);
+    return getString(_message, K_ROSEUS_DATATYPE);
   }
   virtual const string __getMD5Sum()   const {
     return getString(_message, K_ROSEUS_MD5SUM);
   }
   virtual const string __getMessageDefinition() const { return ""; }
   virtual const string __getServiceDataType() const {
-    return getString(_message, K_ROSEUS_TYPE);
+    return getString(_message, K_ROSEUS_DATATYPE);
   }
   virtual const string __getServerMD5Sum()    const {
     return getString(_message, K_ROSEUS_MD5SUM);
@@ -385,8 +385,8 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   for (unsigned int i=0; i < strlen(name); i++)
     if ( ! isalpha(name[i]) ) name[i] = '_';
 
-  K_ROSEUS_MD5SUM = defkeyword(ctx,"MD5SUM");
-  K_ROSEUS_TYPE   = defkeyword(ctx,"TYPE");
+  K_ROSEUS_MD5SUM   = defkeyword(ctx,"MD5SUM-");
+  K_ROSEUS_DATATYPE = defkeyword(ctx,"DATATYPE-");
   K_ROSEUS_SERIALIZATION_LENGTH = defkeyword(ctx,"SERIALIZATION-LENGTH");
   K_ROSEUS_SERIALIZE   = defkeyword(ctx,"SERIALIZE");
   K_ROSEUS_DESERIALIZE = defkeyword(ctx,"DESERIALIZE");
