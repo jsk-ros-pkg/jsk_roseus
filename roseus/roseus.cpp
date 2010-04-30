@@ -460,36 +460,15 @@ pointer ROSEUS_OK(register context *ctx,int n,pointer *argv)
 
 #define def_rosconsole_formatter(funcname, rosfuncname)         \
   pointer funcname(register context *ctx,int n,pointer *argv)   \
-  {                                                             \
-    char *msg = "";                                             \
-    ckarg2(0,1);                                                \
-    if (n == 1 ) {                                              \
-      if (isstring(argv[0])) {                                  \
-        msg = (char *)(argv[0]->c.str.chars);                   \
-      } else { /* prin1-to-string */                            \
-        extern pointer PRSTRUCTURE;                             \
-        pointer p, s;                                           \
-        { /* make-string-stream */                              \
-          s=makeobject(C_STREAM);                               \
-          csend(ctx,s,K_ROSEUS_INIT,2,K_OUT,makeint(256));      \
-        }                                                       \
-        { /* prin1 */                                           \
-          p=Spevalof(PRSTRUCTURE);                              \
-          Spevalof(PRSTRUCTURE)=T;                              \
-          prinx(ctx,argv[0],s);                                 \
-          Spevalof(PRSTRUCTURE)=p;                              \
-        }                                                       \
-        { /* get-output-stream-string */                        \
-          char buf[256];                                        \
-          int len = intval(s->c.obj.iv[3]);                     \
-          if ( len >= 255 ) len = 255;                          \
-          memcpy(&buf,s->c.obj.iv[2]->c.str.chars,len);         \
-          buf[len]=0;                                           \
-          msg = (char *)&buf;                                   \
-        }                                                       \
-      }                                                         \
-    }                                                           \
-    rosfuncname("%s", msg);                                     \
+  { pointer *argv2,msg;                                         \
+    int argc2;                                                  \
+    argc2 = n+1;                                                \
+    argv2 = (pointer *)malloc(sizeof(pointer)*argc2);           \
+    argv2[0] = NIL;                                             \
+    for(int i=0;i<n;i++) argv2[i+1]=argv[i] ;                   \
+    msg = XFORMAT(ctx, argc2, argv2);                           \
+    rosfuncname("%s", msg->c.str.chars);                        \
+    free(argv2);                                                \
     return (T);                                                 \
   }
 
