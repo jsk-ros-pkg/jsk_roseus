@@ -48,22 +48,10 @@
       )
   (load "./make-pcloud-message.l"))
 
-(defun make-additional (3dp &key (cam-coords (make-coords)))
-  (let ((size (send 3dp :size))
-        (mat (send 3dp :matrix))
-        (pos (send 3dp :worldpos))
-        )
-    (dotimes (i size)
-      (let ((pt (matrix-row mat i)))
-        (instance line pt pos)
-      )
-  )
 (defvar P_WIDTH 176)
 (defvar P_HEIGHT 144)
 (defvar *topic-name* "color_pcloud")
-(defvar ADDITIONAL_POINTS 10000)
-
-(setq *points-num* (+ (* P_WIDTH P_HEIGHT) ADDITIONAL_POINTS))
+(setq *points-num* (* P_WIDTH P_HEIGHT))
 
 (roseus "cr_capture")
 (ros::advertise *topic-name* sensor_msgs::PointCloud 5)
