@@ -124,11 +124,11 @@
                                        source-frame (send source-time :sec-nsec)
                                        fixed-frame timeout duration))
   (:can-transform
-   (tareget-frame source-frame time)
+   (target-frame source-frame time)
    (ros::eustf-can-transform cobject
                              target-frame source-frame (send time :sec-nsec)))
   (:can-transform-full
-   (tareget-frame target-time source-frame source-time fixed-frame)
+   (target-frame target-time source-frame source-time fixed-frame)
    (ros::eustf-can-transform-full cobject
                                   target-frame (send target-time :sec-nsec)
                                   source-frame (send source-time :sec-nsec)
@@ -142,6 +142,33 @@
   (:get-latest-common-time
    (source-frame target-frame)
    (ros::eustf-get-latest-common-time cobject source-frame target-frame))
+  (:transform-pose
+   (target-frame pose-stamped)
+   (let ((pose (float-vector (* 0.001 (send pose-stamped :pose :position :x))
+			     (* 0.001 (send pose-stamped :pose :position :y))
+			     (* 0.001 (send pose-stamped :pose :position :z))
+			     (send pose-stamped :pose :orientation :w)
+			     (send pose-stamped :pose :orientation :x)
+			     (send pose-stamped :pose :orientation :y)
+			     (send pose-stamped :pose :orientation :z))))
+     (let ((ret (ros::eustf-transform-pose cobject
+					   target-frame
+					   (send
+					    (send pose-stamped :header :stamp)
+					    :sec-nsec)
+					   (send pose-stamped :header :frame_id)
+					   pose)))
+       (make-cascoords :pos (float-vector
+			     (* 1000.0 (elt ret 0))
+			     (* 1000.0 (elt ret 1))
+			     (* 1000.0 (elt ret 2)))
+		       :rot
+		       (quaternion2matrix
+			(float-vector (elt ret 3)
+				      (elt ret 4)
+				      (elt ret 5)
+				      (elt ret 6)))
+		       :name target-frame))))
   (:lookup-transform
    (target-frame source-frame time)
    (let (ret)

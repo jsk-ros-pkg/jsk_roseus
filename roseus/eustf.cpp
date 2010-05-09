@@ -129,6 +129,8 @@ pointer _EUSTF_LOOKUP_TRANSFORM(register context *ctx,int n,pointer *argv)
   return(vs);
 }
 
+
+
 #define set_ros_time(time,argv)                         \
   if (isvector(argv) && (elmtypeof(argv)==ELM_INT)) {   \
     time.sec  = argv->c.ivec.iv[0];                     \
@@ -431,6 +433,47 @@ pointer EUSTF_LOOKUPTRANSFORMFULL(register context *ctx,int n,pointer *argv)
   return(vs);
 }
 
+
+pointer EUSTF_TRANSFORMPOSE(register context *ctx,int n,pointer *argv)
+{
+  ckarg(5);                     // tf, target_frame, time, frame_id, 
+                                // pose as float-vector. its vector is a vector
+                                // appended position and angle-vector quaternion
+  tf::TransformListener *tf = (tf::TransformListener *)argv[0];
+  if (!isstring(argv[1])) error(E_NOSTRING);
+  std::string target_frame = std::string((char*)(argv[1]->c.str.chars));
+  ros::Time tm;
+  set_ros_time(tm, argv[2]);
+  
+  if (!isstring(argv[3])) error(E_NOSTRING);
+  std::string frame_id = std::string((char*)(argv[3]->c.str.chars));
+  
+  geometry_msgs::PoseStamped input, output;
+  // setup input
+  input.pose.position.x = argv[4]->c.fvec.fv[0];
+  input.pose.position.y = argv[4]->c.fvec.fv[1];
+  input.pose.position.z = argv[4]->c.fvec.fv[2];
+  input.pose.orientation.w = argv[4]->c.fvec.fv[3]; // angle-vector format
+  input.pose.orientation.x = argv[4]->c.fvec.fv[4];
+  input.pose.orientation.y = argv[4]->c.fvec.fv[5];
+  input.pose.orientation.z = argv[4]->c.fvec.fv[6];
+  //  input.header.
+  input.header.stamp = tm;
+  input.header.frame_id = frame_id;
+  tf->transformPose(target_frame, input, output);
+  pointer vs = makefvector(7); //pos[3] + rot[4](angle-axis quaternion)
+  vpush(vs);
+  vs->c.fvec.fv[0] = output.pose.position.x;
+  vs->c.fvec.fv[1] = output.pose.position.y;
+  vs->c.fvec.fv[2] = output.pose.position.z;
+  vs->c.fvec.fv[3] = output.pose.orientation.w;
+  vs->c.fvec.fv[4] = output.pose.orientation.x;
+  vs->c.fvec.fv[5] = output.pose.orientation.y;
+  vs->c.fvec.fv[6] = output.pose.orientation.z;
+  vpop();
+  return(vs);
+}
+
 pointer EUSTF_LOOKUPVELOCITY(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
@@ -540,6 +583,7 @@ pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"EUSTF-GET-LATEST-COMMON-TIME",argv[0],(pointer (*)())EUSTF_GETLATERSTCOMMONTIME);
   defun(ctx,"EUSTF-LOOKUP-TRANSFORM",argv[0],(pointer (*)())EUSTF_LOOKUPTRANSFORM);
   defun(ctx,"EUSTF-LOOKUP-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_LOOKUPTRANSFORMFULL);
+  defun(ctx,"EUSTF-TRANSFORM-POSE",argv[0],(pointer (*)())EUSTF_TRANSFORMPOSE);
   defun(ctx,"EUSTF-LOOKUP-VELOCITY",argv[0],(pointer (*)())EUSTF_LOOKUPVELOCITY);
   /* */
   defun(ctx,"EUSTF-TRANSFORM-LISTENER",argv[0],(pointer (*)())EUSTF_TRANSFORM_LISTENER);
