@@ -142,33 +142,6 @@
   (:get-latest-common-time
    (source-frame target-frame)
    (ros::eustf-get-latest-common-time cobject source-frame target-frame))
-  (:transform-pose
-   (target-frame pose-stamped)
-   (let ((pose (float-vector (* 0.001 (send pose-stamped :pose :position :x))
-			     (* 0.001 (send pose-stamped :pose :position :y))
-			     (* 0.001 (send pose-stamped :pose :position :z))
-			     (send pose-stamped :pose :orientation :w)
-			     (send pose-stamped :pose :orientation :x)
-			     (send pose-stamped :pose :orientation :y)
-			     (send pose-stamped :pose :orientation :z))))
-     (let ((ret (ros::eustf-transform-pose cobject
-					   target-frame
-					   (send
-					    (send pose-stamped :header :stamp)
-					    :sec-nsec)
-					   (send pose-stamped :header :frame_id)
-					   pose)))
-       (make-cascoords :pos (float-vector
-			     (* 1000.0 (elt ret 0))
-			     (* 1000.0 (elt ret 1))
-			     (* 1000.0 (elt ret 2)))
-		       :rot
-		       (quaternion2matrix
-			(float-vector (elt ret 3)
-				      (elt ret 4)
-				      (elt ret 5)
-				      (elt ret 6)))
-		       :name target-frame))))
   (:lookup-transform
    (target-frame source-frame time)
    (let (ret)
@@ -224,4 +197,41 @@
    (&optional (cache-time 10.0) (spin-thread t))
    (setq cobject (ros::eustf-transform-listener cache-time spin-thread))
    self)
+  (:transform-pose
+   (target-frame pose-stamped)
+   (let ((pose (float-vector (* 0.001 (send pose-stamped :pose :position :x))
+			     (* 0.001 (send pose-stamped :pose :position :y))
+			     (* 0.001 (send pose-stamped :pose :position :z))
+			     (send pose-stamped :pose :orientation :w)
+			     (send pose-stamped :pose :orientation :x)
+			     (send pose-stamped :pose :orientation :y)
+			     (send pose-stamped :pose :orientation :z))))
+     (let ((ret (ros::eustf-transform-pose cobject
+					   target-frame
+					   (send
+					    (send pose-stamped :header :stamp)
+					    :sec-nsec)
+					   (send pose-stamped :header :frame_id)
+					   pose)))
+       (make-cascoords :pos (float-vector
+			     (* 1000.0 (elt ret 0))
+			     (* 1000.0 (elt ret 1))
+			     (* 1000.0 (elt ret 2)))
+		       :rot
+		       (quaternion2matrix
+			(float-vector (elt ret 3)
+				      (elt ret 4)
+				      (elt ret 5)
+				      (elt ret 6)))
+		       :name target-frame))))
+  (:transform-pose-safe
+   (target-frame pose-stamped &optional (timeout 0.1))
+   (send self :wait-for-transform target-frame
+         (send pose-stamped :header :frame_id)
+         (send pose-stamped :header :stamp)
+         timeout)
+   (if (send self :can-transform target-frame
+             (send pose-stamped :header :frame_id)
+             (send pose-stamped :header :stamp))
+       (send self :transform-pose target-frame pose-stamped)))
   )
