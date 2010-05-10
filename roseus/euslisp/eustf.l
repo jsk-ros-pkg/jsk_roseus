@@ -199,39 +199,40 @@
    self)
   (:transform-pose
    (target-frame pose-stamped)
-   (let ((pose (float-vector (* 0.001 (send pose-stamped :pose :position :x))
-			     (* 0.001 (send pose-stamped :pose :position :y))
-			     (* 0.001 (send pose-stamped :pose :position :z))
-			     (send pose-stamped :pose :orientation :w)
-			     (send pose-stamped :pose :orientation :x)
-			     (send pose-stamped :pose :orientation :y)
-			     (send pose-stamped :pose :orientation :z))))
+   (let ((pose (float-vector (send pose-stamped :pose :position :x)
+                             (send pose-stamped :pose :position :y)
+                             (send pose-stamped :pose :position :z)
+                             (send pose-stamped :pose :orientation :w)
+                             (send pose-stamped :pose :orientation :x)
+                             (send pose-stamped :pose :orientation :y)
+                             (send pose-stamped :pose :orientation :z))))
      (let ((ret (ros::eustf-transform-pose cobject
 					   target-frame
-					   (send
-					    (send pose-stamped :header :stamp)
-					    :sec-nsec)
+					   (send (send pose-stamped :header :stamp) :sec-nsec)
 					   (send pose-stamped :header :frame_id)
 					   pose)))
        (make-cascoords :pos (float-vector
 			     (* 1000.0 (elt ret 0))
 			     (* 1000.0 (elt ret 1))
 			     (* 1000.0 (elt ret 2)))
-		       :rot
-		       (quaternion2matrix
-			(float-vector (elt ret 3)
-				      (elt ret 4)
-				      (elt ret 5)
-				      (elt ret 6)))
+		       :rot (quaternion2matrix (float-vector (elt ret 3)
+                                                     (elt ret 4)
+                                                     (elt ret 5)
+                                                     (elt ret 6)))
 		       :name target-frame))))
   (:transform-pose-safe
-   (target-frame pose-stamped &optional (timeout 0.1))
+   (target-frame pose-stamped &optional (timeout 0.1) (duration 0.1))
    (send self :wait-for-transform target-frame
          (send pose-stamped :header :frame_id)
          (send pose-stamped :header :stamp)
-         timeout)
+         timeout duration)
    (if (send self :can-transform target-frame
              (send pose-stamped :header :frame_id)
              (send pose-stamped :header :stamp))
-       (send self :transform-pose target-frame pose-stamped)))
+       (send self :transform-pose target-frame pose-stamped)
+     (progn
+       (ros::ros-warn "cannot resolve transformation from ~A to ~A"
+                      (send pose-stamped :header :frame_id)
+                      target-frame)
+       nil)))
   )
