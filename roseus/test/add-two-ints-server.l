@@ -7,18 +7,20 @@
          *load-path* :test #'equal)
 (load "roseus.l")
 
+;;(setq ros::*compile-message* t) ;; comment out if you want to compile msg and srv
+;; when msgs and srvs are compiled, all msgs and srvs should be loaded.
 (roseus-add-msgs "roslib")
 (roseus-add-msgs "roseus")
 (roseus-add-srvs "rospy_tutorials")
 ;;;
 
 (defun add-two-ints (req)
-  (setq m (send req :response))
-  (format t "Returning [~d + ~d = ~d]~%" 
-          (send req :a) (send req :b)
-          (+ (send req :a) (send req :b)))
-  (send m :sum  (+ (send req :a) (send req :b)))
-  m)
+  (let ((m (send req :response)))
+    (format t "Returning [~d + ~d = ~d]~%" 
+            (send req :a) (send req :b)
+            (+ (send req :a) (send req :b)))
+    (send m :sum  (+ (send req :a) (send req :b)))
+    m))
 ;;;
 ;;;
 (roseus "add_two_ints_server")

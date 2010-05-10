@@ -6,7 +6,8 @@
                  (read-line (piped-fork "rospack find roseus")))
          *load-path* :test #'equal)
 (load "roseus.l")
-
+;;(setq ros::*compile-message* t) ;; comment out if you want to compile msg and srv
+;; when msgs and srvs are compiled, all msgs and srvs should be loaded.
 (roseus-add-msgs "roslib")
 (roseus-add-msgs "std_msgs")
 ;;;
@@ -15,14 +16,13 @@
 ;;;
 (roseus "talker")
 (ros::advertise "chatter" std_msgs::string 1)
-(ros::rate 10)
+(ros::rate 4)
 (while (ros::ok)
   (setq msg (instance std_msgs::string :init))
-  (send msg :data (format nil "hello world ~a" (ros::time-now)))
-  (ros::ros-info "roseus:sensing_message [~A]" (send msg :data))
-  ;;(ros::ros-info msg)
+  (send msg :data (format nil "hello world ~a" (send (ros::time-now) :sec-nsec)))
+  (ros::ros-info "msg [~A]" (send msg :data))
   (ros::publish "chatter" msg)
-  (ros::spin-once)
+  ;;(ros::spin-once)
   (ros::sleep)
   )
 (roseus "shutdown")

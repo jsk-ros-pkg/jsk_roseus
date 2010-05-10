@@ -7,6 +7,8 @@
          *load-path* :test #'equal)
 (load "roseus.l")
 
+;;(setq ros::*compile-message* t) ;; comment out if you want to compile msg and srv
+;; when msgs and srvs are compiled, all msgs and srvs should be loaded.
 (roseus-add-msgs "roslib")
 (roseus-add-msgs "roseus")
 (roseus-add-srvs "rospy_tutorials")

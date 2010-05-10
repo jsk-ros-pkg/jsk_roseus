@@ -6,7 +6,8 @@
                  (read-line (piped-fork "rospack find roseus")))
          *load-path* :test #'equal)
 (load "roseus.l")
-
+;;(setq ros::*compile-message* t) ;; comment out if you want to compile msg and srv
+;; when msgs and srvs are compiled, all msgs and srvs should be loaded.
 (roseus-add-msgs "roslib")
 (roseus-add-msgs "std_msgs")
 ;;;
@@ -14,7 +15,7 @@
 ;;;
 ;;;
 (roseus "listener")
-(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
+;;(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
 
 ;; callback function
 ;(defun string-cb (msg) (print (list 'cb (sys::thread-self) (send msg :data))))
@@ -36,7 +37,7 @@
 
 (do-until-key
  (ros::spin-once)
- (sys::gc)
+ ;;(sys::gc)
 )
 ;(ros::spin)
 
