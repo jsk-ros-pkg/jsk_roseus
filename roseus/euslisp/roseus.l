@@ -8,7 +8,7 @@
 (when (not (unix:isatty *standard-input*))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
   (unix:signal unix::sigint 'ros::roseus-sigint-handler)
-;;  (unix:signal unix::sighup 'ros::roseus-sigint-handler)
+  (unix:signal unix::sighup 'ros::roseus-sigint-handler)
   (defmacro do-until-key (&rest forms) `(while t ,@forms))
   (defun y-or-n-p (&rest args) t))
 
