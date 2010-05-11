@@ -8,7 +8,7 @@
 (when (not (unix:isatty *standard-input*))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
   (unix:signal unix::sigint 'ros::roseus-sigint-handler)
-  (unix:signal unix::sighup 'ros::roseus-sigint-handler)
+;;  (unix:signal unix::sighup 'ros::roseus-sigint-handler)
   (defmacro do-until-key (&rest forms) `(while t ,@forms))
   (defun y-or-n-p (&rest args) t))
 
@@ -74,7 +74,7 @@
                 (unix::chdir (string-right-trim "/" dir))
                 (comp:compile-file-if-src-newer file)
                 (setq lname (load fname))
-                (warning-message 6 ";; loading   ~A~%" lname)
+                ;;(warning-message 6 ";; loading   ~A~%" lname)
                 (unix::chdir pwd)))
           (progn
             (warning-message 6 ";; loading ~A~%" dirfile)
@@ -122,5 +122,53 @@
                            (ros::get-param (cadr param))))
                  params)
      ,@args))
+
+(defun ros-message-destructuring-bind-parse-arg (msg params)
+  "this function returns a list like ((symbol value) (symbol value) ...).
+always the rank of list is 2"
+  (let ((notflatten-list
+         (mapcar #'(lambda (param)
+                     (_ros-message-destructuring-bind-parse-arg msg param))
+                 params)))
+    (ros-message-destructuring-bind-flatten-param notflatten-list)))
+
+(defun ros-message-destructuring-bind-flatten-param (params)
+  ;; we just check car, because cdr has list like (send msg :foobar)
+  ;; params like (((hoge (send msg :hoge)) (fuga (send msg :fuga))) (piyo (send msg :piyo)))
+;;  (format t "~A~%" params)
+  (cond
+   ((null params) nil)
+   ((symbolp (car params))              ;params = (hoge (send msg :hoge))
+    (list params))
+   ((not (symbolp (car (car params))))  ;params != ((hoge (send msg :hoge)) ...)
+    (append (ros-message-destructuring-bind-flatten-param (car params))
+            (ros-message-destructuring-bind-flatten-param (cdr params))))
+   ((symbolp (car (car params)))
+    (append (list (car params))
+            (ros-message-destructuring-bind-flatten-param (cdr params))))
+   ))
+
+(defun _ros-message-destructuring-bind-parse-arg (msg param)
+  "this function returns a list like ((symbol value) ((symbol value) ...))"
+  (if (listp (car param))       ;like ((:frame_id frame_id) (:stamp stamp))
+      (mapcar #'(lambda (x)
+                  (_ros-message-destructuring-bind-parse-arg msg x))
+              param)
+    (progn
+      (let ((method-name (car param))
+            (method-arg (cadr param)))
+        (if (symbolp method-arg)
+            (list method-arg `(send ,msg ,method-name))
+          (_ros-message-destructuring-bind-parse-arg `(send ,msg ,method-name)
+                                                     (cadr param)))))))
+
+(defmacro ros-message-destructuring-bind (params msg &rest body)
+  "usage:
+ (ros-message-destructuring-bind
+  ((:header ((:frame_id frame_id) (:stamp stamp))) (:pose pose))
+  pose-stamped                          ;symbol to message is bound
+  (print pose))"
+  `(let ,(ros-message-destructuring-bind-parse-arg msg params)
+     ,@body))
 
 (setq sys::*exit-hook* 'ros::exit)
