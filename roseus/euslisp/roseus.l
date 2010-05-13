@@ -43,7 +43,8 @@
   :super propertied-object
   :slots (sec-nsec))
 (defmethod ros::time
-  (:init (&key ((:sec _sec) 0) ((:nsec _nsec) 0)) (setq sec-nsec (integer-vector _sec _nsec)) self)
+  (:init (&key ((:sec _sec) 0) ((:nsec _nsec) 0))
+         (setq sec-nsec (integer-vector _sec _nsec)) self)
   (:sec  (&optional s) (if s (setf (elt sec-nsec 0) s)) (elt sec-nsec 0))
   (:nsec (&optional s) (if s (setf (elt sec-nsec 1) s)) (elt sec-nsec 1))
   (:sec-nsec () sec-nsec)
@@ -74,7 +75,7 @@
                 (unix::chdir (string-right-trim "/" dir))
                 (comp:compile-file-if-src-newer file)
                 (setq lname (load fname))
-                ;;(warning-message 6 ";; loading   ~A~%" lname)
+                (warning-message 6 ";; loading   ~A~%" lname)
                 (unix::chdir pwd)))
           (progn
             (warning-message 6 ";; loading ~A~%" dirfile)
@@ -89,6 +90,7 @@
                  (mapcan #'(lambda (x) (list "/" x)) args)) 1)) ;remove /
 
 (defmacro defrosparam (sym param-name &optional (default-value nil))
+  ;; defrosparam bind a ros parameter to lisp symbol using setq, not defvar.
   ;;  defrosparam takes 3 arguments:
   ;;    1. symbol :: to bind
   ;;    2. param-name :: rosparameter name
@@ -148,6 +150,12 @@ always the rank of list is 2"
             (ros-message-destructuring-bind-flatten-param (cdr params))))
    ))
 
+(defun ros-slot-ref (inst slot)
+  (send inst slot))
+
+(defsetf ros-slot-ref (inst slot) (val)
+  `(send ,inst ,slot ,val))
+
 (defun _ros-message-destructuring-bind-parse-arg (msg param)
   "this function returns a list like ((symbol value) ((symbol value) ...))"
   (if (listp (car param))       ;like ((:frame_id frame_id) (:stamp stamp))
@@ -158,9 +166,10 @@ always the rank of list is 2"
       (let ((method-name (car param))
             (method-arg (cadr param)))
         (if (symbolp method-arg)
-            (list method-arg `(send ,msg ,method-name))
-          (_ros-message-destructuring-bind-parse-arg `(send ,msg ,method-name)
-                                                     (cadr param)))))))
+            (list method-arg `(ros-slot-ref ,msg ,method-name))
+          (_ros-message-destructuring-bind-parse-arg
+           `(ros-slot-ref ,msg ,method-name)
+           (cadr param)))))))
 
 (defmacro ros-message-destructuring-bind (params msg &rest body)
   "usage:
@@ -168,7 +177,7 @@ always the rank of list is 2"
   ((:header ((:frame_id frame_id) (:stamp stamp))) (:pose pose))
   pose-stamped                          ;symbol to message is bound
   (print pose))"
-  `(let ,(ros-message-destructuring-bind-parse-arg msg params)
+  `(symbol-macrolet ,(ros-message-destructuring-bind-parse-arg msg params)
      ,@body))
 
 (setq sys::*exit-hook* 'ros::exit)
