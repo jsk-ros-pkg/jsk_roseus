@@ -11,9 +11,10 @@ while [ $# -ne 0 ]; do
 done
 ARGV=$ARGV")"
 
-echo "(progn (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))"| jskrbeusgl &
+jskrbeusgl "(progn (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))" &
 PID=$!
-trap 'kill -s INT $PID ' CHLD INT TERM
+#echo PID is $PID
+trap 'kill -s HUP $PID ' CHLD INT TERM
 wait $PID
 if [ $? -ne 0 ] ; then read line ; fi
 
