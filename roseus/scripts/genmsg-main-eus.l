@@ -283,68 +283,82 @@
 (defun generate-msg-deserialize (strm pkg name msgs)
   (let (type var vec-size set)
     (format strm "  (:deserialize~%")
-    (format strm "   (buf)~%")
-    (format strm "   (let ((cnt 0))~%")
+    (format strm "   (buf &optional (ptr- 0))~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 2))
       (cond
        ((and vec-size (zerop vec-size))
-	(format strm "     ;; ~A[] ~A~%" type var)
-	(format strm "     (let (n)~%")
-	(format strm "       (setq n (sys::peek buf cnt :integer)) (incf cnt 4)~%")
+	(format strm "   ;; ~A[] ~A~%" type var)
+	(format strm "   (let (n)~%")
+	(format strm "     (setq n (sys::peek buf ptr- :integer)) (incf ptr- 4)~%")
 	(case
 	 (generate-variable-type type)
-	 ((:int8 :int16 :int32 :int64)
-	  (format strm "       (setq ~A (instantiate integer-vector n))~%" var))
+	 ((:int8 :int16 :int32 :int64 :boolean)
+	  (format strm "     (setq ~A (instantiate integer-vector n))~%" var))
 	 ((:float32 :float64)
-	  (format strm "       (setq ~A (instantiate float-vector n))~%" var))
+	  (format strm "     (setq ~A (instantiate float-vector n))~%" var))
 	 (:rostype
-	  (format strm "       (setq ~A (let (r) (dotimes (i n) (push (instance ~A :init) r)) r))~%" var (if (substringp "::" type) type (concatenate string pkg "::" type)))))
-	(format strm "       (dotimes (i n)~%" var)
-	(format strm "         ")
-	(setq set "setf" var (format nil "(elt ~A i)" var)))
+	  (format strm "     (setq ~A (let (r) (dotimes (i n) (push (instance ~A :init) r)) r))~%" var (if (substringp "::" type) type (concatenate string pkg "::" type)))))
+        (case
+         (generate-variable-type type)
+         (:rostype
+          (format strm "     (dolist (elem- ~A)~%" var)
+          (format strm "       ")
+          (setq set "setf" var "elem-"))
+         (t
+          (format strm "     (dolist (i n)~%" var)
+          (format strm "       ")
+          (setq set "setf" var (format nil "(elt ~A i)" var))))
+        )
        (vec-size
-	(format strm "     ;; ~A[~A] ~A~%" type vec-size var)
-	(format strm "     (dotimes (i (length ~A))~%" var)
-	(format strm "       ")
-	(setq set "setf" var (format nil "(elt ~A i)" var)))
+	(format strm "   ;; ~A[~A] ~A~%" type vec-size var)
+        (case
+         (generate-variable-type type)
+         (:rostype
+          (format strm "     (dolist (elem- ~A)~%" var)
+          (format strm "       ")
+          (setq set "setf" var "elem-"))
+         (t
+          (format strm "   (dotimes (i (length ~A))~%" var)
+          (format strm "     ")
+          (setq set "setf" var (format nil "(elt ~A i)" var)))))
        (t
-        (format strm "     ;; ~A ~A~%" type var)
-        (format strm "     ")
+        (format strm "   ;; ~A ~A~%" type var)
+        (format strm "   ")
 	(setq set "setq")))
  
       (case
        (generate-variable-type type)
        (:int8
-	(format strm "(~A ~A (sys::peek buf cnt :char)) (incf cnt 1)~%" set var))
+	(format strm "(~A ~A (sys::peek buf ptr- :char)) (incf ptr- 1)~%" set var))
        (:int16
-	(format strm "(~A ~A (sys::peek buf cnt :short)) (incf cnt 2)~%" set var))
+	(format strm "(~A ~A (sys::peek buf ptr- :short)) (incf ptr- 2)~%" set var))
        (:int32
-	(format strm "(~A ~A (sys::peek buf cnt :integer)) (incf cnt 4)~%" set var))
+	(format strm "(~A ~A (sys::peek buf ptr- :integer)) (incf ptr- 4)~%" set var))
        (:int64
-	(format strm "(~A ~A (sys::peek buf cnt :long)) (incf cnt 8)~%" set var))
+	(format strm "(~A ~A (sys::peek buf ptr- :long)) (incf ptr- 8)~%" set var))
        (:float32
-	(format strm "(~A ~A (sys::peek buf cnt :float)) (incf cnt 4)~%" set var))
+	(format strm "(~A ~A (sys::peek buf ptr- :float)) (incf ptr- 4)~%" set var))
        (:float64
-	(format strm "(~A ~A (sys::peek buf cnt :double)) (incf cnt 8)~%" set var))
+	(format strm "(~A ~A (sys::peek buf ptr- :double)) (incf ptr- 8)~%" set var))
        (:string
-	(format strm "(let (n) (setq n (sys::peek buf cnt :integer)) (incf cnt 4) (~A ~A (subseq buf cnt (+ cnt n))) (incf cnt n))~%" set var))
+	(format strm "(let (n) (setq n (sys::peek buf ptr- :integer)) (incf ptr- 4) (~A ~A (subseq buf ptr- (+ ptr- n))) (incf ptr- n))~%" set var))
        (:boolean
-	(format strm "(~A ~A (not (= 0 (sys::peek buf cnt :char)))) (incf cnt 1)~%" set var))
+	(format strm "(~A ~A (not (= 0 (sys::peek buf ptr- :char)))) (incf ptr- 1)~%" set var))
        (:time
-	(format strm "(send ~A :sec (sys::peek buf cnt :integer)) (incf cnt 4)  (send ~A :nsec (sys::peek buf cnt :integer)) (incf cnt 4)~%" var var))
+	(format strm "(send ~A :sec (sys::peek buf ptr- :integer)) (incf ptr- 4)  (send ~A :nsec (sys::peek buf ptr- :integer)) (incf ptr- 4)~%" var var))
        (:rostype
-	(format strm "(~A ~A (send ~A :deserialize (subseq buf cnt))) (incf cnt (send ~A :serialization-length))~%" set var var var))
+        (format strm "(send ~A :deserialize buf ptr-) (incf ptr- (send ~A :serialization-length))~%" var var))
        (t (error "undefined type ~A~%" msg)))
       (cond
        ((and vec-size (zerop vec-size))
-	(format strm "         ))~%"))
+	(format strm "       ))~%"))
        (vec-size
-	(format strm "       )~%")))
+	(format strm "     )~%")))
       )
-    (format strm "     ;;~%")
-    (format strm "     self))~%")))
+    (format strm "   ;;~%")
+    (format strm "   self)~%")))
 
 (defun generate-msg-md5sum (strm pkg name fname)
   (let ()
