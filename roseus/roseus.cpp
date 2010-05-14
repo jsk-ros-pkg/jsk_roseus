@@ -228,12 +228,14 @@ public:
       ROS_WARN("empty message!");
       return readPtr;
     }
+    vpush(_message);
     a = (pointer)findmethod(ctx,K_ROSEUS_DESERIALIZE,classof(_message),&curclass);
     ROS_ASSERT(a!=NIL);
     pointer p = makestring((char *)readPtr,__serialized_length);
     pointer r = csend(ctx,_message,K_ROSEUS_DESERIALIZE,1,p);
     ROS_ASSERT(r!=NIL);
     //ROS_INFO("deserialize %d", __serialized_length);
+    vpop(); // pop _message
 
     return readPtr+__serialized_length;
   }
