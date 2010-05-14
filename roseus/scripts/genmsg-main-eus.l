@@ -307,7 +307,7 @@
           (format strm "       ")
           (setq set "setf" var "elem-"))
          (t
-          (format strm "     (dolist (i n)~%" var)
+          (format strm "     (dotimes (i n)~%" var)
           (format strm "       ")
           (setq set "setf" var (format nil "(elt ~A i)" var))))
         )
