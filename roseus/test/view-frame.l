@@ -1,5 +1,9 @@
-(load "euslisp/roseus.l")
-(load "euslisp/eustf.l")
+(unless (find "roseus/euslisp/" *load-path* :test #'substringp)
+  (pushnew (format nil "~A/euslisp/"
+                   (read-line (piped-fork "rospack find roseus")))
+           *load-path* :test #'equal))
+(load "roseus.l")
+(load "eustf.l")
 
 (if (not (boundp '*pickview*)) (pickview))
 (defun main ()

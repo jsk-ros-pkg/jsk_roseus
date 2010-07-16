@@ -14,42 +14,44 @@
   :super ros::object
   :slots (name-space action-spec simple-state comm-state
                      action-goal-class action-result-call action-feedback-class
-                     goal-id))
+                     goal_id))
 
 (defmethod ros::simple-action-client
   (:goal-status-cb
    (msg)
-   (let (m com-state error-msg)
-     (setq m (find-if #'(lambda (m) (string= (send m :goal_id :id) (send goal_id :id))) (send msg :status_list)))
+   (let ((m (and goal_id
+                 (find-if #'(lambda (m)
+                              (string= (send m :goal_id :id)
+                                       (send goal_id :id)))
+                          (send msg :status_list)))))
      (when m
-       (setq com-state (send comm-state :update-state (send m :status)))
-       (setq error-msg (format nil "Received comm state ~A when in simple state ~A" comm-state simple-state))
-       ;;(warning-message 1 ";; com-state ~A~%" com-state)
-       (case
-        com-state
-        ('ros::*comm-state-active*
-         (cond ((eq simple-state 'ros::*simple-goal-state-pending*)
-                (setq simple-state 'ros::*simple-goal-state-active*))
-               ((eq  simple-state 'ros::*simple-goal-state-done*)
-                (ros::ros-error error-msg))))
-        ('ros::*comm-state-recalling*
-         (cond ((not (eq simple-state 'ros::*simple-goal-state-pending*)))
-               (ros::ros-error error-msg)))
-        ('ros::*comm-state-preempting*
-         (cond ((eq simple-state 'ros::*simple-goal-state-pending*)
-                (setq simple-state 'ros::*simple-goal-state-active*))
-               ((eq  simple-state 'ros::*simple-goal-state-done*)
-                (ros::ros-error error-msg))))
-        ('ros::*comm-state-done*
-         (cond ((member simple-state
-                        (list 'ros::*simple-goal-state-pending*
-                              'ros::*simple-goal-state-active*))
-                (setq simple-state 'ros::*simple-goal-state-done*))
-               ((eq simple-state 'ros::*simple-goal-state-done*)
-                (ros::ros-error "SimpleActionClient received DONE twice")))))
-       ;;(warning-message 1 ";; simple-state ~A~%" simple-state)
-       ) ;; when
-     ))
+       (let ((com-state (send comm-state :update-state (send m :status)))
+             (error-msg
+              (format nil "Received comm state ~A when in simple state ~A"
+                      comm-state simple-state)))
+         ;;(warning-message 1 ";; com-state ~A~%" com-state)
+         (case
+             com-state
+           ('ros::*comm-state-active*
+             (cond ((= simple-state ros::*simple-goal-state-pending*)
+                    (setq simple-state ros::*simple-goal-state-active*))
+                   ((=  simple-state ros::*simple-goal-state-done*)
+                    (ros::ros-error error-msg))))
+           ('ros::*comm-state-recalling*
+             (cond ((not (= simple-state ros::*simple-goal-state-pending*)))
+                   (ros::ros-error error-msg)))
+           ('ros::*comm-state-preempting*
+             (cond ((= simple-state ros::*simple-goal-state-pending*)
+                    (setq simple-state ros::*simple-goal-state-active*))
+                   ((=  simple-state ros::*simple-goal-state-done*)
+                    (ros::ros-error error-msg))))
+           ('ros::*comm-state-done*
+             (cond ((member simple-state
+                            (list ros::*simple-goal-state-pending*
+                                  ros::*simple-goal-state-active*))
+                    (setq simple-state ros::*simple-goal-state-done*))
+                   )))
+         ))))
   (:action-result-cb
    (msg)
    (let (com-state)
@@ -86,7 +88,7 @@
                    action-result-class #'send self :action-result-cb)
    (ros::subscribe (format nil "~A/feedback" name-space)
                    action-feedback-class #'send self :action-feedback-cb)
-   (setq simple-state 'ros::*simple-goal-state-done*)
+   (setq simple-state ros::*simple-goal-state-done*)
    self)
   (:wait-for-server
    ()
@@ -103,7 +105,8 @@
      (setq goal_id (instance actionlib_msgs::GoalID :init
                              :id (format nil "~a" (send now :sec-nsec))))
      (send goal :goal_id goal_id)
-     (setq simple-state 'ros::*simple-goal-state-pending*)
+     (setq simple-state ros::*simple-goal-state-pending*)
+     (setq comm-state (instance actionlib-comm-state :init))
      (ros::publish (format nil "~A/goal" name-space) goal)))
   (:send-goal-and-wait
    (goal)
@@ -113,7 +116,7 @@
    (&key (timeout 0))
    (ros::rate 10)
    (while (ros::ok)
-     (if (eq simple-state 'ros::*simple-goal-state-done*)
+     (if (= simple-state ros::*simple-goal-state-done*)
          (return))
      (ros::spin-once)
      (ros::sleep))

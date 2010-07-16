@@ -159,6 +159,17 @@
                                     (elt ret 5)
                                     (elt ret 6)))
                      :name target-frame)))
+  (:lookup-transform-safe
+   (target-frame source-frame time
+    &optional (timeout 0.1) (duration 0.1))
+      (send self :wait-for-transform target-frame source-frame time
+            timeout duration)
+      (if (send self :can-transform target-frame source-frame time)
+          (send self :lookup-transform target-frame source-frame time)
+        (progn
+          (ros::ros-warn "cannot resolve transformation from ~A to ~A"
+                         source-frame target-frame)          
+          nil)))
   (:lookup-transform-full
    (target-frame target-time source-frame source-time fixed-frame)
    (let (ret)
@@ -235,4 +246,22 @@
                       (send pose-stamped :header :frame_id)
                       target-frame)
        nil)))
+  )
+
+(defclass ros::transform-broadcaster
+  :super ros::object
+  :slots (cobject)
+  )
+(defmethod ros::transform-broadcaster
+  (:init () (setq cobject (ros::eustf-transform-broadcaster)))
+  (:send-transform
+   (coords p-frame c-frame &optional time)
+   (let ((pos (send coords :worldpos))
+         (quat (matrix2quaternion (send coords :worldrot)))
+         (tm (cond ((derivedp time ros::time) (send time :sec-nsec))
+                   ((integer-vector-p time) time)
+                   (t (send (ros::time-now) :sec-nsec))))
+         )
+     (ros::eustf-send-transform cobject pos quat p-frame c-frame tm)
+     ))
   )

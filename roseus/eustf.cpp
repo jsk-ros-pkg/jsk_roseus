@@ -66,6 +66,7 @@
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
+#include <tf/transform_broadcaster.h>
 
 // for eus.h
 #define class   eus_class
@@ -555,6 +556,52 @@ pointer EUSTF_GETPARENT(register context *ctx,int n,pointer *argv)
 
   return(ret?makestring((char *)parent.c_str(),parent.length()):NIL);
 }
+/* */
+pointer EUSTF_TRANSFORM_BROADCASTER(register context *ctx,int n,pointer *argv)
+{
+  return((pointer)(new tf::TransformBroadcaster()));
+}
+
+pointer EUSTF_SEND_TRANSFORM(register context *ctx,int n,pointer *argv){
+
+  /* ptr pos quarternion parent_frame_id, child_frame_id, time */
+  ckarg(6);
+
+  tf::TransformBroadcaster *bc = (tf::TransformBroadcaster *) argv[0];
+
+  isintvector(argv[5]);
+  ros::Time tm;
+  tm.sec = argv[5]->c.ivec.iv[0];
+  tm.nsec = argv[5]->c.ivec.iv[1];
+
+  eusfloat_t *pos, *quaternion;
+  std::string p_frame_id, c_frame_id;
+  isfltvector(argv[1]);
+  isfltvector(argv[2]);
+  isstring(argv[3]);
+  isstring(argv[4]);
+  pos = argv[1]->c.fvec.fv;
+  quaternion= argv[2]->c.fvec.fv;
+  p_frame_id = (char *)argv[3]->c.str.chars;
+  c_frame_id = (char *)argv[4]->c.str.chars;
+
+  geometry_msgs::TransformStamped trans;
+  trans.header.stamp = tm;
+  trans.header.frame_id = p_frame_id;
+  trans.child_frame_id = c_frame_id;
+  trans.transform.translation.x = pos[0]/1000.0;
+  trans.transform.translation.y = pos[1]/1000.0;
+  trans.transform.translation.z = pos[2]/1000.0;
+
+  trans.transform.rotation.w = quaternion[0];
+  trans.transform.rotation.x = quaternion[1];
+  trans.transform.rotation.y = quaternion[2];
+  trans.transform.rotation.z = quaternion[3];
+
+  bc->sendTransform(trans);
+
+  return (T);
+}
 
 pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
 {
@@ -590,6 +637,9 @@ pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
   /* */
   defun(ctx,"EUSTF-SET-EXTRAPOLATION-LIMIT",argv[0],(pointer (*)())EUSTF_SETEXTRAPOLATIONLIMIT);
   defun(ctx,"EUSTF-GET-PARENT",argv[0],(pointer (*)())EUSTF_GETPARENT);
+  /* */
+  defun(ctx,"EUSTF-TRANSFORM-BROADCASTER",argv[0],(pointer (*)())EUSTF_TRANSFORM_BROADCASTER);
+  defun(ctx,"EUSTF-SEND-TRANSFORM",argv[0],(pointer (*)())EUSTF_SEND_TRANSFORM);
 
   pointer_update(Spevalof(PACKAGE),p);
   return 0;

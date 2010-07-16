@@ -146,7 +146,9 @@
 				      (concatenate string pkg "::" type))))
 		  (t (error "undefined type ~A~%" msg))))
       (cond
-       ((and vec-size (memq var-type '(:int8 :int16 :int32 :int64 :boolean)))
+       ((and vec-size (memq var-type '(:int8 :boolean)))
+	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :char))~%" var var vec-size init-elem))
+       ((and vec-size (memq var-type '(:int16 :int32 :int64)))
 	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :integer))~%" var var vec-size init-elem))
        ((and vec-size (memq var-type '(:float32 :float64)))
 	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :float))~%" var var vec-size init-elem))
@@ -200,26 +202,36 @@
        (vec-size (format strm "    ;; ~A[~A] ~A~%" type (if (zerop vec-size) "" vec-size) var))
        (t        (format strm "    ;; ~A ~A~%" type var)))
       (format strm "    ")
-      (if (and vec-size (not (eq gen-type :rostype))) (format strm "(* "))
+      (if (and vec-size (and (not (eq gen-type :rostype))
+                             (not (eq gen-type :string))))
+          (format strm "(* "))
       (case
        gen-type
        ((:int8 :boolean) (format strm "1"))
        (:int16 (format strm "2"))
        ((:int32 :float32) (format strm "4"))
        ((:int64 :float64) (format strm "8"))
-       (:string (format strm "4 (length ~A)"  var))
        (:time (format strm "8"))
        (:rostype
         (if vec-size
             (format strm "(apply #'+ (send-all ~A :serialization-length))" var)
           (format strm "(send ~A :serialization-length)" var)))
+       (:string
+        (if vec-size
+            (format strm "(apply #'+ (mapcar #'(lambda (x) (+ 4 (length x))) ~A))" var)
+          (format strm "4 (length ~A)" var)))
        (t (error "undefined type ~A~%" msg)))
       (cond
        ((and vec-size (eq gen-type :rostype) (zerop vec-size))
         (format strm " 4"))
-       ((and vec-size (not (eq gen-type :rostype)) (zerop vec-size))
+       ((and vec-size (eq gen-type :string) (zerop vec-size))
+        (format strm " 4"))
+       ((and vec-size (and (not (eq gen-type :rostype))
+                           (not (eq gen-type :string)))
+             (zerop vec-size))
         (format strm " (length ~A)) 4" var))
-       ((and vec-size (not (eq gen-type :rostype)))
+       ((and vec-size (and (not (eq gen-type :rostype))
+                           (not (eq gen-type :string))))
         (format strm " ~A)" vec-size)))
       (format strm "~%")
       )
@@ -244,18 +256,26 @@
        ((and vec-size (zerop vec-size))
 	(format strm "     ;; ~A[] ~A~%" type var)
 	(format strm "     (write-long (length ~A) s)~%" var)
-	(format strm "     (dotimes (i (length ~A))~%  " var)
-	(setq var (format nil "(elt ~A i)" var)))
+        (cond
+         ((eq var-type :int8) );; do nothing
+         (t
+          (format strm "     (dotimes (i (length ~A))~%  " var)
+          (setq var (format nil "(elt ~A i)" var)))))
        (vec-size
 	(format strm "     ;; ~A[~A] ~A~%" type vec-size var)
-	(format strm "     (dotimes (i ~A)~%  " vec-size)
-	(setq var (format nil "(elt ~A i)" var)))
+        (cond
+         ((eq var-type :int8) );; do nothing
+         (t
+          (format strm "     (dotimes (i ~A)~%  " vec-size)
+          (setq var (format nil "(elt ~A i)" var)))))
        (t
         (format strm "     ;; ~A ~A~%" type var)))
       (case
        var-type
        (:int8
-	(format strm "     (write-byte ~A s)~%" var))
+        (if vec-size
+            (format strm "     (princ ~A s)~%" var)
+          (format strm "     (write-byte ~A s)~%" var)))
        (:int16
 	(format strm "     (write-word ~A s)~%" var))
        (:int32
@@ -275,37 +295,42 @@
        (:rostype
 	(format strm "     (send ~A :serialize s)~%" var))
        (t (error "undefined type ~A~%" msg)))
-      (if vec-size (format strm "       )~%"))
+      (if (and vec-size (not (eq var-type :int8))) (format strm "       )~%"))
       )
     (format strm "     ;;~%")
     (format strm "     (if (null strm) (get-output-stream-string s))))~%")))
 
 (defun generate-msg-deserialize (strm pkg name msgs)
-  (let (type var vec-size set)
+  (let (type var vec-size set var-type)
     (format strm "  (:deserialize~%")
     (format strm "   (buf &optional (ptr- 0))~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
-	    vec-size (elt msg 2))
+	    vec-size (elt msg 2) var-type (generate-variable-type type))
       (cond
        ((and vec-size (zerop vec-size))
 	(format strm "   ;; ~A[] ~A~%" type var)
 	(format strm "   (let (n)~%")
 	(format strm "     (setq n (sys::peek buf ptr- :integer)) (incf ptr- 4)~%")
 	(case
-	 (generate-variable-type type)
-	 ((:int8 :int16 :int32 :int64 :boolean)
+	 var-type
+         ((:int8 :boolean)
+	  (format strm "     (setq ~A (make-array n :element-type :char))~%" var))
+	 ((:int16 :int32 :int64)
 	  (format strm "     (setq ~A (instantiate integer-vector n))~%" var))
 	 ((:float32 :float64)
 	  (format strm "     (setq ~A (instantiate float-vector n))~%" var))
+         (:string
+           (format strm "     (setq ~A (make-list n))~%" var))
 	 (:rostype
 	  (format strm "     (setq ~A (let (r) (dotimes (i n) (push (instance ~A :init) r)) r))~%" var (if (substringp "::" type) type (concatenate string pkg "::" type)))))
         (case
-         (generate-variable-type type)
+         var-type
          (:rostype
           (format strm "     (dolist (elem- ~A)~%" var)
           (format strm "       ")
           (setq set "setf" var "elem-"))
+         (:int8 (format strm "     " var)) ;; do nothing
          (t
           (format strm "     (dotimes (i n)~%" var)
           (format strm "       ")
@@ -314,11 +339,12 @@
        (vec-size
 	(format strm "   ;; ~A[~A] ~A~%" type vec-size var)
         (case
-         (generate-variable-type type)
+         var-type
          (:rostype
           (format strm "     (dolist (elem- ~A)~%" var)
           (format strm "       ")
           (setq set "setf" var "elem-"))
+         (:int8 (format strm "     " var)) ;; do nothing
          (t
           (format strm "   (dotimes (i (length ~A))~%" var)
           (format strm "     ")
@@ -327,11 +353,13 @@
         (format strm "   ;; ~A ~A~%" type var)
         (format strm "   ")
 	(setq set "setq")))
- 
+
       (case
-       (generate-variable-type type)
+       var-type
        (:int8
-	(format strm "(~A ~A (sys::peek buf ptr- :char)) (incf ptr- 1)~%" set var))
+        (if vec-size
+            (format strm "(replace ~A buf :start2 ptr-) (incf ptr- (length ~A))~%" var var)
+          (format strm "(~A ~A (sys::peek buf ptr- :char)) (incf ptr- 1)~%" set var)))
        (:int16
 	(format strm "(~A ~A (sys::peek buf ptr- :short)) (incf ptr- 2)~%" set var))
        (:int32
@@ -352,6 +380,10 @@
         (format strm "(send ~A :deserialize buf ptr-) (incf ptr- (send ~A :serialization-length))~%" var var))
        (t (error "undefined type ~A~%" msg)))
       (cond
+       ((and vec-size (eq var-type :int8) (zerop vec-size))
+        (format strm "     )~%"))
+       ((and vec-size (eq var-type :int8))
+        ) ;; do nothing
        ((and vec-size (zerop vec-size))
 	(format strm "       ))~%"))
        (vec-size

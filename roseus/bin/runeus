@@ -1,0 +1,22 @@
+#!/bin/sh 
+
+# file
+FILE="\"$1\"";
+shift
+# argc
+ARGV="(list"
+while [ $# -ne 0 ]; do
+    ARGV=$ARGV"\"$1\" ";
+    shift;
+done
+ARGV=$ARGV")"
+
+irteusgl "(progn (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))" &
+PID=$!
+#echo PID is $PID
+trap 'kill -s HUP $PID ' CHLD INT TERM
+wait $PID
+# if you are an euslisp expert and debug roseus, you can comment in
+# following line
+#if [ $? -ne 0 ] ; then read line ; fi
+

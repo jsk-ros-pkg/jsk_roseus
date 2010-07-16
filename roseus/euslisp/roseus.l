@@ -1,5 +1,8 @@
-(load-library "roseus.so" '("roseus"))
-(pushnew :ros *features*)
+(when (not (find "roseus"
+                 lisp::*loaded-modules*
+                 :key #'lisp::load-module-file-name
+                 :test #'equal))
+  (load-library "roseus.so" '("roseus")))
 
 (defun ros::roseus-sigint-handler (sig code)
   (ros::ROS-WARN (format nil "ros::roseus-sigint-handler ~A" sig))
@@ -28,17 +31,6 @@
   (:datatype- ()  (get (class self) :datatype-))
   )
 
-(defclass ros::rostime
-  :super propertied-object
-  :slots (sec nsec))
-(defmethod ros::rostime
-  (:init (&key ((:sec _sec) 0) ((:nsec _nsec) 0))
-   (ros::ros-error "ros::rostime is no longer supported")
-   (setq sec _sec nsec _nsec) self)
-  (:sec (&optional s) (if s (setq sec s)) sec)
-  (:nsec (&optional s) (if s (setq nsec s)) nsec)
-  )
-
 (defclass ros::time
   :super propertied-object
   :slots (sec-nsec))
@@ -51,36 +43,37 @@
   (:now () (setq sec-nsec (ros::time-now-raw)) self)
   )
 
-(defun ros::time () (instance ros::time :init))
+(defun ros::time (&optional sec)
+  (instance ros::time :init
+            :sec (floor sec)
+            :nsec (floor (* 1000000000 (- sec (floor sec))))))
+
 (defun ros::time-now () (send (instance ros::time :init) :now))
 
 (defun roseus-add-files (pkg type)
-  (let (dir dirfile)
-    (setq dir (format nil "~A/~A/eus/~A/" (ros::rospack-find pkg) type pkg))
+  (let ((dir (format nil "~A/~A/eus/~A/" (ros::rospack-find pkg) type pkg)))
     (unless (probe-file dir)
-      (warning-message 1 (format nil ";; can not find ~A directory for [~A] packages~%" dir pkg))
+      (warning-message
+       1 (format nil ";; can not find ~A directory for [~A] packages~%" dir pkg))
       (exit))
     (unless (find-package (string-upcase pkg))
       (make-package (string-upcase pkg)))
     (dolist (file (directory dir))
       (when (and (string= (pathname-type file) "l")
 		 (not (= #\. (elt (pathname-name file) 0))))
-	(setq dirfile (concatenate string dir file))
-        (if ros::*compile-message*
-            (let* ((fname (format nil "~A" (pathname-name file)))
-                   (old-module (find fname *loaded-modules*
-                                     :key #'lisp::load-module-file-name :test #'equal)))
-              (if old-module (sys::unbinload old-module))
-              (let ((pwd (unix::pwd)) lname)
-                (unix::chdir (string-right-trim "/" dir))
-                (comp:compile-file-if-src-newer file)
-                (setq lname (load fname))
-                (warning-message 6 ";; loading   ~A~%" lname)
-                (unix::chdir pwd)))
-          (progn
-            (warning-message 6 ";; loading ~A~%" dirfile)
-            (load dirfile)))))
-    ))
+	(let ((dirfile (concatenate string dir file)))
+          (if ros::*compile-message*
+              (let* ((fname (pathname-name file))
+                     (old-module (find fname *loaded-modules*
+                                       :key #'lisp::load-module-file-name
+                                       :test #'equal)))
+                (if old-module (sys::unbinload old-module))
+                (let ((pwd (unix::pwd)))
+                  (unix::chdir (string-right-trim "/" dir))
+                  (comp:compile-file-if-src-newer file)
+                  (load fname)
+                  (unix::chdir pwd)))
+            (load dirfile)))))))
 
 (defun roseus-add-msgs (pkg) (roseus-add-files pkg "msg"))
 (defun roseus-add-srvs (pkg) (roseus-add-files pkg "srv"))
@@ -172,11 +165,11 @@ always the rank of list is 2"
            (cadr param)))))))
 
 (defmacro ros-message-destructuring-bind (params msg &rest body)
-  "usage:
- (ros-message-destructuring-bind
-  ((:header ((:frame_id frame_id) (:stamp stamp))) (:pose pose))
-  pose-stamped                          ;symbol to message is bound
-  (print pose))"
+;;  usage:
+;; (ros-message-destructuring-bind
+;;  ((:header ((:frame_id frame_id) (:stamp stamp))) (:pose pose))
+;;  pose-stamped                          ;symbol to message is bound
+;;  (print pose))
   `(symbol-macrolet ,(ros-message-destructuring-bind-parse-arg msg params)
      ,@body))
 

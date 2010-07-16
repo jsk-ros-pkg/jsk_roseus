@@ -1,4 +1,5 @@
-(pushnew (format nil "~A/euslisp/" (read-line (unix::piped-fork "rospack find roseus"))) *load-path*)
+(unless (find "roseus/euslisp/" *load-path* :test #'substringp)
+  (pushnew (format nil "~A/euslisp/" (read-line (unix::piped-fork "rospack find roseus"))) *load-path*))
 (load "roseus.l")
 
 (roseus-add-msgs "roslib")
