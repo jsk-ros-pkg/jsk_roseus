@@ -1100,6 +1100,7 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
   
   string s;
   double d;
+  bool b;
   int i;
   pointer ret;
 
@@ -1109,6 +1110,11 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
     ret = makeflt(d);
   } else if ( nh.getParam(key, i) ) {
     ret = makeint(i);
+  } else if ( nh.getParam(key, b) ) {
+      if ( b == true )
+          ret = T;
+      else
+          ret = NIL;
   } else {
     return (NIL);
   }
@@ -1143,6 +1149,7 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
   string s;
   double d;
   int i;
+  bool b;
   pointer ret;
 
   if ( nh.getParamCached(key, s) ) {
@@ -1151,6 +1158,11 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
     ret = makeflt(d);
   } else if ( nh.getParamCached(key, i) ) {
     ret = makeint(i);
+  } else if ( nh.getParamCached(key, b) ) {
+      if ( b == true )
+          ret = T;
+      else
+          ret = NIL;
   } else {
     ROS_ERROR("unknown getParam type");
     return (NIL);
