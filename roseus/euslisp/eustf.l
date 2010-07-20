@@ -162,9 +162,8 @@
   (:lookup-transform-safe
    (target-frame source-frame time
     &optional (timeout 0.1) (duration 0.1))
-      (send self :wait-for-transform target-frame source-frame time
-            timeout duration)
-      (if (send self :can-transform target-frame source-frame time)
+      (if (send self :wait-for-transform target-frame source-frame time
+                timeout duration)
           (send self :lookup-transform target-frame source-frame time)
         (progn
           (ros::ros-warn "cannot resolve transformation from ~A to ~A"
@@ -233,13 +232,10 @@
 		       :name target-frame))))
   (:transform-pose-safe
    (target-frame pose-stamped &optional (timeout 0.1) (duration 0.1))
-   (send self :wait-for-transform target-frame
-         (send pose-stamped :header :frame_id)
-         (send pose-stamped :header :stamp)
-         timeout duration)
-   (if (send self :can-transform target-frame
+   (if (send self :wait-for-transform target-frame
              (send pose-stamped :header :frame_id)
-             (send pose-stamped :header :stamp))
+             (send pose-stamped :header :stamp)
+             timeout duration)
        (send self :transform-pose target-frame pose-stamped)
      (progn
        (ros::ros-warn "cannot resolve transformation from ~A to ~A"
