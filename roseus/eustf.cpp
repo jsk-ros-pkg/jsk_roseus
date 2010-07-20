@@ -196,6 +196,14 @@ pointer EUSTF_WAITFORTRANSFORM(register context *ctx,int n,pointer *argv)
   ret = tf->waitForTransform(target_frame, source_frame, time,
                              ros::Duration(timeout), ros::Duration(duration));
 
+  ROS_INFO_STREAM("waitForTransform : "
+                  << "target_frame : " << target_frame
+                  << "source_frame : " << source_frame
+                  << "time : " << time
+                  << "timeout : " << timeout
+                  << "duration : " << duration
+                  << "return : " << ret);
+
   return((ret==true)?(T):(NIL));
 }
 
@@ -239,6 +247,16 @@ pointer EUSTF_WAITFORTRANSFORMFULL(register context *ctx,int n,pointer *argv)
                              fixed_frame,
                              ros::Duration(timeout), ros::Duration(duration));
 
+  ROS_INFO_STREAM("waitForTransformFull : "
+                  << "target_frame : " << target_frame
+                  << "target_time : " << target_time
+                  << "source_frame : " << source_frame
+                  << "source_time : " << source_time
+                  << "fixed_frame : " << fixed_frame
+                  << "timeout : " << timeout
+                  << "duration : " << duration
+                  << "return : " << ret);
+
   return((ret==true)?(T):(NIL));
 }
 
@@ -262,6 +280,12 @@ pointer EUSTF_CANTRANSFORM(register context *ctx,int n,pointer *argv)
   set_ros_time(time,argv[3]);
 
   ret = tf->canTransform(target_frame, source_frame, time);
+
+  ROS_INFO_STREAM("canTransform : "
+                  << "target_frame : " << target_frame
+                  << "source_frame : " << source_frame
+                  << "time : " << time
+                  << "return : " << ret);
 
   return((ret==true)?(T):(NIL));
 }
@@ -294,6 +318,14 @@ pointer EUSTF_CANTRANSFORMFULL(register context *ctx,int n,pointer *argv)
   ret = tf->canTransform(target_frame, target_time,
                          source_frame, source_time,
                          fixed_frame);
+
+  ROS_INFO_STREAM("canTransformFull : "
+                  << "target_frame : " << target_frame
+                  << "target_time : " << target_time
+                  << "source_frame : " << source_frame
+                  << "source_time : " << source_time
+                  << "fixed_frame : " << fixed_frame
+                  << "return : " << ret);
 
   return((ret==true)?(T):(NIL));
 }
