@@ -14,7 +14,7 @@
   :super ros::object
   :slots (name-space action-spec simple-state comm-state
                      action-goal-class action-result-call action-feedback-class
-                     goal_id))
+                     goal_id action-goal-msg))
 
 (defmethod ros::simple-action-client
   (:goal-status-cb
@@ -122,6 +122,7 @@
      (ros::sleep))
    simple-state)
   (:get-result ()  (if action-goal-msg (send action-goal-msg :result)))
+  (:get-result-status ()  (if action-goal-msg (send action-goal-msg :status)))
   (:cancel-all-goals ()) ;; TODO  need sample program to test
   (:cancel-goal ())
   ;;
