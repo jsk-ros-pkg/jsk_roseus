@@ -305,6 +305,7 @@ public:
     int argc=0;
     //ROS_WARN("func");prinx(ctx,_scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,argp,ERROUT);flushstream(ERROUT);terpri(ERROUT);
+    vpush((pointer)eus_msg._message);    // to avoid GC
     if ( issymbol(_scb) ) {
       func = FUNCTION_CLOSURE(ctx,(cons(ctx,_scb,NIL)));
     } else if ( piscode(func) ) {
@@ -320,6 +321,7 @@ public:
     ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),func,(pointer)(ctx->vsp-argc),NULL,argc);
     while(argc-->0)vpop();
     vpop();                     // remove function
+    vpop();    // remove eus_msg._message
   }
   virtual const std::type_info& getTypeInfo() {
     return typeid(EuslispMessage);
@@ -437,9 +439,9 @@ public:
     // Deserialization
     EuslispMessage eus_msg(_req);
     eus_msg.__serialized_length = params.request.num_bytes;
+    vpush(eus_msg._message);    // to avoid GC
     eus_msg.deserialize(params.request.message_start);
-    
-    vpush((pointer) eus_msg._message);
+    //vpush((pointer) eus_msg._message); not needed?
     r = ufuncall(ctx, (ctx->callfp?ctx->callfp->form:NIL),
                  func, (pointer)(ctx->vsp-1),
                  NULL, 1);
@@ -463,7 +465,9 @@ public:
     *tmp++ = (uint8_t)((serialized_length >> 8) & 0xFF);
     *tmp++ = (uint8_t)((serialized_length >> 16) & 0xFF);
     *tmp++ = (uint8_t)((serialized_length >> 24) & 0xFF);
+    vpush((pointer)eus_res._message);    // to avoid GC
     eus_res.serialize(tmp, 0);
+    vpop();     // eus_res._message
 #if DEBUG
     cerr << "num bytes = " << params.response.num_bytes << endl;
     ROS_INFO("message_start =  %X",params.response.message_start);
@@ -999,8 +1003,10 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   }
 
   EuslispMessage message(emessage);
+  vpush(message._message);      // to avoid GC in csend
   pointer request(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_REQUEST));
   pointer response(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_RESPONSE));
+  vpop();                       // pop message._message
 #if ROS_VERSION_MINIMUM(1,1,0)
   boost::shared_ptr<EuslispServiceCallbackHelper> *callback =
     (new boost::shared_ptr<EuslispServiceCallbackHelper>
