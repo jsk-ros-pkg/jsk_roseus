@@ -965,7 +965,9 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   }
 
   EuslispMessage request(emessage);
+  vpush(request._message);      // to avoid GC, it may not be required...
   EuslispMessage response(csend(ctx,emessage,K_ROSEUS_RESPONSE,0));
+  vpush(response._message);     // to avoid GC, its important
   ServiceClientOptions sco(service, request.__getMD5Sum(), persist, M_string());
   ServiceClient client = s_node->serviceClient(sco);
   ServiceClient* srv = new ServiceClient(client);
@@ -976,7 +978,8 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
 #endif
   // NEED FIX
   bool bSuccess =  srv->call(request, response, request.__getMD5Sum());
-
+  vpop();                       // pop response._message
+  vpop();                       // pop request._message
   if ( ! bSuccess ) {
     ROS_ERROR("attempted to cass service  %s, but failed ",
               service.c_str());
