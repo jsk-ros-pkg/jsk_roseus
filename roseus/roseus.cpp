@@ -216,8 +216,9 @@ public:
     context *ctx = current_ctx;
     if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     pointer a,curclass;
+    vpush(_message);            // to avoid GC
     uint32_t len = serializationLength();
-
+    vpop();                     // pop _message
     a = (pointer)findmethod(ctx,K_ROSEUS_SERIALIZE,classof(_message),&curclass);
     ROS_ASSERT(a!=NIL);
     pointer r = csend(ctx,_message,K_ROSEUS_SERIALIZE,0);
@@ -448,7 +449,9 @@ public:
     // Serializaion
     EuslispMessage eus_res(_res);
     eus_res.replaceContents(r);
+    vpush(eus_res._message);    // to avoid GC
     uint32_t serialized_length = eus_res.serializationLength();
+    vpop();                     // pop eus_res._message
     params.response.num_bytes = serialized_length + 5;
     params.response.buf.reset (new uint8_t[params.response.num_bytes]);
     params.response.message_start = 0;
