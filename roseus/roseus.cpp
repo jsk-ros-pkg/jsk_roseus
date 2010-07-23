@@ -305,7 +305,7 @@ public:
     int argc=0;
     //ROS_WARN("func");prinx(ctx,_scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,argp,ERROUT);flushstream(ERROUT);terpri(ERROUT);
-    vpush((pointer)eus_msg._message);    // to avoid GC
+    vpush(eus_msg->_message);    // to avoid GC
     if ( issymbol(_scb) ) {
       func = FUNCTION_CLOSURE(ctx,(cons(ctx,_scb,NIL)));
     } else if ( piscode(func) ) {
