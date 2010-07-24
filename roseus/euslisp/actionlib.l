@@ -13,7 +13,7 @@
 (defclass ros::simple-action-client
   :super ros::object
   :slots (name-space action-spec simple-state comm-state
-                     action-goal-class action-result-call action-feedback-class
+                     action-goal-class action-result-class action-feedback-class
                      goal_id action-goal-msg))
 
 (defmethod ros::simple-action-client
@@ -38,8 +38,8 @@
                    ((=  simple-state ros::*simple-goal-state-done*)
                     (ros::ros-error error-msg))))
            ('ros::*comm-state-recalling*
-             (cond ((not (= simple-state ros::*simple-goal-state-pending*)))
-                   (ros::ros-error error-msg)))
+             (cond ((not (= simple-state ros::*simple-goal-state-pending*))
+		    (ros::ros-error error-msg))))
            ('ros::*comm-state-preempting*
              (cond ((= simple-state ros::*simple-goal-state-pending*)
                     (setq simple-state ros::*simple-goal-state-active*))
@@ -71,6 +71,12 @@
      action-goal-msg))
   (:action-feedback-cb (msg))
   ;;
+  (:make-goal-instance
+   (&rest args)
+   (let (msg)
+     (setq msg (instance action-goal-class :init))
+     (send* msg :goal args)
+     msg))
   ;;
   (:init
    (ns spec)
@@ -109,17 +115,24 @@
      (setq comm-state (instance actionlib-comm-state :init))
      (ros::publish (format nil "~A/goal" name-space) goal)))
   (:send-goal-and-wait
-   (goal)
+   (goal &key (timeout 0))
    (send self :send-goal goal)
-   (send self :wait-for-result))
+   (send self :wait-for-result :timeout timeout))
   (:wait-for-result
-   (&key (timeout 0))
+   (&key (timeout 0)) ;; msec
    (ros::rate 10)
-   (while (ros::ok)
-     (if (= simple-state ros::*simple-goal-state-done*)
-         (return))
-     (ros::spin-once)
-     (ros::sleep))
+   (let ((start (send (ros::time-now) :sec-nsec)))
+     (while (ros::ok)
+       (if (= simple-state ros::*simple-goal-state-done*)
+	   (return))
+       (if (> timeout 0)
+	   (let* ((tm (ros::time-now))
+		  (iv (v- (send tm :sec-nsec) start)))
+	     (if (> (+ (* 1000 (elt iv 0))
+		       (/ (elt iv 1) 1000000))
+		    timeout) (return))))
+       (ros::spin-once)
+       (ros::sleep)))
    simple-state)
   (:get-result ()  (if action-goal-msg (send action-goal-msg :result)))
   (:get-result-status ()  (if action-goal-msg (send action-goal-msg :status)))
@@ -131,8 +144,8 @@
 
 (defclass ros::simple-action-server
   :super ros::object
-  :slots (name-space action-spec status
-                     action-goal-class action-result-call action-feedback-class
+  :slots (name-space action-spec status comm-state
+                     action-goal-class action-result-class action-feedback-class
                      execute-cb goal goal-id seq-id))
 
 (defmethod ros::simple-action-server
@@ -158,6 +171,10 @@
    (setq status actionlib_msgs::active)
    (setq goal msg)
    (setq goal-id (send msg :goal_id)))
+  (:cancel-callback
+   (msg)
+   (ros::ros-info ";; Recieved Cancel")
+   )
   (:set-succeeded
    (msg)
    (ros::ros-info ";; Send Result")
