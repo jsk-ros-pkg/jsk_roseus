@@ -17,7 +17,7 @@ export EUSDIR=$(shell pwd)/eus
 
 eus-installed: eus
 	cd eus; svn up lisp
-	cd eus; svn up -N lib
+	cd eus; svn up -N lib; svn up -N lib/llib
 	echo $(EUSDIR)
 	svn revert eus/lisp/c/eus.c
 	cat eus.c_DEFAULT_ENV.patch | sed s@DEFAULT_EUSDIR@$(EUSDIR)@ | sed s@DEFAULT_ARCHDIR@$(ARCHDIR)@ > $(EUSC_PATCH)
