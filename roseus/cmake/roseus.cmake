@@ -1,6 +1,28 @@
 rosbuild_find_ros_package(genmsg_cpp)
 rosbuild_find_ros_package(roseus)
 
+# for euslisp ros API. like roslib.load_mafest
+macro(genmanifest_eus)
+  rosbuild_find_ros_package(roseus)
+  set(genmanifest_eus_exe ${roseus_PACKAGE_PATH}/scripts/genmanifest_eus)
+  set(manifest_eus_target_dir ${PROJECT_SOURCE_DIR}/src/euslisp)
+  set(manifest_eus_target ${manifest_eus_target_dir}/_manifest.l)
+  set(manifest_xml ${PROJECT_SOURCE_DIR}/manifest.xml)
+  rosbuild_invoke_rospack(${PROJECT_NAME} _rospack deps_packages depends)
+  if(NOT "" STREQUAL ${_rospack_deps_packages})
+    string(REPLACE "\n" " " _rospack_deps_packages ${_rospack_deps_packages})
+    add_custom_command(OUTPUT ${manifest_eus_target}
+      ${manifest_eus_target_dir}
+      COMMAND "mkdir" "-p"  ${manifest_eus_target_dir}
+      COMMAND ${genmanifest_eus_exe} ${manifest_eus_target}
+      ${_rospack_deps_packages}
+      DEPENDS ${manifest_xml})
+    add_custom_target(ROSBUILD_genmanifest_eus ALL
+      DEPENDS ${manifest_eus_target} ${genmanifest_eus_exe})
+  endif(${_rospack_deps_packages})
+endmacro(genmanifest_eus)
+genmanifest_eus()
+
 # Message-generation support.
 macro(genmsg_eus)
   rosbuild_get_msgs(_msglist)

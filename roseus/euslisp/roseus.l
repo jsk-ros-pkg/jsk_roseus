@@ -173,4 +173,10 @@ always the rank of list is 2"
   `(symbol-macrolet ,(ros-message-destructuring-bind-parse-arg msg params)
      ,@body))
 
+(defun load-ros-manifest (pkg)
+  (let ((manifest (format nil "~A/src/euslisp/_manifest.l"
+                          (ros::rospack-find pkg))))
+    (when (probe-file manifest)
+      (load manifest))))
+
 (setq sys::*exit-hook* 'ros::exit)
