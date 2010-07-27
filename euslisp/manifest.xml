@@ -1,0 +1,14 @@
+<package>
+  <description brief="euslisp">
+
+     euslisp and irteus
+
+  </description>
+  <author>Toshihiro Matsui and JSK, ROS maintained by Kei Okada</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/euslisp</url>
+
+</package>
+
+
