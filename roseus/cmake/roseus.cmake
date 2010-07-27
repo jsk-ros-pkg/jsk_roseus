@@ -12,7 +12,6 @@ macro(genmanifest_eus)
   if(NOT "" STREQUAL ${_rospack_deps_packages})
     string(REPLACE "\n" " " _rospack_deps_packages ${_rospack_deps_packages})
     add_custom_command(OUTPUT ${manifest_eus_target}
-      ${manifest_eus_target_dir}
       COMMAND "mkdir" "-p"  ${manifest_eus_target_dir}
       COMMAND ${genmanifest_eus_exe} ${manifest_eus_target}
       ${_rospack_deps_packages}
