@@ -19,7 +19,7 @@ macro(genmanifest_eus)
       DEPENDS ${manifest_xml})
     add_custom_target(ROSBUILD_genmanifest_eus ALL
       DEPENDS ${manifest_eus_target} ${genmanifest_eus_exe})
-  endif(${_rospack_deps_packages})
+  endif(NOT "" STREQUAL ${_rospack_deps_packages})
 endmacro(genmanifest_eus)
 genmanifest_eus()
 
