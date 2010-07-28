@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# argc
+ARGV="(list "
+while [ $# -ne 0 ]; do
+    ARGV=$ARGV"\"$1\" ";
+    shift;
+done
+ARGV=$ARGV")"
+rosrun euslisp eus2 "(progn (setq lisp::*eustop-argument* $ARGV)(load \"`rospack find roseus`/scripts/genmanifest.l\")(exit))"
+
+
+
+
+
