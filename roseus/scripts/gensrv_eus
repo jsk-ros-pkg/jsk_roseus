@@ -1,6 +1,8 @@
 #!/bin/bash
 
-rosrun euslisp eus2 `rospack find roseus`/scripts/genmsg-main-eus.l -c "(prog1 (gensrv-eus \"$@\")(exit))"
+if [ -e `rospack find euslisp`/eus-installed ] ; then
+    rosrun euslisp eus2 `rospack find roseus`/scripts/genmsg-main-eus.l -c "(prog1 (gensrv-eus \"$@\")(exit))"
+fi
 
 
 
