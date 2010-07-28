@@ -6,6 +6,7 @@
   <depend package="roslang"/>
   <depend package="roscpp" />
   <depend package="rospack" />
+  <depend package="euslisp"/>
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>
   <depend package="bullet"/>

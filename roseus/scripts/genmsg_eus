@@ -1,7 +1,5 @@
 #!/bin/bash
 
-if [ `which eus2` ]; then
-    eus2 `rospack find roseus`/scripts/genmsg-main-eus.l -c "(prog1 (genmsg-eus \"$@\")(exit))"
-fi
+rosrun euslisp eus2 `rospack find roseus`/scripts/genmsg-main-eus.l -c "(prog1 (genmsg-eus \"$@\")(exit))"
 
 

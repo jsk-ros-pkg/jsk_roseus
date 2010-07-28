@@ -1,4 +1,3 @@
-#!/usr/bin/env eus2
 ;;-*- mode: lisp -*-
 
 (defun split-string (str)
@@ -43,5 +42,6 @@
   (dolist (pkg *depend-packages*)
     (pprint `(load-ros-package ,pkg) f))
   )
+
 
 (exit)
