@@ -18,16 +18,18 @@ export EUSDIR=$(shell pwd)/eus
 eus-installed: eus
 	cd eus; svn up lisp
 	cd eus; svn up -N lib; svn up -N lib/llib
-	echo $(EUSDIR)
 	svn revert eus/lisp/c/eus.c
+	## set default EUSDIR in eus.c
 	cat eus.c_DEFAULT_ENV.patch | sed s@DEFAULT_EUSDIR@$(EUSDIR)@ | sed s@DEFAULT_ARCHDIR@$(ARCHDIR)@ > $(EUSC_PATCH)
 	patch -p0 -d eus < $(EUSC_PATCH)
 	cd eus/lisp && ln -sf $(MAKEFILE) Makefile && make eus0 eus1 eus2 eusg eusx eusgl eus
 	touch eus-installed
 
 irteus-installed: irteus
-	(cd irteus; svn up)
+	cd irteus; svn up
 	cd irteus; make
+	## force hard link for rosrun
+	cd $(EUSDIR)/$(ARCHDIR)/bin; ln -f eus irteus; ln -f eusgl irteusgl;
 	touch irteus-installed
 
 irteus:
