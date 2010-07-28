@@ -1,14 +1,17 @@
-#!/bin/bash
+#!/bin/bash -x
 
+TARGET="\"$1\"";
+shift
 # argc
-ARGV="(list "
+DEPENDS=""
 while [ $# -ne 0 ]; do
-    ARGV=$ARGV"\"$1\" ";
+    DEPENDS=$DEPENDS"\"$1\" ";
     shift;
 done
-ARGV=$ARGV")"
 if [ -e `rospack find euslisp`/eus-installed ] ; then
-    rosrun euslisp eus2 "(progn (setq lisp::*eustop-argument* $ARGV)(load \"`rospack find roseus`/scripts/genmanifest.l\")(exit))"
+    rosrun euslisp eus2 "(progn (load \"`rospack find roseus`/scripts/genmanifest.l\")(genmanifest $TARGET $DEPENDS)(exit))"
+else
+    echo ";; rosmake eusilsp !!"
 fi
 
 
