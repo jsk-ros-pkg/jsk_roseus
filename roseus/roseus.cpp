@@ -430,6 +430,8 @@ public:
   virtual bool call(ros::ServiceCallbackHelperCallParams& params) {
     context *ctx = current_ctx;
     pointer func = _scb, r;
+    vpush(_res._message);
+    vpush(_req._message);
     if ( issymbol(_scb) ) {
       func = FUNCTION_CLOSURE(ctx,(cons(ctx,_scb,NIL)));
     } else {
@@ -477,6 +479,8 @@ public:
       ROS_INFO("%X", tmp[i]);
     }
 #endif
+    vpop(); //vpush(_res.message);
+    vpop(); //vpush(_req.message);
     return(T);
   }
 };
