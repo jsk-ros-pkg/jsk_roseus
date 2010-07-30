@@ -48,6 +48,7 @@
              (send self :nsec (floor (* 1000000000 (- sec (floor sec)))))
              self)
   (:from-nsec (nsec)
+              ;; divide by 1000 to avoid  big div ?
               (send self :sec  (/ (/ (floor nsec) 1000) 1000000))
               (send self :nsec (* 1000 (mod (/ (floor nsec) 1000) 1000000)))
               self)
