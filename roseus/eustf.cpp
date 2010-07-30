@@ -97,41 +97,6 @@ using namespace std;
  *   TF wrapper
  ************************************************************/
 
-pointer _EUSTF_LOOKUP_TRANSFORM(register context *ctx,int n,pointer *argv)
-{
-  //NB: currently, only support NOW
-  pointer vs;
-  tf::TransformListener tf;
-  tf::StampedTransform ret_transform;
-  // tf::lookup-transform(from-id to-if)
-  // take 2 arguments
-  ckarg(2);
-  // check frame ids
-  if ( !isstring(argv[0]) ) error(E_NOSTRING);
-  if ( !isstring(argv[1]) ) error(E_NOSTRING);
-  //TODO: Error Check
-  std::string from_id_string = std::string((char*)(argv[0]->c.str.chars));
-  std::string to_id_string = std::string((char*)(argv[1]->c.str.chars));
-  tf.waitForTransform(from_id_string, to_id_string,
-                      ros::Time(), ros::Duration(1.0));
-  tf.lookupTransform(from_id_string, to_id_string, ros::Time(), ret_transform);
-
-  // return as array, i dont know create coordinates in C...
-  vs = makefvector(7);          //pos[3] + rot[4](angle-axis quaternion)
-  tf::Vector3 p = ret_transform.getOrigin();
-  tf::Quaternion q = ret_transform.getRotation();
-  vs->c.fvec.fv[0] = p.getX();
-  vs->c.fvec.fv[1] = p.getY();
-  vs->c.fvec.fv[2] = p.getZ();
-  vs->c.fvec.fv[3] = q.getW();
-  vs->c.fvec.fv[4] = q.getX();
-  vs->c.fvec.fv[5] = q.getY();
-  vs->c.fvec.fv[6] = q.getZ();
-  return(vs);
-}
-
-
-
 #define set_ros_time(time,argv)                         \
   if (isvector(argv) && (elmtypeof(argv)==ELM_INT)) {   \
     time.sec  = argv->c.ivec.iv[0];                     \
@@ -641,7 +606,7 @@ pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
   rospkg=findpkg(makestring("TF",2));
   if (rospkg == 0) rospkg=makepkg(ctx,makestring("TF", 2),NIL,NIL);
   Spevalof(PACKAGE)=rospkg;
-  defun(ctx,"_LOOKUP-TRANSFORM",argv[0],(pointer (*)())_EUSTF_LOOKUP_TRANSFORM);
+
   rospkg=findpkg(makestring("ROS",3));
   if (rospkg == 0 ) {
     ROS_ERROR("Coudld not found ROS package; Please load eusros.so");
