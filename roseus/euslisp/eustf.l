@@ -141,7 +141,12 @@
   (:get-frame-strings () (ros::eustf-get-frame-strings cobject))
   (:get-latest-common-time
    (source-frame target-frame)
-   (ros::eustf-get-latest-common-time cobject source-frame target-frame))
+   (let ((sec-nsec
+          (ros::eustf-get-latest-common-time cobject source-frame target-frame)))
+     (if sec-nsec
+         (instance ros::time :init
+                   :sec (car sec-nsec)
+                   :nsec (cdr sec-nsec)))))
   (:lookup-transform
    (target-frame source-frame time)
    (let (ret)
