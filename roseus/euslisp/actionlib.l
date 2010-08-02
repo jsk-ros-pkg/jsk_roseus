@@ -1,8 +1,5 @@
 (if (not (find-package "ACTIONLIB_MSGS")) (roseus-add-msgs "actionlib_msgs"))
 
-(defun roseus-add-actionlibs (pkg)
-  (roseus-add-files pkg "msg"))
-
 ;;;; actionlib
 (setq ros::*simple-goal-state-pending* 0
       ros::*simple-goal-state-active*  1

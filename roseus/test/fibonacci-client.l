@@ -9,9 +9,9 @@
 (load "roseus.l")
 (load "actionlib.l")
 
-(roseus-add-msgs "roslib")
-(roseus-add-msgs "roseus")
-(roseus-add-actionlibs "actionlib_tutorials")
+(ros::roseus-add-msgs "roslib")
+(ros::roseus-add-msgs "roseus")
+(ros::roseus-add-msgs "actionlib_tutorials")
 ;;;
 
 ;;;
