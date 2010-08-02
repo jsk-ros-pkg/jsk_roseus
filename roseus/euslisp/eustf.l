@@ -6,9 +6,9 @@
 (load-library "eustf.so" '("eustf"))
 
 ;; include ros messages packages
-(roseus-add-msgs "roslib")
-(roseus-add-msgs "std_msgs")
-(roseus-add-msgs "geometry_msgs")
+(ros::roseus-add-msgs "roslib")
+(ros::roseus-add-msgs "std_msgs")
+(ros::roseus-add-msgs "geometry_msgs")
 
 ;; convert unit....
 ;; position convert : WG use [m], JSK use eus [mm]

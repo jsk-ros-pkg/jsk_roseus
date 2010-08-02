@@ -3,12 +3,12 @@
 ;; ros coordination system interface
 
 ;; include ros messages packages
-(roseus-add-msgs "roslib")
-(roseus-add-msgs "std_msgs")
-(roseus-add-msgs "roseus")
-(roseus-add-msgs "nav_msgs")
-(roseus-add-msgs "geometry_msgs") ;move_base_msgs depends on geometry_msgs
-(roseus-add-msgs "posedetection_msgs")
+(ros::roseus-add-msgs "roslib")
+(ros::roseus-add-msgs "std_msgs")
+(ros::roseus-add-msgs "roseus")
+(ros::roseus-add-msgs "nav_msgs")
+(ros::roseus-add-msgs "geometry_msgs") ;move_base_msgs depends on geometry_msgs
+(ros::roseus-add-msgs "posedetection_msgs")
 
 ;; convert unit....
 ;; eus [mm], ros[m]
