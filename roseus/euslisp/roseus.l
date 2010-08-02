@@ -108,6 +108,23 @@
   (warning-message 3 ";; roseus-add-srvs will be obsoluted, use ros::roseus-add-srvs~%")
   (ros::roseus-add-srvs pkg))
 
+(unless (fboundp 'load-org-for-ros)
+  (setf (symbol-function 'load-org-for-ros) (symbol-function 'load)))
+(defun ros::resolve-ros-path (fname)
+  (let* ((urlname (url-pathname fname))
+	 (package-name (send urlname :host))
+	 (path-name (namestring urlname))
+	 (package-path (ros::rospack-find package-name)))
+    (if package-path
+	(format nil "~A/~A" package-path path-name))))
+
+(defun load (fname &rest args)
+  (if (substringp "package://" fname)
+    (setq fname (ros::resolve-ros-path fname)))
+  (apply #'load-org-for-ros fname args))
+
+;;; defmacro for rosparams
+
 (defun ros::append-name-space (&rest args)
   (subseq (apply #'concatenate string
                  (mapcan #'(lambda (x) (list "/" x)) args)) 1)) ;remove /
