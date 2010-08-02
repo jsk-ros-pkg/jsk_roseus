@@ -26,15 +26,14 @@
 		 (make-package (string-upcase pkg)))
 	       (when (probe-file (format nil "~A/msg/eus"
 					 (ros::rospack-find pkg)))
-		 (roseus-add-msgs pkg))
+		 (ros::roseus-add-msgs pkg))
 	       (when (probe-file (format nil "~A/srv/eus"
 					 (ros::rospack-find pkg)))
-		 (roseus-add-srvs pkg))
+		 (eos::roseus-add-srvs pkg))
 	       (when (probe-file (format nil "~A/src/euslisp/init.l"
 					 (ros::rospack-find pkg)))
-		 (load (format nil "~A/src/euslisp/init.l"
-			       (ros::rospack-find pkg))))
-	       )
+		 (load (format nil "package://~A/src/euslisp/init.l"
+			       pkg))))
 	    f)
     (dolist (pkg (split-string depend-packages))
       (pprint `(load-ros-package ,pkg) f))
