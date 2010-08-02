@@ -10,9 +10,9 @@
 
 ;;(setq ros::*compile-message* t) ;; comment out if you want to compile msg and srv
 ;; when msgs and srvs are compiled, all msgs and srvs should be loaded.
-(roseus-add-msgs "roslib")
-(roseus-add-msgs "roseus")
-(roseus-add-srvs "rospy_tutorials")
+(ros::roseus-add-msgs "roslib")
+(ros::roseus-add-msgs "roseus")
+(ros::roseus-add-srvs "rospy_tutorials")
 ;;;
 ;;;
 (roseus "add_two_ints_client")

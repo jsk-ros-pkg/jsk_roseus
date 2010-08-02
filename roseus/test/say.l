@@ -2,9 +2,9 @@
   (pushnew (format nil "~A/euslisp/" (read-line (unix::piped-fork "rospack find roseus"))) *load-path*))
 (load "roseus.l")
 
-(roseus-add-msgs "roslib")
-(roseus-add-msgs "roseus")
-(roseus-add-msgs "sound_play")
+(ros::roseus-add-msgs "roslib")
+(ros::roseus-add-msgs "roseus")
+(ros::roseus-add-msgs "sound_play")
 ;;;
 (setq ros::*debug* t)
 ;;;
