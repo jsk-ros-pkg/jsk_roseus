@@ -1088,6 +1088,49 @@ pointer ROSEUS_SET_PARAM(register context *ctx,int n,pointer *argv)
   return (T);
 }
 
+pointer XmlRpcToEusList(register context *ctx, XmlRpc::XmlRpcValue param_list)
+{
+    numunion nu;
+    pointer ret, first;
+    ret = cons(ctx, NIL, NIL);
+    first = ret;
+    vpush(ret);
+    if ( param_list.getType() == XmlRpc::XmlRpcValue::TypeArray ){
+        for ( int i = 0; i < param_list.size(); i++){
+            if ( param_list[i].getType() == XmlRpc::XmlRpcValue::TypeBoolean ){
+                if ( param_list[i] ){
+                    ccdr(ret) = cons(ctx, T, NIL);
+                    ret = ccdr(ret);
+                } else {
+                    ccdr(ret) = cons(ctx, NIL, NIL);
+                    ret = ccdr(ret);
+                }
+            }
+            else if ( param_list[i].getType() == XmlRpc::XmlRpcValue::TypeDouble ){
+                ccdr(ret) = cons(ctx, makeflt((double)param_list[i]), NIL);
+                ret = ccdr(ret);
+            }
+            else if ( param_list[i].getType() == XmlRpc::XmlRpcValue::TypeInt ){
+                ccdr(ret) = cons(ctx, makeint((int)param_list[i]), NIL);
+                ret = ccdr(ret);
+            }
+            else if ( param_list[i].getType() == XmlRpc::XmlRpcValue::TypeString ){
+                std::string str = param_list[i];
+                ccdr(ret) = cons(ctx, makestring((char*)str.c_str(), ((std::string)param_list[i]).length()), NIL);
+                ret = ccdr(ret);
+            }
+            else {
+                ROS_FATAL("unkown rosparam type!");
+                vpop();         // remove vpush(ret)
+                return NIL;
+            }
+        }
+        vpop();                 // remove vpush(ret)
+        return ccdr(first);
+    } else
+        return (NIL);
+}
+
 pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
@@ -1119,7 +1162,8 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
   bool b;
   int i;
   pointer ret;
-
+  XmlRpc::XmlRpcValue param_list;
+  
   if ( nh.getParam(key, s) ) {
     ret = makestring((char *)s.c_str(), s.length());
   } else if ( nh.getParam(key, d) ) {
@@ -1131,7 +1175,9 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
           ret = T;
       else
           ret = NIL;
-  } else {
+  } else if (nh.getParam(key, param_list)){
+      ret = XmlRpcToEusList(ctx, param_list);
+  }else {
     return (NIL);
   }
   return (ret);
@@ -1167,7 +1213,7 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
   int i;
   bool b;
   pointer ret;
-
+  XmlRpc::XmlRpcValue param_list;
   if ( nh.getParamCached(key, s) ) {
     ret = makestring((char *)s.c_str(), s.length());
   } else if ( nh.getParamCached(key, d) ) {
@@ -1179,6 +1225,8 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
           ret = T;
       else
           ret = NIL;
+  } else if (nh.getParamCached(key, param_list)){
+      ret = XmlRpcToEusList(ctx, param_list);
   } else {
     ROS_ERROR("unknown getParam type");
     return (NIL);
