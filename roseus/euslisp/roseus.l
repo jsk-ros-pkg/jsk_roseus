@@ -102,10 +102,10 @@
 (defun ros::roseus-add-msgs (pkg) (ros::roseus-add-files pkg "msg"))
 (defun ros::roseus-add-srvs (pkg) (ros::roseus-add-files pkg "srv"))
 (defun roseus-add-msgs (pkg)
-  (warning-message 3 ";; roseus-add-msgs will be obsoluted, use ros::roseus-add-msgs~%")
+  (warning-message 3 ";; roseus-add-msgs will be obsoluted, use ros::roseus-add-msgs [~s]~%" pkg)
   (ros::roseus-add-msgs pkg))
 (defun roseus-add-srvs (pkg)
-  (warning-message 3 ";; roseus-add-srvs will be obsoluted, use ros::roseus-add-srvs~%")
+  (warning-message 3 ";; roseus-add-srvs will be obsoluted, use ros::roseus-add-srvs [~s]~%" pkg)
   (ros::roseus-add-srvs pkg))
 
 (unless (fboundp 'load-org-for-ros)
