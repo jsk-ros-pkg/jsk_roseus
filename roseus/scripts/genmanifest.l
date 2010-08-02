@@ -27,7 +27,7 @@
 	       (when (probe-file (format nil "~A/msg/eus"
 					 (ros::rospack-find pkg)))
 		 (roseus-add-msgs pkg))
-	       (when (probe-file (format nil "~A/msg/srv"
+	       (when (probe-file (format nil "~A/srv/eus"
 					 (ros::rospack-find pkg)))
 		 (roseus-add-srvs pkg))
 	       (when (probe-file (format nil "~A/src/euslisp/init.l"
