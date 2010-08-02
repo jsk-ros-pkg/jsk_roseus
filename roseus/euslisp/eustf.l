@@ -17,10 +17,10 @@
 ;; eus->tf
 (defun ros::pos->tf-point (pos)
   (instance geometry_msgs::point :init
-            :x (* 0.001 (x pos)) :y (* 0.001 (y pos)) :z (* 0.001 (z pos))))
+            :x (* 0.001 (elt pos 0)) :y (* 0.001 (elt pos 1)) :z (* 0.001 (elt pos 2))))
 (defun ros::pos->tf-translation (pos)
   (instance geometry_msgs::vector3 :init
-            :x (* 0.001 (x pos)) :y (* 0.001 (y pos)) :z (* 0.001 (z pos))))
+            :x (* 0.001 (elt pos 0)) :y (* 0.001 (elt pos 1)) :z (* 0.001 (elt pos 2))))
 
 (defun ros::rot->tf-quaternion (rot)
   (let* ((q (matrix2quaternion rot))
