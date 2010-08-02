@@ -116,12 +116,13 @@
 	 (path-name (namestring urlname))
 	 (package-path (ros::rospack-find package-name)))
     (if package-path
-	(format nil "~A/~A" package-path path-name))))
+	(format nil "~A/~A" package-path path-name)
+      (progn (warning-message 1 ";; counldn't find pacakge [~a]~%" package-name) nil))))
 
 (defun load (fname &rest args)
   (if (substringp "package://" fname)
     (setq fname (ros::resolve-ros-path fname)))
-  (apply #'load-org-for-ros fname args))
+  (if fname (apply #'load-org-for-ros fname args)))
 
 ;;; defmacro for rosparams
 
