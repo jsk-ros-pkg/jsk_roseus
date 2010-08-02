@@ -74,7 +74,7 @@
     (if (< cnsec 0.0) (setq csec (- csec 1) cnsec (+ cnsec 1.0)))
     (ros::time (+ csec cnsec))))
 
-(defun roseus-add-files (pkg type)
+(defun ros::roseus-add-files (pkg type)
   (let ((dir (format nil "~A/~A/eus/~A/" (ros::rospack-find pkg) type pkg)))
     (unless (probe-file dir)
       (warning-message
@@ -99,8 +99,14 @@
                   (unix::chdir pwd)))
             (load dirfile)))))))
 
-(defun roseus-add-msgs (pkg) (roseus-add-files pkg "msg"))
-(defun roseus-add-srvs (pkg) (roseus-add-files pkg "srv"))
+(defun ros::roseus-add-msgs (pkg) (ros::roseus-add-files pkg "msg"))
+(defun ros::roseus-add-srvs (pkg) (ros::roseus-add-files pkg "srv"))
+(defun roseus-add-msgs (pkg)
+  (warning-message 3 ";; roseus-add-msgs will be obsoluted, use ros::roseus-add-msgs~%")
+  (ros::roseus-add-msgs pkg))
+(defun roseus-add-srvs (pkg)
+  (warning-message 3 ";; roseus-add-srvs will be obsoluted, use ros::roseus-add-srvs~%")
+  (ros::roseus-add-srvs pkg))
 
 (defun ros::append-name-space (&rest args)
   (subseq (apply #'concatenate string
