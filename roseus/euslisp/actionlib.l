@@ -1,4 +1,4 @@
-(if (not (find-package "ACTIONLIB_MSGS")) (roseus-add-msgs "actionlib_msgs"))
+(if (not (find-package "ACTIONLIB_MSGS")) (ros::roseus-add-msgs "actionlib_msgs"))
 
 ;;;; actionlib
 (setq ros::*simple-goal-state-pending* 0
