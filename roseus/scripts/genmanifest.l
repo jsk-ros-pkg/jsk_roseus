@@ -29,7 +29,7 @@
 		 (ros::roseus-add-msgs pkg))
 	       (when (probe-file (format nil "~A/srv/eus"
 					 (ros::rospack-find pkg)))
-		 (eos::roseus-add-srvs pkg))
+		 (ros::roseus-add-srvs pkg))
 	       (when (probe-file (format nil "~A/src/euslisp/init.l"
 					 (ros::rospack-find pkg)))
 		 (load (format nil "package://~A/src/euslisp/init.l"
