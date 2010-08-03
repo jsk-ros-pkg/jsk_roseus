@@ -15,13 +15,17 @@ while [ $# -ne 0 ]; do
 done
 ARGV=$ARGV")"
 
-    
-rosrun euslisp irteusgl "(progn (pushnew \"`rospack find roseus`/euslisp/\" *load-path* :test #'equal) (if $ARGV (setq lisp::*eustop-argument* $ARGV)) (if $FILE (load $FILE)))" &
+ARG_STR="(progn (pushnew \"`rospack find roseus`/euslisp/\" *load-path* :test #'equal) (if $ARGV (setq lisp::*eustop-argument* $ARGV)) (if $FILE (load $FILE)))"
+if [ "$FILE" != "nil" ]; then
+    rosrun euslisp irteusgl "$ARG_STR" &
 # if you want to run in gdb, please use the line below
 #xterm -e gdb -x `rospack find roseus`/bin/roseus_gdb.cmd --args `rospack find euslisp`/eus/Linux/bin/irteusgl "(progn (pushnew \"`rospack find roseus`/euslisp/\" *load-path* :test #'equal) (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))"
-PID=$!
-echo PID is $PID
-trap 'kill -s HUP $PID ' CHLD INT TERM
+    PID=$!
+    echo PID is $PID
+    trap 'kill -s HUP $PID ' CHLD INT TERM
+else
+    rosrun euslisp irteusgl "$ARG_STR"
+fi
 #wait $PID
 # if you are an euslisp expert and debug roseus, you can comment in
 # following line
