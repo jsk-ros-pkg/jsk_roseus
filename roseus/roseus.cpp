@@ -180,7 +180,7 @@ public:
       _message = makeobject(r._message);
       vpush(_message);
       csend(ctx,_message,K_ROSEUS_INIT,0);
-      vpop(_message);
+      vpop();
     } else {
       ROS_WARN("r._message must be class");prinx(ctx,r._message,ERROUT);flushstream(ERROUT);terpri(ERROUT);
       _message = r._message;
