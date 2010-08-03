@@ -149,7 +149,9 @@ int getInteger(pointer message, pointer method) {
   pointer a,curclass;
   a = (pointer)findmethod(ctx,method,classof(message),&curclass);
   if (a!=NIL) {
+    vpush(message);
     pointer r = csend(ctx,message,method,0);
+    vpop();
     return (ckintval(r));
   } else {
 #ifdef x86_64
@@ -176,7 +178,9 @@ public:
     if ( isclass(r._message) ) {
       //ROS_ASSERT(isclass(r._message));
       _message = makeobject(r._message);
+      vpush(_message);
       csend(ctx,_message,K_ROSEUS_INIT,0);
+      vpop(_message);
     } else {
       ROS_WARN("r._message must be class");prinx(ctx,r._message,ERROUT);flushstream(ERROUT);terpri(ERROUT);
       _message = r._message;
@@ -449,11 +453,11 @@ public:
                  NULL, 1);
     vpop();                     // pop request message
     vpop();                     // pop function!
-
     // Serializaion
     EuslispMessage eus_res(_res);
     eus_res.replaceContents(r);
     vpush(eus_res._message);    // to avoid GC
+    
     uint32_t serialized_length = eus_res.serializationLength();
     vpop();                     // pop eus_res._message
     params.response.num_bytes = serialized_length + 5;
