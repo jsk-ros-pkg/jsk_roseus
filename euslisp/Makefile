@@ -15,7 +15,11 @@ compile:
 	## set default EUSDIR in eus.c
 	cat eus.c_DEFAULT_ENV.patch | sed s@DEFAULT_EUSDIR@$(EUSDIR)@ | sed s@DEFAULT_ARCHDIR@$(ARCHDIR)@ > $(EUSC_PATCH)
 	patch -p0 -d eus < $(EUSC_PATCH)
-	make -f Makefile.eus eus eus-installed irteus-installed
+	make -f Makefile.eus eus-installed
+	make -f Makefile.eus irteus irteus-update
+	## force hard link for rosrun
+	cd $(EUSDIR)/$(ARCHDIR)/bin; ln -f eus irteus; ln -f eusgl irteusgl;
+	make -f Makefile.eus irteus-installed
 
 clean:
 	-rm $(EUS_PATCH)
