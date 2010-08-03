@@ -177,10 +177,12 @@ public:
     if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     if ( isclass(r._message) ) {
       //ROS_ASSERT(isclass(r._message));
+      vpush(r._message);
       _message = makeobject(r._message);
       vpush(_message);
       csend(ctx,_message,K_ROSEUS_INIT,0);
-      vpop();
+      vpop();                   // _message
+      vpop();                   // r._message
     } else {
       ROS_WARN("r._message must be class");prinx(ctx,r._message,ERROUT);flushstream(ERROUT);terpri(ERROUT);
       _message = r._message;
@@ -412,8 +414,12 @@ public:
         _scb=ccar(ccdr(scb));
       } else { // defvar lambda function
         _scb=gensym(ctx);
+        vpush(_scb);
+        vpush(scb);
         pointer a = DEFUN(ctx,(cons(ctx,_scb,(ccdr(ccdr(ccdr(ccdr(scb))))))));
         defvar(ctx,(char *)(get_string(_scb)),a,Spevalof(PACKAGE));
+        vpop();
+        vpop();
       }
     } else  {
       ROS_ERROR("service callback function install error");
@@ -434,32 +440,29 @@ public:
   virtual bool call(ros::ServiceCallbackHelperCallParams& params) {
     context *ctx = current_ctx;
     pointer func = _scb, r;
-    vpush(_res._message);
-    vpush(_req._message);
+    vpush(_res._message);       // _res._message
+    vpush(_req._message);       // _res._message, _req._message
     if ( issymbol(_scb) ) {
       func = FUNCTION_CLOSURE(ctx,(cons(ctx,_scb,NIL)));
     } else {
       ROS_ERROR("cant't find callback function");
     }
-    vpush(func);
+    vpush(func);                // _res._message, _req._message, func
     // Deserialization
     EuslispMessage eus_msg(_req);
     eus_msg.__serialized_length = params.request.num_bytes;
-    vpush(eus_msg._message);    // to avoid GC
+    vpush(eus_msg._message);    // _res._message, _req._message, func, eus_msg._message
     eus_msg.deserialize(params.request.message_start);
-    //vpush((pointer) eus_msg._message); not needed?
     r = ufuncall(ctx, (ctx->callfp?ctx->callfp->form:NIL),
                  func, (pointer)(ctx->vsp-1),
                  NULL, 1);
-    vpop();                     // pop request message
-    vpop();                     // pop function!
+    vpush(r); // _res._message, _req._message, func, eus_msg._message, r, eus_res._message
     // Serializaion
     EuslispMessage eus_res(_res);
     eus_res.replaceContents(r);
-    vpush(eus_res._message);    // to avoid GC
+    vpush(eus_res._message);    // _res._message, _req._message, func, eus_msg._message, r, eus_res._message
     
     uint32_t serialized_length = eus_res.serializationLength();
-    vpop();                     // pop eus_res._message
     params.response.num_bytes = serialized_length + 5;
     params.response.buf.reset (new uint8_t[params.response.num_bytes]);
     params.response.message_start = 0;
@@ -471,9 +474,7 @@ public:
     *tmp++ = (uint8_t)((serialized_length >> 8) & 0xFF);
     *tmp++ = (uint8_t)((serialized_length >> 16) & 0xFF);
     *tmp++ = (uint8_t)((serialized_length >> 24) & 0xFF);
-    vpush((pointer)eus_res._message);    // to avoid GC
     eus_res.serialize(tmp, 0);
-    vpop();     // eus_res._message
 #if DEBUG
     cerr << "num bytes = " << params.response.num_bytes << endl;
     ROS_INFO("message_start =  %X",params.response.message_start);
@@ -483,8 +484,12 @@ public:
       ROS_INFO("%X", tmp[i]);
     }
 #endif
-    vpop(); //vpush(_res.message);
-    vpop(); //vpush(_req.message);
+    vpop(); // _res._message, _req._message, func, eus_msg._message, r, eus_res._message
+    vpop(); // _res._message, _req._message, func, eus_msg._message, r
+    vpop(); // _res._message, _req._message, func, eus_msg._message
+    vpop(); // _res._message, _req._message, func,
+    vpop(); // _res._message, _req._message,
+    vpop(); // _res._message
     return(T);
   }
 };
