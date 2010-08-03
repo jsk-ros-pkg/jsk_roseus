@@ -23,6 +23,7 @@ if [ "$FILE" != "nil" ]; then
     PID=$!
     echo PID is $PID
     trap 'kill -s HUP $PID ' CHLD INT TERM
+    wait $PID
 else
     rosrun euslisp irteusgl "$ARG_STR"
 fi
