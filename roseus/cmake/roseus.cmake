@@ -9,6 +9,7 @@ macro(genmanifest_eus)
   set(manifest_eus_target ${manifest_eus_target_dir}/_manifest.l)
   set(manifest_xml ${PROJECT_SOURCE_DIR}/manifest.xml)
   rosbuild_invoke_rospack(${PROJECT_NAME} _rospack deps_packages depends)
+  set(_rospack_deps_packages "${_rospack_deps_packages} ${PROJECT_NAME}")
   if(NOT "" STREQUAL "${_rospack_deps_packages}")
     string(REPLACE "\n" " " _rospack_deps_packages ${_rospack_deps_packages})
     add_custom_command(OUTPUT ${manifest_eus_target}
