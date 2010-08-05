@@ -53,7 +53,9 @@
               (send self :nsec (* 1000 (mod (/ (floor nsec) 1000) 1000000)))
               self)
   (:prin1 (&optional (strm 1))
-          (send-super :prin1 strm (format nil "~0,3f" (send self :to-sec))))
+          (send-super :prin1 strm (format nil "~d.~3,3d"
+					  (send self :sec)
+					  (/ (send self :nsec) 1000000))))
   )
 
 (defun ros::time (&optional sec)
