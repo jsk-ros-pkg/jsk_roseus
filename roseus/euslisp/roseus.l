@@ -53,9 +53,12 @@
               (send self :nsec (* 1000 (mod (/ (floor nsec) 1000) 1000000)))
               self)
   (:prin1 (&optional (strm 1))
-          (send-super :prin1 strm (format nil "~d.~3,3d"
-					  (send self :sec)
-					  (/ (send self :nsec) 1000000))))
+	  (let* ((ns (+ (* 1000000000 (send self :sec)) (send self :nsec)))
+		 (str (format nil (if (< 0 ns) "~0,10d" "~0,11d") ns))
+		 (dpt (- (length str) 9)))
+	    (send-super :prin1 strm
+			(format nil "~A.~A" (subseq str 0 dpt)
+				(subseq str dpt (+ 3 dpt)))))) ;; print .xxx
   )
 
 (defun ros::time (&optional sec)
@@ -64,17 +67,16 @@
 (defun ros::time-now () (send (instance ros::time :init) :now))
 
 (defun ros::time+ (a b)
-  (let* ((asec (send a :sec)) (ansec (/ (send a :nsec) 1000000000.0))
-         (bsec (send b :sec)) (bnsec (/ (send b :nsec) 1000000000.0))
-         (csec (- asec  bsec)) (cnsec (- ansec bnsec)))
-    (if (> cnsec 1.0) (setq csec (+ csec 1) cnsec (- cnsec 1.0)))
-    (ros::time (+ csec cnsec))))
+  (let* ((csec  (+ (send a :sec)  (send b :sec)))
+	 (cnsec (+ (send a :nsec) (send b :nsec))))
+    (if (>= cnsec 1000000000) (setq csec (+ csec 1)
+				    cnsec (- cnsec 1000000000)))
+    (instance ros::time :init :sec csec :nsec cnsec)))
 (defun ros::time- (a b)
-  (let* ((asec (send a :sec)) (ansec (/ (send a :nsec) 1000000000.0))
-         (bsec (send b :sec)) (bnsec (/ (send b :nsec) 1000000000.0))
-         (csec (- asec  bsec)) (cnsec (- ansec bnsec)))
-    (if (< cnsec 0.0) (setq csec (- csec 1) cnsec (+ cnsec 1.0)))
-    (ros::time (+ csec cnsec))))
+  (let* ((csec  (+ (send a :sec)  (send b :sec)))
+	 (cnsec (+ (send a :nsec) (send b :nsec))))
+    (if (< cnsec 0) (setq csec (- csec 1) cnsec (+ cnsec 1000000000)))
+    (instance ros::time :init :sec csec :nsec cnsec)))
 
 (defun ros::roseus-add-files (pkg type)
   (let ((dir (format nil "~A/~A/eus/~A/" (ros::rospack-find pkg) type pkg)))
