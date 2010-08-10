@@ -463,14 +463,14 @@ public:
     vpush(eus_res._message);    // _res._message, _req._message, func, eus_msg._message, r, eus_res._message
     
     uint32_t serialized_length = eus_res.serializationLength();
-    params.response.num_bytes = serialized_length + 5;
+    params.response.num_bytes = serialized_length + 5; // add 5 bytes of message header
     params.response.buf.reset (new uint8_t[params.response.num_bytes]);
     params.response.message_start = 0;
 
     // SerializedResponseMessage
     uint8_t *tmp = params.response.buf.get();
-    *tmp++ = 1; // ok
-    *tmp++ = (uint8_t)((serialized_length >> 0) & 0xFF);
+    *tmp++ = 1; // 1 byte of success services flag, now always set true
+    *tmp++ = (uint8_t)((serialized_length >> 0) & 0xFF); // 4bytes of message length
     *tmp++ = (uint8_t)((serialized_length >> 8) & 0xFF);
     *tmp++ = (uint8_t)((serialized_length >> 16) & 0xFF);
     *tmp++ = (uint8_t)((serialized_length >> 24) & 0xFF);
