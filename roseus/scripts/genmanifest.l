@@ -32,8 +32,8 @@
 		 (ros::roseus-add-srvs pkg))
 	       (when (probe-file (format nil "~A/src/euslisp/init.l"
 					 (ros::rospack-find pkg)))
-		 (load (format nil "package://~A/src/euslisp/init.l"
-			       pkg))))
+                 (load (format nil "~A/src/euslisp/init.l"
+                               (ros::rospack-find pkg)))))
 	    f)
     (dolist (pkg (split-string depend-packages))
       (pprint `(load-ros-package ,pkg) f))
