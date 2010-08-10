@@ -30,16 +30,15 @@ macro(genmsg_eus)
   foreach(_msg ${_msglist})
     # Construct the path to the .msg file
     set(_input ${PROJECT_SOURCE_DIR}/msg/${_msg})
-
     rosbuild_gendeps(${PROJECT_NAME} ${_msg})
     rosbuild_find_ros_package(roseus)
     set(genmsg_eus_exe ${roseus_PACKAGE_PATH}/scripts/genmsg_eus)
-
+    
     set(_output_eus ${PROJECT_SOURCE_DIR}/msg/eus/${PROJECT_NAME}/${_msg})
     string(REPLACE ".msg" ".l" _output_eus ${_output_eus})
 
     # Add the rule to build the .h the .msg
-    add_custom_command(OUTPUT ${_output_eus}
+    add_custom_command(OUTPUT ${_output_eus} ${PROJECT_SOURCE_DIR}/msg/eus
                        COMMAND ${genmsg_eus_exe} ${_input}
                        DEPENDS ${_input} ${genmsg_eus_exe} ${gendeps_exe} ${${PROJECT_NAME}_${_msg}_GENDEPS} ${ROS_MANIFEST_LIST})
     list(APPEND _autogen ${_output_eus})
@@ -71,7 +70,7 @@ macro(gensrv_eus)
     string(REPLACE ".srv" ".l" _output_eus ${_output_eus})
 
     # Add the rule to build the .h from the .srv
-    add_custom_command(OUTPUT ${_output_eus}
+    add_custom_command(OUTPUT ${_output_eus} ${PROJECT_SOURCE_DIR}/srv/eus
                        COMMAND ${gensrv_eus_exe} ${_input}
                        DEPENDS ${_input} ${gensrv_eus_exe} ${gendeps_exe} ${${PROJECT_NAME}_${_srv}_GENDEPS} ${ROS_MANIFEST_LIST})
     list(APPEND _autogen ${_output_eus})
