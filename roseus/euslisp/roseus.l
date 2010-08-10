@@ -229,6 +229,6 @@ always the rank of list is 2"
   (let ((manifest (format nil "~A/src/euslisp/_manifest.l"
                           (ros::rospack-find pkg))))
     (when (probe-file manifest)
-      (load manifest))))
+      (load-org-for-ros manifest))))
 
 (setq sys::*exit-hook* 'ros::exit)
