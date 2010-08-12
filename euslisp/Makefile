@@ -20,11 +20,14 @@ compile:
 	## force hard link for rosrun
 	cd $(EUSDIR)/$(ARCHDIR)/bin; ln -f eus irteus; ln -f eusgl irteusgl;
 	make -f Makefile.eus irteus-installed
+	touch rospack_nosubdirs
 
 clean:
-	-rm $(EUS_PATCH)
+	-rm $(EUSC_PATCH) rospack_nosubdirs
 	make -f Makefile.eus clean
 
 wipe:
-	make -f Makefile.eus wipe
+	-rm -fr build bin
+	-make -f Makefile.eus wipe
+	-rm -f Makefile.eus
 
