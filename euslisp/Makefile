@@ -1,3 +1,4 @@
+include Makefile.eus
 include $(shell rospack find mk)/cmake.mk
 
 EUSC_PATCH=eus.c_CUSTUM_EUSDIR.patch
@@ -6,8 +7,6 @@ all: Makefile.eus compile
 
 Makefile.eus:
 	wget http://jskeus.svn.sourceforge.net/viewvc/jskeus/trunk/Makefile -O Makefile.eus
-
-export EUSDIR=$(shell pwd)/eus
 
 compile:
 	make -f Makefile.eus eus eus-update
