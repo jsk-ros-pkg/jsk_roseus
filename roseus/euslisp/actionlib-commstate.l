@@ -1,4 +1,4 @@
-(if (not (find-package "ACTIONLIB_MSGS")) (roseus-add-msgs "actionlib_msgs"))
+(if (not (find-package "ACTIONLIB_MSGS")) (ros::roseus-add-msgs "actionlib_msgs"))
 
 (defun goal-status-to-string (i)
   (elt '(actionlib_msgs::pending actionlib_msgs::active actionlib_msgs::rejected actionlib_msgs::recalling actionlib_msgs::recalled actionlib_msgs::preempted actionlib_msgs::succeeded actionlib_msgs::aborted actionlib_msgs::preempting) i))
@@ -113,7 +113,6 @@
   (:init
    ()
    (setq state 'ros::*comm-state-waiting-for-ack*))
-  (:state (&optional s) (if s (setq state s)) state)
   (:state (&optional s) (if s (setq state s)) state)
   (:update-state
    (s)
