@@ -2,10 +2,6 @@
 ;;;
 ;;; euslisp version of ~/ros/ros_pkg_tutorials/actionlib_tutorials/simple_action_servers/fibonacci_server.py
 ;;;
-(unless (find "roseus/euslisp/" *load-path* :test #'substringp)
-  (pushnew (format nil "~A/euslisp/"
-                   (read-line (piped-fork "rospack find roseus")))
-           *load-path* :test #'equal))
 (load "roseus.l")
 (load "actionlib.l")
 

@@ -2,10 +2,6 @@
 ;;;
 ;;; euslisp version of ros_tutorials/rospy_tutorials/005_add_two_ints
 ;;;
-(unless (find "roseus/euslisp/" *load-path* :test #'substringp)
-  (pushnew (format nil "~A/euslisp/"
-                   (read-line (piped-fork "rospack find roseus")))
-           *load-path* :test #'equal))
 (load "roseus.l")
 
 ;;(setq ros::*compile-message* t) ;; comment out if you want to compile msg and srv
@@ -17,7 +13,7 @@
 
 (defun add-two-ints (req)
   (let ((m (send req :response)))
-    (format t "Returning [~d + ~d = ~d]~%" 
+    (format *error-output* "Returning [~d + ~d = ~d]~%"
             (send req :a) (send req :b)
             (+ (send req :a) (send req :b)))
     (send m :sum  (+ (send req :a) (send req :b)))

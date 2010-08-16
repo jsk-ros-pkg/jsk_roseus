@@ -1,7 +1,5 @@
-(unless (find "roseus/euslisp/" *load-path* :test #'substringp)
-  (pushnew (format nil "~A/euslisp/"
-                   (read-line (piped-fork "rospack find roseus")))
-           *load-path* :test #'equal))
+#!/usr/bin/env runeus
+
 (load "roseus.l")
 (load "eustf.l")
 
