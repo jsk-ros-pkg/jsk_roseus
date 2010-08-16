@@ -32,7 +32,7 @@
   )
 
 (defclass ros::time
-  :super propertied-object
+  :super ros::object
   :slots (sec-nsec))
 (defmethod ros::time
   (:init (&key ((:sec _sec) 0) ((:nsec _nsec) 0))
@@ -52,13 +52,11 @@
               (send self :sec  (/ (/ (floor nsec) 1000) 1000000))
               (send self :nsec (* 1000 (mod (/ (floor nsec) 1000) 1000000)))
               self)
-  (:prin1 (&optional (strm 1))
-	  (let* ((ns (+ (* 1000000000 (send self :sec)) (send self :nsec)))
-		 (str (format nil (if (< 0 ns) "~0,10d" "~0,11d") ns))
-		 (dpt (- (length str) 9)))
+  (:prin1 (&optional (strm t) &rest msgs)
+	  (let ()
+            (print (format nil "~13,3f" (send self :to-sec)))
 	    (send-super :prin1 strm
-			(format nil "~A.~A" (subseq str 0 dpt)
-				(subseq str dpt (+ 3 dpt)))))) ;; print .xxx
+			(format nil "~13,3f" (send self :to-sec))))) ;; print .xxx
   )
 
 (defun ros::time (&optional sec)
