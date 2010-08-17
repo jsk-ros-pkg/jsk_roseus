@@ -1144,29 +1144,18 @@ pointer XmlRpcToEusList(register context *ctx, XmlRpc::XmlRpcValue param_list)
 pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
-  string key_raw, key;
+  string key;
   ros::NodeHandle nh;
 
   ckarg(1);
-  if (isstring(argv[0])) key_raw.assign((char *)get_string(argv[0]));
+  if (isstring(argv[0])) key.assign(ros::names::resolve((char *)get_string(argv[0])));
   else error(E_NOSTRING);
 
-  if ( key_raw[0] == '~' )
-    {
-      nh = ros::NodeHandle("~");
-      key = string((key_raw.begin()) + 1, key_raw.end());
-    }
-  else
-    {
-      nh = ros::NodeHandle("");
-      key = string(key_raw);
-    }
-  
   if( !s_node ) {
     ROS_ERROR("could not find node handle");
     return (NIL);
   }
-  
+
   string s;
   double d;
   bool b;
@@ -1196,23 +1185,13 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
-  string key_raw, key;
+  string key;
   ros::NodeHandle nh;
+
   ckarg(1);
-  if (isstring(argv[0])) key_raw.assign((char *)get_string(argv[0]));
+  if (isstring(argv[0])) key.assign(ros::names::resolve((char *)get_string(argv[0])));
   else error(E_NOSTRING);
 
-  if ( key_raw[0] == '~' )
-    {
-      nh = ros::NodeHandle("~");
-      key = string((key_raw.begin()) + 1, key_raw.end());
-    }
-  else
-    {
-      nh = ros::NodeHandle("");
-      key = string(key_raw);
-    }
-  
   if( !s_node ) {
     ROS_ERROR("could not find node handle");
     return (NIL);
@@ -1249,7 +1228,7 @@ pointer ROSEUS_HAS_PARAM(register context *ctx,int n,pointer *argv)
   string key;
 
   ckarg(1);
-  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
+  if (isstring(argv[0])) key.assign(ros::names::resolve((char *)get_string(argv[0])));
   else error(E_NOSTRING);
 
   if( !s_node ) {
