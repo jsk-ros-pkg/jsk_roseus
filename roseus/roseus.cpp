@@ -957,7 +957,7 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
   if( n > 1 )
     timeout = (int32_t)ckintval(argv[1]);
 
-  bool bSuccess = service::waitForService(service, timeout);
+  bool bSuccess = service::waitForService(ros::names::resolve(service), timeout);
 
   return (bSuccess?T:NIL);
 }
@@ -982,7 +982,7 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   vpush(request._message);      // to avoid GC, it may not be required...
   EuslispMessage response(csend(ctx,emessage,K_ROSEUS_RESPONSE,0));
   vpush(response._message);     // to avoid GC, its important
-  ServiceClientOptions sco(service, request.__getMD5Sum(), persist, M_string());
+  ServiceClientOptions sco(ros::names::resolve(service), request.__getMD5Sum(), persist, M_string());
   ServiceClient client = s_node->serviceClient(sco);
   ServiceClient* srv = new ServiceClient(client);
 #if !ROS_VERSION_MINIMUM(1,1,0)
@@ -995,8 +995,8 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   vpop();                       // pop response._message
   vpop();                       // pop request._message
   if ( ! bSuccess ) {
-    ROS_ERROR("attempted to cass service  %s, but failed ",
-              service.c_str());
+    ROS_ERROR("attempted to call service  %s, but failed ",
+              ros::names::resolve(service).c_str());
   }
 
   return (response._message);
