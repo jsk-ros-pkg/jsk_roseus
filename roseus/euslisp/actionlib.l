@@ -11,22 +11,19 @@
   :super ros::object
   :slots (name-space action-spec simple-state comm-state
                      action-goal-class action-result-class action-feedback-class
-                     goal_id action-goal-msg))
+                     action-done-cb action-active-cb action-feedback-cb
+                     goal_id))
 
 (defmethod ros::simple-action-client
   (:goal-status-cb
    (msg)
-   (let ((m (and goal_id
-                 (find-if #'(lambda (m)
-                              (string= (send m :goal_id :id)
-                                       (send goal_id :id)))
-                          (send msg :status_list)))))
+   (ros::ros-debug ";; status ~A~%" msg)
+   (let ((m (send comm-state :find-status-by-goal-id msg)))
      (when m
-       (let ((com-state (send comm-state :update-state (send m :status)))
+       (let ((com-state (send comm-state :update-status msg))
              (error-msg
               (format nil "Received comm state ~A when in simple state ~A"
                       comm-state simple-state)))
-         ;;(warning-message 1 ";; com-state ~A~%" com-state)
          (case
              com-state
            ('ros::*comm-state-active*
@@ -51,22 +48,14 @@
          ))))
   (:action-result-cb
    (msg)
-   (let (com-state)
-     (setq action-goal-msg msg)
-     (setq com-state (send comm-state :state))
-     (cond ((member com-state
-                    (list 'ros::*comm-state-waiting-for-ack*
-                          'ros::*comm-state-pending* 'ros::*comm-state-active*
-                          'ros::*comm-state-waiting-for-result*
-                          'ros::*comm-state-recalling*
-                          'ros::*comm-state-preempting*))
-            (send comm-state :state 'ros::*comm-state-done*))
-           ((eq com-state 'ros::*comm-state-done*)
-            (ros::ros-error "Get a result when we ware already in the DONE state"))
-           (t
-            (ros::ros-error (format nil "In a fanny state ~A" com-state))))
-     action-goal-msg))
-  (:action-feedback-cb (msg))
+   (let ()
+     (ros::ros-debug ";; reuslt ~A~%" msg)
+     (send comm-state :update-result msg)
+     ))
+  (:action-feedback-cb
+   (msg)
+   (ros::ros-debug ";; feedback ~A~%" msg)
+   (if action-feedback-cb (funcall action-feedback-cb msg)))
   ;;
   (:make-goal-instance
    (&rest args)
@@ -106,39 +95,66 @@
        (ros::sleep))
      (if (and timeout (>= count (* timeout 10))) nil t)))
   (:send-goal
-   (goal)
+   (goal &key done-cb active-cb feedback-cb)
    (let ((now (ros::time-now)))
      (setq goal_id (instance actionlib_msgs::GoalID :init
                              :id (format nil "~a" (send now :sec-nsec))))
      (send goal :goal_id goal_id)
      (setq simple-state ros::*simple-goal-state-pending*)
-     (setq comm-state (instance actionlib-comm-state :init))
+     (setq comm-state (instance actionlib-comm-state :init :action-goal goal))
+     (if done-cb (setq action-done-cb done-cb))
+     (if active-cb (setq action-active-cb active-cb))
+     (if feedback-cb (setq action-feedback-cb feedback-cb))
      (ros::publish (format nil "~A/goal" name-space) goal)))
   (:send-goal-and-wait
    (goal &key (timeout 0))
    (send self :send-goal goal)
-   (send self :wait-for-result :timeout timeout))
+   (unless (send self :wait-for-result :timeout timeout)
+     (send self :cancel-goal)
+     (send self :wait-for-result :timeout timeout)
+     ))
   (:wait-for-result
-   (&key (timeout 0)) ;; msec
-   (ros::rate 10)
-   (let ((start (send (ros::time-now) :sec-nsec)))
+   (&key (timeout 0)) ;; sec
+   (let ((start (ros::time-now)))
+     (ros::rate 10)
      (while (ros::ok)
        (if (= simple-state ros::*simple-goal-state-done*)
 	   (return))
        (if (> timeout 0)
-	   (let* ((tm (ros::time-now))
-		  (iv (v- (send tm :sec-nsec) start)))
-	     (if (> (+ (* 1000 (elt iv 0))
-		       (/ (elt iv 1) 1000000))
-		    timeout) (return))))
+	   (let* ((tm (ros::time- (ros::time-now) start)))
+	     (if (> (send tm :to-sec) timeout) (return))))
        (ros::spin-once)
-       (ros::sleep)))
-   simple-state)
-  (:get-result ()  (if action-goal-msg (send action-goal-msg :result)))
-  (:get-result-status ()  (if action-goal-msg (send action-goal-msg :status)))
-  (:cancel-all-goals ()) ;; TODO  need sample program to test
-  (:cancel-goal ())
+       (ros::sleep))
+     (eq (send self :get-state) actionlib_msgs::succeeded)))
+  (:get-result () (send (send comm-state :latest-result) :result))
+  (:get-state ()
+    (let (state)
+      (setq state (send (send comm-state :latest-goal-status) :status))
+      (case state
+        (actionlib_msgs::recalling
+         (setq state actionlib_msgs::pending))
+        (actionlib_msgs::preempting
+         (setq state actionlib_msgs::active)))
+      state))
+  (:get-goal-status-text () (send (send comm-state :latest-goal-status) :text))
+  (:cancel-all-goals
+   ()
+   (let (cancel)
+     (setq cancel (instance actionlib_msgs::GoalId :init
+                            :id ""))
+     (ros::publish (format nil "~A/cancel" name-space) cancel)))
+  (:cancel-goal
+   ()
+   (let (cancel)
+     (setq cancel (instance actionlib_msgs::GoalId :init
+                            :id (send (send comm-state :action-goal) :goal_id :id)))
+     (ros::publish (format nil "~A/cancel" name-space) cancel)
+     (send comm-state :state 'ros::*comm-state-waiting-for-cancel-ack*)))
   ;;
+  (:get-result-status
+   ()
+   (warning-message 1 "get-reuslt-status is obsolete method, use get-goal-status-text or get-goal-state")
+   (send self :latest-goal-state))
   )
 
 
@@ -161,23 +177,26 @@
                              :status status
                              :text (goal-status-to-string status))))
        )
-     (send msg :header :seq (incf seq-id))
+     (send msg :header :seq (send self :next-seq-id))
      (send msg :header :stamp (ros::time-now))
      (ros::publish (format nil "~A/status" name-space) msg)
      ))
   (:goal-callback
    (msg)
-   (ros::ros-info ";; Recieved Goal")
+   (ros::ros-info ";; Recieved Goal ~A" (send msg :goal_id :id))
+   (if (eq status actionlib_msgs::active) (send self :set-canceled))
    (setq status actionlib_msgs::active)
    (setq goal msg)
    (setq goal-id (send msg :goal_id)))
   (:cancel-callback
    (msg)
    (ros::ros-info ";; Recieved Cancel")
+   (setq status actionlib_msgs::preempting)
+   (send self :set-canceled)
    )
   (:set-succeeded
    (msg)
-   (ros::ros-info ";; Send Result")
+   (ros::ros-info ";; Send Result ~A" (send goal-id :id))
    (setq status actionlib_msgs::succeeded)
    (send msg :status :goal_id  goal-id)
    (send msg :status :status status)
@@ -186,6 +205,17 @@
    (setq goal nil)
    (setq status actionlib_msgs::pending)
    )
+  (:set-canceled
+   (&optional (result (send self :result)))
+   (ros::ros-info ";; Cancel Goal ~A" (send goal-id :id))
+   (case status
+     ((actionlib_msgs::pending actionlib_msgs::recalling)
+      (setq status actionlib_msgs::recalled)
+      )
+     ((actionlib_msgs::active actionlib_msgs::preepmpting)
+      (setq status actionlib_msgs::preempted)
+      ))
+    (send self :set-succeeded result))
   ;;
   (:goal () goal)
   (:result
