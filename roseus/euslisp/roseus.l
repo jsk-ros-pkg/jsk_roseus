@@ -4,6 +4,13 @@
                  :test #'equal))
   (load-library "roseus.so" '("roseus")))
 
+(defun ros::getname ()
+  (warning-message 1 ";; ros::getname is obsoleted, use ros::get-name~%")
+  (format t "~C[3~Cm" #x1b 49)
+  (btrace)
+  (format t "~C[0m" #x1b)
+  (ros::get-name))
+
 (defun ros::roseus-sigint-handler (sig code)
   (ros::ROS-WARN (format nil "ros::roseus-sigint-handler ~A" sig))
   (exit))

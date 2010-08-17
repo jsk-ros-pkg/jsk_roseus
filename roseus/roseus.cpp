@@ -1314,7 +1314,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM);
 
   defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND);
-  defun(ctx,"GETNAME",argv[0],(pointer (*)())ROSEUS_GETNAME);
+  defun(ctx,"GET-NAME",argv[0],(pointer (*)())ROSEUS_GETNAME);
 
   pointer_update(Spevalof(PACKAGE),p);
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
