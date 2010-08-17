@@ -666,10 +666,11 @@ pointer ROSEUS_OK(register context *ctx,int n,pointer *argv)
     return (T);                                                 \
   }
 
+def_rosconsole_formatter(ROSEUS_ROSDEBUG, ROS_DEBUG)
+def_rosconsole_formatter(ROSEUS_ROSINFO,  ROS_INFO)
 def_rosconsole_formatter(ROSEUS_ROSWARN,  ROS_WARN)
 def_rosconsole_formatter(ROSEUS_ROSERROR, ROS_ERROR)
 def_rosconsole_formatter(ROSEUS_ROSFATAL, ROS_FATAL)
-def_rosconsole_formatter(ROSEUS_ROSINFO,  ROS_INFO)
 
 pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
 {
@@ -1305,6 +1306,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"SLEEP",argv[0],(pointer (*)())ROSEUS_SLEEP);
   defun(ctx,"OK",argv[0],(pointer (*)())ROSEUS_OK);
 
+  defun(ctx,"ROS-DEBUG",argv[0],(pointer (*)())ROSEUS_ROSDEBUG);
   defun(ctx,"ROS-INFO",argv[0],(pointer (*)())ROSEUS_ROSINFO);
   defun(ctx,"ROS-WARN",argv[0],(pointer (*)())ROSEUS_ROSWARN);
   defun(ctx,"ROS-ERROR",argv[0],(pointer (*)())ROSEUS_ROSERROR);
