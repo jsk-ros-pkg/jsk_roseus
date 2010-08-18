@@ -412,6 +412,13 @@
     (format strm "~%")))
 
 
+(defun generate-provide (strm pkg name fname)
+  (let ()
+    (format strm "~%~%")
+    (format strm "(provide :~A/~A \"~A\")~%"
+	    pkg name
+	    (read-line (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --md5 ~A" fname))))))
+
 ;;;
 ;;;
 ;;;
@@ -473,6 +480,8 @@
      ;; md5sum/type
      (generate-msg-md5sum strm pkg name fname)
      (generate-msg-datatype strm pkg name)
+
+     (generate-provide strm pkg name fname)
      (format strm "~%~%")
      )))
 
@@ -522,6 +531,8 @@
      (generate-msg-datatype   strm pkg req-name)
      (generate-msg-md5sum strm pkg res-name fname)
      (generate-msg-datatype   strm pkg res-name)
+
+     (generate-provide strm pkg pkg name fname)
      (format strm "~%~%")
      )))
 
