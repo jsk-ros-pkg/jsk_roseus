@@ -267,4 +267,4 @@
      ))
   )
 
-(provide :eustf "$Id:")
+(provide :eustf "$Id:$")
