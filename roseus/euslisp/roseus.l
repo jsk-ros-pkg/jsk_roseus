@@ -237,3 +237,5 @@ always the rank of list is 2"
       (load-org-for-ros manifest))))
 
 (setq sys::*exit-hook* 'ros::exit)
+
+(provide :roseus "roseus.l")
