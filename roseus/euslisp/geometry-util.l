@@ -10,9 +10,12 @@
 (ros::roseus-add-msgs "geometry_msgs") ;move_base_msgs depends on geometry_msgs
 (ros::roseus-add-msgs "posedetection_msgs")
 
+(warning-message 1 ";; geometry-util file is obsoleted use eustf.l")
+
 ;; convert unit....
 ;; eus [mm], ros[m]
 (defun coords->geometry-msgs-pose (coords)
+  (warning-message 1 ";; coords->geometry-msgs-pose is obsoleted use funtion in eustf.l")
   (let ((x (* 0.001 (x (send coords :worldpos)))) ;mm -> m
         (y (* 0.001 (y (send coords :worldpos)))) ;mm -> m
         (z (* 0.001 (z (send coords :worldpos)))) ;mm -> m
@@ -30,6 +33,7 @@
                             :x qx :y qy :z qz :w qw))))))
 
 (defun geometry-msgs-pose->coords (pose)
+  (warning-message 1 ";; geometry-msgs-pose->coords is obsoleted use funtion in eustf.l")
   (let ((position (send pose :position))
         (orientation (send pose :orientation)))
     (let ((x (* 1000.0 (send position :x))) ;m -> mm
@@ -43,12 +47,14 @@
                    :rot (quaternion2matrix q)))))
 
 (defun geometry-msgs-point->coords (point)
+  (warning-message 1 ";; geometry-msgs-point->coords is obsoleted use funtion in eustf.l")
   (let ((x (* 1000.0 (send point :x))) ;m -> mm
         (y (* 1000.0 (send point :y))) ;m -> mm
         (z (* 1000.0 (send point :z)))) ;m -> mm
     (make-coords :pos (float-vector x y z))))
 
 (defun coords->geometry-msgs-stamped-pose (coords id)
+  (warning-message 1 ";; coords->geometry-msgs-stamped-pose is obsoleted use funtion in eustf.l")
   (let ((pose (coords->geometry-msgs-pose coords)))
     ;; PoseStamped = Header + Pose
     ;; Header = seq + frame_id
@@ -59,6 +65,7 @@
               :pose pose)))
 
 (defun nav-msgs-odometry->coords (odom)
+  (warning-message 1 ";; nav-msgs-odometry->coords is obsoleted use funtion in eustf.l")
   ;; NB: does not consider about frame_id
   ;; NB: coordinates is projected x-y plane.
   ;; Odometry = Header:header + string:child_frame_id
@@ -67,6 +74,7 @@
   (geometry-msgs-pose->coords (send (send odom :pose) :pose)))
 
 (defun geometry-msgs-transform->coords (pose)
+  (warning-message 1 ";; geometry-msgs-transform->coords is obsoleted use funtion in eustf.l")
   (let ((position (send pose :translation))
         (orientation (send pose :rotation)))
     (let ((x (* 1000.0 (send position :x))) ;m -> mm
@@ -80,12 +88,14 @@
                  :rot (quaternion2matrix q)))))
 
 (defun coords->posedetection-msgs-object6dpose (coords type id)
+  (warning-message 1 ";; coords->posedetection-msgs-object6dpose is obsoleted use funtion in eustf.l")
   (instance posedetection_msgs::object6dpose :init
             :pose (coords->geometry-msgs-pose coords)
             :type type))
             ;;:uid id))
 
 (defun compose-detected-objects-to-Object-Detection (obj-alist id)
+  (warning-message 1 ";; compose-detected-objects-to-Object-Detection is obsoleted use funtion in eustf.l")
   ;; obj-alist := ((name id coords) (name id coords) (name id coords) ...)
   (instance posedetection_msgs::ObjectDetection :init
             :header (instance roslib::header :init 
