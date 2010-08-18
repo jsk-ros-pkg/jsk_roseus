@@ -103,7 +103,7 @@
         (let ((pkg (subseq (car msg) 0 (position #\: (car msg))))
               (file (subseq (car msg) (+ (position #\: (car msg)) 2))))
           (format strm "(if (not (find-package \"~A\"))~%" (string-upcase pkg))
-          (format strm "  (roseus-add-msgs \"~A\"))~%" pkg))))
+          (format strm "  (ros::roseus-add-msgs \"~A\"))~%" pkg))))
     (format strm "~%")
     ))
 
