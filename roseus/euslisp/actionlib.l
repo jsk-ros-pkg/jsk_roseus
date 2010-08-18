@@ -154,7 +154,7 @@
   (:get-result-status
    ()
    (warning-message 1 "get-reuslt-status is obsolete method, use get-goal-status-text or get-goal-state")
-   (send self :latest-goal-state))
+   (send comm-state :latest-goal-status))
   )
 
 
