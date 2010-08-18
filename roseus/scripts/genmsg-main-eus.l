@@ -532,7 +532,7 @@
      (generate-msg-md5sum strm pkg res-name fname)
      (generate-msg-datatype   strm pkg res-name)
 
-     (generate-provide strm pkg pkg name fname)
+     (generate-provide strm pkg name fname)
      (format strm "~%~%")
      )))
 
