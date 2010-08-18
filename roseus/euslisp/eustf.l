@@ -266,3 +266,5 @@
      (ros::eustf-send-transform cobject pos quat p-frame c-frame tm)
      ))
   )
+
+(provide :eustf "$Id:")
