@@ -82,16 +82,16 @@
 ;;
 
 (defun generate-msg-headers (strm pkg name)
-  (let ()
+  (let ((upcase-pkg (string-upcase pkg)))
     (format strm ";;~%")
     (format strm ";; Auto-generated from ~A/~A.msg. ~%" pkg name)
     (format strm ";; Do not edit.~%")
     (format strm ";;~%")
     (format strm "~%")
     (format strm "(when (boundp '~A::~A)~%" pkg name)
-    (format strm "  (if (not (find-package (string-upcase \"~A\")))~%" pkg)
-    (format strm "    (make-package (string-upcase \"~A\")))~%" pkg)
-    (format strm "  (shadow '~A (find-package \"~A\")))~%" name (string-upcase pkg))
+    (format strm "  (if (not (find-package \"~A\"))~%" upcase-pkg)
+    (format strm "    (make-package \"~A\"))~%" upcase-pkg)
+    (format strm "  (shadow '~A (find-package \"~A\")))~%" name upcase-pkg)
     (format strm "~%")
     ))
 
