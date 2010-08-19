@@ -3,7 +3,6 @@
 ;;; euslisp version of ros_tutorials/rospy_tutorials/001_talker_listener
 ;;;
 
-;; when msgs and srvs are compiled, all msgs and srvs should be loaded.
 (load-ros-manifest "roseus")
 ;;;
 

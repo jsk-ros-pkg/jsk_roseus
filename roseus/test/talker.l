@@ -3,7 +3,6 @@
 ;;; euslisp version of ros_tutorials/rospy_tutorials/001_talker_listener
 ;;;
 
-;;(setq ros::*compile-message* t) ;; comment out if you want to compile msg and srv
 (load-ros-manifest "roseus")
 ;;;
 

@@ -2,7 +2,6 @@
 ;;;
 ;;; euslisp version of ros_tutorials/rospy_tutorials/005_add_two_ints
 ;;;
-(load "roseus.l")
 
 (ros::roseus-add-msgs "roslib")
 (ros::roseus-add-msgs "roseus")
