@@ -1,0 +1,23 @@
+<package>
+  <description brief="roseus_tutorials">
+
+     roseus_tutorials
+
+  </description>
+  <author>Kei Okada, Tsukasa Ito</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/roseus_tutorials</url>
+  <depend package="roseus"/>
+
+  <depend package="saliency_tracking">
+  <depend package="cmvision">
+  <depend package="checkerboard_pose">
+  <depend package="face_detector_mono">
+  <depend package="aques_talk">
+
+  <depend package="image_view2">
+
+</package>
+
+
