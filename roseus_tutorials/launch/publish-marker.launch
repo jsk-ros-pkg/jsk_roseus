@@ -1,0 +1,7 @@
+<launch>
+  <node name="publish_marker"
+	pkg="roseus_tutorials"
+	type="publish-marker.l"
+	output="screen">
+  </node>
+</launch>
