@@ -28,7 +28,6 @@ ARG_STR=`cat <<EOF
   )
 EOF
 `
-echo $ARG_STR
 
 if [ "$FILE" != "nil" ]; then
     rosrun euslisp irteusgl "$ARG_STR" &
