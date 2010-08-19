@@ -1,0 +1,17 @@
+Background\ ColorR=0
+Background\ ColorG=0
+Background\ ColorB=0
+Fixed\ Frame=/test_id
+Target\ Frame=<Fixed Frame>
+Markers.=1
+Markers.Enabled=1
+Markers.Marker\ Topic=/cylinder_marker
+Tool\ 2D\ Nav\ GoalTopic=goal
+Tool\ 2D\ Pose\ EstimateTopic=initialpose
+Camera\ Type=rviz::OrbitViewController
+Camera\ Config=0.737794 0.970801 18.0278 0 0 0
+Property\ Grid\ State=selection=Markers.Enabled.Markers.Marker Topic;expanded=.Global Options,Markers.Enabled,Markers.Enabled.Markers.Namespaces;scrollpos=0,0;splitterpos=150,301;ispageselected=1
+[Display0]
+Name=Markers
+Package=rviz
+ClassName=rviz::MarkerDisplay
