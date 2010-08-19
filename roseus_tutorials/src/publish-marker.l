@@ -1,7 +1,4 @@
-#!/usr/bin/env runeus
-
-(load "roseus.l")
-(load "eustf.l")
+#!/usr/bin/env roseus
 
 (roseus "test_publish_marker")
 

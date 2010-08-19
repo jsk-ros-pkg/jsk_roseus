@@ -1,6 +1,4 @@
-#!/usr/bin/env runeus
-
-(load "roseus.l")
+#!/usr/bin/env roseus
 
 (ros::roseus-add-msgs "roslib")
 (ros::roseus-add-msgs "roseus")
