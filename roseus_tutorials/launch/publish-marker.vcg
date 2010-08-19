@@ -3,15 +3,29 @@ Background\ ColorG=0
 Background\ ColorB=0
 Fixed\ Frame=/test_id
 Target\ Frame=<Fixed Frame>
-Markers.=1
-Markers.Enabled=1
-Markers.Marker\ Topic=/cylinder_marker
+CubeMarker.=1
+CubeMarker.Enabled=1
+CubeMarker.Marker\ Topic=/cube_marker
+CylinderMarker.=1
+CylinderMarker.Enabled=1
+CylinderMarker.Marker\ Topic=/cylinder_marker
+SphereMarker.=1
+SphereMarker.Enabled=1
+SphereMarker.Marker\ Topic=/sphere_marker
 Tool\ 2D\ Nav\ GoalTopic=goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=0.737794 0.970801 18.0278 0 0 0
-Property\ Grid\ State=selection=Markers.Enabled.Markers.Marker Topic;expanded=.Global Options,Markers.Enabled,Markers.Enabled.Markers.Namespaces;scrollpos=0,0;splitterpos=150,301;ispageselected=1
+Camera\ Config=0.171 2.7808 0.659095 0 0 0
+Property\ Grid\ State=selection=SphereMarker.Enabled.SphereMarker.Marker Topic;expanded=.Global Options,CylinderMarker.Enabled,CylinderMarker.Enabled.CylinderMarker.Namespaces,CubeMarker.Enabled,CubeMarker.Enabled.CubeMarker.Namespaces,SphereMarker.Enabled,SphereMarker.Enabled.SphereMarker.Namespaces;scrollpos=0,0;splitterpos=150,301;ispageselected=1
 [Display0]
-Name=Markers
+Name=CylinderMarker
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display1]
+Name=CubeMarker
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display2]
+Name=SphereMarker
 Package=rviz
 ClassName=rviz::MarkerDisplay
