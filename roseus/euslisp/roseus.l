@@ -20,6 +20,7 @@
 
 (when (not (unix:isatty *standard-input*))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
+  (setq lisp::*error-handler* #'(lambda (&rest err) (warning-message 1 ";;~A ERROR th=~A ~A in ~A. exitting...~%" *program-name* (elt err 0) (elt err 1) (elt err 2)) (exit 1)))
   (unix:signal unix::sigint 'ros::roseus-sigint-handler)
   (unix:signal unix::sighup 'ros::roseus-sigint-handler)
   (defmacro do-until-key (&rest forms) `(while t ,@forms))
