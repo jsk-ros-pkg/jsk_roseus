@@ -9,21 +9,35 @@ if(UNIX AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR} CACHE PATH "roseus install prefix" FORCE )
 endif()
 
+
+find_program (SVNVERSION_CMD svnversion)
+execute_process (COMMAND "${SVNVERSION_CMD}" ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE SVNVERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+message (STATUS "Build svn revision: ${SVNVERSION}")
+
 #rosbuild_add_boost_directories()
 
 include_directories(/usr/include /usr/X11R6/include /$(EUSDIR)/include)
 #link_directories()
 rosbuild_add_library(roseus roseus.cpp)
 rosbuild_add_library(eustf eustf.cpp)
+
+# compile flags
+set(COMPILE_FLAGS "-O2 -Wno-write-strings -Wno-comment")
+add_definitions(-Di486 -DLinux -D_REENTRANT -DVERSION='\"${8.26}\"' -DTHREADED -DPTHREAD -DX11R6_1)
+add_definitions(-DSVNVERSION='\"r${SVNVERSION}\"')
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
     ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
-rosbuild_add_compile_flags(roseus "-O2 -Dx86_64 -DLinux -D_REENTRANT -DVERSION=\"8.26\" -DTHREADED -DPTHREAD -DX11R6_1 -Wno-write-strings -Wno-comment")
-rosbuild_add_compile_flags(eustf "-O2 -Dx86_64 -DLinux -D_REENTRANT -DVERSION=\"8.26\" -DTHREADED -DPTHREAD -DX11R6_1 -Wno-write-strings -Wno-comment")
+add_definitions(-Dx86_64)
 else()
-rosbuild_add_compile_flags(roseus "-O2 -Di486 -DLinux -D_REENTRANT -DVERSION=\"8.26\" -DTHREADED -DPTHREAD -DX11R6_1 -Wno-write-strings -Wno-comment")
-rosbuild_add_compile_flags(eustf "-O2 -Di486 -DLinux -D_REENTRANT -DVERSION=\"8.26\" -DTHREADED -DPTHREAD -DX11R6_1 -Wno-write-strings -Wno-comment")
+add_definitions(-Di486)
 endif()
-rosbuild_add_link_flags(eustf)
+
+rosbuild_add_compile_flags(roseus ${COMPILE_FLAGS})
+rosbuild_add_compile_flags(eustf ${COMPILE_FLAGS})
+#rosbuild_add_link_flags(eustf)
+
 #target_link_libraries(roseus)
 #rosbuild_link_boost(roseus thread)
 
