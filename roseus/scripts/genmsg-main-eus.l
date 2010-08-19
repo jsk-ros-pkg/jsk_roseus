@@ -281,7 +281,19 @@
        (:int32
 	(format strm "     (write-long ~A s)~%" var))
        (:int64
-	(format strm "     (sys::poke ~A (send s :buffer) (send s :count) :long) (incf (stream-count s) 8)~%" var))
+
+	(format strm "#+(or :alpha :irix6 :x86_64)~%")
+	(format strm "     (progn (sys::poke ~A (send s :buffer) (send s :count) :long) (incf (stream-count s) 8))~%" var)
+	(format strm "#-(or :alpha :irix6 :x86_64)~%")
+	(format strm "     (cond ((and (class ~A) (= (length (~A . bv)) 2)) ;; bignum~%" var var)
+	(format strm "            (write-long (ash (elt (~A . bv) 0) 0) s)~%" var)
+	(format strm "            (write-long (ash (elt (~A . bv) 1) -1) s))~%" var)
+	(format strm "           ((and (class ~A) (= (length (~A . bv)) 1)) ;; big1~%" var var)
+	(format strm "            (write-long (elt (~A . bv) 0) s)~%" var)
+        (format strm "            (write-long (if (>= ~A 0) 0 #xffffffff) s))~%" var)
+	(format strm "           (t                                         ;; integer~%")
+        (format strm "            (write-long ~A s)(write-long (if (>= ~A 0) 0 #xffffffff) s)))~%" var var)
+        )
        (:float32
 	(format strm "     (sys::poke ~A (send s :buffer) (send s :count) :float) (incf (stream-count s) 4)~%" var))
        (:float64
@@ -365,7 +377,14 @@
        (:int32
 	(format strm "(~A ~A (sys::peek buf ptr- :integer)) (incf ptr- 4)~%" set var))
        (:int64
-	(format strm "(~A ~A (sys::peek buf ptr- :long)) (incf ptr- 8)~%" set var))
+	(format strm "~%#+(or :alpha :irix6 :x86_64)~%")
+	(format strm "   (~A ~A (prog1 (sys::peek buf ptr- :long) (incf ptr- 8)))~%" set var)
+	(format strm "#-(or :alpha :irix6 :x86_64)~%")
+	(format strm "   (~A ~A (let ((b0 (prog1 (sys::peek buf ptr- :integer) (incf ptr- 4)))~%" set var)
+	(format strm "                (b1 (prog1 (sys::peek buf ptr- :integer) (incf ptr- 4))))~%")
+	(format strm "            (cond ((= b1 -1) b0)~%")
+	(format strm "                  ((= b1  0) (make-instance bignum :size 1 :bv (integer-vector b0)))~%")
+	(format strm "                  (t (make-instance bignum :size 2 :bv (integer-vector b0 (ash b1 1)))))))~%"))
        (:float32
 	(format strm "(~A ~A (sys::peek buf ptr- :float)) (incf ptr- 4)~%" set var))
        (:float64
