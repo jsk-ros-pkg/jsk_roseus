@@ -49,4 +49,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/euslisp)
 rosbuild_gensrv()
 rosbuild_genmsg()
 
+rosbuild_add_rostest(test/test-talker-listener.launch)
+rosbuild_add_rostest(test/test-add-two-ints.launch)
+
 #add_subdirectory(test EXCLUDE_FROM_ALL)
