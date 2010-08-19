@@ -1,11 +1,9 @@
-#!/usr/bin/env runeus
+#!/usr/bin/env roseus
 ;;;
 ;;; euslisp version of ros_tutorials/rospy_tutorials/005_add_two_ints
 ;;;
 (load "roseus.l")
 
-;;(setq ros::*compile-message* t) ;; comment out if you want to compile msg and srv
-;; when msgs and srvs are compiled, all msgs and srvs should be loaded.
 (ros::roseus-add-msgs "roslib")
 (ros::roseus-add-msgs "roseus")
 (ros::roseus-add-srvs "rospy_tutorials")

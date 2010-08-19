@@ -1,9 +1,8 @@
-#!/usr/bin/env runeus
+#!/usr/bin/env roseus
 ;;;
 ;;; euslisp version of ros_tutorials/rospy_tutorials/001_talker_listener
 ;;;
-(load "roseus.l")
-;;(setq ros::*compile-message* t) ;; comment out if you want to compile msg and srv
+
 ;; when msgs and srvs are compiled, all msgs and srvs should be loaded.
 (load-ros-manifest "roseus")
 ;;;

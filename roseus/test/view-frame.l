@@ -1,7 +1,4 @@
-#!/usr/bin/env runeus
-
-(load "roseus.l")
-(load "eustf.l")
+#!/usr/bin/env roseus
 
 (if (not (boundp '*pickview*)) (pickview))
 (defun main ()
