@@ -116,7 +116,7 @@ static bool s_bInstalled = false;
 #define s_mapSubscribed s_staticdata.mapSubscribed
 #define s_mapServiced s_staticdata.mapServiced
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOINT,QNOOUT;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOINT,QNOOUT,QSVNVERSION;
 
 /***********************************************************
  *   Message wrapper
@@ -1318,6 +1318,12 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   pointer_update(Spevalof(PACKAGE),p);
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
+
+  pointer l;
+  l=makestring(SVNVERSION,strlen(SVNVERSION));
+  vpush(l);
+  l=stacknlist(ctx,1);
+  QSVNVERSION=defvar(ctx, "ROSEUS-SVNVERSION", l, rospkg);
 
   return 0;
 }
