@@ -141,7 +141,7 @@
 
 (defun ros::append-name-space (&rest args)
   (subseq (apply #'concatenate string
-                 (mapcan #'(lambda (a) (list "/" a)) args)) 1)) ;remove /
+                 (mapcan #'(lambda (x) (list "/" x)) args)) 1)) ;remove /
 
 (defmacro defrosparam (sym param-name &optional (default-value nil))
   ;; defrosparam bind a ros parameter to lisp symbol using setq, not defvar.
@@ -213,8 +213,8 @@ always the rank of list is 2"
 (defun _ros-message-destructuring-bind-parse-arg (msg param)
   "this function returns a list like ((symbol value) ((symbol value) ...))"
   (if (listp (car param))       ;like ((:frame_id frame_id) (:stamp stamp))
-      (mapcar #'(lambda (a)
-                  (_ros-message-destructuring-bind-parse-arg msg a))
+      (mapcar #'(lambda (x)
+                  (_ros-message-destructuring-bind-parse-arg msg x))
               param)
     (progn
       (let ((method-name (car param))
