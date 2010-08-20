@@ -1,6 +1,9 @@
 #!/bin/bash
 
-if [ -e `rospack find euslisp`/eus-installed ] ; then
+EUSLISP_PKGDIR=`rospack find euslisp`
+EUS2_EXE=`find $EUSLISP_PKGDIR -name eus2`
+
+if [ "$EUS2_EXE" ] ; then
     rosrun euslisp eus2 `rospack find roseus`/scripts/genmsg-main-eus.l -c "(prog1 (genmsg-eus \"$@\")(exit))"
 fi
 
