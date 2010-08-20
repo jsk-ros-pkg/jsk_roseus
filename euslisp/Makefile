@@ -15,6 +15,8 @@ all:
 	make -f Makefile.eus irteus-installed
 	## force hard link for rosrun
 	cd $(EUSDIR)/$(ARCHDIR)/bin; ln -f eus irteus; ln -f eusgl irteusgl;
+	# download manuals
+	make -f Makefile.eus manuals
 	touch rospack_nosubdirs
 
 
