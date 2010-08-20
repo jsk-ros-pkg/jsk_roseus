@@ -8,7 +8,14 @@ while [ $# -ne 0 ]; do
     DEPENDS=$DEPENDS"\"$1\" ";
     shift;
 done
-if [ -e `rospack find euslisp`/eus-installed ] ; then
+
+if [ `uname -m` = i686 ]; then
+    arch_dir=Linux
+else
+    arch_dir=Linux64
+fi
+
+if [ -e `rospack find euslisp`/eus/$arch_dir/bin/eus2 ] ; then
     rosrun euslisp eus2 "(progn (load \"`rospack find roseus`/scripts/genmanifest.l\")(genmanifest $TARGET $DEPENDS)(exit))"
 else
     echo ";; rosmake eusilsp !!"
