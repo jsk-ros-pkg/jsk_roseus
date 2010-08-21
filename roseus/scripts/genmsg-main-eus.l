@@ -95,6 +95,8 @@
     (format strm "    (make-package \"~A\"))~%" upcase-pkg)
     (format strm "  (shadow '~A (find-package \"~A\")))~%" name upcase-pkg)
     (format strm "~%")
+    (format strm "(in-package \"ROS\")~%")
+    (format strm "~%")
     ))
 
 (defun generate-msg-loaders (strm msgs name)
