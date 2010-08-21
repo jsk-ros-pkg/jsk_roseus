@@ -1316,8 +1316,9 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND);
   defun(ctx,"GET-NAME",argv[0],(pointer (*)())ROSEUS_GETNAME);
 
-  pointer_update(Spevalof(PACKAGE),p);
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
+
+  pointer_update(Spevalof(PACKAGE),p);
 
   pointer l;
   l=makestring(SVNVERSION,strlen(SVNVERSION));
