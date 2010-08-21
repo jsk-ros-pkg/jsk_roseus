@@ -1,3 +1,5 @@
+(setq lisp::*error-handler* #'(lambda (&rest args) (exit 1)))
+
 (defun generate-msg-datatype-name-list (strm)
   (let (msgs consts line pos type var init-elem vec-size)
     (while (not (eq :eof (setq line (read-line strm nil :eof))))
