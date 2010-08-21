@@ -681,9 +681,9 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
     s_mapSubscribed.clear();
     s_mapServiced.clear();
     ros::shutdown();
-    return (NIL);
   }
-  return (T);
+  if (n==0) _exit(0);
+  else _exit(ckintval(argv[0]));
 }
 
 /************************************************************
