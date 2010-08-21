@@ -2,6 +2,8 @@
 ;; for euslisp coordination system interface and
 ;; ros coordination system interface
 
+(in-package "ROS")
+
 ;; load c-binding library
 (load-library "eustf.so" '("eustf"))
 

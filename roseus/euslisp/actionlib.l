@@ -1,3 +1,5 @@
+(in-package "ROS")
+
 (if (not (find-package "ACTIONLIB_MSGS")) (ros::roseus-add-msgs "actionlib_msgs"))
 
 ;;;; actionlib
