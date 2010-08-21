@@ -7,10 +7,16 @@ function generate-msg-srv {
 }
 
 function check-error {
-    if [ "$?" != "0" ] ; then exit -1; fi
+    if [ "$?" != "0" ] ; then
+	echo -e "\e[1;31mERROR in ${pkg_list[$pkg_i]}\e[m"
+	err_list[${#err_list[*]}]=${pkg_list[$pkg_i]}
+    fi
 }
 
 #trap 'kill -s HUP $$ ' INT TERM
+
+# profile
+rospack profile
 
 # listap all packages
 for pkg in `rospack list-names`; do
@@ -44,6 +50,17 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
 	done
     fi
 done
+
+if [ $((${#err_list[@]})) -gt 0 ] ; then
+    echo -e "\e[1;31mERROR occurred while processing $0\e[m"
+    for err_i in $(seq 0 $((${#err_list[@]} - 1))); do
+	err=${err_list[$err_i]}
+	echo -e "\e[1;31m$err\e[m"
+    done
+    exit 1
+fi
+
+
 
 
 
