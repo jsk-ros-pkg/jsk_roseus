@@ -2,36 +2,6 @@
 
 echo -e "\e[1;31m;; !!! runeus will be removed, use roseus !!!\e[m"
 
+roseus $@
 
-# file
-if [ "$1" != "" ]; then
-    FILE="\"$1\"";
-    shift
-else
-    FILE=nil
-fi
-# argc
-ARGV="(list "
-while [ $# -ne 0 ]; do
-    ARGV=$ARGV"\"$1\" ";
-    shift;
-done
-ARGV=$ARGV")"
-
-ARG_STR="(progn (pushnew \"`rospack find roseus`/euslisp/\" *load-path* :test #'equal) (if $ARGV (setq lisp::*eustop-argument* $ARGV)) (if $FILE (load $FILE)))"
-if [ "$FILE" != "nil" ]; then
-    rosrun euslisp irteusgl "$ARG_STR" &
-# if you want to run in gdb, please use the line below
-#xterm -e gdb -x `rospack find roseus`/bin/roseus_gdb.cmd --args `rospack find euslisp`/eus/Linux/bin/irteusgl "(progn (pushnew \"`rospack find roseus`/euslisp/\" *load-path* :test #'equal) (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))"
-    PID=$!
-    echo PID is $PID
-    trap 'kill -s HUP $PID ' CHLD INT TERM
-    wait $PID
-else
-    rosrun euslisp irteusgl "$ARG_STR"
-fi
-#wait $PID
-# if you are an euslisp expert and debug roseus, you can comment in
-# following line
-#if [ $? -ne 0 ] ; then read line ; fi
 
