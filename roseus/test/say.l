@@ -8,7 +8,7 @@
 ;;;
 ;;;
 (setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A ~A~%" (sys::thread-self) a b)))
-(roseus "clear")
+(ros::roseus "clear")
 
 (ros::advertise "robotsound" sound_play::SoundRequest 5)
 (unix:sleep 1) ;; this is VERY important
@@ -22,7 +22,7 @@
 (ros::publish "robotsound" msg)
 (read-char)
 
-(roseus "shutdown")
+(ros::roseus "shutdown")
 (exit)
 
 

@@ -3,12 +3,12 @@
 ;;; euslisp version of ros_tutorials/rospy_tutorials/001_talker_listener
 ;;;
 
-(load-ros-manifest "roseus")
+(ros::load-ros-manifest "roseus")
 ;;;
 
 ;;;
 ;;;
-(roseus "listener")
+(ros::roseus "listener")
 ;;(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
 
 ;; callback function

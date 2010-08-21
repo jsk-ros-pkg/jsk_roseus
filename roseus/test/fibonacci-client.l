@@ -10,7 +10,7 @@
 
 ;;;
 ;;;
-(roseus "fibonacci_client")
+(ros::roseus "fibonacci_client")
 (setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
 
 (defun fibonacci-client ()

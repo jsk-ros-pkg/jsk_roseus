@@ -3,7 +3,7 @@
 (if (not (boundp '*pickview*)) (pickview))
 (defun main ()
   (let (tl frame-strings frame-coords root-frame objs)
-    (roseus "eus_view")
+    (ros::roseus "eus_view")
     (ros::rate 10)
     (setq tl (instance ros::transform-listener :init))
     (ros::sleep)

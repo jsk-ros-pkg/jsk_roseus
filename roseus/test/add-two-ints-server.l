@@ -17,7 +17,7 @@
     m))
 ;;;
 ;;;
-(roseus "add_two_ints_server")
+(ros::roseus "add_two_ints_server")
 (ros::advertise-service "add_two_ints" rospy_tutorials::AddTwoInts #'add-two-ints)
 (do-until-key
  (ros::spin-once))

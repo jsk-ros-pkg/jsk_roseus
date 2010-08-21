@@ -3,12 +3,12 @@
 ;;; euslisp version of ros_tutorials/rospy_tutorials/001_talker_listener
 ;;;
 
-(load-ros-manifest "roseus")
+(ros::load-ros-manifest "roseus")
 ;;;
 
 ;;;
 ;;;
-(roseus "talker")
+(ros::roseus "talker")
 (ros::advertise "chatter" std_msgs::string 1)
 (ros::rate 100)
 (while (ros::ok)
@@ -18,6 +18,6 @@
   (ros::publish "chatter" msg)
   (ros::sleep)
   )
-(roseus "shutdown")
+(ros::roseus "shutdown")
 (exit)
 

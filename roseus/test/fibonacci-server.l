@@ -12,7 +12,7 @@
 ;;;
 (setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
 
-(roseus "fibonacci")
+(ros::roseus "fibonacci")
 (defun fibonacci-execute-cb (server goal)
   (let ((order (send goal :goal :order))
         (sequence (list 1 0)) msg)

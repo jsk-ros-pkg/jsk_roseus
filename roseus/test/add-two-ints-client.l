@@ -8,7 +8,7 @@
 (ros::roseus-add-srvs "rospy_tutorials")
 ;;;
 ;;;
-(roseus "add_two_ints_client")
+(ros::roseus "add_two_ints_client")
 (ros::wait-for-service "add_two_ints")
 (dotimes (i 100)
   (setq req (instance rospy_tutorials::AddTwoIntsRequest :init))
