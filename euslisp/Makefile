@@ -3,12 +3,13 @@ include $(shell rospack find mk)/cmake.mk
 
 EUSC_PATCH=eus.c_CUSTUM_EUSDIR.patch
 
-$(EUSC_PATCH): DEFAULT_ENV.patch
+$(EUSC_PATCH): eus.c_DEFAULT_ENV.patch
 	cat eus.c_DEFAULT_ENV.patch | sed s@DEFAULT_EUSDIR@$(EUSDIR)@ | sed s@DEFAULT_ARCHDIR@$(ARCHDIR)@ > $(EUSC_PATCH)
+	if [ -e eus/lisp/c/eus.c ] ; then svn revert eus/lisp/c/eus.c; fi
 
-all:
+all: $(EUSC_PATCH)
 	## set default EUSDIR in eus.c
-	-patch -n --forward -p0 -d eus < $(EUSC_PATCH)
+	-patch -r - --forward -p0 -d eus < $(EUSC_PATCH)
 	## compile eus
 	make -f Makefile.eus eus-installed
 	## compile irteus
