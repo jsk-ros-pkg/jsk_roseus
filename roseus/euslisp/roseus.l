@@ -16,7 +16,7 @@
 
 (defun ros::roseus-sigint-handler (sig code)
   (ros::ROS-WARN (format nil "ros::roseus-sigint-handler ~A" sig))
-  (exit))
+  (exit 1))
 
 (defun ros::roseus-error (code msg1 form &optional (msg2))
    (format *error-output* "~C[1;3~Cm~A roseus-error: ~A"
@@ -24,7 +24,7 @@
    (if msg2 (format *error-output* " ~A" msg2))
    (if form (format *error-output* " in ~s" form))
    (format *error-output* ", exitting...~C[0m~%"  #x1b)
-   (ros::exit 1))
+   (exit 1))
 
 (when (not (unix:isatty *standard-input*))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
@@ -100,7 +100,7 @@
     (unless (probe-file dir)
       (warning-message
        1 (format nil ";; can not find ~A directory for [~A] packages~%" dir pkg))
-      (exit))
+      (exit 1))
     (unless (find-package (string-upcase pkg))
       (make-package (string-upcase pkg)))
     (dolist (file (directory dir))
