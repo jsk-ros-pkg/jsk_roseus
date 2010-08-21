@@ -40,7 +40,7 @@ if [ "$FILE" != "nil" ]; then
 else
     rosrun euslisp irteusgl "$ARG_STR"
 fi
-exit 0
+exit $?
 #wait $PID
 # if you are an euslisp expert and debug roseus, you can comment in
 # following line
