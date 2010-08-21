@@ -18,9 +18,17 @@
   (ros::ROS-WARN (format nil "ros::roseus-sigint-handler ~A" sig))
   (exit))
 
+(defun ros::roseus-error (code msg1 form &optional (msg2))
+   (format *error-output* "~C[1;3~Cm~A roseus-error: ~A"
+                #x1b (+ 1 48)   *program-name* msg1)
+   (if msg2 (format *error-output* " ~A" msg2))
+   (if form (format *error-output* " in ~s" form))
+   (format *error-output* ", exitting...~C[0m~%"  #x1b)
+   (ros::exit 1))
+
 (when (not (unix:isatty *standard-input*))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
-  (setq lisp::*error-handler* #'(lambda (ec errstr form msg) (warning-message 1 ";;~A ERROR th=~A ~A ~A in ~A. exitting...~%" *program-name* ec errstr msg form)(exit 1)))
+  (lisp::install-error-handler #'ros::roseus-error)
   (unix:signal unix::sigint 'ros::roseus-sigint-handler)
   (unix:signal unix::sighup 'ros::roseus-sigint-handler)
   (defmacro do-until-key (&rest forms) `(while t ,@forms))
