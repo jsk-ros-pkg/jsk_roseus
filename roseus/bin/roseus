@@ -32,7 +32,7 @@ EOF
 if [ "$FILE" != "nil" ]; then
     rosrun euslisp irteusgl "$ARG_STR" &
 # if you want to run in gdb, please use the line below
-#xterm -e gdb -x `rospack find roseus`/bin/roseus_gdb.cmd --args `rospack find euslisp`/eus/Linux/bin/irteusgl "(progn (pushnew \"`rospack find roseus`/euslisp/\" *load-path* :test #'equal) (if $ARGV (setq lisp::*eustop-argument* $ARGV))(load $FILE))"
+#    xterm -e gdb -x `rospack find roseus`/bin/roseus_gdb.cmd --args `rospack find euslisp`/eus/Linux/bin/irteusgl "$ARG_STR"
     PID=$!
     echo PID is $PID
     trap 'echo $PID; trap - CHLD; ps $PID &&  kill -s HUP $PID; ps $PID && kill -KILL $PID' CHLD INT TERM
