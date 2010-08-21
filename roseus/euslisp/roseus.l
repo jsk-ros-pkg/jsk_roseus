@@ -2,17 +2,13 @@
                  lisp::*loaded-modules*
                  :key #'lisp::load-module-file-name
                  :test #'equal))
+  (make-package "ROS")
   (load-library "roseus.so" '("roseus")))
 
 (unless (member :ros *features*) (push :ros *features*))
 (warning-message 1 ";; loading roseus(~A) on euslisp(~A)~%" (car ros::roseus-svnversion) (cadr lisp::lisp-implementation-version))
 
-(defun ros::getname ()
-  (warning-message 1 ";; ros::getname is obsoleted, use ros::get-name~%")
-  (format t "~C[3~Cm" #x1b 49)
-  (btrace)
-  (format t "~C[0m" #x1b)
-  (ros::get-name))
+(in-package "ROS")
 
 (defun ros::roseus-sigint-handler (sig code)
   (ros::ROS-WARN (format nil "ros::roseus-sigint-handler ~A" sig))
@@ -31,16 +27,17 @@
   (lisp::install-error-handler #'ros::roseus-error)
   (unix:signal unix::sigint 'ros::roseus-sigint-handler)
   (unix:signal unix::sighup 'ros::roseus-sigint-handler)
-  (defmacro do-until-key (&rest forms) `(while t ,@forms))
-  (defun y-or-n-p (&rest args) t))
+  (defmacro user::do-until-key (&rest forms) `(while t ,@forms))
+  (defun user::y-or-n-p (&rest args) t))
 
-(defun roseus (name &key
+(defun ros::roseus (name &key
                     (option (list ros::*no-sigint-handler* ros::*anonymous-name*))
                     (args lisp::*eustop-argument*))
-  (roseus-raw name (apply #'logior option) args))
+  (ros::roseus-raw name (apply #'logior option) args))
 
 (setq ros::*compile-message* nil)
 
+(shadow 'object *package*)
 (defclass ros::object
   :super propertied-object
   :slots ())
@@ -122,12 +119,6 @@
 
 (defun ros::roseus-add-msgs (pkg) (ros::roseus-add-files pkg "msg"))
 (defun ros::roseus-add-srvs (pkg) (ros::roseus-add-files pkg "srv"))
-(defun roseus-add-msgs (pkg)
-  (warning-message 3 ";; roseus-add-msgs will be obsoleted, use ros::roseus-add-msgs [~s]~%" pkg)
-  (ros::roseus-add-msgs pkg))
-(defun roseus-add-srvs (pkg)
-  (warning-message 3 ";; roseus-add-srvs will be obsoleted, use ros::roseus-add-srvs [~s]~%" pkg)
-  (ros::roseus-add-srvs pkg))
 
 (unless (fboundp 'load-org-for-ros)
   (setf (symbol-function 'load-org-for-ros) (symbol-function 'load)))
@@ -242,7 +233,7 @@ always the rank of list is 2"
   `(symbol-macrolet ,(ros-message-destructuring-bind-parse-arg msg params)
      ,@body))
 
-(defun load-ros-manifest (pkg)
+(defun ros::load-ros-manifest (pkg)
   (let ((manifest (format nil "~A/src/euslisp/_manifest.l"
                           (ros::rospack-find pkg))))
     (when (probe-file manifest)
@@ -251,3 +242,24 @@ always the rank of list is 2"
 (setq sys::*exit-hook* 'ros::exit)
 
 (provide :roseus "roseus.l")
+
+;; obsoleted functions
+(in-package "USER")
+(defun roseus (&rest args)
+  (warning-message 1 ";; roseus is obsoleted, use ros::roseus~%")
+  (apply #'ros::roseus args))
+(defun getname ()
+  (warning-message 1 ";; getname is obsoleted, use ros::get-name~%")
+  (format t "~C[3~Cm" #x1b 49)
+  (btrace)
+  (format t "~C[0m" #x1b)
+  (ros::get-name))
+(defun roseus-add-msgs (pkg)
+  (warning-message 3 ";; roseus-add-msgs will be obsoleted, use ros::roseus-add-msgs [~s]~%" pkg)
+  (ros::roseus-add-msgs pkg))
+(defun roseus-add-srvs (pkg)
+  (warning-message 3 ";; roseus-add-srvs will be obsoleted, use ros::roseus-add-srvs [~s]~%" pkg)
+  (ros::roseus-add-srvs pkg))
+(defun load-ros-manifest (pkg)
+  (warning-message 3 ";; load-ros-manifest will be obsoleted, use ros::load-ros-manifest [~s]~%" pkg)
+  (ros::load-ros-manifest pkg))
