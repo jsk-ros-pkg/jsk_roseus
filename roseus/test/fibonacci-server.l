@@ -1,4 +1,4 @@
-#!/usr/bin/env runeus
+#!/usr/bin/env roseus
 ;;;
 ;;; euslisp version of ~/ros/ros_pkg_tutorials/actionlib_tutorials/simple_action_servers/fibonacci_server.py
 ;;;

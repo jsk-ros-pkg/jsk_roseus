@@ -1,4 +1,4 @@
-#!/usr/bin/env runeus
+#!/usr/bin/env roseus
 
 (roseus "param_test")
 (unix:sleep 1)
