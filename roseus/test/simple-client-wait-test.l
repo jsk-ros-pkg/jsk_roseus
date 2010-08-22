@@ -15,9 +15,6 @@
 
 (setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
 
-(ros::service-call "~set_logger_level"
-                   (instance roscpp::SetLoggerLevelRequest :init :logger "ros" :level "DEBUG"))
-
 (deftest test-client ()
   (let (c goal)
     (setq c (instance ros::simple-action-client :init
@@ -41,6 +38,10 @@
     ))
 
 (ros::roseus "simple_action_client")
+
+(ros::service-call "~set_logger_level"
+                   (instance roscpp::SetLoggerLevelRequest
+                             :init :logger "ros" :level "DEBUG"))
 
 (run-all-tests)
 (exit)
