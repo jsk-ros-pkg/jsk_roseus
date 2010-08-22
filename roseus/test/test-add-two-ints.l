@@ -22,7 +22,7 @@
                       (cons lisp::most-negative-fixnum -1)
                       (cons lisp::most-negative-fixnum 0)
                       (cons lisp::most-negative-fixnum 1)
-                      ;; (cons #x40000000 #x3fffffff) error?
+                      (cons #x40000000 #x3fffffff) ;; error?
                       ))
     (print test)
     (let ((a (car test)) (b (cdr test)))
