@@ -5,13 +5,13 @@
 
 (ros::roseus-add-msgs "roslib")
 (ros::roseus-add-msgs "roseus")
-(ros::roseus-add-srvs "rospy_tutorials")
+(ros::roseus-add-srvs "roseus")
 ;;;
 ;;;
 (ros::roseus "add_two_ints_client")
 (ros::wait-for-service "add_two_ints")
 (dotimes (i 100)
-  (setq req (instance rospy_tutorials::AddTwoIntsRequest :init))
+  (setq req (instance roseus::AddTwoIntsRequest :init))
   (send req :a (random 10))
   (send req :b (random 20))
   (setq res (ros::service-call "add_two_ints" req))

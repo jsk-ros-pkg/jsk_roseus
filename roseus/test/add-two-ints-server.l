@@ -5,7 +5,7 @@
 
 (ros::roseus-add-msgs "roslib")
 (ros::roseus-add-msgs "roseus")
-(ros::roseus-add-srvs "rospy_tutorials")
+(ros::roseus-add-srvs "roseus")
 ;;;
 
 (defun add-two-ints (req)
@@ -18,7 +18,7 @@
 ;;;
 ;;;
 (ros::roseus "add_two_ints_server")
-(ros::advertise-service "add_two_ints" rospy_tutorials::AddTwoInts #'add-two-ints)
+(ros::advertise-service "add_two_ints" roseus::AddTwoInts #'add-two-ints)
 (do-until-key
  (ros::spin-once))
 
