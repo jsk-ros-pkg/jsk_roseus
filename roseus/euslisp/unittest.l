@@ -1,3 +1,7 @@
+;;;
+;;; based on euslib/jsk/unittest.l by R.Ueda
+;;;
+
 (defvar *unit-test* nil)
 
 (defclass unit-test-result
