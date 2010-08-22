@@ -387,6 +387,9 @@
 	(format strm "   (~A ~A (let ((b0 (prog1 (sys::peek buf ptr- :integer) (incf ptr- 4)))~%" set var)
 	(format strm "                (b1 (prog1 (sys::peek buf ptr- :integer) (incf ptr- 4))))~%")
 	(format strm "            (cond ((= b1 -1) b0)~%")
+	(format strm "                   ((and (= b1  0)~%")
+	(format strm "                         (<= lisp::most-negative-fixnum b0 lisp::most-positive-fixnum))~%")
+	(format strm "                    b0)~%")
 	(format strm "                  ((= b1  0) (make-instance bignum :size 1 :bv (integer-vector b0)))~%")
 	(format strm "                  (t (make-instance bignum :size 2 :bv (integer-vector b0 (ash b1 1)))))))~%"))
        (:float32
