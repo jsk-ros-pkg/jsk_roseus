@@ -29,8 +29,8 @@
       (warning-message 2 "Requesting ~A(~A) + ~A(~A) -> ~A(~A)~%" a (class a) b (class b) (+ a b) (class (+ a b)))
       (setq req (instance roseus::AddTwoIntsRequest :init :a a :b b))
       (setq res (ros::service-call "add_two_ints" req))
-      (assert-true (= (+ (send req :a) (send req :b)) (send res :sum))
-                   (format nil "integration failure (~A+~A)=~A(~A)/=~A(~A)"
+      (assert (= (+ (send req :a) (send req :b)) (send res :sum))
+              (format nil "integration failure (~A+~A)=~A(~A)/=~A(~A)"
                            a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum))))
       )))
 

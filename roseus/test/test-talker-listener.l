@@ -20,7 +20,7 @@
   (:string-cb
    (msg)
    (print (list 'cb self (send msg :data)) *error-output*)
-   (assert-true (substringp "hello world" (send msg :data))))
+   (assert (substringp "hello world" (send msg :data))))
   )
 
 (deftest test-talker-listener

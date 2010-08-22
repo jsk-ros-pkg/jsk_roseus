@@ -28,13 +28,13 @@
     (unless (send c :wait-for-result)
       (warning-message "Goal didn't finish"))
 
-    (assert-true (equal (send c :get-state) actionlib_msgs::succeeded))
-    (assert-true (string= (send c :get-goal-status-text)
+    (assert (equal (send c :get-state) actionlib_msgs::succeeded))
+    (assert (string= (send c :get-goal-status-text)
                           "The ref server has succeeded"))
 
     (send goal :goal :goal 4)
     (print (send c :send-goal-and-wait goal :timeout 2))
-    (assert-true (equal (send c :get-state) actionlib_msgs::preempted))
+    (assert (equal (send c :get-state) actionlib_msgs::preempted))
     ))
 
 (ros::roseus "simple_action_client")
