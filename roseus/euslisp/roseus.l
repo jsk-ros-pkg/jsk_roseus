@@ -24,7 +24,7 @@
 
 (when (not (unix:isatty *standard-input*))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
-  (lisp::install-error-handler #'ros::roseus-error)
+  (lisp::install-error-handler 'ros::roseus-error)
   (unix:signal unix::sigint 'ros::roseus-sigint-handler)
   (unix:signal unix::sighup 'ros::roseus-sigint-handler)
   (defmacro user::do-until-key (&rest forms) `(while t ,@forms))
