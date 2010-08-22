@@ -1,7 +1,7 @@
 <launch>
   <node name="talker" pkg="roseus" type="talker.l" />
-  <test test-name="talker_listender_test" pkg="rospy_tutorials"
-	type="talker_listener_test.py" />
+  <test test-name="talker_listener_test" pkg="roseus"
+	type="test-talker-listener.l" />
 </launch>
 
 
