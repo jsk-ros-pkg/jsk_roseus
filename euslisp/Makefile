@@ -29,6 +29,7 @@ Makefile.eus:
 clean:
 	-rm $(EUSC_PATCH) rospack_nosubdirs
 	-rm eus-installed irteus-installed
+	-rm -fr $(EUSDIR)/$(ARCHDIR)
 	make -f Makefile.eus clean
 
 wipe:
