@@ -224,14 +224,14 @@ always the rank of list is 2"
            `(ros-slot-ref ,msg ,method-name)
            (cadr param)))))))
 
-(defmacro ros-message-destructuring-bind (params msg &rest body)
+(defmacro ros-message-destructuring-bind (params msg &rest forms)
 ;;  usage:
 ;; (ros-message-destructuring-bind
 ;;  ((:header ((:frame_id frame_id) (:stamp stamp))) (:pose pose))
 ;;  pose-stamped                          ;symbol to message is bound
 ;;  (print pose))
   `(symbol-macrolet ,(ros-message-destructuring-bind-parse-arg msg params)
-     ,@body))
+     ,@forms))
 
 (defun ros::load-ros-manifest (pkg)
   (let ((manifest (format nil "~A/src/euslisp/_manifest.l"

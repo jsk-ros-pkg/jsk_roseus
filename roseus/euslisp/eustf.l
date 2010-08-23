@@ -3,6 +3,7 @@
 ;; ros coordination system interface
 
 (in-package "ROS")
+(use-package "GEOMETRY")
 
 ;; load c-binding library
 (load-library "eustf.so" '("eustf"))
@@ -25,7 +26,7 @@
             :x (* 0.001 (elt pos 0)) :y (* 0.001 (elt pos 1)) :z (* 0.001 (elt pos 2))))
 
 (defun ros::rot->tf-quaternion (rot)
-  (let* ((q (matrix2quaternion rot))
+  (let* ((q (user::matrix2quaternion rot))
          (qx (elt q 1)) (qy (elt q 2)) (qz (elt q 3)) (qw (elt q 0)))
     (instance geometry_msgs::quaternion :init
               :x qx :y qy :z qz :w qw)))
@@ -61,7 +62,7 @@
   (float-vector (* 1000.0 (send point :x)) (* 1000.0 (send point :y))  (* 1000.0 (send point :z))))
 
 (defun ros::tf-quaternion->rot (quaternion)
-  (quaternion2matrix
+  (user::quaternion2matrix
    (float-vector (send quaternion :w)
                  (send quaternion :x)
                  (send quaternion :y) 
@@ -139,7 +140,7 @@
    (target-frame target-time source-frame source-time fixed-frame)
    (ros::eustf-chain cobject))
   (:clear () (ros::eustf-clear cobject))
-  (:frame-exists (frame-id) (ros::eustf-all-frames-as-string cobject frame_id))
+  (:frame-exists (frame-id) (ros::eustf-all-frames-as-string cobject frame-id))
   (:get-frame-strings () (ros::eustf-get-frame-strings cobject))
   (:get-latest-common-time
    (source-frame target-frame)
@@ -160,7 +161,7 @@
                            (* 1000.0 (elt ret 1))
                            (* 1000.0 (elt ret 2)))
                      :rot
-                     (quaternion2matrix
+                     (user::quaternion2matrix
                       (float-vector (elt ret 3)
                                     (elt ret 4)
                                     (elt ret 5)
@@ -188,7 +189,7 @@
                            (* 1000.0 (elt ret 1))
                            (* 1000.0 (elt ret 2)))
                      :rot
-                     (quaternion2matrix
+                     (user::quaternion2matrix
                       (float-vector (elt ret 3)
                                     (elt ret 4)
                                     (elt ret 5)
@@ -232,7 +233,7 @@
 			     (* 1000.0 (elt ret 0))
 			     (* 1000.0 (elt ret 1))
 			     (* 1000.0 (elt ret 2)))
-		       :rot (quaternion2matrix (float-vector (elt ret 3)
+		       :rot (user::quaternion2matrix (float-vector (elt ret 3)
                                                      (elt ret 4)
                                                      (elt ret 5)
                                                      (elt ret 6)))
@@ -260,7 +261,7 @@
   (:send-transform
    (coords p-frame c-frame &optional time)
    (let ((pos (send coords :worldpos))
-         (quat (matrix2quaternion (send coords :worldrot)))
+         (quat (user::matrix2quaternion (send coords :worldrot)))
          (tm (cond ((derivedp time ros::time) (send time :sec-nsec))
                    ((integer-vector-p time) time)
                    (t (send (ros::time-now) :sec-nsec))))
