@@ -12,6 +12,12 @@
   <export>
     <cpp cflags="-I${prefix}/eus/include" />
   </export>
+
+  <rosdep name="opengl" />
+  <rosdep name="libjpeg" />
+  <rosdep name="libxext" />
+  <rosdep name="libx11-dev" />
+
 </package>
 
 

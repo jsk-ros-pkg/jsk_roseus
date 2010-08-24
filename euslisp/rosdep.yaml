@@ -1,0 +1,9 @@
+opengl:
+  ubuntu: libgl1-mesa-dev libglu1-mesa-dev
+libjpeg:
+  ubuntu: libjpeg62-dev
+libxext:
+  ubuntu: libxext-dev
+libx11-dev:
+    ubuntu: libx11-dev
+
