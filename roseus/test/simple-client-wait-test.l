@@ -25,15 +25,17 @@
     (setq goal (instance actionlib::TestActionGoal :init))
     (send goal :goal :goal 1)
     (send c :send-goal goal)
-    (unless (send c :wait-for-result)
-      (warning-message "Goal didn't finish"))
+    (warning-message 1 "wait-for-result~%")
+    (unless (send c :wait-for-result :timeout 10)
+      (warning-message 1 "Goal didn't finish"))
 
     (assert (equal (send c :get-state) actionlib_msgs::succeeded))
     (assert (string= (send c :get-goal-status-text)
                           "The ref server has succeeded"))
 
     (send goal :goal :goal 4)
-    (print (send c :send-goal-and-wait goal :timeout 2))
+    (warning-message 1 "send-goal-and-wait~%")
+    (print (send c :send-goal-and-wait goal :timeout 2) *error-output*)
     (assert (equal (send c :get-state) actionlib_msgs::preempted))
     ))
 
