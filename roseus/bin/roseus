@@ -1,17 +1,15 @@
 #!/bin/bash
+set -e
 
-# file
-if [ "$1" != "" ]; then
-    FILE="\"$1\"";
-    shift
-else
-    FILE=nil
-fi
 # argc
+FILE="nil"
 ARGV="(list "
 while [ $# -ne 0 ]; do
-    ARGV=$ARGV"\"$1\" ";
-    shift;
+    case "$1" in
+	--interpreter) INTERP="true"; shift;;
+	--help) echo "roseus [file] [options] [args for euslisp]"; exit 1;;
+	*) if [ "$FILE" != "nil" ]; then ARGV=$ARGV"\"$1\" "; else FILE="\"$1\""; fi; shift;;
+    esac
 done
 ARGV=$ARGV")"
 
@@ -29,7 +27,7 @@ ARG_STR=`cat <<EOF
 EOF
 `
 
-if [ "$FILE" != "nil" ]; then
+if [ "$FILE" != "nil" -a "$INTERP" != "true" ]; then
     rosrun euslisp irteusgl "$ARG_STR" &
 # if you want to run in gdb, please use the line below
 #    xterm -e gdb -x `rospack find roseus`/bin/roseus_gdb.cmd --args `rospack find euslisp`/eus/Linux/bin/irteusgl "$ARG_STR"
