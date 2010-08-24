@@ -69,13 +69,15 @@
               (send self :nsec (* 1000 (mod (/ (floor nsec) 1000) 1000000)))
               self)
   (:prin1 (&optional (strm t) &rest msgs)
-	  (let ()
-            (print (format nil "~13,3f" (send self :to-sec)))
+	  (let* ((ns (+ (* 1000000000 (send self :sec)) (send self :nsec)))
+		 (str (format nil (if (< 0 ns) "~0,10d" "~0,11d") ns))
+		 (dpt (- (length str) 9)))
 	    (send-super :prin1 strm
-			(format nil "~13,3f" (send self :to-sec))))) ;; print .xxx
+			(format nil "~A.~A" (subseq str 0 dpt)
+				(subseq str dpt (+ 3 dpt)))))) ;; print .xxx
   )
 
-(defun ros::time (&optional sec)
+(defun ros::time (&optional (sec 0))
   (send (instance ros::time :init) :from-sec sec))
 
 (defun ros::time-now () (send (instance ros::time :init) :now))

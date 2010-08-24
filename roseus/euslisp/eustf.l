@@ -259,14 +259,14 @@
 (defmethod ros::transform-broadcaster
   (:init () (setq cobject (ros::eustf-transform-broadcaster)))
   (:send-transform
-   (coords p-frame c-frame &optional time)
+   (coords p-frame c-frame &optional tm)
    (let ((pos (send coords :worldpos))
          (quat (user::matrix2quaternion (send coords :worldrot)))
-         (tm (cond ((derivedp time ros::time) (send time :sec-nsec))
-                   ((integer-vector-p time) time)
-                   (t (send (ros::time-now) :sec-nsec))))
+         (stm (cond ((derivedp tm ros::time) (send tm :sec-nsec))
+		    ((integer-vector-p tm) tm)
+		    (t (send (ros::time-now) :sec-nsec))))
          )
-     (ros::eustf-send-transform cobject pos quat p-frame c-frame tm)
+     (ros::eustf-send-transform cobject pos quat p-frame c-frame stm)
      ))
   )
 
