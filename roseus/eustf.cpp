@@ -615,7 +615,7 @@ pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
   Spevalof(PACKAGE)=rospkg;
   defun(ctx,"EUSTF-TRANSFORMER",argv[0],(pointer (*)())EUSTF_TRANSFORMER);
   defun(ctx,"EUSTF-ALL-FRAMES-AS-STRING",argv[0],(pointer (*)())EUSTF_ALLFRAMESASSTRING);
-  defun(ctx,"EUSTF-SETT-RANSFORM",argv[0],(pointer (*)())EUSTF_SETTRANSFORM);
+  defun(ctx,"EUSTF-SET-TRANSFORM",argv[0],(pointer (*)())EUSTF_SETTRANSFORM);
   defun(ctx,"EUSTF-WAIT-FOR-TRANSFORM",argv[0],(pointer (*)())EUSTF_WAITFORTRANSFORM);
   defun(ctx,"EUSTF-WAIT-FOR-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_WAITFORTRANSFORMFULL);
   defun(ctx,"EUSTF-CAN-TRANSFORM",argv[0],(pointer (*)())EUSTF_CANTRANSFORM);
