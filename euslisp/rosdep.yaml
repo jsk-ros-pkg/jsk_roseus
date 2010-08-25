@@ -6,4 +6,8 @@ libxext:
   ubuntu: libxext-dev
 libx11-dev:
     ubuntu: libx11-dev
+libpng:
+  ubuntu: libpng12-dev
+libpq-dev:
+  ubuntu: libpq-dev
 
