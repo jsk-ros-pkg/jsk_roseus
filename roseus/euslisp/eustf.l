@@ -13,6 +13,23 @@
 (ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
 
+(defclass tf-cascaded-coords
+  :super cascaded-coords
+  :slots (frame-id child-frame-id stamp))
+(defmethod tf-cascaded-coords
+  (:init (&rest initargs &key ((:frame-id fid) "") ((:child-frame-id cid) "") ((:stamp st) #i(0 0)) &allow-other-keys)
+    (send-super* :init initargs)
+    (setf frame-id fid child-frame-id cid stamp st)
+    self)
+  (:frame-id (&optional id) (if id (setq frame-id id)) frame-id)
+  (:child-frame-id (&optional id) (if id (setq child-frame-id id)) child-frame-id)
+  (:stamp (&optional st) (if st (setq stamp st)) stamp)
+  (:prin1 (&optional (strm 1))
+          (send-super :prin1 strm (format nil "~s ~s ~d.~d" frame-id child-frame-id (elt stamp 0) (elt stamp 1))))
+  )
+
+
+
 ;; convert unit....
 ;; position convert : WG use [m], JSK use eus [mm]
 ;; quaternion convert: WG use axis-angle quaternion, JSK use angle-axis quaternion
@@ -76,7 +93,18 @@
   (make-cascoords :coords (ros::tf-pose->coords (send pose-stamped :pose))
                   :name (send pose-stamped :header :frame_id)))
 
-(defun ros::tf-transform->coords (pose) (ros::tf-pose->coords pose))
+(defun ros::tf-transform->coords (trans)
+  (instance tf-cascaded-coords
+            :init
+            :pos (ros::tf-point->pos (send trans :transform :translation))
+            :rot (ros::tf-quaternion->rot (send trans :transform :rotation))
+            :frame-id (send trans :header :frame_id)
+            :child-frame-id (send trans :child_frame_id)
+            :stamp (send (send trans :header :stamp) :sec-nsec)))
+
+(defun ros::tf-transform-stamped->coords (trans)
+  (ros::tf-transform->coords trans))
+
 
 ;; helper functions
 (defun ros::create-identity-quaternion () (ros::create-quaternion-from-rpy 0 0 0))
