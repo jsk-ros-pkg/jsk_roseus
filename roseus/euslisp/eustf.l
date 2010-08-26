@@ -190,18 +190,18 @@
      (setq ret (ros::eustf-lookup-transform cobject
                                             target-frame source-frame
                                             (send time :sec-nsec)))
-     (when
-         (make-cascoords :pos (float-vector
-                               (* 1000.0 (elt ret 0))
-                               (* 1000.0 (elt ret 1))
-                               (* 1000.0 (elt ret 2)))
-                         :rot
-                         (user::quaternion2matrix
-                          (float-vector (elt ret 3)
-                                        (elt ret 4)
-                                        (elt ret 5)
-                                        (elt ret 6)))
-                         :name target-frame))))
+     (when ret
+       (make-cascoords :pos (float-vector
+                             (* 1000.0 (elt ret 0))
+                             (* 1000.0 (elt ret 1))
+                             (* 1000.0 (elt ret 2)))
+                       :rot
+                       (user::quaternion2matrix
+                        (float-vector (elt ret 3)
+                                      (elt ret 4)
+                                      (elt ret 5)
+                                      (elt ret 6)))
+                       :name target-frame))))
   (:lookup-transform-safe
    (target-frame source-frame time
     &optional (timeout 0.1) (duration 0.1))
