@@ -7,7 +7,7 @@
 
 (init-unit-test)
 
-(deftest test-commong ()
+(deftest test-common ()
   (setq m (instance geometry_msgs::TransformStamped :init))
   (send m :header :frame_id "PARENT")
   (send m :child_frame_id "THISFRAME")
@@ -34,6 +34,7 @@
     )
 
   (assert (not (send f :get-latest-common-time "MANDALAY" "JUPITER")))
+  (assert (not (send f :lookup-transform "MANDALAY" "JUPITER" (ros::time))))
   (assert (not (send f :lookup-transform-safe "MANDALAY" "JUPITER" (ros::time))))
   )
 
