@@ -125,8 +125,29 @@ pointer EUSTF_ALLFRAMESASSTRING(register context *ctx,int n,pointer *argv)
 
 pointer EUSTF_SETTRANSFORM(register context *ctx,int n,pointer *argv)
 {
-  ROS_ERROR("%s is not implemented yet", __PRETTY_FUNCTION__);
-  return(T);
+  ckarg(7);
+  tf::Transformer *tf = (tf::Transformer *)argv[0];
+  if (!isvector(argv[1])) error(E_NOVECTOR);
+  if (!isvector(argv[2])) error(E_NOVECTOR);
+  eusfloat_t *pos = argv[1]->c.fvec.fv;
+  eusfloat_t *rot = argv[2]->c.fvec.fv;
+  isintvector(argv[3]);
+  eusinteger_t *stamp = argv[3]->c.ivec.iv;
+  if (!isstring(argv[4])) error(E_NOSTRING);
+  if (!isstring(argv[5])) error(E_NOSTRING);
+  if (!isstring(argv[6])) error(E_NOSTRING);
+  std::string frame_id = std::string((char*)(argv[4]->c.str.chars));
+  std::string child_frame_id = std::string((char*)(argv[5]->c.str.chars));
+  std::string authority= std::string((char*)(argv[6]->c.str.chars));
+  tf::StampedTransform transform;
+  transform.setOrigin(btVector3(pos[0], pos[1], pos[2]));
+  transform.setRotation(btQuaternion(rot[3], rot[0], rot[1], rot[2]));
+  transform.frame_id_ = frame_id;
+  transform.child_frame_id_ = child_frame_id;
+  transform.stamp_.sec = stamp[0];
+  transform.stamp_.nsec = stamp[1];
+  bool ret = tf->setTransform(transform, authority);
+  return(ret?T:NIL);
 }
 
 pointer EUSTF_WAITFORTRANSFORM(register context *ctx,int n,pointer *argv)

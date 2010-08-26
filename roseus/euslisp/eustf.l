@@ -141,8 +141,14 @@
    ()
    (ros::eustf-all-frames-as-string cobject))
   (:set-transform
-   (trans &optional (auth ""))
-   (ros::eustf-set-transform cobject))
+   (coords &optional (auth ""))
+   (let ((pos (send coords :pos))
+         (rot (user::matrix2quaternion (send coords :rot))))
+     (if (not (derivedp coords tf-cascaded-coords))
+         (warn ";; mismatch argument set-transform [tf-cascaded-coords]"))
+     (ros::eustf-set-transform cobject pos rot (send coords :stamp)
+                               (send coords :frame-id)
+                               (send coords :child-frame-id) auth)))
   (:wait-for-transform
    (target-frame source-frame time timeout &optional (duration 0.01))
    (ros::eustf-wait-for-transform cobject
