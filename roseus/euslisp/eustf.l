@@ -184,17 +184,18 @@
      (setq ret (ros::eustf-lookup-transform cobject
                                             target-frame source-frame
                                             (send time :sec-nsec)))
-     (make-cascoords :pos (float-vector
-                           (* 1000.0 (elt ret 0))
-                           (* 1000.0 (elt ret 1))
-                           (* 1000.0 (elt ret 2)))
-                     :rot
-                     (user::quaternion2matrix
-                      (float-vector (elt ret 3)
-                                    (elt ret 4)
-                                    (elt ret 5)
-                                    (elt ret 6)))
-                     :name target-frame)))
+     (when
+         (make-cascoords :pos (float-vector
+                               (* 1000.0 (elt ret 0))
+                               (* 1000.0 (elt ret 1))
+                               (* 1000.0 (elt ret 2)))
+                         :rot
+                         (user::quaternion2matrix
+                          (float-vector (elt ret 3)
+                                        (elt ret 4)
+                                        (elt ret 5)
+                                        (elt ret 6)))
+                         :name target-frame))))
   (:lookup-transform-safe
    (target-frame source-frame time
     &optional (timeout 0.1) (duration 0.1))
@@ -212,17 +213,18 @@
                                                  target-frame (send target-time :sec-nsec)
                                                  source-frame (send source-time :sec-nsec)
                                                  fixed-frame))
-     (make-cascoords :pos (float-vector
-                           (* 1000.0 (elt ret 0))
-                           (* 1000.0 (elt ret 1))
-                           (* 1000.0 (elt ret 2)))
-                     :rot
-                     (user::quaternion2matrix
-                      (float-vector (elt ret 3)
-                                    (elt ret 4)
-                                    (elt ret 5)
-                                    (elt ret 6)))
-                     :name target-frame)))
+     (when ret
+       (make-cascoords :pos (float-vector
+                             (* 1000.0 (elt ret 0))
+                             (* 1000.0 (elt ret 1))
+                             (* 1000.0 (elt ret 2)))
+                       :rot
+                       (user::quaternion2matrix
+                        (float-vector (elt ret 3)
+                                      (elt ret 4)
+                                      (elt ret 5)
+                                      (elt ret 6)))
+                       :name target-frame))))
   (:lookup-velocity
    (reference-frame moving-frame time duration)
    (ros::eustf-lookup-velocity cobject reference-frame moving-frame time duration))
@@ -257,15 +259,16 @@
 					   (send (send pose-stamped :header :stamp) :sec-nsec)
 					   (send pose-stamped :header :frame_id)
 					   pose)))
-       (make-cascoords :pos (float-vector
-			     (* 1000.0 (elt ret 0))
-			     (* 1000.0 (elt ret 1))
-			     (* 1000.0 (elt ret 2)))
-		       :rot (user::quaternion2matrix (float-vector (elt ret 3)
-                                                     (elt ret 4)
-                                                     (elt ret 5)
-                                                     (elt ret 6)))
-		       :name target-frame))))
+       (when ret
+         (make-cascoords :pos (float-vector
+                               (* 1000.0 (elt ret 0))
+                               (* 1000.0 (elt ret 1))
+                               (* 1000.0 (elt ret 2)))
+                         :rot (user::quaternion2matrix (float-vector (elt ret 3)
+                                                                     (elt ret 4)
+                                                                     (elt ret 5)
+                                                                     (elt ret 6)))
+                         :name target-frame)))))
   (:transform-pose-safe
    (target-frame pose-stamped &optional (timeout 0.1) (duration 0.1))
    (if (send self :wait-for-transform target-frame
