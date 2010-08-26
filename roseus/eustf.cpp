@@ -374,7 +374,11 @@ pointer EUSTF_LOOKUPTRANSFORM(register context *ctx,int n,pointer *argv)
   set_ros_time(time,argv[3]);
 
   tf::StampedTransform transform;
-  tf->lookupTransform(target_frame, source_frame, time, transform);
+  try {
+    tf->lookupTransform(target_frame, source_frame, time, transform);
+  } catch ( std::runtime_error e ) {
+    ROS_ERROR("%s",e.what()); return(NIL);
+  }
 
   pointer vs = makefvector(7);          //pos[3] + rot[4](angle-axis quaternion)
   vpush(vs);
@@ -413,8 +417,12 @@ pointer EUSTF_LOOKUPTRANSFORMFULL(register context *ctx,int n,pointer *argv)
   fixed_frame = std::string((char*)(argv[5]->c.str.chars));
 
   tf::StampedTransform transform;
-  tf->lookupTransform(target_frame, target_time,
-                      source_frame, source_time, fixed_frame, transform);
+  try {
+    tf->lookupTransform(target_frame, target_time,
+                        source_frame, source_time, fixed_frame, transform);
+  } catch ( std::runtime_error e ) {
+    ROS_ERROR("%s",e.what()); return(NIL);
+  }
 
   pointer vs = makefvector(7);          //pos[3] + rot[4](angle-axis quaternion)
   vpush(vs);
@@ -458,7 +466,13 @@ pointer EUSTF_TRANSFORMPOSE(register context *ctx,int n,pointer *argv)
   //  input.header.
   input.header.stamp = tm;
   input.header.frame_id = frame_id;
-  tf->transformPose(target_frame, input, output);
+
+  try {
+    tf->transformPose(target_frame, input, output);
+  } catch ( std::runtime_error e ) {
+    ROS_ERROR("%s",e.what()); return(NIL);
+  }
+
   pointer vs = makefvector(7); //pos[3] + rot[4](angle-axis quaternion)
   vpush(vs);
   vs->c.fvec.fv[0] = output.pose.position.x;
