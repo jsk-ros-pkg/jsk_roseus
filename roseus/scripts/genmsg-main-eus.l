@@ -19,7 +19,7 @@
 	;; split line into type and var
 	(setq pos (position #\space line))
 	(setq type (subseq line 0 pos))
-	(setq var (string-left-trim '(#\space #\tab) (subseq line (1+ pos))))
+	(setq var (concatenate string "_" (string-left-trim '(#\space #\tab) (subseq line (1+ pos)))))
 	;; format type
 	(if (string= "header" (string-downcase type))
 	    (setq type (concatenate string "roslib::" type)))
@@ -113,9 +113,10 @@
 
 
 (defun generate-msg-defconstants (strm pkg name consts)
-  (let ()
+  (let (accessor)
     (dolist (const consts)
-      (format strm "(defconstant ~A::~A ~A)~%" pkg (cadr const) (caddr const)))
+      (setq accessor (subseq (cadr const) 1))
+      (format strm "(defconstant ~A::~A ~A)~%" pkg accessor (caddr const)))
     (format strm "~%")
     ))
 
@@ -130,12 +131,13 @@
     ))
 
 (defun generate-msg-init (strm pkg name msgs)
-  (let (type var var-type init-elem vec-size)
+  (let (type accessor var var-type init-elem vec-size)
     (format strm "  (:init~%")
     (format strm "   (&key~%")
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 2))
+      (setq accessor (subseq var 1))
       (setq var-type (generate-variable-type type))
       (setq init-elem
 	    (case var-type
@@ -151,15 +153,15 @@
 		  (t (error "undefined type ~A~%" msg))))
       (cond
        ((and vec-size (memq var-type '(:int8 :boolean)))
-	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :char))~%" var var vec-size init-elem))
+	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :char))~%" accessor var vec-size init-elem))
        ((and vec-size (memq var-type '(:int16 :int32 :int64)))
-	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :integer))~%" var var vec-size init-elem))
+	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :integer))~%" accessor var vec-size init-elem))
        ((and vec-size (memq var-type '(:float32 :float64)))
-	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :float))~%" var var vec-size init-elem))
+	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :float))~%" accessor var vec-size init-elem))
        (vec-size
-	(format strm "    ((:~A _~A) (let (r) (dotimes (i ~A) (push ~A r)) r))~%" var var vec-size init-elem))
+	(format strm "    ((:~A _~A) (let (r) (dotimes (i ~A) (push ~A r)) r))~%" accessor var vec-size init-elem))
        (t
-	(format strm "    ((:~A _~A) ~A)~%" var var init-elem))))
+	(format strm "    ((:~A _~A) ~A)~%" accessor var init-elem))))
     (format strm "    )~%")
     (format strm "   (send-super :init)~%")
     (dolist (msg msgs)
@@ -176,10 +178,11 @@
     (format strm "   self)~%")))
 
 (defun generate-msg-accessors (strm pkg name msgs)
-  (let (var)
+  (let (var accessor)
     (dolist (msg msgs)
       (setq var (cadr msg))
-      (format strm "  (:~A~%" var)
+      (setq accessor (subseq var 1))
+      (format strm "  (:~A~%" accessor)
       (if (eq (generate-variable-type (car msg)) :rostype)
 	  (progn
 	    (format strm "   (&rest _~A)~%" var)
