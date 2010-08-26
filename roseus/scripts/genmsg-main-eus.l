@@ -36,7 +36,7 @@
 	(if (setq pos (position #\= var))
 	    (progn
               (setq init-elem (string-trim " " (subseq var (1+ pos))))
-              (setq var (string-trim " " (subseq var 1 pos)))
+              (setq var (string-trim " " (subseq var 0 pos)))
               (push (list type var init-elem vec-size) consts))
 	  (push (list type var vec-size) msgs))))
     (list (setq msgs (nreverse msgs)) (setq consts (nreverse consts)))))
