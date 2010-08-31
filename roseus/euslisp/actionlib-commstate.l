@@ -150,8 +150,9 @@
      state))
   (:update-result
    (msg)
-   (unless (string= (send msg :status :goal_id :id)
-                    (send action-goal :goal_id :id))
+   (unless (and action-goal
+		(string= (send msg :status :goal_id :id)
+			 (send action-goal :goal_id :id)))
      (return-from :update-result))
 
    (setq latest-goal-status (send msg :status))
