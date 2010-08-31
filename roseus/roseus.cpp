@@ -546,6 +546,16 @@ public:
   }
 };
 #endif
+
+void roseusSignalHandler(int sig)
+{
+    // firs of all, call ros signal handller
+    ros::requestShutdown();
+    // memoize for euslisp handler...
+    context *ctx=euscontexts[thr_self()];
+    ctx->intsig = sig;
+}
+
 /************************************************************
  *   EUSLISP functions
  ************************************************************/
@@ -599,6 +609,9 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
 
   s_bInstalled = true;
 
+  // install signal handler for sigint. DO NOT call unix:signal after
+  // ros::roseus
+  signal(SIGINT, roseusSignalHandler);
   return (T);
 }
 
@@ -1277,7 +1290,6 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   QANON=defvar(ctx,"*ANONYMOUS-NAME*",makeint(ros::init_options::AnonymousName),rospkg);
   QNOINT=defvar(ctx,"*NO-SIGINT-HANDLER*",makeint(ros::init_options::NoSigintHandler),rospkg);
   QNOOUT=defvar(ctx,"*NO-ROSOUT*",makeint(ros::init_options::NoRosout),rospkg);
-
   defun(ctx,"SPIN",argv[0],(pointer (*)())ROSEUS_SPIN);
   defun(ctx,"SPIN-ONCE",argv[0],(pointer (*)())ROSEUS_SPINONCE);
   defun(ctx,"TIME-NOW-RAW",argv[0],(pointer (*)())ROSEUS_TIME_NOW);
