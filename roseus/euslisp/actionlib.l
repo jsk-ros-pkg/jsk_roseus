@@ -93,6 +93,9 @@
      (while (and (= (ros::get-num-subscribers goal-topic) 0)
                  (= (ros::get-num-subscribers cancel-topic) 0)
 		 (if timeout (< (incf count) (* timeout 10)) t))
+       (ros::ros-debug ";; num subscribers ~A ~d, ~A ~d"
+		       goal-topic (ros::get-num-subscribers goal-topic)
+		       cancel-topic (ros::get-num-subscribers cancel-topic))
        (ros::spin-once)
        (ros::sleep))
      (if (and timeout (>= count (* timeout 10))) nil t)))
