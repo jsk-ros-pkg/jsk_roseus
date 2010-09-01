@@ -70,7 +70,7 @@
               self)
   (:prin1 (&optional (strm t) &rest msgs)
 	  (let* ((ns (+ (* 1000000000 (send self :sec)) (send self :nsec)))
-		 (str (format nil (if (< 0 ns) "~0,10d" "~0,11d") ns))
+		 (str (format nil (if (<= 0 ns) "~0,10d" "~0,11d") ns))
 		 (dpt (- (length str) 9)))
 	    (send-super :prin1 strm
 			(format nil "~A.~A" (subseq str 0 dpt)
