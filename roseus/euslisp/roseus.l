@@ -31,7 +31,7 @@
   (defun user::y-or-n-p (&rest args) t))
 
 (defun ros::roseus (name &key
-                    (option (list ros::*no-sigint-handler* ros::*anonymous-name*))
+                    (option (list ros::*anonymous-name*))
                     (args lisp::*eustop-argument*))
   (ros::roseus-raw name (apply #'logior option) args))
 

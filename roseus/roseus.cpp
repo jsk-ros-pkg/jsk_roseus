@@ -116,7 +116,7 @@ static bool s_bInstalled = false;
 #define s_mapSubscribed s_staticdata.mapSubscribed
 #define s_mapServiced s_staticdata.mapServiced
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOINT,QNOOUT,QSVNVERSION;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOOUT,QSVNVERSION;
 
 /***********************************************************
  *   Message wrapper
@@ -602,7 +602,14 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   s_mapAdvertised.clear();
   s_mapSubscribed.clear();
   s_mapServiced.clear();
-
+  
+  /*
+    force to flag ros::init_options::NoSigintHandler.
+    In fact, this code make no sence, because we steals
+    SIGINT handler by the following `signal'.
+   */
+  options |= ros::init_options::NoSigintHandler;
+  
   ros::init(cargc, cargv, name, options);
 
   s_node.reset(new ros::NodeHandle());
@@ -1288,7 +1295,6 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   Spevalof(PACKAGE)=rospkg;
 
   QANON=defvar(ctx,"*ANONYMOUS-NAME*",makeint(ros::init_options::AnonymousName),rospkg);
-  QNOINT=defvar(ctx,"*NO-SIGINT-HANDLER*",makeint(ros::init_options::NoSigintHandler),rospkg);
   QNOOUT=defvar(ctx,"*NO-ROSOUT*",makeint(ros::init_options::NoRosout),rospkg);
   defun(ctx,"SPIN",argv[0],(pointer (*)())ROSEUS_SPIN);
   defun(ctx,"SPIN-ONCE",argv[0],(pointer (*)())ROSEUS_SPINONCE);
