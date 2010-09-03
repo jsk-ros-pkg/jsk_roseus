@@ -1,10 +1,11 @@
 (setq lisp::*error-handler* #'(lambda (&rest args) (exit 1)))
 
 (defun generate-msg-datatype-name-list (strm)
-  (let (msgs consts line pos type var init-elem vec-size)
+  (let (msgs consts def line pos type var init-elem vec-size)
     (while (not (eq :eof (setq line (read-line strm nil :eof))))
       ;; remove comments
       (if (string= line "---" :start1 0 :end1 3) (return))
+      (push line def)
       (setq pos (position #\# line))
       (if pos (setq line (subseq line 0 pos)))
       ;; replcae tab to whitespace
@@ -39,7 +40,7 @@
               (setq var (string-trim " " (subseq var 0 pos)))
               (push (list type var init-elem vec-size) consts))
 	  (push (list type var vec-size) msgs))))
-    (list (setq msgs (nreverse msgs)) (setq consts (nreverse consts)))))
+    (list (setq msgs (nreverse msgs)) (setq consts (nreverse consts)) (setq def (nreverse def)))))
 
 (defun generate-msg-output-file-name (fname pkg name dir)
   (let (l oname)
@@ -428,7 +429,13 @@
 
 (defun generate-msg-datatype (strm pkg name)
   (let ()
-    (format strm "(setf (get ~A::~A :datatype-) \"~A/~A\")~%" pkg name pkg name)
+    (format strm "(setf (get ~A::~A :datatype-) \"~A/~A\")~%" pkg name pkg name)))
+
+(defun generate-msg-definition (strm pkg name def)
+  (let ()
+    (format strm "(setf (get ~A::~A :definition-)~%      \"" pkg name)
+    (dolist (l def) (format strm "~A~%" l))
+    (format strm "\")~%")
     (format strm "~%")))
 
 (defun generate-srv-type (strm pkg name req-msgs res-msgs)
@@ -488,12 +495,11 @@
 ;;;
 
 (defun genmsg-eus (fname)
-  (let (msgs consts pkg name oname)
+  (let (msgs consts def pkg name oname)
     (multiple-value-setq (pkg name) (genfile-header fname))
     (with-open-file
      (strm fname :direction :input)
-     (multiple-value-setq (msgs consts) (generate-msg-datatype-name-list strm)))
-
+     (multiple-value-setq (msgs consts def) (generate-msg-datatype-name-list strm)))
     (setq oname (generate-msg-output-file-name fname pkg name "msg"))
     (warning-message 6 ";; writing to ~A~%" oname)
 
@@ -506,9 +512,10 @@
      (generate-msg-defconstants strm pkg name consts)
      ;;
      (genfile-body pkg name msgs strm)
-     ;; md5sum/type
+     ;; md5sum/type/definition
      (generate-msg-md5sum strm pkg name fname)
      (generate-msg-datatype strm pkg name)
+     (generate-msg-definition strm pkg name def)
 
      (generate-provide strm pkg name fname)
      (format strm "~%~%")
@@ -531,14 +538,14 @@
     ))
 
 (defun gensrv-eus (fname)
-  (let (req-msgs res-msgs consts pkg name req-name res-name oname)
+  (let (req-msgs res-msgs consts doc pkg name req-name res-name req-def res-def dummy oname)
     (multiple-value-setq (pkg name) (genfile-header fname))
     (setq req-name (format nil "~ARequest"  name)
           res-name (format nil "~AResponse" name))
     (with-open-file
      (strm fname :direction :input)
-     (multiple-value-setq (req-msgs consts) (generate-msg-datatype-name-list strm))
-     (setq res-msgs (car (generate-msg-datatype-name-list strm))))
+     (multiple-value-setq (req-msgs consts req-def) (generate-msg-datatype-name-list strm))
+     (multiple-value-setq (res-msgs dummy res-def) (generate-msg-datatype-name-list strm)))
 
     (setq oname (generate-msg-output-file-name fname pkg name "srv"))
     (warning-message 6 ";; writing to ~A~%" oname)
@@ -551,15 +558,17 @@
      ;;
      (genfile-body pkg req-name req-msgs strm)
      (genfile-body pkg res-name res-msgs strm)
-     ;; md5sum/type
+     ;; md5sum/type/definition
      (genfile-srvs pkg name strm)
      (generate-msg-md5sum strm pkg name fname)
      (generate-msg-datatype strm pkg name)
      (generate-srv-type strm pkg name req-name res-name)
      (generate-msg-md5sum strm pkg req-name fname)
      (generate-msg-datatype   strm pkg req-name)
+     (generate-msg-definition strm pkg req-name req-def)
      (generate-msg-md5sum strm pkg res-name fname)
      (generate-msg-datatype   strm pkg res-name)
+     (generate-msg-definition strm pkg res-name res-def)
 
      (generate-provide strm pkg name fname)
      (format strm "~%~%")
