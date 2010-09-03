@@ -102,7 +102,7 @@
        (ros::spin-once)
        (ros::sleep)
        (when (and timeout (>= count (* timeout 10)))
-         (ros::ros-error "action server(~A) is not found" name-space)
+         (ros::ros-warn "action server(~A) is not found" name-space)
          (return-from :wait-for-server nil))
        (incf count))
      t))
