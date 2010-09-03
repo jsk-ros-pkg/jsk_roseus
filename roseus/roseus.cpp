@@ -116,7 +116,7 @@ static bool s_bInstalled = false;
 #define s_mapSubscribed s_staticdata.mapSubscribed
 #define s_mapServiced s_staticdata.mapServiced
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOOUT,QSVNVERSION;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOOUT,QSVNVERSION;
 
 /***********************************************************
  *   Message wrapper
@@ -126,6 +126,7 @@ string getString(pointer message, pointer method) {
   context *ctx = current_ctx;
   pointer r, curclass;
   if ((pointer)findmethod(ctx,method,classof(message),&curclass)!=NIL) {
+    ROS_ERROR("method");
     r = csend(ctx,message,method,0);
   } else if ((pointer)findmethod(ctx,K_ROSEUS_GET,classof(message),&curclass) != NIL ) {
     r = csend(ctx,message,K_ROSEUS_GET,1,method);
@@ -138,6 +139,13 @@ string getString(pointer message, pointer method) {
     ROS_ERROR("could not find method %s for pointer %x",
               get_string(method), (unsigned int)message);
 #endif
+  }
+  if ( !isstring(r) ) {
+    pointer dest=(pointer)mkstream(ctx,K_OUT,makebuffer(64));
+    prinx(ctx,message,dest);
+    pointer str = makestring((char *)dest->c.stream.buffer->c.str.chars,
+                             intval(dest->c.stream.count));
+    ROS_ERROR("send %s to %s returns nil", get_string(method), get_string(str));
   }
   ROS_ASSERT(isstring(r));
   string ret = (char *)get_string(r);
@@ -200,7 +208,9 @@ public:
   virtual const string __getMD5Sum()   const {
     return getString(_message, K_ROSEUS_MD5SUM);
   }
-  virtual const string __getMessageDefinition() const { return ""; }
+  virtual const string __getMessageDefinition() const {
+    return getString(_message, K_ROSEUS_DEFINITION);
+  }
   virtual const string __getServiceDataType() const {
     return getString(_message, K_ROSEUS_DATATYPE);
   }
@@ -341,7 +351,7 @@ class EuslispSubscriptionMessageHelper : public ros::SubscriptionMessageHelper {
 public:
   pointer _scb,_args;
   EuslispMessage _msg;
-  string md5, datatype;
+  string md5, datatype, defnition;
 
   EuslispSubscriptionMessageHelper(pointer scb, pointer args,pointer tmpl) :  _args(args), _msg(tmpl) {
     extern pointer LAMCLOSURE;
@@ -366,6 +376,7 @@ public:
     deflocal(ctx,(char *)get_string(gensym(ctx)),_args,Spevalof(PACKAGE));
     md5 = _msg.__getMD5Sum();
     datatype = _msg.__getDataType();
+    definition = _msg.__getMessageDefinition();
   }
   ~EuslispSubscriptionMessageHelper() {}
 
@@ -373,6 +384,7 @@ public:
 
   virtual std::string getMD5Sum() { return md5; }
   virtual std::string getDataType() { return datatype; }
+  virtual std::string getMessageDefinition() { return definition; }
 
   virtual void call(const MessagePtr &msg) {
     context *ctx = current_ctx;
@@ -404,7 +416,8 @@ class EuslispServiceCallbackHelper : public ros::ServiceCallbackHelper {
 public:
   pointer _scb;
   EuslispMessage _req, _res;
-  string md5, datatype, requestDataType, responseDataType;
+  string md5, datatype, requestDataType, responseDataType,
+    requestMessageDefinition, responseMessageDefinition;
 
   EuslispServiceCallbackHelper(pointer scb, string smd5, string sdatatype, pointer reqclass, pointer resclass) : _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype) {
     extern pointer LAMCLOSURE;
@@ -426,6 +439,8 @@ public:
     }
     requestDataType = _req.__getDataType();
     responseDataType = _res.__getDataType();
+    requestMessageDefinition = _req.__getMessageDefinition();
+    responseMessageDefinition = _res.__getMessageDefinition();
   }
   ~EuslispServiceCallbackHelper() { }
 
@@ -436,6 +451,8 @@ public:
   virtual std::string getDataType() { return datatype; }
   virtual std::string getRequestDataType() { return requestDataType; }
   virtual std::string getResponseDataType() { return responseDataType; }
+  virtual std::string getRequestMessageDefinition() { return requestMessageDefinition; }
+  virtual std::string getResponseMessageDefinition() { return responseMessageDefinition; }
 
   virtual bool call(ros::ServiceCallbackHelperCallParams& params) {
     context *ctx = current_ctx;
@@ -498,7 +515,7 @@ class EuslispServiceMessageHelper : public ros::ServiceMessageHelper {
 public:
   pointer _scb;
   EuslispMessage _req, _res;
-  string md5, datatype, requestDataType, responseDataType;
+  string md5, datatype, requestDataType, responseDataType, requestMessageDefinition, responseMessageDefinition;
 
   EuslispServiceMessageHelper(pointer scb, string smd5, string sdatatype, pointer reqclass, pointer resclass) : _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype) {
     extern pointer LAMCLOSURE;
@@ -516,6 +533,8 @@ public:
     }
     requestDataType = _req.__getDataType();
     responseDataType = _res.__getDataType();
+    requestMessageDefinition = _req.__getMessageDefinition();
+    responseMessageDefinition = _res.__getMessageDefinition();
   }
   ~EuslispServiceMessageHelper() { }
 
@@ -526,6 +545,8 @@ public:
   virtual std::string getDataType() { return datatype; }
   virtual std::string getRequestDataType() { return requestDataType; }
   virtual std::string getResponseDataType() { return responseDataType; }
+  virtual std::string getRequestMessageDefinition() { return requestMessageDefinition; }
+  virtual std::string getResponseMessageDefinition() { return responseMessageDefinition; }
 
   virtual bool call(const MessagePtr &req, const MessagePtr &res) {
     context *ctx = current_ctx;
@@ -591,6 +612,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
 
   K_ROSEUS_MD5SUM   = defkeyword(ctx,"MD5SUM-");
   K_ROSEUS_DATATYPE = defkeyword(ctx,"DATATYPE-");
+  K_ROSEUS_DEFINITION = defkeyword(ctx,"DEFINITION-");
   K_ROSEUS_SERIALIZATION_LENGTH = defkeyword(ctx,"SERIALIZATION-LENGTH");
   K_ROSEUS_SERIALIZE   = defkeyword(ctx,"SERIALIZE");
   K_ROSEUS_DESERIALIZE = defkeyword(ctx,"DESERIALIZE");
