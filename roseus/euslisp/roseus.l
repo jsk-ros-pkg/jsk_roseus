@@ -107,6 +107,7 @@
 		 (not (= #\. (elt (pathname-name file) 0))))
 	(let ((dirfile (concatenate string dir file))
               (modname (intern (string-upcase (format nil "~A/~A" pkg (pathname-name file))) *keyword-package*)))
+          (require modname dirfile)
           (if ros::*compile-message*
               (let* ((fname (pathname-name file))
                      (old-module (find fname *loaded-modules*
@@ -117,8 +118,9 @@
                   (unix::chdir (string-right-trim "/" dir))
                   (comp:compile-file-if-src-newer file)
                   (load fname)
-                  (unix::chdir pwd)))
-            (require modname dirfile)))))))
+                  (unix::chdir pwd)
+                  ))
+            ))))))
 
 (defun ros::roseus-add-msgs (pkg) (ros::roseus-add-files pkg "msg"))
 (defun ros::roseus-add-srvs (pkg) (ros::roseus-add-files pkg "srv"))
