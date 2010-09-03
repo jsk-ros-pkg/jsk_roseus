@@ -103,6 +103,11 @@
        (ros::sleep)
        (when (and timeout (>= count (* timeout 10)))
          (ros::ros-warn "action server(~A) is not found" name-space)
+         (ros::ros-warn " goal=~d, cancel=~d, feedback=~d, result=~d"
+                        (ros::get-num-subscribers goal-topic)
+                        (ros::get-num-subscribers cancel-topic)
+                        (ros::get-num-publishers feedback-topic)
+                        (ros::get-num-publishers result-topic))
          (return-from :wait-for-server nil))
        (incf count))
      t))
