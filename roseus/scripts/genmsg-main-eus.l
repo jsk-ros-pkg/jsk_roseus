@@ -432,23 +432,12 @@
     (format strm "(setf (get ~A::~A :datatype-) \"~A/~A\")~%" pkg name pkg name)))
 
 (defun escape-double-quote (str)
-  (unless (substringp "\"" str)
-    (return-from escape-double-quote str))
-  (let ((cnt 0) ret)
+  (let ((str2 ""))
     (dotimes (i (length str))
-      (if (= (elt str i) #\") (incf cnt)))
-    (setq ret (make-string (+ cnt (length str))))
-
-    (setq cnt 0)
-    (dotimes (i (length str))
-      (if (= (elt str i) #\")
-          (progn
-            (setf (elt ret cnt) #\\)
-            (incf cnt)
-            (setf (elt ret cnt) (elt str i)))
-        (setf (elt ret cnt) (elt str i)))
-      (incf cnt))
-    ret))
+      (case (elt str i)
+            (#\" (setq str2 (concatenate string str2 "\"")))
+            (t   (setq str2 (format nil "~A~C" str2 (elt str i))))))
+    str2))
 
 (defun generate-msg-definition (strm pkg name def)
   (let ()
