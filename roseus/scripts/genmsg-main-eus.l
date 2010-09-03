@@ -435,7 +435,7 @@
   (let ((str2 ""))
     (dotimes (i (length str))
       (case (elt str i)
-            (#\" (setq str2 (concatenate string str2 "\"")))
+            (#\" (setq str2 (concatenate string str2 "\\\"")))
             (t   (setq str2 (format nil "~A~C" str2 (elt str i))))))
     str2))
 
