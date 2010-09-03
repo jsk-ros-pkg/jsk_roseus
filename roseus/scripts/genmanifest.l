@@ -21,16 +21,17 @@
 (defun genmanifest (target-file depend-packages)
   (print (list target-file depend-packages))
   (with-open-file (f target-file :direction :output)
-    (format f "(if ros::*compile-message* (in-package \"ROS\"))~%")
     (pprint '(defun load-ros-package (pkg)
 	       (unless (find-package (string-upcase pkg))
 		 (make-package (string-upcase pkg)))
+               (if ros::*compile-message* (in-package "ROS"))
 	       (when (probe-file (format nil "~A/msg/eus"
 					 (ros::rospack-find pkg)))
 		 (ros::roseus-add-msgs pkg))
 	       (when (probe-file (format nil "~A/srv/eus"
 					 (ros::rospack-find pkg)))
 		 (ros::roseus-add-srvs pkg))
+               (if ros::*compile-message* (in-package "USER"))
 	       (when (probe-file (format nil "~A/src/euslisp/init.l"
 					 (ros::rospack-find pkg)))
                  (load (format nil "~A/src/euslisp/init.l"
@@ -38,5 +39,4 @@
 	    f)
     (dolist (pkg (split-string depend-packages))
       (pprint `(load-ros-package ,pkg) f))
-    (format f "(if ros::*compile-message* (in-package \"USER\"))~%")
     ))
