@@ -126,7 +126,7 @@
                   (unix::chdir (string-right-trim "/" dir))
                   (comp:compile-file-if-src-newer file)
 		  (unix::link (format nil "~A.so" fname)
-			      (format nil "~A/eus/~A_~A.so" ros-home pkg fname))
+			      (format nil "~A/roseus/~A_~A.so" ros-home pkg fname))
 		  (unix::unlink (format nil "~A.so" fname))
 		  ;;(unix::unlink (format nil "~A.c" fname))
 		  ;;(unix::unlink (format nil "~A.h" fname))
