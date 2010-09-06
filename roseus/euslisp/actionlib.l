@@ -110,6 +110,7 @@
                         (ros::get-num-publishers result-topic))
          (return-from :wait-for-server nil))
        (incf count))
+     (ros::sleep 1)
      t))
   (:send-goal
    (goal &key done-cb active-cb feedback-cb)
