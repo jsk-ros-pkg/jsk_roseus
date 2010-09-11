@@ -1305,6 +1305,12 @@ pointer ROSEUS_GETNAME(register context *ctx,int n,pointer *argv)
 		    ros::this_node::getName().length()));
 }
 
+pointer ROSEUS_IS_INITIALIZED(register context *ctx,int n,pointer *argv)
+{
+  ckarg(0);
+  return(s_bInstalled?T:NIL);
+}
+
 /************************************************************
  *   __roseus
  ************************************************************/
@@ -1355,6 +1361,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND);
   defun(ctx,"GET-NAME",argv[0],(pointer (*)())ROSEUS_GETNAME);
+  defun(ctx,"IS-INITIALIZED",argv[0],(pointer (*)())ROSEUS_IS_INITIALIZED);
 
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
 
