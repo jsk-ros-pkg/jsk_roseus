@@ -66,6 +66,7 @@
 #include <ros/node_handle.h>
 #include <ros/service.h>
 #include <rospack/rospack.h>
+#include <ros/param.h>
 
 // for eus.h
 #define class   eus_class
@@ -1117,23 +1118,18 @@ pointer ROSEUS_SET_PARAM(register context *ctx,int n,pointer *argv)
   double d;
   int i;
 
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
-  }
-
   ckarg(2);
   if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
   if ( isstring(argv[1]) ) {
     s.assign((char *)get_string(argv[1]));
-    s_node->setParam(key,s);
+    ros::param::set(key,s);
   } else if (isint(argv[1])) {
     i = intval(argv[1]);
-    s_node->setParam(key,i);
+    ros::param::set(key,i);
   } else if (isflt(argv[1])) {
     d = fltval(argv[1]);
-    s_node->setParam(key,d);
+    ros::param::set(key,d);
   } else {
     error(E_MISMATCHARG);
   }
@@ -1187,16 +1183,10 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
   string key;
-  ros::NodeHandle nh;
 
   ckarg(1);
-  if (isstring(argv[0])) key.assign(ros::names::resolve((char *)get_string(argv[0])));
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
-
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
-  }
 
   string s;
   double d;
@@ -1204,21 +1194,22 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
   int i;
   pointer ret;
   XmlRpc::XmlRpcValue param_list;
-  
-  if ( nh.getParam(key, s) ) {
+
+  if ( ros::param::get(key, s) ) {
     ret = makestring((char *)s.c_str(), s.length());
-  } else if ( nh.getParam(key, d) ) {
+  } else if ( ros::param::get(key, d) ) {
     ret = makeflt(d);
-  } else if ( nh.getParam(key, i) ) {
+  } else if ( ros::param::get(key, i) ) {
     ret = makeint(i);
-  } else if ( nh.getParam(key, b) ) {
+  } else if ( ros::param::get(key, b) ) {
       if ( b == true )
           ret = T;
       else
           ret = NIL;
-  } else if (nh.getParam(key, param_list)){
+  } else if (ros::param::get(key, param_list)){
       ret = XmlRpcToEusList(ctx, param_list);
   }else {
+    ROS_ERROR("unknown getParam type");
     return (NIL);
   }
   return (ret);
@@ -1228,16 +1219,10 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
   string key;
-  ros::NodeHandle nh;
 
   ckarg(1);
-  if (isstring(argv[0])) key.assign(ros::names::resolve((char *)get_string(argv[0])));
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
-
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
-  }
 
   string s;
   double d;
@@ -1245,18 +1230,18 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
   bool b;
   pointer ret;
   XmlRpc::XmlRpcValue param_list;
-  if ( nh.getParamCached(key, s) ) {
+  if ( ros::param::getCached(key, s) ) {
     ret = makestring((char *)s.c_str(), s.length());
-  } else if ( nh.getParamCached(key, d) ) {
+  } else if ( ros::param::getCached(key, d) ) {
     ret = makeflt(d);
-  } else if ( nh.getParamCached(key, i) ) {
+  } else if ( ros::param::getCached(key, i) ) {
     ret = makeint(i);
-  } else if ( nh.getParamCached(key, b) ) {
+  } else if ( ros::param::getCached(key, b) ) {
       if ( b == true )
           ret = T;
       else
           ret = NIL;
-  } else if (nh.getParamCached(key, param_list)){
+  } else if (ros::param::getCached(key, param_list)){
       ret = XmlRpcToEusList(ctx, param_list);
   } else {
     ROS_ERROR("unknown getParam type");
@@ -1270,15 +1255,10 @@ pointer ROSEUS_HAS_PARAM(register context *ctx,int n,pointer *argv)
   string key;
 
   ckarg(1);
-  if (isstring(argv[0])) key.assign(ros::names::resolve((char *)get_string(argv[0])));
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
-  }
-
-  return((s_node->hasParam(key))?(T):(NIL));
+  return((ros::param::has(key))?(T):(NIL));
 }
 
 pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
@@ -1314,6 +1294,15 @@ pointer ROSEUS_IS_INITIALIZED(register context *ctx,int n,pointer *argv)
 /************************************************************
  *   __roseus
  ************************************************************/
+
+namespace ros {
+  namespace master {
+    void init(const M_string& remappings);
+  }
+  namespace param {
+    void init(const M_string& remappings);
+  }
+}
 
 pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 {
@@ -1372,6 +1361,22 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   vpush(l);
   l=stacknlist(ctx,1);
   QSVNVERSION=defvar(ctx, "ROSEUS-SVNVERSION", l, rospkg);
+
+  M_string remappings;
+  pointer argp = speval(intern(ctx,"*EUSTOP-ARGUMENT*", strlen("*EUSTOP-ARGUMENT*"),lisppkg));
+  while(argp!=NIL) {
+    std::string arg = string((char *)(ccar(argp)->c.str.chars));
+    // copy from roscpp/src/init.cpp : 432
+    size_t pos = arg.find(":=");
+    if (pos != std::string::npos) {
+      std::string local_name = arg.substr(0, pos);
+      std::string external_name = arg.substr(pos + 2);
+      remappings[local_name] = external_name;
+    }
+    argp=ccdr(argp);
+  }
+  ros::master::init(remappings);
+  //ros::param::init(remappings);
 
   return 0;
 }
