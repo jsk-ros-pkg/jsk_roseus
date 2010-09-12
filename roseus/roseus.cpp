@@ -1209,7 +1209,7 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
   } else if (ros::param::get(key, param_list)){
       ret = XmlRpcToEusList(ctx, param_list);
   }else {
-    ROS_ERROR("unknown getParam type");
+    ROS_ERROR("unknown ros::param::get, key=%s", key.c_str());
     return (NIL);
   }
   return (ret);
@@ -1244,7 +1244,7 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
   } else if (ros::param::getCached(key, param_list)){
       ret = XmlRpcToEusList(ctx, param_list);
   } else {
-    ROS_ERROR("unknown getParam type");
+    ROS_ERROR("unknown ros::param::getCached, key=%s", key.c_str());
     return (NIL);
   }
   return (ret);
