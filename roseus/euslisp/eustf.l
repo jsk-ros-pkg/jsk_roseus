@@ -249,8 +249,12 @@
 (defmethod ros::transform-listener
   (:init
    (&optional (cache-time 10.0) (spin-thread t))
+   (sys::dispose-hook self t)
    (setq cobject (ros::eustf-transform-listener cache-time spin-thread))
    self)
+  (:dispose
+   ()
+   (ros::eustf-transform-listener-dispose cobject))
   (:transform-pose
    (target-frame pose-stamped)
    (let ((pose (float-vector (send pose-stamped :pose :position :x)

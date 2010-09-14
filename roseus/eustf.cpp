@@ -557,6 +557,14 @@ pointer EUSTF_TRANSFORM_LISTENER(register context *ctx,int n,pointer *argv)
   return((pointer)(new tf::TransformListener(ros::Duration(cache_time), spin_thread)));
 }
 
+pointer EUSTF_TRANSFORM_LISTENER_DISPOSE(register context *ctx,int n,pointer *argv)
+{
+  ckarg(1);
+  tf::TransformListener *tf = (tf::TransformListener *)argv[0];
+  delete(tf);
+  return(T);
+}
+
 /* */
 pointer EUSTF_SETEXTRAPOLATIONLIMIT(register context *ctx,int n,pointer *argv)
 {
@@ -668,6 +676,8 @@ pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"EUSTF-LOOKUP-VELOCITY",argv[0],(pointer (*)())EUSTF_LOOKUPVELOCITY);
   /* */
   defun(ctx,"EUSTF-TRANSFORM-LISTENER",argv[0],(pointer (*)())EUSTF_TRANSFORM_LISTENER);
+  defun(ctx,"EUSTF-TRANSFORM-LISTENER-DISPOSE",argv[0],(pointer (*)())EUSTF_TRANSFORM_LISTENER_DISPOSE);
+
   /* */
   defun(ctx,"EUSTF-SET-EXTRAPOLATION-LIMIT",argv[0],(pointer (*)())EUSTF_SETEXTRAPOLATIONLIMIT);
   defun(ctx,"EUSTF-GET-PARENT",argv[0],(pointer (*)())EUSTF_GETPARENT);
