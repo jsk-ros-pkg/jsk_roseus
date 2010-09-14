@@ -95,6 +95,9 @@ extern char* mainargv[32];
 using namespace ros;
 using namespace std;
 
+#define isInstalledCheck \
+  if( ! ros::ok() ) { error(E_USER,"You must call ros::init() before creating the first NodeHandle"); }
+
 class RoseusStaticData
 {
 public:
@@ -647,18 +650,21 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   ros::spin();
   return (NIL);
 }
 
 pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   ros::spinOnce();
   return (NIL);
 }
 
 pointer ROSEUS_TIME_NOW(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   pointer timevec;
   ros::Time t = ros::Time::now();
 
@@ -672,6 +678,7 @@ pointer ROSEUS_TIME_NOW(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_RATE(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   numunion nu;
   ckarg(1);
   float timeout=ckfltval(argv[0]);
@@ -681,6 +688,7 @@ pointer ROSEUS_RATE(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_SLEEP(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   s_rate->sleep();
   return (T);
 }
@@ -734,6 +742,7 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
  ************************************************************/
 pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   string topicname;
   pointer message, fncallback, args;
   int queuesize = 1;
@@ -746,11 +755,6 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   fncallback = argv[2];
   args=NIL;
   for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
-
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
-  }
 
   EuslispMessage msg(message);
 #if ROS_VERSION_MINIMUM(1,1,0)
@@ -843,6 +847,7 @@ pointer ROSEUS_GETTOPICSUBSCRIBER(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   string topicname;
   pointer message;
   int queuesize = 1;
@@ -853,11 +858,6 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   message = argv[1];
   if ( n > 2 ) {
     queuesize = ckintval(argv[2]);
-  }
-
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
   }
 
   if( s_mapAdvertised.find(topicname) != s_mapAdvertised.end() ) {
@@ -896,6 +896,7 @@ pointer ROSEUS_UNADVERTISE(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   string topicname;
   pointer emessage;
 
@@ -903,11 +904,6 @@ pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
   if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
   emessage = argv[1];
-
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
-  }
 
   bool bSuccess = false;
   map<string, boost::shared_ptr<Publisher> >::iterator it = s_mapAdvertised.find(topicname);
@@ -984,16 +980,12 @@ pointer ROSEUS_GETTOPICPUBLISHER(register context *ctx,int n,pointer *argv)
  ************************************************************/
 pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   string service;
 
   ckarg2(1,2);
   if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
   else error(E_NOSTRING);
-
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
-  }
 
   int32_t timeout = -1;
 
@@ -1007,6 +999,7 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   string service;
   pointer emessage;
   bool persist = false;
@@ -1015,11 +1008,6 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
   else error(E_NOSTRING);
   emessage = argv[1];
-
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
-  }
 
   EuslispMessage request(emessage);
   vpush(request._message);      // to avoid GC, it may not be required...
@@ -1047,6 +1035,7 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
 {
+  isInstalledCheck;
   string service;
   pointer emessage;
   pointer fncallback;
@@ -1056,11 +1045,6 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   else error(E_NOSTRING);
   emessage = argv[1];
   fncallback = argv[2];
-
-  if( !s_node ) {
-    ROS_ERROR("could not find node handle");
-    return (NIL);
-  }
 
   EuslispMessage message(emessage);
   vpush(message._message);      // to avoid GC in csend

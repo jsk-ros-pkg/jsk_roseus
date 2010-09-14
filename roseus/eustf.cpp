@@ -549,6 +549,7 @@ pointer EUSTF_LOOKUPVELOCITY(register context *ctx,int n,pointer *argv)
 /* */
 pointer EUSTF_TRANSFORM_LISTENER(register context *ctx,int n,pointer *argv)
 {
+  if( ! ros::ok() ) { error(E_USER,"You must call ros::init() before creating the first NodeHandle"); }
   numunion nu;
   ckarg(2);
   float cache_time = ckfltval(argv[0]);
@@ -591,6 +592,7 @@ pointer EUSTF_GETPARENT(register context *ctx,int n,pointer *argv)
 /* */
 pointer EUSTF_TRANSFORM_BROADCASTER(register context *ctx,int n,pointer *argv)
 {
+  if( ! ros::ok() ) { error(E_USER,"You must call ros::init() before creating the first NodeHandle"); }
   return((pointer)(new tf::TransformBroadcaster()));
 }
 
