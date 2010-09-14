@@ -89,9 +89,6 @@ extern "C" {
 #undef vector
 #undef string
 
-extern int mainargc;
-extern char* mainargv[32];
-
 using namespace ros;
 using namespace std;
 
