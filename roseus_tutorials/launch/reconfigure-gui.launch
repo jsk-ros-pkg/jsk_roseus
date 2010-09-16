@@ -1,0 +1,5 @@
+<launch>
+  <node name="dynamic_reconfigure" pkg="dynamic_reconfigure"
+	type="reconfigure_gui" />
+</launch>
+

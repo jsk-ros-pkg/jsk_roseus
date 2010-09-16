@@ -1,0 +1,14 @@
+<launch>
+  <node name="face_detector_mono" pkg="face_detector_mono"
+	type="facedetect" >
+    <param name="cascade_name"
+	   value="$(find opencv2)/opencv/share/opencv/haarcascades/haarcascade_frontalface_alt.xml"
+    />
+    <param name="nested_cascade_name"
+	   value="$(find opencv2)/opencv/share/opencv/haarcascades/haarcascade_eye_tree_eyeglasses.xml"
+    />
+    <param name="scale" value="1.3" />
+    <param name="display" value="true" />
+    <remap from="/yarp_to_ros_image/yarp_to_ros_image" to="image_raw" />
+  </node>
+</launch>

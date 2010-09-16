@@ -1,0 +1,11 @@
+<launch>
+  <node name="cmvision" pkg="cmvision" type="cmvision">
+    <remap from="image" to="image_raw" />
+  </node>
+  <rosparam param="/cmvision">
+   mean_shift_on: true
+   debug_on: true
+   spatial_radius_pix: 2.0
+   color_radius_pix: 40.0
+  </rosparam>
+</launch>

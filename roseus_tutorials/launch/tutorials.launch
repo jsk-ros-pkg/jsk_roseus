@@ -1,0 +1,19 @@
+<launch>
+
+  <include file="$(find roseus_tutorials)/launch/usb-camera.launch" />
+  <node name="usb_cam_tf_sender" pkg="tf" type="static_transform_publisher"
+	args="0 0 0 0 0 0 usb_cam base_link 100" />
+
+  <param name="/cmvision/color_file" value="$(find roseus_tutorials)/launch/color-skin.txt" />
+  <group ns="/usb_cam">
+    <include file="$(find roseus_tutorials)/launch/image-proc.launch" />
+    <include file="$(find roseus_tutorials)/launch/image-view.launch" />
+    <include file="$(find roseus_tutorials)/launch/saliency-track.launch" />
+    <include file="$(find roseus_tutorials)/launch/face-detector-mono.launch" />
+    <include file="$(find roseus_tutorials)/launch/checkerboard-pose.launch" />
+    <include file="$(find roseus_tutorials)/launch/cmvision.launch" />
+  </group>
+
+  <include file="$(find roseus_tutorials)/launch/aques-talk.launch" />
+  <include file="$(find roseus_tutorials)/launch/reconfigure-gui.launch" />
+</launch>

@@ -6,6 +6,4 @@
     <param name="channels" value="1" />
     <param name="command_args" value="-p aq_m3.phont" />
   </node>
-  <node pkg="roseus_tutorials" type="aques-talk.l"
-	name="aques_talk" />
 </launch>

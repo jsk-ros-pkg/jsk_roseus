@@ -1,0 +1,11 @@
+<launch>
+  <node name="checkerboard_pose" pkg="checkerboard_pose"
+	type="cb_detector.py" >
+    <remap from="image_stream" to="image_raw" />
+    <param name="corners_x" value="5" />
+    <param name="corners_y" value="7" />
+    <param name="spacing_x" value="0.03" />
+    <param name="spacing_y" value="0.03" />
+    <param name="publish_period" value="0.1" />
+  </node>
+</launch>
