@@ -89,6 +89,16 @@ extern "C" {
 #undef vector
 #undef string
 
+namespace ros {
+  namespace master {
+    std::string g_uri;
+    void init(const M_string& remappings);
+  }
+  namespace param {
+    void init(const M_string& remappings);
+  }
+}
+
 using namespace ros;
 using namespace std;
 
@@ -632,7 +642,13 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
     SIGINT handler by the following `signal'.
    */
   options |= ros::init_options::NoSigintHandler;
-  
+
+  if (!ros::master::g_uri.empty()) {
+    if ( ros::master::g_uri != getenv("ROS_MASTER_URI") ) {
+      ROS_WARN("ROS master uri will be changed!!, master uri %s, which is defineed previously is differ from current ROS_MASTE_URI(%s)", ros::master::g_uri.c_str(), getenv("ROS_MASTER_URI"));
+      ros::master::g_uri.clear();
+    }
+  }
   ros::init(cargc, cargv, name, options);
 
   s_node.reset(new ros::NodeHandle());
@@ -1275,15 +1291,6 @@ pointer ROSEUS_IS_INITIALIZED(register context *ctx,int n,pointer *argv)
 /************************************************************
  *   __roseus
  ************************************************************/
-
-namespace ros {
-  namespace master {
-    void init(const M_string& remappings);
-  }
-  namespace param {
-    void init(const M_string& remappings);
-  }
-}
 
 pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 {
