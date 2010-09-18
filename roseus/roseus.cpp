@@ -137,7 +137,6 @@ string getString(pointer message, pointer method) {
   context *ctx = current_ctx;
   pointer r, curclass;
   if ((pointer)findmethod(ctx,method,classof(message),&curclass)!=NIL) {
-    ROS_ERROR("method");
     r = csend(ctx,message,method,0);
   } else if ((pointer)findmethod(ctx,K_ROSEUS_GET,classof(message),&curclass) != NIL ) {
     r = csend(ctx,message,K_ROSEUS_GET,1,method);
