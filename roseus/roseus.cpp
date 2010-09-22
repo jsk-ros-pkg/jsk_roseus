@@ -1185,7 +1185,7 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
   numunion nu;
   string key;
 
-  ckarg(1);
+  ckarg2(1,2);
   if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
@@ -1210,8 +1210,12 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
   } else if (ros::param::get(key, param_list)){
       ret = XmlRpcToEusList(ctx, param_list);
   }else {
-    ROS_ERROR("unknown ros::param::get, key=%s", key.c_str());
-    return (NIL);
+    if ( n == 2 ) {
+      ret = copyobj(ctx,argv[1]);
+    } else {
+      ROS_ERROR("unknown ros::param::get, key=%s", key.c_str());
+      ret = NIL;
+    }
   }
   return (ret);
 }
@@ -1221,7 +1225,7 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
   numunion nu;
   string key;
 
-  ckarg(1);
+  ckarg2(1,2);
   if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
@@ -1245,8 +1249,12 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
   } else if (ros::param::getCached(key, param_list)){
       ret = XmlRpcToEusList(ctx, param_list);
   } else {
-    ROS_ERROR("unknown ros::param::getCached, key=%s", key.c_str());
-    return (NIL);
+    if ( n == 2 ) {
+      ret = copyobj(ctx,argv[1]);
+    } else {
+      ROS_ERROR("unknown ros::param::get, key=%s", key.c_str());
+      ret = NIL;
+    }
   }
   return (ret);
 }
