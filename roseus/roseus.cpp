@@ -656,6 +656,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   ros::init(cargc, cargv, name, options);
 
   s_node.reset(new ros::NodeHandle());
+  s_rate = new ros::Rate(50);
 
   s_bInstalled = true;
 
