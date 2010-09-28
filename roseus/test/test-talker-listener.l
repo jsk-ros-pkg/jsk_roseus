@@ -9,6 +9,7 @@
 
 ;;;
 ;;;
+(setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
 (init-unit-test)
 
 ;; method call
@@ -31,6 +32,7 @@
   (dotimes (i 100)
     (ros::spin-once)
     (ros::sleep)
+    (sys::gc)
     ))
 
 (run-all-tests)

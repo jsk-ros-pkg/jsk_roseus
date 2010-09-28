@@ -3,6 +3,8 @@
 ;;; euslisp version of ros_tutorials/rospy_tutorials/test_add_two_ints.py
 ;;;
 
+(setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
+
 (load "unittest.l")
 (ros::roseus-add-msgs "roslib")
 (ros::roseus-add-msgs "roseus")
@@ -32,6 +34,7 @@
       (assert (= (+ (send req :a) (send req :b)) (send res :sum))
               (format nil "integration failure (~A+~A)=~A(~A)/=~A(~A)"
                            a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum))))
+      (sys::gc)
       )))
 
 (ros::roseus "add_two_ints_client")
