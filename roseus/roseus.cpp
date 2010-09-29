@@ -128,6 +128,7 @@ static bool s_bInstalled = false;
 #define s_mapServiced s_staticdata.mapServiced
 
 pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOOUT,QSVNVERSION;
+extern pointer LAMCLOSURE;
 
 /***********************************************************
  *   Message wrapper
@@ -288,27 +289,26 @@ public:
   EuslispMessage _msg;
 
   EuslispSubscriptionCallbackHelper(pointer scb, pointer args,pointer tmpl) :  _args(args), _msg(tmpl) {
-    extern pointer LAMCLOSURE;
     context *ctx = current_ctx;
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
-    if (piscode(scb)) {
+    if (piscode(scb)) { // compiled code
       _scb=scb;
-    } else if ((ccar(scb))==LAMCLOSURE) {
-      if ( ccar(ccdr(scb)) != NIL ) {
+    } else if ((ccar(scb))==LAMCLOSURE) { // uncompiled code
+      if ( ccar(ccdr(scb)) != NIL ) { // function
         _scb=ccar(ccdr(scb));
-      } else { // defvar lambda function
-        _scb=gensym(ctx);
-        pointer a = DEFUN(ctx,(cons(ctx,_scb,(ccdr(ccdr(ccdr(ccdr(scb))))))));
-        defvar(ctx,(char *)(get_string(_scb)),a,Spevalof(PACKAGE));
+      } else { // lambda function
+        _scb=scb;
       }
     } else {
       ROS_ERROR("subcriptoin callback function install error");
     }
     // avoid gc
-    deflocal(ctx,(char *)get_string(gensym(ctx)),_args,Spevalof(PACKAGE));
+    pointer p=gensym(ctx);
+    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
   }
   ~EuslispSubscriptionCallbackHelper() {
+      ROS_ERROR("subcriptoin gc");
   }
   virtual ros::VoidConstPtr deserialize(const ros::SubscriptionCallbackHelperDeserializeParams& param) {
 #if DEBUG
@@ -327,26 +327,20 @@ public:
   virtual void call(ros::SubscriptionCallbackHelperCallParams& param) {
     EuslispMessage* eus_msg = (EuslispMessage *)((void *)param.event.getConstMessage().get());
     context *ctx = current_ctx;
-    pointer func=_scb,argp=_args;
+    pointer argp=_args;
     int argc=0;
     //ROS_WARN("func");prinx(ctx,_scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,argp,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     vpush(eus_msg->_message);    // to avoid GC
-    if ( issymbol(_scb) ) {
-      func = FUNCTION_CLOSURE(ctx,(cons(ctx,_scb,NIL)));
-    } else if ( piscode(func) ) {
-      //
-    } else {
-      ROS_ERROR("cant't find callback function");
+    if ( ! ( issymbol(_scb) || piscode(_scb) || ccar(_scb)==LAMCLOSURE ) ) {
+      ROS_ERROR("%s : can't find callback function", __PRETTY_FUNCTION__);
     }
-    vpush(func);
     
     while(argp!=NIL){ ckpush(ccar(argp)); argp=ccdr(argp); argc++;}
     vpush((pointer)(eus_msg->_message));argc++;
     
-    ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),func,(pointer)(ctx->vsp-argc),NULL,argc);
+    ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_scb,(pointer)(ctx->vsp-argc),NULL,argc);
     while(argc-->0)vpop();
-    vpop();                     // remove function
     vpop();    // remove eus_msg._message
   }
   virtual const std::type_info& getTypeInfo() {
@@ -364,7 +358,6 @@ public:
   string md5, datatype, defnition;
 
   EuslispSubscriptionMessageHelper(pointer scb, pointer args,pointer tmpl) :  _args(args), _msg(tmpl) {
-    extern pointer LAMCLOSURE;
     context *ctx = current_ctx;
 
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
@@ -382,8 +375,6 @@ public:
     } else {
       ROS_ERROR("subcriptoin callback function install error");
     }
-    // avoid gc
-    deflocal(ctx,(char *)get_string(gensym(ctx)),_args,Spevalof(PACKAGE));
     md5 = _msg.__getMD5Sum();
     datatype = _msg.__getDataType();
     definition = _msg.__getMessageDefinition();
@@ -409,7 +400,7 @@ public:
     } else if ( piscode(func) ) {
       //
     } else {
-      ROS_ERROR("cant't find callback function");
+      ROS_ERROR("can't find callback function");
     }
 
     ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),func,(pointer)(ctx->vsp-argc),NULL,argc);
@@ -424,29 +415,31 @@ public:
 #if ROS_VERSION_MINIMUM(1,1,0)
 class EuslispServiceCallbackHelper : public ros::ServiceCallbackHelper {
 public:
-  pointer _scb;
+  pointer _scb, _args;
   EuslispMessage _req, _res;
   string md5, datatype, requestDataType, responseDataType,
     requestMessageDefinition, responseMessageDefinition;
 
-  EuslispServiceCallbackHelper(pointer scb, string smd5, string sdatatype, pointer reqclass, pointer resclass) : _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype) {
-    extern pointer LAMCLOSURE;
+  EuslispServiceCallbackHelper(pointer scb, pointer args, string smd5, string sdatatype, pointer reqclass, pointer resclass) : _args(args), _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype) {
     context *ctx = current_ctx;
-    if ((ccar(scb))==LAMCLOSURE) {
-      if ( ccar(ccdr(scb)) != NIL ) {
+    //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
+    //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
+
+    if (piscode(scb)) { // compiled code
+      _scb=scb;
+    } else if ((ccar(scb))==LAMCLOSURE) {
+      if ( ccar(ccdr(scb)) != NIL ) { // function
         _scb=ccar(ccdr(scb));
-      } else { // defvar lambda function
-        _scb=gensym(ctx);
-        vpush(_scb);
-        vpush(scb);
-        pointer a = DEFUN(ctx,(cons(ctx,_scb,(ccdr(ccdr(ccdr(ccdr(scb))))))));
-        defvar(ctx,(char *)(get_string(_scb)),a,Spevalof(PACKAGE));
-        vpop();
-        vpop();
+      } else { // lambda function
+        _scb=scb;
       }
     } else  {
       ROS_ERROR("service callback function install error");
     }
+    // avoid gc
+    pointer p=gensym(ctx);
+    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+
     requestDataType = _req.__getDataType();
     responseDataType = _res.__getDataType();
     requestMessageDefinition = _req.__getMessageDefinition();
@@ -466,28 +459,34 @@ public:
 
   virtual bool call(ros::ServiceCallbackHelperCallParams& params) {
     context *ctx = current_ctx;
-    pointer func = _scb, r;
+    pointer r, argp=_args;
+    int argc=0;
+
     vpush(_res._message);       // _res._message
     vpush(_req._message);       // _res._message, _req._message
-    if ( issymbol(_scb) ) {
-      func = FUNCTION_CLOSURE(ctx,(cons(ctx,_scb,NIL)));
-    } else {
-      ROS_ERROR("cant't find callback function");
+
+    if ( ! ( issymbol(_scb) || piscode(_scb) || ccar(_scb)==LAMCLOSURE ) ) {
+      ROS_ERROR("%s : can't find callback function", __PRETTY_FUNCTION__);
     }
-    vpush(func);                // _res._message, _req._message, func
     // Deserialization
     EuslispMessage eus_msg(_req);
     eus_msg.__serialized_length = params.request.num_bytes;
-    vpush(eus_msg._message);    // _res._message, _req._message, func, eus_msg._message
+    vpush(eus_msg._message);    // _res._message, _req._message, eus_msg._message
     eus_msg.deserialize(params.request.message_start);
+
+    while(argp!=NIL){ ckpush(ccar(argp)); argp=ccdr(argp); argc++;}
+    vpush((pointer) eus_msg._message);argc++;
+
     r = ufuncall(ctx, (ctx->callfp?ctx->callfp->form:NIL),
-                 func, (pointer)(ctx->vsp-1),
-                 NULL, 1);
-    vpush(r); // _res._message, _req._message, func, eus_msg._message, r, eus_res._message
+                 _scb, (pointer)(ctx->vsp-argc),
+                 NULL, argc);
+    vpush(r); // _res._message, _req._message, eus_msg._message, r, eus_res._message
+    while(argc-->0)vpop();
+
     // Serializaion
     EuslispMessage eus_res(_res);
     eus_res.replaceContents(r);
-    vpush(eus_res._message);    // _res._message, _req._message, func, eus_msg._message, r, eus_res._message
+    vpush(eus_res._message);    // _res._message, _req._message, eus_msg._message, r, eus_res._message
     
     uint32_t serialized_length = eus_res.serializationLength();
     params.response.num_bytes = serialized_length + 5; // add 5 bytes of message header
@@ -511,10 +510,9 @@ public:
       ROS_INFO("%X", tmp[i]);
     }
 #endif
-    vpop(); // _res._message, _req._message, func, eus_msg._message, r, eus_res._message
-    vpop(); // _res._message, _req._message, func, eus_msg._message, r
-    vpop(); // _res._message, _req._message, func, eus_msg._message
-    vpop(); // _res._message, _req._message, func,
+    vpop(); // _res._message, _req._message, eus_msg._message, r, eus_res._message
+    vpop(); // _res._message, _req._message, eus_msg._message, r
+    vpop(); // _res._message, _req._message, eus_msg._message
     vpop(); // _res._message, _req._message,
     vpop(); // _res._message
     return(T);
@@ -528,7 +526,6 @@ public:
   string md5, datatype, requestDataType, responseDataType, requestMessageDefinition, responseMessageDefinition;
 
   EuslispServiceMessageHelper(pointer scb, string smd5, string sdatatype, pointer reqclass, pointer resclass) : _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype) {
-    extern pointer LAMCLOSURE;
     context *ctx = current_ctx;
     if ((ccar(scb))==LAMCLOSURE) {
       if ( ccar(ccdr(scb)) != NIL ) {
@@ -1056,13 +1053,14 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   isInstalledCheck;
   string service;
   pointer emessage;
-  pointer fncallback;
+  pointer fncallback, args;
 
-  ckarg(3);
   if (isstring(argv[0])) service.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
   emessage = argv[1];
   fncallback = argv[2];
+  args=NIL;
+  for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
 
   EuslispMessage message(emessage);
   vpush(message._message);      // to avoid GC in csend
@@ -1072,7 +1070,7 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
 #if ROS_VERSION_MINIMUM(1,1,0)
   boost::shared_ptr<EuslispServiceCallbackHelper> *callback =
     (new boost::shared_ptr<EuslispServiceCallbackHelper>
-     (new EuslispServiceCallbackHelper(fncallback, message.__getMD5Sum(),
+     (new EuslispServiceCallbackHelper(fncallback, args, message.__getMD5Sum(),
                                        message.__getDataType(), request, response)));
   AdvertiseServiceOptions aso;
   aso.service.assign(service);
