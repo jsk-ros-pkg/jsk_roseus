@@ -22,6 +22,7 @@ ARG_STR=`cat <<EOF
   (load "roseus.l")
   (load "eustf.l")
   (load "actionlib.l")
+  (load "roseus-utils.l")
   (if $FILE (load $FILE))
   )
 EOF
