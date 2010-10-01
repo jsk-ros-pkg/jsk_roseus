@@ -13,7 +13,7 @@
          c (vd 1.0))
     (setq c (instance camera :init b :width pwidth :height pheight
                       :viewdistance vd :view-up #f(0 -1 0)))
-    (send (c . viewing) :screen (/ 1.0 fx) (/ 1.0 fy))
+    (send (c . viewing) :screen (/ (* vd pwidth 0.5) fx) (/ (* vd pheight 0.5) fy))
     (send c :newprojection
           (make-matrix 4 4
                        (list (float-vector fx  0 cx tx)
