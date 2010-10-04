@@ -12,14 +12,14 @@
          (tx (elt p 3))(ty (elt p 7))
          c (vd 1.0))
     (setq c (instance camera :init b :width pwidth :height pheight
-                      :viewdistance vd :view-up #f(0 -1 0)))
+                      :viewdistance vd))
     (send (c . viewing) :screen (/ (* vd pwidth 0.5) fx) (/ (* vd pheight 0.5) fy))
     (send c :newprojection
           (make-matrix 4 4
                        (list (float-vector fx  0 cx tx)
                              (float-vector  0 fy cy ty)
                              (float-vector  0  0  0  0)
-                             (float-vector  0  0 -1  0))))
+                             (float-vector  0  0  1  0))))
     c))
 
 (defun make-camera-from-ros-camera-info (msg)
