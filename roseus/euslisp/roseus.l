@@ -58,7 +58,7 @@
   (:sec-nsec () sec-nsec)
   (:now () (setq sec-nsec (ros::time-now-raw)) self)
   (:to-sec () (+ (send self :sec) (/ (send self :nsec) 1000000000.0)))
-  (:to-nsec () (+ (* (send self :sec) 1000000000.0) (send self :nsec)))
+  (:to-nsec () (+ (* (send self :sec) 1000000000) (send self :nsec)))
   (:from-sec (sec)
              (send self :sec (floor sec))
              (send self :nsec (floor (* 1000000000 (- sec (floor sec)))))
@@ -66,7 +66,8 @@
   (:from-nsec (nsec)
               ;; divide by 1000 to avoid  big div ?
               (send self :sec  (/ (/ (floor nsec) 1000) 1000000))
-              (send self :nsec (* 1000 (mod (/ (floor nsec) 1000) 1000000)))
+	      ;; avoid mod bigint
+              (send self :nsec (- (floor nsec) (* (elt sec-nsec 0) 1000000000)))
               self)
   (:prin1 (&optional (strm t) &rest msgs)
 	  (let* ((ns (+ (* 1000000000 (send self :sec)) (send self :nsec)))
