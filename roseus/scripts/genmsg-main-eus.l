@@ -1,4 +1,5 @@
 (setq lisp::*error-handler* #'(lambda (&rest args) (exit 1)))
+(make-package "ROS")
 
 (defun generate-msg-datatype-name-list (strm)
   (let (msgs consts def line pos type var init-elem vec-size)
@@ -582,5 +583,32 @@
      (generate-provide strm pkg name fname)
      (format strm "~%~%")
      )))
+
+
+(defun genmanifest-eus (target-file depend-packages)
+  (let ((strm (make-string-input-stream depend-packages)) pkg pkgs)
+    (while (setq pkg (read strm nil)) (push (format nil "~A" pkg) pkgs))
+    (setq pkgs (nreverse pkgs))
+    (with-open-file
+     (f target-file :direction :output)
+     (pprint '(defun ros::load-ros-package (pkg)
+                (unless (find-package (string-upcase pkg))
+                  (make-package (string-upcase pkg)))
+                (when (probe-file (format nil "~A/msg/eus"
+                                          (ros::rospack-find pkg)))
+                  (ros::roseus-add-msgs pkg))
+                (when (probe-file (format nil "~A/srv/eus"
+                                          (ros::rospack-find pkg)))
+                  (ros::roseus-add-srvs pkg))
+                (when (probe-file (format nil "~A/src/euslisp/init.l"
+                                          (ros::rospack-find pkg)))
+                  (load (format nil "~A/src/euslisp/init.l"
+                                (ros::rospack-find pkg)))))
+             f)
+     (format f "~%")
+     (dolist (pkg pkgs)
+       (pprint `(ros::load-ros-package ,pkg) f)))
+    ))
+
 
 
