@@ -171,7 +171,7 @@
   `(progn
      (if (boundp ',sym)
          (warn ";; re-definition ~A" ',sym))
-     (setq ,sym (or (ros::get-param ,param-name) ,default-value))
+     (setq ,sym (ros::get-param ,param-name ,default-value))
      ',sym))
 
 (defmacro defrosparams (&rest param-specs)
