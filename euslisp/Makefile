@@ -1,11 +1,15 @@
+all-target: ros-euslisp-all
 include $(shell rospack find mk)/cmake.mk
 
 EUSC_PATCH=eus.c_CUSTUM_EUSDIR.patch
 
+include jskeus/Makefile
 export EUSDIR=$(shell pwd)/jskeus/eus
 
-all: $(EUSC_PATCH)
-	## set default EUSDIR in eus.c
+ros-euslisp-all: $(EUSC_PATCH)
+	## set default environment variables to  eus.c
+	## EUSDIR=$(EUSDIR)
+	## ARCHDIR=$(ARCHDIR)
 	-patch -r - --forward -p0 -d jskeus/eus < $(EUSC_PATCH)
 	## compile jskeus
 	(cd jskeus; make)
