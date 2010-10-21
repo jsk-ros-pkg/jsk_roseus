@@ -2,11 +2,10 @@
 (make-package "ROS")
 
 (defun generate-msg-datatype-name-list (strm)
-  (let (msgs consts def line pos type var init-elem vec-size)
+  (let (msgs consts line pos type var init-elem vec-size)
     (while (not (eq :eof (setq line (read-line strm nil :eof))))
       ;; remove comments
       (if (string= line "---" :start1 0 :end1 3) (return))
-      (push line def)
       (setq pos (position #\# line))
       (if pos (setq line (subseq line 0 pos)))
       ;; replcae tab to whitespace
@@ -41,7 +40,7 @@
               (setq var (string-trim " " (subseq var 0 pos)))
               (push (list type var init-elem vec-size) consts))
 	  (push (list type var vec-size) msgs))))
-    (list (setq msgs (nreverse msgs)) (setq consts (nreverse consts)) (setq def (nreverse def)))))
+    (list (setq msgs (nreverse msgs)) (setq consts (nreverse consts)))))
 
 (defun generate-msg-output-file-name (fname pkg name dir)
   (let (l oname)
@@ -440,11 +439,12 @@
             (t   (setq str2 (format nil "~A~C" str2 (elt str i))))))
     str2))
 
-(defun generate-msg-definition (strm pkg name def)
-  (let ()
+(defun generate-msg-definition (strm pkg name fname)
+  (let (p def)
     (format strm "(setf (get ~A::~A :definition-)~%      \"" pkg name)
-    (dolist (l def)
-      (format strm "~A~%" (escape-double-quote l)))
+    (setq p (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --cat ~A" fname)))
+    (while (setq def (read-line p nil nil))
+      (format strm "~A~%" (escape-double-quote def)))
     (format strm "\")~%")
     (format strm "~%")))
 
@@ -509,7 +509,7 @@
     (multiple-value-setq (pkg name) (genfile-header fname))
     (with-open-file
      (strm fname :direction :input)
-     (multiple-value-setq (msgs consts def) (generate-msg-datatype-name-list strm)))
+     (multiple-value-setq (msgs consts) (generate-msg-datatype-name-list strm)))
     (setq oname (generate-msg-output-file-name fname pkg name "msg"))
     (warning-message 6 ";; writing to ~A~%" oname)
 
@@ -525,7 +525,7 @@
      ;; md5sum/type/definition
      (generate-msg-md5sum strm pkg name fname)
      (generate-msg-datatype strm pkg name)
-     (generate-msg-definition strm pkg name def)
+     (generate-msg-definition strm pkg name fname)
 
      (generate-provide strm pkg name fname)
      (format strm "~%~%")
@@ -548,14 +548,14 @@
     ))
 
 (defun gensrv-eus (fname)
-  (let (req-msgs res-msgs consts doc pkg name req-name res-name req-def res-def dummy oname)
+  (let (req-msgs res-msgs consts doc pkg name req-name res-name dummy oname)
     (multiple-value-setq (pkg name) (genfile-header fname))
     (setq req-name (format nil "~ARequest"  name)
           res-name (format nil "~AResponse" name))
     (with-open-file
      (strm fname :direction :input)
-     (multiple-value-setq (req-msgs consts req-def) (generate-msg-datatype-name-list strm))
-     (multiple-value-setq (res-msgs dummy res-def) (generate-msg-datatype-name-list strm)))
+     (multiple-value-setq (req-msgs consts) (generate-msg-datatype-name-list strm))
+     (multiple-value-setq (res-msgs dummy) (generate-msg-datatype-name-list strm)))
 
     (setq oname (generate-msg-output-file-name fname pkg name "srv"))
     (warning-message 6 ";; writing to ~A~%" oname)
@@ -575,10 +575,10 @@
      (generate-srv-type strm pkg name req-name res-name)
      (generate-msg-md5sum strm pkg req-name fname)
      (generate-msg-datatype   strm pkg req-name)
-     (generate-msg-definition strm pkg req-name req-def)
+     (generate-msg-definition strm pkg req-name fname)
      (generate-msg-md5sum strm pkg res-name fname)
      (generate-msg-datatype   strm pkg res-name)
-     (generate-msg-definition strm pkg res-name res-def)
+     (generate-msg-definition strm pkg res-name fname)
 
      (generate-provide strm pkg name fname)
      (format strm "~%~%")
