@@ -9,6 +9,7 @@
   <depend package="euslisp"/>
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>
+  <depend package="visualization_msgs"/>
   <depend package="bullet"/>
   <depend package="tf"/>
   <export>
