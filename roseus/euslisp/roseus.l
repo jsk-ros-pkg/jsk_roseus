@@ -133,7 +133,8 @@
 		  ;;(unix::unlink (format nil "~A.h" fname))
 		  ;;(unix::unlink (format nil "~A.o" fname))
 		  (unix::chdir pwd)
-                  (load (format nil "~A_~A.so" pkg fname))
+                  (load (format nil "~A_~A.so" pkg fname)
+			:entry (format nil "___~A" fname))
                   )))
 	    )))))
 
