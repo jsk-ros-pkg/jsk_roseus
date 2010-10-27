@@ -42,12 +42,18 @@
 	  (push (list type var vec-size) msgs))))
     (list (setq msgs (nreverse msgs)) (setq consts (nreverse consts)))))
 
+(defun ros::ros-home-dir ()
+  (let ((ros-home (unix::getenv "ROS_HOME")))
+    (unless ros-home (setq ros-home (format nil "~A/.ros" (unix::getenv "HOME"))))
+    (unless (probe-file (format nil "~A/roseus" ros-home))
+      (unix::system (format nil "mkdir ~A/roseus" ros-home)))
+    ros-home))
 (defun generate-msg-output-file-name (fname pkg name dir)
   (let (l oname)
     (setq l (read-line (piped-fork (format nil "rospack find ~A" pkg)) nil))
     (unless l
       (warning-message 1 ";; ERROR could not find ~A package~%" pkg)(exit 1))
-    (setq oname (format nil "~A/~A/eus/~A/" l dir pkg))
+    (setq oname (format nil "~A/roseus/~A/~A/" (ros::ros-home-dir) pkg dir))
     (unless (lisp::directory-p oname)
       (warning-message 6 ";; mkdir ~A~%" oname)
       (unix::system (format nil "mkdir -p ~A" oname)))
@@ -594,11 +600,9 @@
      (pprint '(defun ros::load-ros-package (pkg)
                 (unless (find-package (string-upcase pkg))
                   (make-package (string-upcase pkg)))
-                (when (probe-file (format nil "~A/msg/eus"
-                                          (ros::rospack-find pkg)))
+                (when (probe-file (format nil "~A/~A/msg" (ros::ros-home-dir) pkg))
                   (ros::roseus-add-msgs pkg))
-                (when (probe-file (format nil "~A/srv/eus"
-                                          (ros::rospack-find pkg)))
+                (when (probe-file (format nil "~A/~A/srv" (ros::ros-home-dir) pkg))
                   (ros::roseus-add-srvs pkg))
                 (when (probe-file (format nil "~A/src/euslisp/init.l"
                                           (ros::rospack-find pkg)))

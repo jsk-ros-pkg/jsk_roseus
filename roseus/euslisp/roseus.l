@@ -103,7 +103,7 @@
     (pushnew (format nil "~A/roseus/" ros-home) *load-path* :test #'equal)
     ros-home))
 (defun ros::roseus-add-files (pkg type)
-  (let ((dir (format nil "~A/~A/eus/~A/" (ros::rospack-find pkg) type pkg)))
+  (let ((dir (format nil "~A/roseus/~A/~A/" (ros::ros-home-dir) pkg type)))
     (unless (probe-file dir)
       (warning-message
        1 (format nil ";; can not find ~A directory for [~A] packages~%" dir pkg))
@@ -116,21 +116,23 @@
 	(let ((dirfile (concatenate string dir file))
               (modname (intern (string-upcase (format nil "~A/~A" pkg (pathname-name file))) *keyword-package*)))
 	  (require modname dirfile)
-          (if ros::*compile-message*
-              (let* ((fname (pathname-name dirfile))
-                     (old-module (find (format nil "~A_~A" pkg fname)
-				       *loaded-modules*
-                                       :key #'lisp::load-module-file-name
-                                       :test #'equal)))
-                (if old-module (sys::unbinload old-module))
-                (let ((ros-home (ros::ros-home-dir)))
-                  (comp::compile-file-if-src-newer-so dirfile
-						      :out-prefix (format nil "~A_" pkg)
-						      :output-dir (format nil "~A/roseus/" ros-home)
-						      :clear-files t)
-                  (load (format nil "~A_~A.so" pkg fname)
-			:entry (format nil "___~A" fname))
-                  )))
+          (when ros::*compile-message*
+	    (in-package "ROS")
+	    (let* ((fname (pathname-name dirfile))
+		   (old-module (find (format nil "~A_~A" pkg fname)
+				     *loaded-modules*
+				     :key #'lisp::load-module-file-name
+				     :test #'equal)))
+	      (if old-module (sys::unbinload old-module))
+	      (let ((ros-home (ros::ros-home-dir)))
+		(comp::compile-file-if-src-newer-so dirfile
+						    :out-prefix (format nil "~A_" pkg)
+						    :output-dir (format nil "~A/roseus/" ros-home)
+						    :clear-files t)
+		(load (format nil "~A_~A.so" pkg fname)
+		      :entry (format nil "___~A" fname))
+		))
+	    (in-package "USER"))
 	    )))))
 
 (defun ros::roseus-add-msgs (pkg) (ros::roseus-add-files pkg "msg"))
