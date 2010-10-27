@@ -117,22 +117,17 @@
               (modname (intern (string-upcase (format nil "~A/~A" pkg (pathname-name file))) *keyword-package*)))
 	  (require modname dirfile)
           (if ros::*compile-message*
-              (let* ((fname (pathname-name file))
-                     (old-module (find fname *loaded-modules*
+              (let* ((fname (pathname-name dirfile))
+                     (old-module (find (format nil "~A_~A" pkg fname)
+				       *loaded-modules*
                                        :key #'lisp::load-module-file-name
                                        :test #'equal)))
                 (if old-module (sys::unbinload old-module))
-                (let ((pwd (unix::pwd))
-		      (ros-home (ros::ros-home-dir)))
-                  (unix::chdir (string-right-trim "/" dir))
-                  (comp:compile-file-if-src-newer file)
-		  (unix::link (format nil "~A.so" fname)
-			      (format nil "~A/roseus/~A_~A.so" ros-home pkg fname))
-		  (unix::unlink (format nil "~A.so" fname))
-		  ;;(unix::unlink (format nil "~A.c" fname))
-		  ;;(unix::unlink (format nil "~A.h" fname))
-		  ;;(unix::unlink (format nil "~A.o" fname))
-		  (unix::chdir pwd)
+                (let ((ros-home (ros::ros-home-dir)))
+                  (comp::compile-file-if-src-newer-so dirfile
+						      :out-prefix (format nil "~A_" pkg)
+						      :output-dir (format nil "~A/roseus/" ros-home)
+						      :clear-files t)
                   (load (format nil "~A_~A.so" pkg fname)
 			:entry (format nil "___~A" fname))
                   )))
@@ -263,6 +258,41 @@ always the rank of list is 2"
 (setq sys::*exit-hook* 'ros::exit)
 
 (provide :roseus "roseus.l")
+
+(in-package "COMPILER")
+;; for making compiled message
+(defun compile-file-if-src-newer-so (srcfile
+				     &key (out-prefix) (output-dir "./") (clear-files) &rest args)
+  (let ((src (merge-pathnames srcfile ".l"))
+	(obj (merge-pathnames "./" (pathname srcfile)))
+	obj-dst ret)
+
+    (let ((sname (pathname srcfile)))
+      (if out-prefix (send sname :name (concatenate string out-prefix (send sname :name))))
+      (setq obj-dst (merge-pathnames output-dir sname))
+      (send obj-dst :type "so"))
+
+    (send obj :type "o")
+    (when (or (null (probe-file obj-dst)) (file-newer src obj-dst))
+      (apply #'compile-file srcfile :o obj args)
+      (setq ret srcfile)
+
+      (send obj :type "so")
+      (if (not (equal obj obj-dst))
+	  (unix::link (send obj :namestring)
+		      (send obj-dst :namestring)))
+      (when clear-files
+	(send src :type "c")
+	(unix::unlink (send src :namestring))
+	(send src :type "h")
+	(unix::unlink (send src :namestring))
+	(send obj :type "o")
+	(unix::unlink (send obj :namestring))
+	(send obj :type "so")
+	(unix::unlink (send obj :namestring))
+	))
+    ret
+    ))
 
 ;; obsoleted functions
 (in-package "USER")
