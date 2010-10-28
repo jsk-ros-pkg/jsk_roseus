@@ -252,8 +252,8 @@ always the rank of list is 2"
      ,@forms))
 
 (defun ros::load-ros-manifest (pkg)
-  (let ((manifest (format nil "~A/src/euslisp/_manifest.l"
-                          (ros::rospack-find pkg))))
+  (let ((manifest (format nil "~A/roseus/~A/_manifest.l"
+			  (ros::ros-home-dir) pkg)))
     (when (probe-file manifest)
       (load-org-for-ros manifest))))
 
@@ -280,9 +280,10 @@ always the rank of list is 2"
       (setq ret srcfile)
 
       (send obj :type "so")
-      (if (not (equal obj obj-dst))
-	  (unix::link (send obj :namestring)
-		      (send obj-dst :namestring)))
+      (when (not (equal obj obj-dst))
+	(unix::unlink (send obj-dst :namestring))
+	(unix::link (send obj :namestring)
+		    (send obj-dst :namestring)))
       (when clear-files
 	(send src :type "c")
 	(unix::unlink (send src :namestring))
@@ -290,8 +291,9 @@ always the rank of list is 2"
 	(unix::unlink (send src :namestring))
 	(send obj :type "o")
 	(unix::unlink (send obj :namestring))
-	(send obj :type "so")
-	(unix::unlink (send obj :namestring))
+	(when (not (equal obj obj-dst))
+	  (send obj :type "so")
+	  (unix::unlink (send obj :namestring)))
 	))
     ret
     ))
