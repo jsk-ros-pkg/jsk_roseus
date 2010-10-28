@@ -600,9 +600,9 @@
      (pprint '(defun ros::load-ros-package (pkg)
                 (unless (find-package (string-upcase pkg))
                   (make-package (string-upcase pkg)))
-                (when (probe-file (format nil "~A/~A/msg" (ros::ros-home-dir) pkg))
+                (when (probe-file (format nil "~A/roseus/~A/msg" (ros::ros-home-dir) pkg))
                   (ros::roseus-add-msgs pkg))
-                (when (probe-file (format nil "~A/~A/srv" (ros::ros-home-dir) pkg))
+                (when (probe-file (format nil "~A/roseus/~A/srv" (ros::ros-home-dir) pkg))
                   (ros::roseus-add-srvs pkg))
                 (when (probe-file (format nil "~A/src/euslisp/init.l"
                                           (ros::rospack-find pkg)))
