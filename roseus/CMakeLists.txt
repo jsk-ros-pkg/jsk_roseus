@@ -29,10 +29,16 @@ set(COMPILE_FLAGS "-O2 -Wno-write-strings -Wno-comment")
 add_definitions(-Di486 -DLinux -D_REENTRANT -DVERSION='\"${8.26}\"' -DTHREADED -DPTHREAD -DX11R6_1)
 add_definitions(-DSVNVERSION='\"r${SVNVERSION}\"')
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
-    ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
-add_definitions(-Dx86_64)
+   ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
+ add_definitions(-Dx86_64)
 else()
-add_definitions(-Di486)
+ add_definitions(-Di486)
+# add_"-dynamiclib "
+ set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -flat_namespace -undefined suppress")
+endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+ add_definitions(-Dx86_64)
 endif()
 
 rosbuild_add_compile_flags(roseus ${COMPILE_FLAGS})
