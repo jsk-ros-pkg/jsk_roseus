@@ -31,18 +31,22 @@ genmanifest_eus()
 macro(genmsg_eus)
   rosbuild_get_msgs(_msglist)
   set(_autogen "")
+  set(roshomedir $ENV{ROS_HOME})
+  if("" STREQUAL "${roshomedir}")
+     set(roshomedir "$ENV{HOME}/.ros")
+  endif("" STREQUAL "${roshomedir}")
   foreach(_msg ${_msglist})
     # Construct the path to the .msg file
     set(_input ${PROJECT_SOURCE_DIR}/msg/${_msg})
     rosbuild_gendeps(${PROJECT_NAME} ${_msg})
     rosbuild_find_ros_package(roseus)
     set(genmsg_eus_exe ${roseus_PACKAGE_PATH}/scripts/genmsg_eus)
-    
-    set(_output_eus ${PROJECT_SOURCE_DIR}/msg/eus/${PROJECT_NAME}/${_msg})
+
+    set(_output_eus ${roshomedir}/roseus/${PROJECT_NAME}/msg/${_msg})
     string(REPLACE ".msg" ".l" _output_eus ${_output_eus})
 
     # Add the rule to build the .h the .msg
-    add_custom_command(OUTPUT ${_output_eus} ${PROJECT_SOURCE_DIR}/msg/eus
+    add_custom_command(OUTPUT ${_output_eus} ${roshomedir}/roseus/${PROJECT_NAME}/msg
                        COMMAND ${genmsg_eus_exe} ${_input}
                        DEPENDS ${_input} ${genmsg_eus_exe} ${gendeps_exe} ${${PROJECT_NAME}_${_msg}_GENDEPS} ${ROS_MANIFEST_LIST})
     list(APPEND _autogen ${_output_eus})
@@ -62,6 +66,10 @@ genmsg_eus()
 macro(gensrv_eus)
   rosbuild_get_srvs(_srvlist)
   set(_autogen "")
+  set(roshomedir $ENV{ROS_HOME})
+  if("" STREQUAL "${roshomedir}")
+     set(roshomedir "$ENV{HOME}/.ros")
+  endif("" STREQUAL "${roshomedir}")
   foreach(_srv ${_srvlist})
     # Construct the path to the .srv file
     set(_input ${PROJECT_SOURCE_DIR}/srv/${_srv})
@@ -70,11 +78,11 @@ macro(gensrv_eus)
     rosbuild_find_ros_package(roseus)
     set(gensrv_eus_exe ${roseus_PACKAGE_PATH}/scripts/gensrv_eus)
 
-    set(_output_eus ${PROJECT_SOURCE_DIR}/srv/eus/${PROJECT_NAME}/${_srv})
+    set(_output_eus ${roshomedir}/roseus/${PROJECT_NAME}/srv/${_srv})
     string(REPLACE ".srv" ".l" _output_eus ${_output_eus})
 
     # Add the rule to build the .h from the .srv
-    add_custom_command(OUTPUT ${_output_eus} ${PROJECT_SOURCE_DIR}/srv/eus
+    add_custom_command(OUTPUT ${_output_eus} ${roshomedir}/roseus/${PROJECT_NAME}/srv
                        COMMAND ${gensrv_eus_exe} ${_input}
                        DEPENDS ${_input} ${gensrv_eus_exe} ${gendeps_exe} ${${PROJECT_NAME}_${_srv}_GENDEPS} ${ROS_MANIFEST_LIST})
     list(APPEND _autogen ${_output_eus})
