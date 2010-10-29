@@ -31,6 +31,12 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     if [ -e $pkg/srv ] ; then echo "rm $pkg/srv/eus"; rm -fr $pkg/srv/eus; fi
 done
 
+if [ "" != "$ROS_HOME" ] ; then
+    roshomedir="$ROS_HOME";
+else
+    roshomedir="$HOME/.ros";
+fi
+
 # generate msg file
 for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     pkg=${pkg_list[$pkg_i]}
@@ -49,6 +55,11 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
 	    check-error
 	done
     fi
+    if [ ! -e $roshomedir/roseus/$pkg ] ; then
+	mkdir -p $roshomedir/roseus/$pkg;
+    fi
+    depends=`rospack depends $pkg`
+    `rospack find roseus`/scripts/genmanifest_eus "$roshomedir/roseus/$pkg/_manifest.l" "$depends";
 done
 
 if [ $((${#err_list[@]})) -gt 0 ] ; then
