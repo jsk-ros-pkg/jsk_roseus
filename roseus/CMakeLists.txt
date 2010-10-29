@@ -33,12 +33,11 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
  add_definitions(-Dx86_64)
 else()
  add_definitions(-Di486)
-# add_"-dynamiclib "
- set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -flat_namespace -undefined suppress")
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
  add_definitions(-Dx86_64)
+ set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -flat_namespace -undefined suppress")
 endif()
 
 rosbuild_add_compile_flags(roseus ${COMPILE_FLAGS})
