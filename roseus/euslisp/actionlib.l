@@ -230,7 +230,7 @@
      ((actionlib_msgs::pending actionlib_msgs::recalling)
       (setq status actionlib_msgs::recalled)
       )
-     ((actionlib_msgs::active actionlib_msgs::preepmpting)
+     ((actionlib_msgs::active actionlib_msgs::preempting)
       (setq status actionlib_msgs::preempted)
       ))
     (send self :set-succeeded result))
