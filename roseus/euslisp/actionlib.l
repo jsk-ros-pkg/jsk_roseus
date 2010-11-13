@@ -178,9 +178,9 @@
 
 (defclass ros::simple-action-server
   :super ros::object
-  :slots (name-space action-spec status comm-state
+  :slots (name-space action-spec status
                      action-goal-class action-result-class action-feedback-class
-                     execute-cb preempt-cb
+                     execute-cb accept-cb preempt-cb
 		     goal goal-id pending-goal
 		     seq-id feed-seq-id))
 
@@ -215,13 +215,25 @@
 	  (setq pending-goal msg))
 	 (t
 	  (setq status actionlib_msgs::active)
-	  (setq goal msg goal-id (send msg :goal_id)))
+	  (setq goal msg goal-id (send msg :goal_id))
+	  (if accept-cb (funcall accept-cb self goal)))
 	 ))
   (:cancel-callback
    (msg)
    (ros::ros-info ";; Recieved Cancel")
-   (setq status actionlib_msgs::preempting)
-   (if preempt-cb (funcall preempt-cb self)))
+   (setq check-func
+	 #'(lambda(msg goal)
+	     (let ((stamp (send goal :header :stamp)))
+	       (and (member (send goal :goal_id :id) (list "" (send msg :id)) :test #'string=)
+		    (or (= 0 (send stamp :to-sec))
+			(< 0 (send (ros::time- (send msg :stamp) stamp) :to-sec)))))))
+   ;;
+   (when (and pending-goal (funcall check-func msg pending-goal))
+     (setq pending-goal nil))
+   (when (and (eq status actionlib_msgs::active)
+	      (funcall check-func msg goal))
+     (setq status actionlib_msgs::preempting)
+     (if preempt-cb (funcall preempt-cb self goal))))
   ;;
   (:publish-result
    (msg &optional (text ""))
@@ -280,11 +292,10 @@
      msg))
   ;;
   (:init
-   (ns spec &key ((:execute-cb exec-f)) ((:preempt-cb preempt-f)))
+   (ns spec &key ((:execute-cb exec-f)) ((:preempt-cb preempt-f)) ((:accept-cb accept-f)))
    (setq name-space ns)
    (setq action-spec (instance spec :init))
-   (setq execute-cb exec-f preempt-cb preempt-f)
-   (setq comm-state (instance actionlib-comm-state :init))
+   (setq execute-cb exec-f preempt-cb preempt-f accept-cb accept-f)
    ;;
    (setq seq-id 0 feed-seq-id 0)
    (setq status actionlib_msgs::pending)
