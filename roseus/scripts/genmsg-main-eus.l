@@ -159,8 +159,10 @@
 				      (concatenate string pkg "::" type))))
 		  (t (error "undefined type ~A~%" msg))))
       (cond
-       ((and vec-size (memq var-type '(:int8 :boolean)))
+       ((and vec-size (eq var-type :int8))
 	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :char))~%" accessor var vec-size init-elem))
+       ((and vec-size (eq var-type :boolean))
+	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :object))~%" accessor var vec-size init-elem))
        ((and vec-size (memq var-type '(:int16 :int32 :int64)))
 	(format strm "    ((:~A _~A) (make-array ~A :initial-element ~A :element-type :integer))~%" accessor var vec-size init-elem))
        ((and vec-size (memq var-type '(:float32 :float64)))
@@ -340,8 +342,10 @@
 	(format strm "     (setq n (sys::peek buf ptr- :integer)) (incf ptr- 4)~%")
 	(case
 	 var-type
-         ((:int8 :boolean)
+         (:int8
 	  (format strm "     (setq ~A (make-array n :element-type :char))~%" var))
+	 (:boolean
+	  (format strm "     (setq ~A (make-array n :element-type :object))~%" var))
 	 ((:int16 :int32 :int64)
 	  (format strm "     (setq ~A (instantiate integer-vector n))~%" var))
 	 ((:float32 :float64)
