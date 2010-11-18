@@ -69,7 +69,7 @@
   :slots ((ac :forward (:set-succeeded :set-aborted :set-preempted
 			:publish-feedback :goal :feedback :result
 			:worker :is-active :is-preempt-requested))
-	  sm userdata successes))
+	  sm userdata successes inspector))
 (defmethod state-machine-action-server
   (:init
    (ns spec &optional (_sm nil) (_userdata nil))
@@ -77,7 +77,8 @@
 		      :execute-cb `(lambda(s g)(send ,self :execute-cb))
 		      :accept-cb  `(lambda(s g)(send ,self :accept-cb g))
 		      :preempt-cb `(lambda(s g)(send ,self :preempt-cb g)))
-	 sm _sm userdata _userdata)
+	 sm _sm userdata _userdata
+	 inspector (instance state-machine-inspector :init _sm))
    (setq userdata (set-alist :cancel nil userdata)) ;; userdata may be nil
    (send self :success-state (send sm :goal-state)) ;; all terminal-state(temp)
    self)
@@ -108,6 +109,8 @@
 	((send self :is-preempt-requested)
 	 (send self :set-preempted result-msg))
 	(t
+	 (send inspector :publish-structure)
+	 (send inspector :publish-status userdata)
 	 (send sm :execute userdata :step -1)
 	 (let ((feedback-msg (send self :feedback)))
 	   (send feedback-msg :feedback (cdr (assoc :feedback userdata)))

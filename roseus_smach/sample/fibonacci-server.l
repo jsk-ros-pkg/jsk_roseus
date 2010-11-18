@@ -38,6 +38,7 @@
     (send sm :add-node (instance state :init :SLEEP1 'func-sleep))
     (send sm :add-node (instance state :init :SLEEP2 'func-sleep))
     (send sm :goal-state (list :success))
+    (send sm :arg-keys :goal :feedback :result)
 
     (send sm :start-state :CALC)
     (send sm :add-transition :CALC :SLEEP1 nil)
