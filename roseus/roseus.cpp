@@ -577,8 +577,6 @@ public:
 
 void roseusSignalHandler(int sig)
 {
-    // firs of all, call ros signal handller
-    ros::requestShutdown();
     // memoize for euslisp handler...
     context *ctx=euscontexts[thr_self()];
     ctx->intsig = sig;
@@ -672,7 +670,9 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
-  ros::spin();
+  while (ctx->intsig==0) {
+    ros::spinOnce();
+  }
   return (NIL);
 }
 
