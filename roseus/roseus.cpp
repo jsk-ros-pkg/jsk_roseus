@@ -650,7 +650,13 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
       ros::master::g_uri.clear();
     }
   }
-  ros::init(cargc, cargv, name, options);
+  try {
+    ros::init(cargc, cargv, name, options);
+  } catch (const ros::InvalidNameException &e) {
+    ROS_ERROR("%s",e.what());
+    error(E_MISMATCHARG);
+    return(NIL);
+  }
 
   s_node.reset(new ros::NodeHandle());
   s_rate = new ros::Rate(50);
