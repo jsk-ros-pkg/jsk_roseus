@@ -1,0 +1,79 @@
+(load "state-machine-ros.l")
+
+;; execute state machine as action server
+
+(defclass state-machine-action-server
+  :super propertied-object
+  :slots ((as :forward (:worker))
+	  sm userdata successes inspector))
+(defmethod state-machine-action-server
+  (:init
+   (ns spec &optional (_sm nil) (_userdata nil))
+   (setq as (instance ros::simple-action-server :init ns spec
+		      :execute-cb `(lambda(s g)(send ,self :execute-cb))
+		      :accept-cb  `(lambda(s g)(send ,self :accept-cb g))
+		      :preempt-cb `(lambda(s g)(send ,self :preempt-cb g)))
+	 sm _sm userdata _userdata
+	 inspector (instance state-machine-inspector :init _sm))
+   (dolist (key '(:goal :feedback :result :cancel))
+     (when (assoc key userdata)
+       (warn "key ~A of userdata is already existed.~%")))
+   (send self :success-state (send-all (send sm :goal-state) :name))
+   self)
+  ;; names of success state
+  (:success-state
+   (&optional states)
+   (if states (setq successes states) successes))
+  ;;
+  (:accept-cb
+   (msg)
+   (setq userdata (set-alist :cancel (vector nil) userdata))
+   (set-alist :goal (send msg :goal) userdata)
+   (set-alist :result (send (send as :result) :result) userdata)
+   (set-alist :feedback (send (send as :feedback) :feedback) userdata)
+   (send sm :reset-state))
+  (:preempt-cb
+   (msg)
+   (setf (elt (cdr (assoc :cancel userdata)) 0) t))
+  (:execute-cb
+   ()
+   (cond
+    ((null sm) nil)
+    ((send as :is-active)
+     (let ((result-msg (send as :result)))
+       (cond
+	((send sm :goal-reached)
+	 (send result-msg :result (cdr (assoc :result userdata)))
+	 (if (member (send (send sm :active-state) :name) successes)
+	     (send as :set-succeeded result-msg)
+	   (send as :set-aborted result-msg)))
+	((send as :is-preempt-requested)
+	 (send as :set-preempted result-msg))
+	(t
+	 (send inspector :publish-structure)
+	 (send inspector :publish-status userdata)
+	 (send sm :execute userdata :step -1)
+	 (let ((feedback-msg (send as :feedback)))
+	   (send feedback-msg :feedback (cdr (assoc :feedback userdata)))
+	   (send as :publish-feedback feedback-msg)))
+	)))
+    (t nil)))
+  )
+
+;;
+;; execute actionlib as a state machine
+;; TODO
+(defun actionlib-client-state-machine (client)
+  (send client :wait-for-server
+  (let ((sm (instance state-machine :init)))
+    (send sm :arg-keys :goal :cancel :result)
+    (send client :get-state)
+  sm ))
+
+;; simple usage
+;; (instance state-machine-action-server :init "/action_name" awesome_pkg::GreatAction (your-state-machine) userdata)
+;; (do-until-key (ros::spin-once) (send s :worker) (unix::usleep 10000))
+
+;; reserved keyword in userdata
+;; :goal,:feedback,:result variables in userdata are message defined in .action
+;; :cancel variable in userdata is vector which (elt v 0) = t when preempt-requested

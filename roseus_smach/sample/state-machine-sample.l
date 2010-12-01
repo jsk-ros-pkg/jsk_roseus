@@ -1,8 +1,12 @@
 ;;
-;; State machine 3 type samples from SMACH tutorials
+;; 3 type samples of State machine from SMACH tutorials
 ;;
-(load "state-machine.l")
+(load "package://roseus_smach/src/state-machine.l")
 
+
+;;
+;; sample 1: simple state machine
+;;
 (setq count 0)
 (defun func-foo (&rest args)
   (format t "Execute state FOO~%")
@@ -27,7 +31,9 @@
     (send sm :add-transition :BAR :FOO :outcome2)
     sm ))
 
-
+;;
+;; sample 2: nodes can contain other state machine
+;;
 (defun func-bas (&rest args)
   (format t "Execute state BAS~%")
   :outcome3)
@@ -56,7 +62,10 @@
     sm-top ))
 
 
-
+;;
+;; sample 3: A State machine reperesents only transitions between conditions.
+;;           There is no local variable in state machine.
+;;
 (defun func-foo-data (args)
   (format t "Execute state FOO~%")
   (cond ((< (cdr (assoc 'foo-count args)) 3)

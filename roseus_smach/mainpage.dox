@@ -1,12 +1,23 @@
 /**
 \mainpage
+
 \htmlinclude manifest.html
 
-\b smach_roseus is ... 
+\b smach_roseus is state machine library for euslisp
 
 <!-- 
 Provide an overview of your package.
 -->
+
+\section State Machine Class
+
+\section State Machine Inspector for smach_viewer
+
+\section State Machine Action Server
+
+\verbatim
+
+\endverbatim
 
 
 \section codeapi Code API
@@ -21,6 +32,4 @@ If your codebase is fairly large or has different sets of APIs, you
 should use the doxygen 'group' tag to keep these APIs together. For
 example, the roscpp documentation has 'libros' group.
 -->
-
-
-*/
+**/

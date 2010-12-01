@@ -9,7 +9,7 @@
      * Execute state machine as a action server.
 
   </description>
-  <author>saito</author>
+  <author>Manabu Saito</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/roseus_smach</url>
@@ -17,6 +17,5 @@
   <depend package="roseus"/>
   <depend package="smach_viewer"/>
   <depend package="smach_msgs"/>
-  <depend package="euslib"/>
 
 </package>

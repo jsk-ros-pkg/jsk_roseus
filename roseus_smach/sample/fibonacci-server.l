@@ -2,8 +2,7 @@
 ;;;
 ;;; steta-machine version of ~/ros/ros_pkg_tutorials/actionlib_tutorials/simple_action_servers/fibonacci_server.py
 ;;;
-(load "package://roseus_smach/src/state-machine-ros.l")
-(load "package://roseus_smach/src/state-machine-sample.l")
+(load "package://roseus_smach/src/state-machine-actionlib.l")
 (ros::roseus-add-msgs "actionlib_tutorials")
 
 (ros::roseus "fibonacci")
@@ -13,7 +12,9 @@
   (let* ((goal (cdr (assoc :goal userdata)))
 	 (result (cdr (assoc :result userdata)))
 	 (feedback (cdr (assoc :feedback userdata)))
+	 (cancel (cdr (assoc :cancel userdata)))
 	 (seq (send result :sequence)) (next 0))
+    (when (elt cancel 0) (return-from func-fibonacci))
     (when (/= (length seq) (send goal :order))
       (setq seq (make-array (send goal :order) :element-type :integer))
       (send result :sequence seq)

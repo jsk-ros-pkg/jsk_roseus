@@ -1,4 +1,4 @@
-(load "state-machine-ros.l")
+(load "package://roseus_smach/src/state-machine-ros.l")
 (load "state-machine-sample.l")
 ;;
 ;; smach_viewer samples from SMACH tutorials
