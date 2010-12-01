@@ -4,13 +4,16 @@
 (ros::roseus-add-msgs "roseus")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "image_view2")
-(ros::roseus-add-msgs "recognition_pipeline")
+(ros::roseus-add-msgs "face_detector_mono")
 ;;;
 ;;;
-(roseus "facedetect-client")
+(ros::roseus "facedetect-client")
+(if (string= (ros::get-namespace) "/")
+    (ros::ros-warn ";; Started in the global namespace! This is probably wrong.~%Start facedetect-client.l in the camera namespace.~%Example command-line usage: $ ROS_NAMESPACE=my_camera ./facedetect-client.l"))
 
 (defun facedetect-cb (faces)
   (let ((mrk (instance image_view2::ImageMarker2 :init)) ret)
+    (warning-message 1 "facedetect callback~%")
     (dolist (f (send faces :rects))
       (print (list (send f :x) (send f :y))))
 
@@ -34,7 +37,7 @@
         (ros::publish "image_marker" mrk)))))
 
 (ros::advertise "image_marker" image_view2::ImageMarker2 1)
-(ros::subscribe "/facedetect/faces" recognition_pipeline::RectArray #'facedetect-cb)
+(ros::subscribe "face_detector_mono/faces" face_detector_mono::RectArray #'facedetect-cb)
 
 (ros::rate 10)
 (while (ros::ok)

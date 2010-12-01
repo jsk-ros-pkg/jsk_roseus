@@ -1,0 +1,40 @@
+<launch>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find roseus_tutorials)/launch/all-robot.vcg" />
+  <node pkg="roseus_tutorials" type="robot-publisher.l" name="$(anon robot_publisher)" output="screen" >
+    <param name="robot" value="((ape) (ape3) (hanzou) (miharu))" />
+    <param name="x" value="0" />
+    <param name="y" value="0" />
+  </node>
+  <node pkg="roseus_tutorials" type="robot-publisher.l" name="$(anon robot_publisher)" output="screen" >
+    <param name="robot" value="((saizo) (komokuten) (tamonten) (jikokuten))" />
+    <param name="x" value="0" />
+    <param name="y" value="3200" />
+  </node>
+<!--
+  <node pkg="roseus_tutorials" type="robot-publisher.l" name="$(anon robot_publisher)" output="screen" >
+    <param name="robot" value="((bishamon) (taro) (millennium) (akira))" />
+    <param name="x" value="-1000" />
+    <param name="y" value="1600" />
+  </node>
+  <node pkg="roseus_tutorials" type="robot-publisher.l" name="$(anon robot_publisher)" output="screen" >
+    <param name="robot" value="((akira2) (akira3) (zero) (kaz))" />
+    <param name="x" value="-2000" />
+    <param name="y" value="0" />
+  </node>
+  <node pkg="roseus_tutorials" type="robot-publisher.l" name="$(anon robot_publisher)" output="screen" >
+    <param name="robot" value="((kaz2) (kaz3) (tot) (alviss))" />
+    <param name="x" value="-2000" />
+    <param name="y" value="3200" />
+  </node>
+  <node pkg="roseus_tutorials" type="robot-publisher.l" name="$(anon robot_publisher)" output="screen" >
+    <param name="robot" value="((chibikaz) (tama) (tamaii) (hoap))" />
+    <param name="x" value="-3000" />
+    <param name="y" value="1600" />
+  </node>
+  <node pkg="roseus_tutorials" type="robot-publisher.l" name="$(anon robot_publisher)" output="screen" >
+    <param name="robot" value="((hoap2) (h7) (h6) (h5))" />
+    <param name="x" value="-4000" />
+    <param name="y" value="0" />
+  </node>
+-->
+</launch>

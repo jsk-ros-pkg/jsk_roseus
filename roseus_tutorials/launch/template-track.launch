@@ -1,0 +1,13 @@
+<launch>
+  <node name="template_track" pkg="jsk_mep_converter"
+	type="matchtemplate.py" output="screen">
+    <remap from="reference" to="image_raw" />
+    <remap from="search" to="image_raw" />
+    <remap from="set_reference_point" to="/screenpoint" />
+    <param name="default_template_width" value="30"/>
+    <param name="default_template_height" value="30"/>
+    <param name="default_search_width" value="60"/>
+    <param name="default_search_height" value="60"/>
+  </node>
+  <node name="traking_result" pkg="roseus_tutorials" type="template-track.l"/>
+</launch>

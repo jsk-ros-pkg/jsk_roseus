@@ -7,7 +7,14 @@
 (ros::roseus-add-msgs "image_view2")
 ;;;
 ;;;
-(roseus "cmvisoin-client")
+(load "package://pr2eus/pr2.l")
+(if (not (boundp '*irtviewer*)) (make-irtviewer))
+(if (not (boundp '*pr2*)) (pr2))
+(objects (list *pr2*))
+
+(ros::roseus "cmvisoin-client")
+(if (string= (ros::get-namespace) "/")
+    (ros::ros-warn ";; Started in the global namespace! This is probably wrong.~%Start cmvision.l in the camera namespace.~%Example command-line usage: $ ROS_NAMESPACE=my_camera ./cmvision.l"))
 
 (defun cmvision-cb (blobs)
   (let ((mrk (instance image_view2::ImageMarker2 :init)) p)
@@ -23,6 +30,8 @@
 
     (when (> (send blobs :blob_count) 0)
       (let ((b (car (send blobs :blobs))))
+        ;;
+        (send *pr2* :head :neck-y :joint-angle (if (> (send b :x) 320) +10 -10) :relative t)
         (send mrk :type image_view2::POLYGON)
         (send mrk :points (list
                            (instance geometry_msgs::Point :init
@@ -43,4 +52,5 @@
 (while (ros::ok)
   (ros::spin-once)
   (ros::sleep)
+  (send *irtviewer* :draw-objects)
   )

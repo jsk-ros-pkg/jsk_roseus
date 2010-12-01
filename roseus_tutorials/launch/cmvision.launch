@@ -1,6 +1,6 @@
 <launch>
   <node name="cmvision" pkg="cmvision" type="cmvision">
-    <remap from="image" to="image_raw" />
+    <remap from="image" to="image_view" />
   </node>
   <rosparam param="/cmvision">
    mean_shift_on: true

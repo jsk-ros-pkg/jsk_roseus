@@ -1,0 +1,17 @@
+<launch>
+  <param name="single" value="1" />
+  <param name="display" value="1" />
+  <param name="rect0_size_x" value="0.030" />
+  <param name="rect0_size_y" value="0.030" />
+  <param name="grid0_size_x" value="7" />
+  <param name="grid0_size_y" value="5" />
+  <param name="type0" value="test_object" />
+  <param name="translation0" value="0.060 0.090 0" />
+  <!-- (array-entity (send (make-coords :rpy (float-vector 0 0 pi)) :worldrot)) -->
+  <param name="rotation0" value="1.0 0.0 0.0 0.0 -1.0 -6.278329e-07 0.0 6.278329e-07 -1.0" />
+  <param name="frame_id" value="usb_cam" />
+  <node name="checkerboard_detector" pkg="checkerboard_detector"
+	type="checkerboard_detector">
+    <remap from="image" to="image_rect" />
+  </node>
+</launch>

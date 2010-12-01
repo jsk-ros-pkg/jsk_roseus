@@ -8,15 +8,27 @@
 ;;;
 
 (roseus "sliency-client")
+(if (string= (ros::get-namespace) "/")
+    (ros::ros-warn ";; Started in the global namespace! This is probably wrong.~%Start saliency-tracking.l in the camera namespace.~%Example command-line usage: $ ROS_NAMESPACE=my_camera ./saliency-tracking.l"))
 
 (defun saliency-cb (poi)
-  (setq mrk (instance image_view2::ImageMarker2 :init))
-  (print (list (send poi :x) (send poi :y)))
-  (send mrk :type image_view2::POINTS)
-  (send mrk :points (list poi))
-  (ros::ros-info "~A" poi)
-  (ros::publish "image_marker" mrk)
-  )
+  (let ((mrk (instance image_view2::ImageMarker2 :init))
+        (x (send poi :x)) (y (send poi :y)))
+    (print (list x y))
+    (ros::ros-info "~A" poi)
+
+    (send mrk :type image_view2::POINTS)
+    (send mrk :points (list poi))
+    (ros::publish "image_marker" mrk)
+
+    (send mrk :type image_view2::POLYGON)
+    (send mrk :points (list
+                       (instance geometry_msgs::Point :init :x (- x 8) :y (- y 8))
+                       (instance geometry_msgs::Point :init :x (- x 8) :y (+ y 8))
+                       (instance geometry_msgs::Point :init :x (+ x 8) :y (+ y 8))
+                       (instance geometry_msgs::Point :init :x (+ x 8) :y (- y 8))))
+    (ros::publish "image_marker" mrk)
+    ))
 
 (ros::advertise "image_marker" image_view2::ImageMarker2 1)
 (ros::subscribe "saliency_poi" geometry_msgs::Point #'saliency-cb)

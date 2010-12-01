@@ -1,6 +1,6 @@
 <launch>
   <node name="saliency_track" pkg="saliency_tracking"
 	type="saliency_track" >
-    <remap from="image" to="image_raw" />
+    <remap from="image" to="image_rect_color" />
   </node>
 </launch>

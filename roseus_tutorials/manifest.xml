@@ -4,20 +4,24 @@
      roseus_tutorials
 
   </description>
-  <author>Kei Okada, Tsukasa Ito</author>
+  <author>Kei Okada, Tsukasa Ito, Manabu Saito</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/roseus_tutorials</url>
   <depend package="roseus"/>
 
+  <depend package="usb_cam" />
   <depend package="saliency_tracking" />
   <depend package="cmvision" />
   <depend package="checkerboard_pose" />
   <depend package="face_detector_mono" />
   <depend package="aques_talk" />
+  <depend package="usb_cam" />
+  <depend package="checkerboard_detector" />
+  <depend package="jsk_mep_converter" />
 
   <depend package="image_view2" />
 
+  <depend package="visualization_msgs" />
+
 </package>
-
-

@@ -1,0 +1,234 @@
+Background\ ColorR=0.439216
+Background\ ColorG=0.439216
+Background\ ColorB=0.439216
+Fixed\ Frame=/tmp
+Target\ Frame=<Fixed Frame>
+TF.All\ Enabled=1
+TF.Enabled=1
+TF.Frame\ Timeout=15
+TF.Show\ Arrows=1
+TF.Show\ Axes=1
+TF.Show\ Names=1
+TF.Update\ Interval=0
+ape.=1
+ape.Enabled=1
+ape.Marker\ Topic=/ape
+ape3.=1
+ape3.Enabled=1
+ape3.Marker\ Topic=/ape3
+hanzou.=1
+hanzou.Enabled=1
+hanzou.Marker\ Topic=/hanzou
+miharu.=1
+miharu.Enabled=1
+miharu.Marker\ Topic=/miharu
+saizo.=1
+saizo.Enabled=1
+saizo.Marker\ Topic=/saizo
+komokuten.=1
+komokuten.Enabled=1
+komokuten.Marker\ Topic=/komokuten
+tamonten.=1
+tamonten.Enabled=1
+tamonten.Marker\ Topic=/tamonten
+jikokuten.=1
+jikokuten.Enabled=1
+jikokuten.Marker\ Topic=/jikokuten
+bishamon.=1
+bishamon.Enabled=1
+bishamon.Marker\ Topic=/bishamon
+igoid.=1
+igoid.Enabled=1
+igoid.Marker\ Topic=/igoid
+igoid2.=1
+igoid2.Enabled=1
+igoid2.Marker\ Topic=/igoid2
+igoid3.=1
+igoid3.Enabled=1
+igoid3.Marker\ Topic=/igoid3
+taro.=1
+taro.Enabled=1
+taro.Marker\ Topic=/taro
+millennium.=1
+millennium.Enabled=1
+millennium.Marker\ Topic=/millennium
+akira.=1
+akira.Enabled=1
+akira.Marker\ Topic=/akira
+akira2.=1
+akira2.Enabled=1
+akira2.Marker\ Topic=/akira2
+akira3.=1
+akira3.Enabled=1
+akira3.Marker\ Topic=/akira3
+zero.=1
+zero.Enabled=1
+zero.Marker\ Topic=/zero
+kaz.=1
+kaz.Enabled=1
+kaz.Marker\ Topic=/kaz
+kaz2.=1
+kaz2.Enabled=1
+kaz2.Marker\ Topic=/kaz2
+kaz3.=1
+kaz3.Enabled=1
+kaz3.Marker\ Topic=/kaz3
+tot.=1
+tot.Enabled=1
+tot.Marker\ Topic=/tot
+alviss.=1
+alviss.Enabled=1
+alviss.Marker\ Topic=/alviss
+chibikaz.=1
+chibikaz.Enabled=1
+chibikaz.Marker\ Topic=/chibikaz
+tama.=1
+tama.Enabled=1
+tama.Marker\ Topic=/tama
+tamaii.=1
+tamaii.Enabled=1
+tamaii.Marker\ Topic=/tamaii
+hoap.=1
+hoap.Enabled=1
+hoap.Marker\ Topic=/hoap
+hoap2.=1
+hoap2.Enabled=1
+hoap2.Marker\ Topic=/hoap2
+h7.=1
+h7.Enabled=1
+h7.Marker\ Topic=/h7
+h6.=1
+h6.Enabled=1
+h6.Marker\ Topic=/h6
+h5.=1
+h5.Enabled=1
+h5.Marker\ Topic=/h5
+Property\ Grid\ State=selection=ape.Enabled;expanded=.Global Options,ape.Enabled.ape.Namespaces,ape3.Enabled.ape3.Namespaces,hanzou.Enabled.hanzou.Namespaces,miharu.Enabled.miharu.Namespaces,saizo.Enabled.saizo.Namespaces,komokuten.Enabled.komokuten.Namespaces,tamonten.Enabled.tamonten.Namespaces,jikokuten.Enabled.jikokuten.Namespaces,bishamon.Enabled.bishamon.Namespaces,igoid.Enabled.igoid.Namespaces,igoid2.Enabled.igoid2.Namespaces,igoid3.Enabled.igoid3.Namespaces,taro.Enabled.taro.Namespaces,millennium.Enabled.millennium.Namespaces,akira.Enabled.akira.Namespaces,akira2.Enabled.akira2.Namespaces,akira3.Enabled.akira3.Namespaces,zero.Enabled.zero.Namespaces,kaz.Enabled.kaz.Namespaces,kaz2.Enabled.kaz2.Namespaces,kaz3.Enabled.kaz3.Namespaces,tot.Enabled.tot.Namespaces,alviss.Enabled.alviss.Namespaces,chibikaz.Enabled.chibikaz.Namespaces,tama.Enabled.tama.Namespaces,tamaii.Enabled.tamaii.Namespaces,hoap.Enabled.hoap.Namespaces,hoap2.Enabled.hoap2.Namespaces,h7.Enabled.h7.Namespaces,h6.Enabled.h6.Namespaces,h5.Enabled.h5.Namespaces,TF.Enabled,TF.Enabled.TF.StatusTopStatus,TF.Enabled.TF.Frames,TF.Enabled.TF.Tree;scrollpos=0,0;splitterpos=327,654;ispageselected=1
+[Display0]
+Name=ape
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display1]
+Name=ape3
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display2]
+Name=hanzou
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display3]
+Name=miharu
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display4]
+Name=saizo
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display5]
+Name=komokuten
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display6]
+Name=tamonten
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display7]
+Name=jikokuten
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display8]
+Name=bishamon
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display9]
+Name=igoid
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display10]
+Name=igoid2
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display11]
+Name=igoid3
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display12]
+Name=taro
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display13]
+Name=millennium
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display14]
+Name=akira
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display15]
+Name=akira2
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display16]
+Name=akira3
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display17]
+Name=zero
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display18]
+Name=kaz
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display19]
+Name=kaz2
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display20]
+Name=kaz3
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display21]
+Name=tot
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display22]
+Name=alviss
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display23]
+Name=chibikaz
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display24]
+Name=tama
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display25]
+Name=tamaii
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display26]
+Name=hoap
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display27]
+Name=hoap2
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display28]
+Name=h7
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display29]
+Name=h6
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display30]
+Name=h5
+Package=rviz
+ClassName=rviz::MarkerDisplay
+[Display31]
+Name=TF
+Package=rviz
+ClassName=rviz::TFDisplay
