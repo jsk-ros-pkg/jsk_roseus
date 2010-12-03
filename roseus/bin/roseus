@@ -1,47 +1,14 @@
-#!/bin/bash
+#!/bin/bash -x
 set -e
 
-# argc
-FILE="nil"
-ARGV="(list "
-while [ $# -ne 0 ]; do
-    case "$1" in
-	--interpreter) INTERP="true"; shift;;
-	--help) echo "roseus [file] [options] [args for euslisp]"; exit 1;;
-	*) if [ "$FILE" != "nil" ]; then ARGV=$ARGV"\"$1\" "; else FILE="\"$1\""; fi; shift;;
-    esac
-done
-ARGV=$ARGV")"
 
-#
 ROSEUS_DIR=`rospack find roseus`
-ARG_STR=`cat <<EOF
-(progn
-  (pushnew "$ROSEUS_DIR/euslisp/" *load-path* :test #'equal)
-  (if $ARGV (setq lisp::*eustop-argument* $ARGV))
-  (load "roseus.l")
-  (load "eustf.l")
-  (load "actionlib.l")
-  (load "roseus-utils.l")
-  (if $FILE (load $FILE))
-  )
-EOF
-`
+ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
+        roseus.l eustf.l actionlib.l roseus-utils.l)
 
-if [ "$FILE" != "nil" -a "$INTERP" != "true" ]; then
-    rosrun euslisp irteusgl "$ARG_STR" &
+rosrun euslisp irteusgl "${ARG_STR[@]}" "$@"
 # if you want to run in gdb, please use the line below
-#    xterm -e gdb -x `rospack find roseus`/bin/roseus_gdb.cmd --args `rospack find euslisp`/eus/Linux/bin/irteusgl "$ARG_STR"
-    PID=$!
-    echo PID is $PID
-    trap 'kill -s HUP $PID' CHLD INT TERM
-    wait $PID
-else
-    rosrun euslisp irteusgl "$ARG_STR"
-fi
-exit $?
-#wait $PID
-# if you are an euslisp expert and debug roseus, you can comment in
-# following line
-#if [ $? -ne 0 ] ; then read line ; fi
+# xterm -e gdb -x `rospack find roseus`/bin/roseus_gdb.cmd --args `rospack find\
+ euslisp`/jskeus/eus/Linux64/bin/irteusgl "${ARG_STR[@]}" "$@"
 
+exit $?

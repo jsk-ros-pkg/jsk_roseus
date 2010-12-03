@@ -22,7 +22,7 @@
    (format *error-output* ", exitting...~C[0m~%"  #x1b)
    (exit 1))
 
-(when (not (unix:isatty *standard-input*))
+(when (string= "__log:=" (subseq (car (last lisp::*eustop-argument*)) 0 7))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
   (lisp::install-error-handler 'ros::roseus-error)
   (unix:signal unix::sigint 'ros::roseus-sigint-handler)
