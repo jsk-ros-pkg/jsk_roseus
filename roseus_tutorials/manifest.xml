@@ -18,7 +18,6 @@
   <depend package="aques_talk" />
   <depend package="usb_cam" />
   <depend package="checkerboard_detector" />
-  <depend package="jsk_mep_converter" />
 
   <depend package="image_view2" />
 
