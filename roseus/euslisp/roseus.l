@@ -123,15 +123,15 @@
 				     *loaded-modules*
 				     :key #'lisp::load-module-file-name
 				     :test #'equal)))
-	      (if old-module (sys::unbinload old-module))
-	      (let ((ros-home (ros::ros-home-dir)))
-		(comp::compile-file-if-src-newer-so dirfile
-						    :out-prefix (format nil "~A_" pkg)
-						    :output-dir (format nil "~A/roseus/" ros-home)
-						    :clear-files t)
-		(load (format nil "~A_~A.so" pkg fname)
-		      :entry (format nil "___~A" fname))
-		))
+              (unless old-module
+                (let ((ros-home (ros::ros-home-dir)))
+                  (comp::compile-file-if-src-newer-so dirfile
+                                                      :out-prefix (format nil "~A_" pkg)
+                                                      :output-dir (format nil "~A/roseus/" ros-home)
+                                                      :clear-files t)
+                  (load (format nil "~A_~A.so" pkg fname)
+                        :entry (format nil "___~A" fname))
+                  )))
 	    (in-package "USER"))
 	    )))))
 
