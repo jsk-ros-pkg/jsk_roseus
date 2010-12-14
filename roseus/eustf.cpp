@@ -232,11 +232,15 @@ pointer EUSTF_WAITFORTRANSFORMFULL(register context *ctx,int n,pointer *argv)
   else if (isflt(argv[7])) duration = (float)fltval(argv[7]);
   else error(E_NONUMBER);
 
+  std::string *err_str = new std::string();
   ret = tf->waitForTransform(target_frame, target_time,
                              source_frame, source_time,
                              fixed_frame,
-                             ros::Duration(timeout), ros::Duration(duration));
-
+                             ros::Duration(timeout), ros::Duration(duration),
+                             err_str);
+  if(!ret) {
+    ROS_WARN_STREAM("waitForTransformFull failed! : " << *err_str);
+  }
   ROS_DEBUG_STREAM("waitForTransformFull : "
                    << "target_frame : " << target_frame
                    << "target_time : " << target_time
@@ -269,8 +273,11 @@ pointer EUSTF_CANTRANSFORM(register context *ctx,int n,pointer *argv)
 
   set_ros_time(time,argv[3]);
 
-  ret = tf->canTransform(target_frame, source_frame, time);
-
+  std::string *err_str = new std::string();
+  ret = tf->canTransform(target_frame, source_frame, time, err_str);
+  if(!ret) {
+    ROS_WARN_STREAM("canTransform failed! : " << *err_str);
+  }
   ROS_DEBUG_STREAM("canTransform : "
                    << "target_frame : " << target_frame
                    << "source_frame : " << source_frame
@@ -305,10 +312,13 @@ pointer EUSTF_CANTRANSFORMFULL(register context *ctx,int n,pointer *argv)
     fixed_frame = std::string((char*)(argv[5]->c.str.chars));
   else error(E_NOSTRING);
 
+  std::string *err_str = new std::string();
   ret = tf->canTransform(target_frame, target_time,
                          source_frame, source_time,
-                         fixed_frame);
-
+                         fixed_frame, err_str);
+  if(!ret) {
+    ROS_WARN_STREAM("canTransform failed! : " << *err_str);
+  }
   ROS_DEBUG_STREAM("canTransformFull : "
                    << "target_frame : " << target_frame
                    << "target_time : " << target_time
