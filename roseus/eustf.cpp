@@ -179,9 +179,13 @@ pointer EUSTF_WAITFORTRANSFORM(register context *ctx,int n,pointer *argv)
   else if (isflt(argv[5])) duration = (float)fltval(argv[5]);
   else error(E_NONUMBER);
 
+  std::string *err_str = new std::string();
   ret = tf->waitForTransform(target_frame, source_frame, time,
-                             ros::Duration(timeout), ros::Duration(duration));
-
+                             ros::Duration(timeout), ros::Duration(duration),
+                             err_str);
+  if(!ret) {
+    ROS_WARN_STREAM("waitForTransform failed! : " << *err_str);
+  }
   ROS_DEBUG_STREAM("waitForTransform : "
                    << "target_frame : " << target_frame
                    << "source_frame : " << source_frame
