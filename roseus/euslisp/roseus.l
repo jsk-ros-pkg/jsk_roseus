@@ -81,15 +81,7 @@
 (defun ros::time (&optional (sec 0))
   (send (instance ros::time :init) :from-sec sec))
 
-(defun ros::time-now (&optional diff-sec)
-  (let ((now (send (instance ros::time :init) :now)))
-    (if diff-sec
-        (let ((dif (instance ros::time :init)))
-          (send dif :from-sec (abs diff-sec))
-          (if (> diff-sec 0)
-              (setq now (ros::time+ now dif))
-            (setq now (ros::time- now dif)))))
-    now))
+(defun ros::time-now () (send (instance ros::time :init) :now))
 
 (defun ros::time+ (a b)
   (let* ((csec  (+ (send a :sec)  (send b :sec)))
