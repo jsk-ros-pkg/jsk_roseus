@@ -205,6 +205,7 @@
   (:lookup-transform-safe
    (target-frame source-frame time
     &optional (timeout 0.1) (duration 0.1))
+      (warning-message 1 ";; :lookup-transsform-safe is obsoleted, use :lookup-transform~%")
       (if (send self :wait-for-transform target-frame source-frame time
                 timeout duration)
           (send self :lookup-transform target-frame source-frame time)
@@ -281,6 +282,7 @@
                          :name target-frame)))))
   (:transform-pose-safe
    (target-frame pose-stamped &optional (timeout 0.1) (duration 0.1))
+   (warning-message 1 ";; :transsform-pose-safe is obsoleted, use :transform-pose~%")
    (if (send self :wait-for-transform target-frame
              (send pose-stamped :header :frame_id)
              (send pose-stamped :header :stamp)
