@@ -14,6 +14,7 @@
     <include file="$(find roseus_tutorials)/launch/cmvision.launch" />
     <include file="$(find roseus_tutorials)/launch/checkerboard-detector.launch" />
     <include file="$(find roseus_tutorials)/launch/template-track.launch" />
+    <include file="$(find roseus_tutorials)/launch/camshiftdemo.launch" />
   </group>
 
   <include file="$(find roseus_tutorials)/launch/aques-talk.launch" />
