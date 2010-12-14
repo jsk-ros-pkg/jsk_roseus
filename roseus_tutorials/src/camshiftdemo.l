@@ -48,7 +48,7 @@
     
     ))
 
-(ros::advertise "image_marker" image_view2::ImageMarker2 1)
+(ros::advertise "image_marker" image_view2::ImageMarker2 10)
 (ros::subscribe "camshiftdemo/result" jsk_perception::RotatedRectStamped #'camshift-cb)
 
 
