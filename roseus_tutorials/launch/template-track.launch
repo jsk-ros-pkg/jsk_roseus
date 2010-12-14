@@ -9,5 +9,4 @@
     <param name="default_search_width" value="60"/>
     <param name="default_search_height" value="60"/>
   </node>
-  <node name="traking_result" pkg="roseus_tutorials" type="template-track.l"/>
 </launch>
