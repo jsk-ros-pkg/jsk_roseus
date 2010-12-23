@@ -1,20 +1,31 @@
 #!/usr/bin/env roseus
 
-(if (not (boundp '*pickview*)) (pickview))
-(defun main ()
-  (let (tl frame-strings frame-coords root-frame objs)
-    (ros::roseus "eus_view")
+(load "models/arrow-object.l")
+
+(ros::roseus "eus_view_frame")
+(setq *tl* (instance ros::transform-listener :init))
+
+(defun tf->cascoords ()
+  (let (frame-strings frame-coords root-frame objs)
     (ros::rate 10)
-    (setq tl (instance ros::transform-listener :init))
-    (ros::sleep)
-    (setq frame-strings (send tl :get-frame-strings))
+    (ros::ros-info "wait for tf")
+    (while (null frame-strings)
+      (ros::sleep)
+      (setq frame-strings (send *tl* :get-frame-strings)))
+    (ros::ros-info "frames ~A~%" frame-strings)
     ;; find root
-    (setq root-frame (find nil frame-strings :key #'(lambda (x) (send tl :get-parent x (ros::time)))))
-    (dolist (frame frame-strings)
-      (let ((coords (send tl :lookup-transform root-frame frame (ros::time))))
-        (push coords frame-coords)))
+    (setq root-frame (find nil frame-strings :key #'(lambda (x) (send *tl* :get-parent x (ros::time)))))
+
+    (setq frame-coords
+          (mapcan
+           #'(lambda (frame)
+               (let ((c (send *tl* :lookup-transform root-frame frame (ros::time))))
+                 (if c (list c))))
+           frame-strings))
+    (ros::ros-info "coords ~A~%" frame-coords)
+
     (dolist (coords frame-coords)
-      (let* ((parent-name (send tl :get-parent (send coords :name) (ros::time)))
+      (let* ((parent-name (send *tl* :get-parent (send coords :name) (ros::time)))
              (parent-coords (find parent-name frame-coords
                                   :test #'string=
                                   :key #'(lambda (x) (send x :name)))))
@@ -22,11 +33,12 @@
         ))
     (setq objs
           (mapcar #'(lambda (c)
-                      (send (make-arrow 50) :newcoords c)) frame-coords))
+                      (send (arrow) :newcoords c)) frame-coords))
     (objects objs)
     frame-coords))
 ;;
-(setq frame-coords (main))
+(do-until-key
+ (setq frame-coords (tf->cascoords)))
 
 
 
