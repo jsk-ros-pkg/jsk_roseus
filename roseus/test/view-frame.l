@@ -5,6 +5,7 @@
 (ros::roseus "eus_view_frame")
 (if (not (boundp '*tl*))
     (setq *tl* (instance ros::transform-listener :init)))
+(setq *arrows* nil)
 
 (defun tf->cascoords ()
   (let (frame-strings frame-coords root-frame objs)
@@ -21,7 +22,9 @@
           (mapcan
            #'(lambda (frame)
                (let ((c (send *tl* :lookup-transform root-frame frame (ros::time))))
-                 (if c (list c))))
+                 (when c
+                   (send c :name frame)
+                   (list c))))
            frame-strings))
     ;;(send *irtviewer* :viewer :clear)
     ;;(send-all frame-coords :draw-on :flush t)
@@ -35,12 +38,18 @@
         ;;(when parent-name (send parent-coords :assoc coords))
         ))
     (setq objs
-          (mapcar #'(lambda (c)
-                      (let ((b (arrow)))
-                        (send b :move-to c)
-                        (send b :update-descendants)
-                        b)) frame-coords))
+          (mapcar
+           #'(lambda (c)
+               (let (b)
+                 (setq b (find (send c :name) *arrows* :key #'(lambda (x) (send x :name)) :test #'string=))
+                 (unless b
+                   (setq b (arrow :name (send c :name)))
+                   (push b *arrows*))
+                 (send b :move-to c :world)
+                 (send b :update-descendants)
+                 b)) frame-coords))
     (objects objs)
+    (setq ooo objs)
     (x::window-main-one)
     frame-coords))
 ;;
