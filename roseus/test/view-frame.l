@@ -3,11 +3,12 @@
 (load "models/arrow-object.l")
 
 (ros::roseus "eus_view_frame")
-(setq *tl* (instance ros::transform-listener :init))
+(if (not (boundp '*tl*))
+    (setq *tl* (instance ros::transform-listener :init)))
 
 (defun tf->cascoords ()
   (let (frame-strings frame-coords root-frame objs)
-    (ros::rate 10)
+    (ros::rate 100)
     (ros::ros-info "wait for tf")
     (while (null frame-strings)
       (ros::sleep)
@@ -22,7 +23,9 @@
                (let ((c (send *tl* :lookup-transform root-frame frame (ros::time))))
                  (if c (list c))))
            frame-strings))
-    (ros::ros-info "coords ~A~%" frame-coords)
+    ;;(send *irtviewer* :viewer :clear)
+    ;;(send-all frame-coords :draw-on :flush t)
+    ;; (ros::ros-info "coords ~A~%" frame-coords)
 
     (dolist (coords frame-coords)
       (let* ((parent-name (send *tl* :get-parent (send coords :name) (ros::time)))
@@ -33,8 +36,12 @@
         ))
     (setq objs
           (mapcar #'(lambda (c)
-                      (send (arrow) :newcoords c)) frame-coords))
+                      (let ((b (arrow)))
+                        (send b :move-to c)
+                        (send b :update-descendants)
+                        b)) frame-coords))
     (objects objs)
+    (x::window-main-one)
     frame-coords))
 ;;
 (do-until-key
