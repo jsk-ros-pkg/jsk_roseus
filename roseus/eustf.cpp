@@ -607,9 +607,12 @@ pointer EUSTF_GETPARENT(register context *ctx,int n,pointer *argv)
 
   set_ros_time(time,argv[2]);
 
-  bool ret = tf->getParent(frame_id, time, parent);
-
-  return(ret?makestring((char *)parent.c_str(),parent.length()):NIL);
+  try {
+    bool ret = tf->getParent(frame_id, time, parent);
+    return(ret?makestring((char *)parent.c_str(),parent.length()):NIL);
+  } catch ( std::runtime_error e ) {
+    ROS_ERROR("%s",e.what()); return(NIL);
+  }
 }
 /* */
 pointer EUSTF_TRANSFORM_BROADCASTER(register context *ctx,int n,pointer *argv)
