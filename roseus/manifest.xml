@@ -12,6 +12,10 @@
   <depend package="visualization_msgs"/>
   <depend package="bullet"/>
   <depend package="tf"/>
+  <depend package="geometry_msgs" />
+  <depend package="std_msgs" />
+  <depend package="sensor_msgs" />
+  <depend package="visualization_msgs" />
   <export>
     <roslang cmake="${prefix}/cmake/roseus.cmake"/>
   </export>
