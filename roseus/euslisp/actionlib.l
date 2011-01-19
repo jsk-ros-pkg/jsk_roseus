@@ -213,6 +213,7 @@
 	  (setq pending-goal msg))
 	 ((send self :is-active)
 	  (setq status actionlib_msgs::preempting)
+	  (if preempt-cb (funcall preempt-cb self goal))
 	  (setq pending-goal msg))
 	 (t
 	  (setq status actionlib_msgs::active)
