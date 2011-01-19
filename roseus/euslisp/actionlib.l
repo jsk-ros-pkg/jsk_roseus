@@ -225,13 +225,13 @@
    (setq check-func
 	 #'(lambda(msg goal)
 	     (let ((stamp (send goal :header :stamp)))
-	       (and (member (send goal :goal_id :id) (list "" (send msg :id)) :test #'string=)
-		    (or (= 0 (send stamp :to-sec))
+	       (and (member (send msg :id) (list "" (send goal :goal_id :id)) :test #'string=)
+		    (or (= 0 (send (send msg :stamp) :to-sec))
 			(< 0 (send (ros::time- (send msg :stamp) stamp) :to-sec)))))))
    ;;
    (when (and pending-goal (funcall check-func msg pending-goal))
      (setq pending-goal nil))
-   (when (and (eq status actionlib_msgs::active)
+   (when (and (equal status actionlib_msgs::active)
 	      (funcall check-func msg goal))
      (setq status actionlib_msgs::preempting)
      (if preempt-cb (funcall preempt-cb self goal))))
