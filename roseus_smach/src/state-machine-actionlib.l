@@ -62,13 +62,49 @@
 
 ;;
 ;; execute actionlib as a state machine
-;; TODO
-(defun actionlib-client-state-machine (client)
-  (send client :wait-for-server
-  (let ((sm (instance state-machine :init)))
-    (send sm :arg-keys :goal :cancel :result)
-    (send client :get-state)
-  sm ))
+;; return 'state' instance
+;;   this state needs :goal data, :cancel and :result are optional
+;;   this state returns :succeeded or :failed
+;;
+(defun actionlib-client-state
+  (name client &key (timeout 10) (retry nil) (key #'identity))
+  (send client :wait-for-server)
+  (instance state :init name
+   ;; main loop
+   `(lambda (userdata)
+      (let ((start (ros::time-now)))
+	(send ,client :send-goal
+	      (funcall (quote ,key) (cdr (assoc :goal userdata))))
+	(while (ros::ok)
+	  (ros::sleep)
+	  (ros::spin-once)
+	  ;;
+	  (cond
+	   ((eq (send ,client :get-state) actionlib_msgs::SUCCEEDED)
+	     (return :succeeded))
+	    ((eq (send ,client :get-state) actionlib_msgs::ABORTED)
+	     (if ,retry
+		 (send ,client :send-goal
+		       (funcall (quote ,key) (cdr (assoc :goal userdata))))
+	       (return :failed)))
+	    ((member (send ,client :get-state)
+		     (list actionlib_msgs::PREEMPTED
+			   actionlib_msgs::RECALLED
+			   actionlib_msgs::REJECTED))
+	     (return :failed))
+	    ((member (send ,client :get-state)
+		     (list actionlib_msgs::ACTIVE
+			    actionlib_msgs::PENDING))
+	     ;; user cancel
+	     (if (and (vectorp (cdr (assoc :cancel userdata)))
+		      (elt (cdr (assoc :cancel userdata)) 0))
+		 (send ,client :cancel-goal))
+	     ;; time out
+	     (if (and (numberp ,timeout)
+		      (< ,timeout (send (ros::time- (ros::time-now) start) :to-sec)))
+		 (send ,client :cancel-goal))))
+	  ))))
+  )
 
 ;; simple usage
 ;; (instance state-machine-action-server :init "/action_name" awesome_pkg::GreatAction (your-state-machine) userdata)
