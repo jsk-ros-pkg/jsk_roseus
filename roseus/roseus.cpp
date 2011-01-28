@@ -882,7 +882,7 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   }
 
   if( s_mapAdvertised.find(topicname) != s_mapAdvertised.end() ) {
-    ROS_INFO("topic already advertised");
+    ROS_INFO("topic %s already advertised", topicname.c_str());
     return (NIL);
   }
 
