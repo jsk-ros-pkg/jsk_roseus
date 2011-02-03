@@ -19,7 +19,8 @@ function check-error {
 rospack profile
 
 # listap all packages
-for pkg in `rospack list-names`; do
+package_list_names=${@:-`rospack list-names`}
+for pkg in $package_list_names; do
     echo "package:$pkg"
     pkg_list[${#pkg_list[*]}]=`rospack find $pkg`
 done
@@ -55,11 +56,12 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
 	    check-error
 	done
     fi
-    if [ ! -e $roshomedir/roseus/$pkg ] ; then
-	mkdir -p $roshomedir/roseus/$pkg;
+    pkg_name=`basename $pkg`
+    if [ ! -e $roshomedir/roseus/$pkg_name ] ; then
+	mkdir -p $roshomedir/roseus/$pkg_name;
     fi
-    depends=`rospack depends $pkg`
-    `rospack find roseus`/scripts/genmanifest_eus "$roshomedir/roseus/$pkg/_manifest.l" "$depends";
+    depends=`rospack depends $pkg_name`
+    `rospack find roseus`/scripts/genmanifest_eus "$roshomedir/roseus/$pkg_name/_manifest.l" "$pkg_name" "$depends";
 done
 
 if [ $((${#err_list[@]})) -gt 0 ] ; then
