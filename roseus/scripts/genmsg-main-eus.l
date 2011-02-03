@@ -601,6 +601,7 @@
     (setq pkgs (nreverse pkgs))
     (with-open-file
      (f target-file :direction :output)
+     (warning-message 6 ";; writing to ~A~%" target-file)
      (pprint '(defun ros::load-ros-package (pkg)
                 (unless (find-package (string-upcase pkg))
                   (make-package (string-upcase pkg)))
