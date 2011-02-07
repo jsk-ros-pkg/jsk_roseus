@@ -672,6 +672,7 @@ pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
   isInstalledCheck;
   while (ctx->intsig==0) {
     ros::spinOnce();
+    s_rate->sleep();
   }
   return (NIL);
 }
