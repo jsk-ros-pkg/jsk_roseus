@@ -118,12 +118,24 @@
     (format strm "~%")
     ))
 
-
+(defun make-const-string (str)
+  ;; replace " -> \"
+  (let ((strm (make-string-output-stream (+ 2 (length str)))))
+    (format strm "~C" #\")
+    (dotimes (i (length str))
+      (let ((c (elt str i)))
+	(if (= c #\") (format strm "~C" #\\))
+	(format strm "~C" c)))
+    (format strm "~C" #\")
+    (get-output-stream-string strm)))
 (defun generate-msg-defconstants (strm pkg name consts)
   (let (accessor)
     (dolist (const consts)
       (setq accessor (subseq (cadr const) 1))
-      (format strm "(defconstant ~A::~A ~A)~%" pkg accessor (caddr const)))
+      (format strm "(defconstant ~A::~A ~A)~%" pkg accessor
+	      (if (string= (car const) "string")
+		  (make-const-string (caddr const))
+		(caddr const))))
     (format strm "~%")
     ))
 
