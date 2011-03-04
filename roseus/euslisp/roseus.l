@@ -252,7 +252,7 @@ always the rank of list is 2"
      ,@forms))
 
 (defun ros::load-ros-manifest (pkg)
-  (let ((manifest (format nil "~A/roseus/~A/_manifest.l"
+  (let ((manifest (format nil "~A/roseus/~A/manifest.l"
 			  (ros::ros-home-dir) pkg)))
     (when (probe-file manifest)
       (load-org-for-ros manifest))))

@@ -61,7 +61,7 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
 	mkdir -p $roshomedir/roseus/$pkg_name;
     fi
     depends=`rospack depends $pkg_name`
-    `rospack find roseus`/scripts/genmanifest_eus "$roshomedir/roseus/$pkg_name/_manifest.l" "$depends $pkg_name";
+    `rospack find roseus`/scripts/genmanifest_eus "$roshomedir/roseus/$pkg_name/manifest.l" "$depends $pkg_name";
     check-error
 done
 
