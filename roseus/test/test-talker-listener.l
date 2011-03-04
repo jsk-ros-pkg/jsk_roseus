@@ -29,7 +29,7 @@
   (setq m (instance string-cb-class :init))
 
   (ros::rate 10)
-  (dotimes (i 100)
+  (dotimes (i 25)
     (ros::spin-once)
     (ros::sleep)
     (sys::gc)
