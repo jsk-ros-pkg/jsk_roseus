@@ -1,7 +1,0 @@
-#!/bin/bash
-
-echo -e "\e[1;31m;; !!! runeus will be removed, use roseus !!!\e[m"
-
-roseus $@
-
-
