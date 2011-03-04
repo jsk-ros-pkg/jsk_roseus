@@ -18,8 +18,7 @@ macro(genmanifest_eus)
     string(REPLACE "\n" " " _rospack_deps_packages ${_rospack_deps_packages})
     add_custom_command(OUTPUT ${manifest_eus_target}
       COMMAND "mkdir" "-p"  ${manifest_eus_target_dir}
-      COMMAND ${genmanifest_eus_exe} ${manifest_eus_target}
-      ${_rospack_deps_packages}
+      COMMAND ${genmanifest_eus_exe} ${PROJECT_SOURCE_DIR} ${manifest_eus_target} ${_rospack_deps_packages}
       DEPENDS ${manifest_xml})
     add_custom_target(ROSBUILD_genmanifest_eus ALL
       DEPENDS ${manifest_eus_target} ${genmanifest_eus_exe})

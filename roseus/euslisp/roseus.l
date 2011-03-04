@@ -251,11 +251,22 @@ always the rank of list is 2"
   `(symbol-macrolet ,(ros-message-destructuring-bind-parse-arg msg params)
      ,@forms))
 
+;;
+;; load functions
+;;
 (defun ros::load-ros-manifest (pkg)
   (let ((manifest (format nil "~A/roseus/~A/manifest.l"
 			  (ros::ros-home-dir) pkg)))
     (when (probe-file manifest)
       (load-org-for-ros manifest))))
+
+(defun ros::load-ros-package (pkg)
+  (unless (find-package (string-upcase pkg))
+    (make-package (string-upcase pkg)))
+  (when (probe-file (format nil "~A/roseus/~A/msg" (ros::ros-home-dir) pkg))
+    (ros::roseus-add-msgs pkg))
+  (when (probe-file (format nil "~A/roseus/~A/srv" (ros::ros-home-dir) pkg))
+    (ros::roseus-add-srvs pkg)))
 
 (setq sys::*exit-hook* 'ros::exit)
 
