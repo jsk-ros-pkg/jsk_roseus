@@ -3,7 +3,6 @@
 ;; ros coordination system interface
 
 ;; include ros messages packages
-(ros::roseus-add-msgs "roslib")
 (ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "roseus")
 (ros::roseus-add-msgs "nav_msgs")
@@ -59,7 +58,7 @@
     ;; PoseStamped = Header + Pose
     ;; Header = seq + frame_id
     (instance geometry_msgs::PoseStamped :init
-              :header (instance roslib::header :init 
+              :header (instance std_msgs::header :init
                                 :frame_id id
                                 :stamp (ros::time-now))
               :pose pose)))
@@ -98,7 +97,7 @@
   (warning-message 1 ";; compose-detected-objects-to-Object-Detection is obsoleted use funtion in eustf.l")
   ;; obj-alist := ((name id coords) (name id coords) (name id coords) ...)
   (instance posedetection_msgs::ObjectDetection :init
-            :header (instance roslib::header :init 
+            :header (instance std_msgs::header :init
                               :frame_id id
                               :stamp (ros::time-now))
             :objects (mapcar 

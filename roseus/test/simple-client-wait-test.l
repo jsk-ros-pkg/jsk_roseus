@@ -4,10 +4,9 @@
 ;;;
 
 (load "unittest.l")
-(ros::roseus-add-msgs "roslib")
-(ros::roseus-add-msgs "roseus")
-(ros::roseus-add-msgs "actionlib")
-(ros::roseus-add-srvs "roscpp")
+(ros::load-ros-manifest "roseus")
+(ros::load-ros-manifest "actionlib")
+(ros::load-ros-manifest "roscpp")
 
 (init-unit-test)
 ;;;

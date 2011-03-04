@@ -6,9 +6,7 @@
 (setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
 
 (load "unittest.l")
-(ros::roseus-add-msgs "roslib")
-(ros::roseus-add-msgs "roseus")
-(ros::roseus-add-srvs "roseus")
+(ros::load-ros-manifest "roseus")
 ;;;
 ;;;
 (init-unit-test)

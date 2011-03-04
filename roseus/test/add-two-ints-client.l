@@ -2,10 +2,8 @@
 ;;;
 ;;; euslisp version of ros_tutorials/rospy_tutorials/005_add_two_ints
 ;;;
+(ros::load-ros-manifest "roseus")
 
-(ros::roseus-add-msgs "roslib")
-(ros::roseus-add-msgs "roseus")
-(ros::roseus-add-srvs "roseus")
 ;;;
 ;;;
 (ros::roseus "add_two_ints_client")

@@ -2,10 +2,8 @@
 ;;;
 ;;; euslisp version of ~/ros/ros_pkg_tutorials/actionlib_tutorials/simple_action_servers/fibonacci_server.py
 ;;;
-
-(ros::roseus-add-msgs "roslib")
-(ros::roseus-add-msgs "roseus")
-(ros::roseus-add-msgs "actionlib_tutorials")
+(ros::load-ros-manifest "roseus")
+(ros::load-ros-manifest "actionlib_tutorials")
 ;;;
 
 ;;;

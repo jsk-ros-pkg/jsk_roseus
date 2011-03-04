@@ -2,12 +2,9 @@
 ;;;
 ;;; euslisp version of ros_tutorials/rospy_tutorials/005_add_two_ints
 ;;;
+(ros::load-ros-manifest "roseus")
 
-(ros::roseus-add-msgs "roslib")
-(ros::roseus-add-msgs "roseus")
-(ros::roseus-add-srvs "roseus")
 ;;;
-
 (defun add-two-ints (req)
   (let ((m (send req :response)))
     (format *error-output* "Returning [~d + ~d = ~d]~%"

@@ -9,7 +9,6 @@
 (load-library "eustf.so" '("eustf"))
 
 ;; include ros messages packages
-(ros::roseus-add-msgs "roslib")
 (ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
 
@@ -58,7 +57,7 @@
     ;; PoseStamped = Header + Pose
     ;; Header = seq + frame_id
     (instance geometry_msgs::PoseStamped :init
-              :header (instance roslib::header :init
+              :header (instance std_msgs::header :init
                                 :frame_id id
                                 :stamp (ros::time-now))
               :pose pose)))
@@ -71,7 +70,7 @@
 (defun ros::coords->tf-transform-stamped (coords id &optional (child_id ""))
     (let ((trans (ros::coords->tf-transform coords)))
       (instance geometry_msgs::TransformStamped :init
-                :header (instance roslib::header :init :frame_id id :stamp (ros::time-now))
+                :header (instance std_msgs::header :init :frame_id id :stamp (ros::time-now))
                 :child_frame_id child_id :transform trans)))
 
 ;; tf->eus

@@ -23,7 +23,7 @@
 	(setq var (concatenate string "_" (string-left-trim '(#\space #\tab) (subseq line (1+ pos)))))
 	;; format type
 	(if (string= "header" (string-downcase type))
-	    (setq type (concatenate string "roslib::" type)))
+	    (setq type (concatenate string "std_msgs::" type)))
 	(if (setq pos (position #\/ type))
 	    (setq type (format nil "~A::~A" (subseq type 0 pos) (subseq type (1+ pos)))))
 	;; when variable is list

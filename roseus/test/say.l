@@ -1,8 +1,7 @@
 #!/usr/bin/env roseus
 
-(ros::roseus-add-msgs "roslib")
-(ros::roseus-add-msgs "roseus")
-(ros::roseus-add-msgs "sound_play")
+(ros::load-ros-manifest "roseus")
+(ros::load-ros-manifest "sound_play")
 ;;;
 (setq ros::*debug* t)
 ;;;
