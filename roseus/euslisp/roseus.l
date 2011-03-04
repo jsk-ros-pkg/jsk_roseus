@@ -298,23 +298,3 @@ always the rank of list is 2"
     ret
     ))
 
-;; obsoleted functions
-(in-package "USER")
-(defun roseus (&rest args)
-  (warning-message 1 ";; roseus is obsoleted, use ros::roseus~%")
-  (apply #'ros::roseus args))
-(defun getname ()
-  (warning-message 1 ";; getname is obsoleted, use ros::get-name~%")
-  (format t "~C[3~Cm" #x1b 49)
-  (btrace)
-  (format t "~C[0m" #x1b)
-  (ros::get-name))
-(defun roseus-add-msgs (pkg)
-  (warning-message 3 ";; roseus-add-msgs will be obsoleted, use ros::roseus-add-msgs [~s]~%" pkg)
-  (ros::roseus-add-msgs pkg))
-(defun roseus-add-srvs (pkg)
-  (warning-message 3 ";; roseus-add-srvs will be obsoleted, use ros::roseus-add-srvs [~s]~%" pkg)
-  (ros::roseus-add-srvs pkg))
-(defun load-ros-manifest (pkg)
-  (warning-message 3 ";; load-ros-manifest will be obsoleted, use ros::load-ros-manifest [~s]~%" pkg)
-  (ros::load-ros-manifest pkg))

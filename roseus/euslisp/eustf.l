@@ -201,17 +201,6 @@
                                       (elt ret 5)
                                       (elt ret 6)))
                        :name target-frame))))
-  (:lookup-transform-safe
-   (target-frame source-frame time
-    &optional (timeout 0.1) (duration 0.1))
-      (warning-message 1 ";; :lookup-transsform-safe is obsoleted, use :lookup-transform~%")
-      (if (send self :wait-for-transform target-frame source-frame time
-                timeout duration)
-          (send self :lookup-transform target-frame source-frame time)
-        (progn
-          (ros::ros-warn "cannot resolve transformation from ~A to ~A"
-                         source-frame target-frame)          
-          nil)))
   (:lookup-transform-full
    (target-frame target-time source-frame source-time fixed-frame)
    (let (ret)
@@ -279,19 +268,6 @@
                                                                      (elt ret 5)
                                                                      (elt ret 6)))
                          :name target-frame)))))
-  (:transform-pose-safe
-   (target-frame pose-stamped &optional (timeout 0.1) (duration 0.1))
-   (warning-message 1 ";; :transsform-pose-safe is obsoleted, use :transform-pose~%")
-   (if (send self :wait-for-transform target-frame
-             (send pose-stamped :header :frame_id)
-             (send pose-stamped :header :stamp)
-             timeout duration)
-       (send self :transform-pose target-frame pose-stamped)
-     (progn
-       (ros::ros-warn "cannot resolve transformation from ~A to ~A"
-                      (send pose-stamped :header :frame_id)
-                      target-frame)
-       nil)))
   )
 
 (defclass ros::transform-broadcaster

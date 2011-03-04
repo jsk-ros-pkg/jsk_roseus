@@ -169,10 +169,6 @@
      (ros::publish (format nil "~A/cancel" name-space) cancel)
      (send comm-state :state 'ros::*comm-state-waiting-for-cancel-ack*)))
   ;;
-  (:get-result-status
-   ()
-   (warning-message 1 "get-reuslt-status is obsolete method, use get-goal-status-text or get-goal-state")
-   (send comm-state :latest-goal-status))
   )
 
 
