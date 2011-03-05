@@ -12,17 +12,11 @@ macro(genmanifest_eus)
   set(manifest_eus_target_dir ${roshomedir}/roseus/${PROJECT_NAME})
   set(manifest_eus_target ${manifest_eus_target_dir}/manifest.l)
   set(manifest_xml ${PROJECT_SOURCE_DIR}/manifest.xml)
-  rosbuild_invoke_rospack(${PROJECT_NAME} _rospack deps_packages depends)
-  set(_rospack_deps_packages "${_rospack_deps_packages} ${PROJECT_NAME}")
-  if(NOT "" STREQUAL "${_rospack_deps_packages}")
-    string(REPLACE "\n" " " _rospack_deps_packages ${_rospack_deps_packages})
-    add_custom_command(OUTPUT ${manifest_eus_target}
-      COMMAND "mkdir" "-p"  ${manifest_eus_target_dir}
-      COMMAND ${genmanifest_eus_exe} ${PROJECT_SOURCE_DIR} ${manifest_eus_target} ${_rospack_deps_packages}
-      DEPENDS ${manifest_xml})
-    add_custom_target(ROSBUILD_genmanifest_eus ALL
+  add_custom_command(OUTPUT ${manifest_eus_target}
+    COMMAND ${genmanifest_eus_exe} ${PROJECT_NAME}
+    DEPENDS ${manifest_xml})
+  add_custom_target(ROSBUILD_genmanifest_eus ALL
       DEPENDS ${manifest_eus_target} ${genmanifest_eus_exe})
-  endif(NOT "" STREQUAL "${_rospack_deps_packages}")
 endmacro(genmanifest_eus)
 genmanifest_eus()
 

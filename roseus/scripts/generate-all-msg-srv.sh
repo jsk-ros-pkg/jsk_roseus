@@ -21,15 +21,11 @@ rospack profile
 # listap all packages
 package_list_names=${@:-`rospack list-names`}
 for pkg in $package_list_names; do
-    echo "package:$pkg"
-    pkg_list[${#pkg_list[*]}]=`rospack find $pkg`
-done
-
-#rm */eus directory
-for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
-    pkg=${pkg_list[$pkg_i]}
-    if [ -e $pkg/msg ] ; then echo "rm $pkg/msg/eus"; rm -fr $pkg/msg/eus; fi
-    if [ -e $pkg/srv ] ; then echo "rm $pkg/srv/eus"; rm -fr $pkg/srv/eus; fi
+    fullpath_pkg=`rospack find $pkg`;
+    if [ "$fullpath_pkg" ] ; then
+	echo "package:$pkg -> $fullpath_pkg"
+	pkg_list[${#pkg_list[*]}]=$fullpath_pkg
+    fi
 done
 
 if [ "" != "$ROS_HOME" ] ; then
@@ -42,26 +38,20 @@ fi
 for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     pkg=${pkg_list[$pkg_i]}
     echo -e "\e[1;31mgenerating... $pkg_i/${#pkg_list[@]}\e[m"
+    pkg_name=`basename $pkg`
     if [ -e $pkg/msg/ ] ; then
 	for file in `find $pkg/msg -type f -name "*.msg"`; do
-	    echo $file
 	    `rospack find roseus`/scripts/genmsg_eus $file;
 	    check-error
 	done
     fi
     if [ -e $pkg/srv/ ] ; then
 	for file in `find $pkg/srv -type f -name "*.srv"`; do
-	    echo $file
 	    `rospack find roseus`/scripts/gensrv_eus $file;
 	    check-error
 	done
     fi
-    pkg_name=`basename $pkg`
-    if [ ! -e $roshomedir/roseus/$pkg_name ] ; then
-	mkdir -p $roshomedir/roseus/$pkg_name;
-    fi
-    depends=`rospack depends $pkg_name`
-    `rospack find roseus`/scripts/genmanifest_eus "$roshomedir/roseus/$pkg_name/manifest.l" "$depends $pkg_name";
+    `rospack find roseus`/scripts/genmanifest_eus $pkg_name
     check-error
 done
 

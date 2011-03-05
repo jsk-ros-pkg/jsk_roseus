@@ -1,4 +1,4 @@
-(setq lisp::*error-handler* #'(lambda (&rest args) (exit 1)))
+(setq lisp::*error-handler* #'(lambda (&rest args) (print args *error-output*)(exit 1)))
 (make-package "ROS")
 
 (defun generate-msg-datatype-name-list (strm)
@@ -613,15 +613,22 @@
      )))
 
 
-(defun genmanifest-eus (project target-file depend-packages)
-  (let ((strm (make-string-input-stream depend-packages)) pkg pkgs)
-    (while (setq pkg (read strm nil)) (push (format nil "~A" pkg) pkgs))
-    (setq pkgs (nreverse pkgs))
+(defun genmanifest-eus (pkg &optional (target-file "manifest.l"))
+  (let (depend-pkgs strm l
+	(dir (format nil "~A/roseus/~A" (ros::ros-home-dir) pkg)))
+    (setq strm (piped-fork (format nil "rospack depends ~A" pkg)))
+    (while (setq l (read-line strm nil))
+      (push l depend-pkgs))
+    (setq depend-pkgs (nreverse depend-pkgs))
+    (unless (lisp::directory-p dir)
+      (warning-message 6 ";; mkdir ~A~%" dir)
+      (unix::system (format nil "mkdir -p ~A" dir)))
+    (setq target-file (format nil "~A/~A" dir target-file))
     (with-open-file
      (f target-file :direction :output)
      (warning-message 6 ";; writing to ~A~%" target-file)
-     (generate-donotedit-message f project)
-     (dolist (pkg pkgs)
+     (generate-donotedit-message f pkg)
+     (dolist (pkg depend-pkgs)
        (pprint `(ros::load-ros-package ,pkg) f)))
     ))
 
