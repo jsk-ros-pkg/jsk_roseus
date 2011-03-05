@@ -620,6 +620,7 @@
     (while (setq l (read-line strm nil))
       (push l depend-pkgs))
     (setq depend-pkgs (nreverse depend-pkgs))
+    (unless depend-pkgs (return-from genmanifest-eus nil))
     (unless (lisp::directory-p dir)
       (warning-message 6 ";; mkdir ~A~%" dir)
       (unix::system (format nil "mkdir -p ~A" dir)))

@@ -51,6 +51,7 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
 	    check-error
 	done
     fi
+    rospack depends $pkg_name; check-error ; ## just for check error
     `rospack find roseus`/scripts/genmanifest_eus $pkg_name
     check-error
 done
