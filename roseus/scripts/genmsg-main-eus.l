@@ -619,6 +619,8 @@
     (setq strm (piped-fork (format nil "rospack depends ~A" pkg)))
     (while (setq l (read-line strm nil))
       (push l depend-pkgs))
+    (close strm)
+    (push pkg depend-pkgs)
     (setq depend-pkgs (nreverse depend-pkgs))
     (unless depend-pkgs (return-from genmanifest-eus nil))
     (unless (lisp::directory-p dir)
