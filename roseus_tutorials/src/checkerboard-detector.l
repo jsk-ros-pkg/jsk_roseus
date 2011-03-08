@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(ros::roseus-add-msgs "roslib")
+(ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "roseus")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "image_view2")
@@ -38,7 +38,7 @@
               (setq msg
                     (object->marker-msg
                      obj
-                     (instance roslib::header :init :stamp (ros::time-now)
+                     (instance std_msgs::header :init :stamp (ros::time-now)
                                :frame_id obj-frame-id))))
         (ros::ros-info "PUBLISH ~A" obj-frame-id)
         (ros::publish obj-frame-id msg))

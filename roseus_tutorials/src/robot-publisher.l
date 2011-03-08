@@ -43,7 +43,7 @@
       (setq tm (instance mtimer :init))
       (send tm :start)
       (setq msg (object->marker-msg robot
-                                    (instance roslib::header
+                                    (instance std_msgs::header
                                               :init :stamp (ros::time-now)
                                               :frame_id robot-frame-id)))
       (push msg *robot-msgs*)

@@ -6,7 +6,7 @@ http://www.ros.org/wiki/sound_playを使ってサウンド出力するサンプ�
 
 |#
 
-(ros::roseus-add-msgs "roslib")
+(ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "roseus")
 (ros::roseus-add-msgs "sound_play")
 ;;;

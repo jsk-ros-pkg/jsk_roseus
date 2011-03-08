@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(ros::roseus-add-msgs "roslib")
+(ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "roseus")
 (ros::roseus-add-msgs "geometry_msgs")
 (ros::roseus-add-msgs "image_view2")

@@ -17,7 +17,7 @@
     (send cyl :translate (float-vector 0 0 -100))
     (objects (list cyl cb sp))
     (do-until-key
-     (let* ((header (instance roslib::header :init
+     (let* ((header (instance std_msgs::header :init
                               :stamp (ros::time-now)
                               :frame_id "/test_id"))
             (cyl-msg (cylinder->marker-msg cyl header))
