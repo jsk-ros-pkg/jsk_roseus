@@ -16,6 +16,7 @@
   <rosdep name="opengl" />
   <rosdep name="libjpeg" />
   <rosdep name="libx11-dev" />
+  <rosdep name="libxext-dev" />
   <rosdep name="libpng" />
   <rosdep name="libpq-dev" />
 

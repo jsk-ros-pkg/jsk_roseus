@@ -5,8 +5,11 @@ libjpeg:
   ubuntu: libjpeg62-dev
   macports: jpeg6b
 libx11-dev:
-    ubuntu: libx11-dev libxext-dev
+    ubuntu: libx11-dev
     macports: xorg-libX11
+libxext-dev:
+    ubuntu: libxext-dev
+    macports: 
 libpng:
   ubuntu: libpng12-dev
   macports: libpng
