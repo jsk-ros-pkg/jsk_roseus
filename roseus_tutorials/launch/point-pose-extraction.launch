@@ -3,9 +3,10 @@
   <node name="point_pose_extractor" pkg="jsk_perception"
 	type="point_pose_extractor">
     <param name="template_filename"
-    	   value="$(find opencv2)/build/opencv-svn/samples/cpp/lena.jpg"/>
-    <param name="object_width" value="0.1"/>
-    <param name="object_height" value="0.1"/>
+    	   value="$(find roseus_tutorials)/img/1000yen.jpg"/>
+    <param name="object_width" value="0.076"/>
+    <param name="object_height" value="0.150"/>
+    <param name="child_frame_name" value="bill"/>
   </node>
 
 </launch>
