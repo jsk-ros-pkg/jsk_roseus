@@ -15,6 +15,11 @@
     <include file="$(find roseus_tutorials)/launch/checkerboard-detector.launch" />
     <include file="$(find roseus_tutorials)/launch/template-track.launch" />
     <include file="$(find roseus_tutorials)/launch/camshiftdemo.launch" />
+    <node name="image_siftnode" pkg="imagesift" type="imagesift"
+	 output="screen" >
+      <remap from="image" to="image_rect_color" />
+    </node>
+    <include file="$(find roseus_tutorials)/launch/point-pose-extraction.launch" />
   </group>
 
   <include file="$(find roseus_tutorials)/launch/aques-talk.launch" />
