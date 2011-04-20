@@ -1,20 +1,26 @@
 opengl:
   ubuntu: libgl1-mesa-dev libglu1-mesa-dev
+  debian: libgl1-mesa-dev libglu1-mesa-dev
   macports: mesa
 libjpeg:
   ubuntu: libjpeg62-dev
+  debian: libjpeg62-dev
   macports: jpeg6b
 libx11-dev:
     ubuntu: libx11-dev
+    debian: libx11-dev
     macports: xorg-libX11
 libxext-dev:
     ubuntu: libxext-dev
+    debian: libxext-dev
     macports: 
 libpng:
   ubuntu: libpng12-dev
+  debian: libpng12-dev
   macports: libpng
 libpq-dev:
   ubuntu: libpq-dev
+  debian: libpq-dev
   macports: |
     echo "PostgreSQL is not supported in Darwin"
 
