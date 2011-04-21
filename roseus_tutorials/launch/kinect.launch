@@ -1,0 +1,14 @@
+<launch>
+  <include file="$(find openni_camera)/launch/openni_node.launch" />
+  <!-- add to launch openni_node2 for PS sensors, since node1 usually die -->
+  <!-- node pkg="openni_camera" type="openni_node" name="openni_node2" output="screen" respawn="true" / -->
+  <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" output="screen" respawn="true" />
+  <node name="openni_dispairty_view" pkg="image_view" type="disparity_view">
+    <remap from="image" to="/camera/depth/disparity" />
+  </node>
+  <node name="map_openni_camera" pkg="tf" type="static_transform_publisher"
+	args="0 0 1.5 0 0 0 /map /openni_camera 100" />
+  <node name="openni_depth_frame_openni_camera" pkg="tf" type="static_transform_publisher"
+	args="0 0 0 1.57 0 1.57 /openni_depth_frame /openni_depth 100" />
+</launch>
+
