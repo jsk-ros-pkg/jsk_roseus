@@ -16,6 +16,11 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+rosbuild_download_data(http://www.boj.or.jp/note_tfjgs/note/valid/img/bn_1000f_e.jpg img/1000yen.jpg fee3e1818618024c63246096db2d9507)
+rosbuild_download_data(http://www.boj.or.jp/note_tfjgs/note/valid/img/bn_2000f_d.jpg img/2000yen.jpg 7be94640b3d591b886eeb11c7e184d98)
+rosbuild_download_data(http://www.boj.or.jp/note_tfjgs/note/valid/img/bn_5000f_e.jpg img/5000yen.jpg d3118921dea5eafd296ae8130933ca1f)
+rosbuild_download_data(http://www.boj.or.jp/note_tfjgs/note/valid/img/bn_10000f_e.jpg img/10000yen.jpg 7ebda101f67a3f1a192ef096202e53f1)
+
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
