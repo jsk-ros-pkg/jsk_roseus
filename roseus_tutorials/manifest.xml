@@ -22,5 +22,4 @@
   <depend package="image_view2" />
   <depend package="jsk_perception" />
   <depend package="visualization_msgs" />
-  <depend package="jsk_mep_converter" />
 </package>
