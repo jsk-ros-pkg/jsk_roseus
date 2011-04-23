@@ -13,10 +13,20 @@ function check-error {
     fi
 }
 
+function print-usage {
+    echo "$0 : [option] package_name "
+    echo " [option]"
+    echo "   --help       : print this message"
+}
+
 #trap 'kill -s HUP $$ ' INT TERM
+case $1 in
+    -h|--help)
+	print-usage; exit 0;
+esac
 
 # profile
-rospack profile
+rospack profile > /dev/null
 
 # listap all packages
 package_list_names=${@:-`rospack list-names`}
@@ -51,7 +61,7 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
 	    check-error
 	done
     fi
-    rospack depends $pkg_name; check-error ; ## just for check error
+    rospack depends $pkg_name > /dev/null; check-error ; ## just for check error
     `rospack find roseus`/scripts/genmanifest_eus $pkg_name
     check-error
 done
