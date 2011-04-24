@@ -138,7 +138,7 @@
   (let (accessor)
     (dolist (const consts)
       (setq accessor (subseq (cadr const) 1))
-      (format strm "(defconstant ~A::~A ~A)~%" pkg accessor
+      (format strm "(defconstant ~A::*~A* ~A)~%" pkg accessor
 	      (if (string= (car const) "string")
 		  (make-const-string (caddr const))
 		(caddr const))))
