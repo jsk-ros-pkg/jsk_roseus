@@ -13,6 +13,6 @@
   <node name="template_match_view" pkg="image_view2" type="image_view2" >
     <remap from="image" to="tracking_result_image" />
     <param name="autosize" value="true" />
-    <param name="window_name" value="template_match_view" />
+    <param name="window_name" value="template_match_view (click here to start tracking)" />
   </node>
 </launch>
