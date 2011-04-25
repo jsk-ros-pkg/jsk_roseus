@@ -1,8 +1,8 @@
 <launch>
-  <node name="image_view" pkg="image_view2" type="image_view2" >
+  <node name="image_view2" pkg="image_view2" type="image_view2" output="screen" >
     <remap from="image" to="image_rect_color" />
     <param name="autosize" value="true" />
-    <param name="window_name" value="image_view" />
+    <param name="window_name" value="image_view2" />
   </node>
 </launch>
 
