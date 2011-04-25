@@ -1,4 +1,5 @@
 <launch>
+  <param name="/cmvision/color_file" value="$(find roseus_tutorials)/launch/color-skin.txt" />
   <node name="cmvision" pkg="cmvision" type="cmvision">
     <!--<remap from="image" to="image_view" />-->
     <remap from="image" to="image_rect_color" />
