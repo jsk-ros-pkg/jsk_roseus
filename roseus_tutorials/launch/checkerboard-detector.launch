@@ -9,7 +9,7 @@
   <param name="translation0" value="0.060 0.090 0" />
   <!-- (array-entity (send (make-coords :rpy (float-vector 0 0 pi)) :worldrot)) -->
   <param name="rotation0" value="1.0 0.0 0.0 0.0 -1.0 -6.278329e-07 0.0 6.278329e-07 -1.0" />
-  <param name="frame_id" value="usb_cam" />
+  <param name="frame_id" value="camera" />
   <node name="checkerboard_detector" pkg="checkerboard_detector"
 	type="checkerboard_detector">
     <remap from="image" to="image_rect" />
