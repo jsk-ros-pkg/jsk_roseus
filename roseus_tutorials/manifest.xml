@@ -10,13 +10,12 @@
   <url>http://ros.org/wiki/roseus_tutorials</url>
   <depend package="roseus"/>
 
-  <depend package="usb_cam" />
+  <depend package="uvc_camera" />
   <depend package="saliency_tracking" />
   <depend package="cmvision" />
   <depend package="checkerboard_pose" />
   <depend package="face_detector_mono" />
   <depend package="aques_talk" />
-  <depend package="usb_cam" />
   <depend package="checkerboard_detector" />
   <depend package="image_proc" />
   <depend package="image_view2" />
