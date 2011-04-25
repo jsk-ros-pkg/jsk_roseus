@@ -7,4 +7,5 @@
     <param name="fps" value="30"/>
     <param name="frame_id" value="camera" />
   </node>
+  <node name="image_proc" pkg="image_proc" type="image_proc" output="screen" />
 </launch>

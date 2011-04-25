@@ -2,8 +2,6 @@
   <include file="$(find roseus_tutorials)/launch/usb-camera.launch" />
   <node name="camera_tf_sender" pkg="tf" type="static_transform_publisher"
 	args="0 0 0 0 0 0 base_link camera 100" />
-
-  <include file="$(find roseus_tutorials)/launch/image-proc.launch" />
   <include file="$(find roseus_tutorials)/launch/image-view.launch" />
   <include file="$(find roseus_tutorials)/launch/template-track.launch" />
   <include file="$(find roseus_tutorials)/launch/face-detector-mono.launch" />
