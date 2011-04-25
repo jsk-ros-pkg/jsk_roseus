@@ -166,11 +166,11 @@ string getString(pointer message, pointer method) {
 int getInteger(pointer message, pointer method) {
   context *ctx = current_ctx;
   pointer a,curclass;
+  vpush(message);
   a = (pointer)findmethod(ctx,method,classof(message),&curclass);
   if (a!=NIL) {
-    vpush(message);
     pointer r = csend(ctx,message,method,0);
-    vpop();
+    vpop();                     // message
     return (ckintval(r));
   } else {
 #ifdef x86_64
@@ -180,6 +180,7 @@ int getInteger(pointer message, pointer method) {
     ROS_ERROR("could not find method %s for pointer %x",
               get_string(method), (unsigned int)message);
 #endif
+    vpop();                     // message
   }
   return 0;
 }
@@ -420,9 +421,9 @@ public:
     r = ufuncall(ctx, (ctx->callfp?ctx->callfp->form:NIL),
                  _scb, (pointer)(ctx->vsp-argc),
                  NULL, argc);
-    vpush(r); // _res._message, _req._message, eus_msg._message, r, eus_res._message
-    while(argc-->0)vpop();
-
+    while(argc-->0)vpop();// _res._message, _req._message, eus_msg._message, hoge
+    vpush(r); // _res._message, _req._message, eus_msg._message, r, 
+    
     // Serializaion
     EuslispMessage eus_res(_res);
     eus_res.replaceContents(r);
