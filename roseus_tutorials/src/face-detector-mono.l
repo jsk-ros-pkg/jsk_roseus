@@ -24,7 +24,7 @@
              (h  (send f :height)) (h/2 (/ h 2)))
         (print (list cx cy w h))
 
-        (send mrk :type image_view2::POLYGON)
+        (send mrk :type image_view2::*POLYGON*)
         (send mrk :points (list
                            (instance geometry_msgs::Point :init
                                      :x (- cx w/2) :y (- cy h/2))

@@ -24,7 +24,7 @@
  (send b :y))
         (push (instance geometry_msgs::Point :init :x (send b :x) :y (send b :y)) p)
         ))
-    (send mrk :type image_view2::POINTS)
+    (send mrk :type image_view2::*POINTS*)
     (send mrk :points p)
     (ros::publish "image_marker" mrk)
 
@@ -32,7 +32,7 @@
       (let ((b (car (send blobs :blobs))))
         ;;
         (send *pr2* :head :neck-y :joint-angle (if (> (send b :x) 320) +10 -10) :relative t)
-        (send mrk :type image_view2::POLYGON)
+        (send mrk :type image_view2::*POLYGON*)
         (send mrk :points (list
                            (instance geometry_msgs::Point :init
                                      :x (send b :left) :y (send b :top))

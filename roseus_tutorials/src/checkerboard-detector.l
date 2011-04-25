@@ -8,7 +8,6 @@
 ;;;
 ;;;
 (load "models/chessboard-30-7x5-object.l")
-(load "models/iphone4-object.l")
 (if (not (boundp '*irtviewer*)) (make-irtviewer))
 (setq *target-object* (chessboard-30-7x5 :name "/test_object"))
 ;;(setq *target-object* (iphone4 :name "/test_object"))
@@ -53,7 +52,7 @@
       (setq type (send obj-pose :type))
       (unless (eq (char type 0) #\/) (setq type (concatenate string "/" type)))
       (setq ret (ros::tf-pose->coords (send obj-pose :pose)))
-      (send mrk :type image_view2::FRAMES)
+      (send mrk :type image_view2::*FRAMES*)
       (send mrk :frames (list type))
       (send *tfb* :send-transform ret frame-id type)
       (ros::ros-info "~A ~A ~A" ret frame-id type)
@@ -65,7 +64,7 @@
 
 (ros::rate 10)
 (while (ros::ok)
-  (tf-object-update (list *target-object*) :root-frame-id "/usb_cam")
+  (tf-object-update (list *target-object*) :root-frame-id "/camera")
   (ros::spin-once)
   (send *irtviewer* :draw-objects)
   (x::window-main-one)

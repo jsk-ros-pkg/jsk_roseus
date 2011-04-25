@@ -14,7 +14,7 @@
   (let ((mrk (instance image_view2::ImageMarker2 :init)) ret)
     (print (send pose :pose))
     (setq ret (ros::tf-pose->coords (send pose :pose)))
-    (send mrk :type image_view2::FRAMES)
+    (send mrk :type image_view2::*FRAMES*)
     (send mrk :frames (list "/checkerboard_pose_frame"))
     (send tf-broadcaster :send-transform
           ret (send pose :header :frame_id) "/checkerboard_pose_frame")

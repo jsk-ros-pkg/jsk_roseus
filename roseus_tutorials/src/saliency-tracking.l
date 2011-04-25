@@ -7,7 +7,7 @@
 ;;;
 ;;;
 
-(roseus "sliency-client")
+(ros::roseus "sliency-client")
 (if (string= (ros::get-namespace) "/")
     (ros::ros-warn ";; Started in the global namespace! This is probably wrong.~%Start saliency-tracking.l in the camera namespace.~%Example command-line usage: $ ROS_NAMESPACE=my_camera ./saliency-tracking.l"))
 
@@ -17,11 +17,11 @@
     (print (list x y))
     (ros::ros-info "~A" poi)
 
-    (send mrk :type image_view2::POINTS)
+    (send mrk :type image_view2::*POINTS*)
     (send mrk :points (list poi))
     (ros::publish "image_marker" mrk)
 
-    (send mrk :type image_view2::POLYGON)
+    (send mrk :type image_view2::*POLYGON*)
     (send mrk :points (list
                        (instance geometry_msgs::Point :init :x (- x 8) :y (- y 8))
                        (instance geometry_msgs::Point :init :x (- x 8) :y (+ y 8))
