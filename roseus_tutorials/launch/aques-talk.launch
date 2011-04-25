@@ -4,6 +4,6 @@
     <param name="command" value="$(find aques_talk)/text2wave-jp.sh"/>
     <param name="frequency" value="8000" />
     <param name="channels" value="1" />
-    <param name="command_args" value="-p aq_m3.phont" />
+    <param name="command_args" value="-p aq_m4b.phont" />
   </node>
 </launch>
