@@ -421,7 +421,7 @@ public:
     r = ufuncall(ctx, (ctx->callfp?ctx->callfp->form:NIL),
                  _scb, (pointer)(ctx->vsp-argc),
                  NULL, argc);
-    while(argc-->0)vpop();// _res._message, _req._message, eus_msg._message, hoge
+    while(argc-->0)vpop();// _res._message, _req._message, eus_msg._message
     vpush(r); // _res._message, _req._message, eus_msg._message, r, 
     
     // Serializaion
