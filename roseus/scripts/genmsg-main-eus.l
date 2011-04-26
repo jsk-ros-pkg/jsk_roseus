@@ -616,7 +616,7 @@
 (defun genmanifest-eus (pkg &optional (target-file "manifest.l"))
   (let (depend-pkgs strm l
 	(dir (format nil "~A/roseus/~A" (ros::ros-home-dir) pkg)))
-    (setq strm (piped-fork (format nil "rospack depends -q ~A > /dev/null 2>&1" pkg)))
+    (setq strm (piped-fork (format nil "rospack depends -q ~A" pkg)))
     (while (setq l (read-line strm nil))
       (push l depend-pkgs))
     (close strm)
