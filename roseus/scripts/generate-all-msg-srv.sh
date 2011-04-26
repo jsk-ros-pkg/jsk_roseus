@@ -12,6 +12,12 @@ function check-error {
 	err_list[${#err_list[*]}]=${pkg_list[$pkg_i]}
     fi
 }
+function check-warn {
+    if [ "$?" != "0" ] ; then
+	echo -e "\e[1;33mWARN in ${pkg_list[$pkg_i]}\e[m"
+	warn_list[${#warn_list[*]}]=${pkg_list[$pkg_i]}
+    fi
+}
 
 function print-usage {
     echo "$0 : [option] package_name "
@@ -61,13 +67,21 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
 	    check-error
 	done
     fi
-    rospack depends $pkg_name > /dev/null; check-error ; ## just for check error
+    rospack depends $pkg_name > /dev/null ; check-warn ; ## just for check depends error
     `rospack find roseus`/scripts/genmanifest_eus $pkg_name
     check-error
 done
 
+if [ $((${#warn_list[@]})) -gt 0 ] ; then
+    echo -e "\e[1;33m[WARNING] occurred while processing $0, missing dependencies?\e[m"
+    for warn_i in $(seq 0 $((${#warn_list[@]} - 1))); do
+	warn=${warn_list[$warn_i]}
+	echo -e "\e[1;33m$warn\e[m"
+	rospack depends -q `basename $warn`
+    done
+fi
 if [ $((${#err_list[@]})) -gt 0 ] ; then
-    echo -e "\e[1;31mERROR occurred while processing $0\e[m"
+    echo -e "\e[1;31m[ERROR] occurred while processing $0\e[m"
     for err_i in $(seq 0 $((${#err_list[@]} - 1))); do
 	err=${err_list[$err_i]}
 	echo -e "\e[1;31m$err\e[m"
