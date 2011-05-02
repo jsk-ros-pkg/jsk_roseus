@@ -1,8 +1,6 @@
 #!/usr/bin/env roseus
 
-(ros::roseus-add-msgs "sensor_msgs")
-(ros::roseus-add-msgs "joy")
-(ros::roseus-add-msgs "wiimote")
+(ros::load-ros-manifest "wiimote")
 
 (defun ros::vector3->vector (vec)
   (float-vector (send vec :x) (send vec :y) (send vec :z)))

@@ -1,10 +1,8 @@
 #!/usr/bin/env roseus
 
-(ros::roseus-add-msgs "std_msgs")
-(ros::roseus-add-msgs "roseus")
-(ros::roseus-add-msgs "geometry_msgs")
-(ros::roseus-add-msgs "posedetection_msgs")
-(ros::roseus-add-msgs "image_view2")
+(ros::load-ros-manifest "image_view2")
+(ros::load-ros-manifest "jsk_perception")
+
 
 (ros::roseus "point-pose-ectraction")
 
