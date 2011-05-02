@@ -12,14 +12,14 @@
   (let ((mrk (instance image_view2::ImageMarker2 :init)) ret)
     (warning-message 1 "facedetect callback~%")
     (dolist (f (send faces :rects))
-      (print (list (send f :x) (send f :y))))
+      (format t "cx:~3d, cy:~3d~%" (send f :x) (send f :y)))
 
     (when (send faces :rects)
       (let* ((f (car (send faces :rects)))
              (cx (send f :x)) (cy (send f :y))
              (w  (send f :width))  (w/2 (/ w 2))
              (h  (send f :height)) (h/2 (/ h 2)))
-        (foramt t "cx:~3d, cy:~3d, w:~3d, h:~3d~%" cx cy w h)
+        (format t "cx:~3d, cy:~3d, w:~3d, h:~3d~%" cx cy w h)
 
         (send mrk :type image_view2::*POLYGON*)
         (send mrk :points (list
