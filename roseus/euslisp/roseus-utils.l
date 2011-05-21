@@ -251,3 +251,11 @@
     (gl::transparent sp (send rgba :a))
     sp))
 
+
+;;
+;; misc unction
+;;
+(ros::roseus-add-srvs "std_srvs")
+(defun call-empty-service (srvname)
+  (ros::wait-for-service srvname)
+  (ros::service-call srvname (instance std_srvs::EmptyRequest :init)))
