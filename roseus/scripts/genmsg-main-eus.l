@@ -100,13 +100,16 @@
   (format strm "~%"))
 
 (defun generate-msg-headers (strm pkg name)
-  (let ((upcase-pkg (string-upcase pkg)))
+  (let ((upcase-pkg (string-upcase pkg))
+	(upcase-name (string-upcase name)))
     (format strm ";;~%")
     (generate-donotedit-message strm (format nil "~A/~A.msg" pkg name))
     (format strm "(when (boundp '~A::~A)~%" pkg name)
     (format strm "  (if (not (find-package \"~A\"))~%" upcase-pkg)
     (format strm "    (make-package \"~A\"))~%" upcase-pkg)
     (format strm "  (shadow '~A (find-package \"~A\")))~%" name upcase-pkg)
+    (format strm "(unless (find-package '~A::~A)~%" upcase-pkg upcase-name)
+    (format strm "  (make-package \"~A::~a\"))~%" upcase-pkg upcase-name)
     (format strm "~%")
     (format strm "(in-package \"ROS\")~%")
     (format strm "~%")
@@ -138,8 +141,8 @@
   (let (accessor)
     (dolist (const consts)
       (setq accessor (subseq (cadr const) 1))
-      (format strm "(shadow '*~A* (find-package (string-upcase \"~A\")))~%" accessor pkg)
-      (format strm "(defconstant ~A::*~A* ~A)~%" pkg accessor
+      (format strm "(shadow '*~A* (find-package \"~A::~A\"))~%" accessor (string-upcase pkg) (string-upcase name))
+      (format strm "(defconstant ~A::~A::*~A* ~A)~%" pkg name accessor
 	      (if (string= (car const) "string")
 		  (make-const-string (caddr const))
 		(caddr const))))
