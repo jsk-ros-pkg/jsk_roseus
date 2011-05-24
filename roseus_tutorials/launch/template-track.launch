@@ -15,4 +15,10 @@
     <param name="autosize" value="true" />
     <param name="window_name" value="template_match_view (click here to start tracking)" />
   </node>
+
+  <sphinxdoc><![CDATA[
+This script start template matching node.
+Clink image on "template match view" window to set tracking target.
+Use /match_template tab dynamic_reconfigure to configure template size, evaluation method, color space.
+  ]]></sphinxdoc>
 </launch>

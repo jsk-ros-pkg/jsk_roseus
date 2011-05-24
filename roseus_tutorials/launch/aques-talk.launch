@@ -6,4 +6,17 @@
     <param name="channels" value="1" />
     <param name="command_args" value="-p aq_m4b.phont" />
   </node>
+  <sphinxdoc><![CDATA[
+
+This script start sound synthesis deriver
+
+Try
+
+.. code-block:: bash
+
+  rosrun roseus_tutorial aques_talk.l
+
+for the demonstration
+
+  ]]></sphinxdoc>
 </launch>

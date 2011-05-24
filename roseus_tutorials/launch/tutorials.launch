@@ -13,4 +13,9 @@
   <include file="$(find roseus_tutorials)/launch/point-pose-extraction.launch" />
   <include file="$(find roseus_tutorials)/launch/aques-talk.launch" />
   <include file="$(find roseus_tutorials)/launch/reconfigure-gui.launch" />
+
+  <sphinxdoc><![CDATA[
+This script starts all launch file for demo programs
+  ]]></sphinxdoc>
+
 </launch>

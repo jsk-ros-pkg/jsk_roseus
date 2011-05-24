@@ -4,5 +4,10 @@
     <param name="autosize" value="true" />
     <param name="window_name" value="image_view2" />
   </node>
+  <sphinxdoc><![CDATA[
+This script start imageview2, which is jsk extention version of image view that supports
+image marker capabilities in order to draw the reuslt, coordinates, annotation  of target object, on the image view.
+  ]]></sphinxdoc>
+  
 </launch>
 

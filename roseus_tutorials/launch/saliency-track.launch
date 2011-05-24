@@ -3,4 +3,15 @@
 	type="saliency_track" >
     <remap from="image" to="image_rect_color" />
   </node>
+
+  <sphinxdoc><![CDATA[
+This scripts starts saliency tracking node developed by UA.
+
+.. code-block:: bash
+
+  rosrun roseus_tutorials saliency-tracking.l
+
+This is the sample client program for the node, which read result data from saliency tracking node and write the result on the image_view2.
+
+  ]]></sphinxdoc>
 </launch>

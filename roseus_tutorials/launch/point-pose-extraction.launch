@@ -12,4 +12,16 @@
     <param name="error_threshold" value="50.0" />
   </node>
 
+  <sphinxdoc><![CDATA[
+This script starts sift base object pose detection node.
+defualt template image is `opencv logo <http://www.google.com/search?client=ubuntu&channel=fs&q=opencv&oe=utf-8&um=1&ie=UTF-8&tbm=isch&source=og&sa=N&hl=ja&tab=wi&biw=937&bih=638>`_.
+
+.. code-block:: bash
+
+  rosrun roseus_tutorial point-pose-extraction.l
+
+to read the result data from euslisp program.
+you need to launch image-view.launch before using this sample.
+  ]]></sphinxdoc>
+
 </launch>

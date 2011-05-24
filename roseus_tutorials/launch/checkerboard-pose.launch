@@ -8,4 +8,13 @@
     <param name="spacing_y" value="0.03" />
     <param name="publish_period" value="0.1" />
   </node>
+  <sphinxdoc><![CDATA[
+This script also starts checkerbord detection program
+
+.. code-block:: bash
+
+  rosrun roseus_tutorial checkerboard-pose.l
+
+is sample client program. This node publish geometry_msgs::PoseStamped.
+  ]]></sphinxdoc>
 </launch>

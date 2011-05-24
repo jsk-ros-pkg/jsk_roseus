@@ -10,4 +10,16 @@
    spatial_radius_pix: 2.0
    color_radius_pix: 40.0
   </rosparam>
+
+  <sphinxdoc><![CDATA[
+This scripts starts color extracking program (as known as cmvision)
+
+.. code-block:: bash
+
+  rosrun roseus_tutorials cmvision.l
+
+This is the sample client program for the node, which read result data from the node and write the result on the image_view2.
+Template color information is writting on `color_skin.txt` file
+
+  ]]></sphinxdoc>
 </launch>

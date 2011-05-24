@@ -8,4 +8,8 @@
     <param name="frame_id" value="camera" />
   </node>
   <node name="image_proc" pkg="image_proc" type="image_proc" output="screen" />
+
+  <sphinxdoc><![CDATA[
+this script launch uvc camera driver and image proc, with launch/usb-camera.yaml calibration file.
+  ]]></sphinxdoc>
 </launch>

@@ -1,5 +1,14 @@
 <launch>
   <node pkg="wiimote" type="wiimote_node.py" name="wiimote_node"
 	output="screen" />
+  <sphinxdoc><![CDATA[
+This script start wiimote driver.
+
+.. code-block:: bash
+
+  rosrun roseus_tutorial wiimote.l
+
+to read the wiimote data from euslisp
+  ]]></sphinxdoc>
 </launch>
 

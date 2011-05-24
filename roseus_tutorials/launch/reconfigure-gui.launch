@@ -1,5 +1,10 @@
 <launch>
   <node name="dynamic_reconfigure" pkg="dynamic_reconfigure"
 	type="reconfigure_gui" />
+
+  <sphinxdoc><![CDATA[
+This script starts reconfigure gui node
+  ]]></sphinxdoc>
+
 </launch>
 

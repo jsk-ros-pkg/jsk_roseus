@@ -11,4 +11,15 @@
     <param name="display" value="true" />
     <remap from="/yarp_to_ros_image/yarp_to_ros_image" to="image_rect" />
   </node>
+
+  <sphinxdoc><![CDATA[
+This script starts face detection demo
+
+.. code-block:: bash
+
+  rosrun roseus_tutorial face-detector-mono.l
+
+is sample client program.
+  ]]></sphinxdoc>
+
 </launch>

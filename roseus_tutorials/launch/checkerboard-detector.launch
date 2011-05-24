@@ -14,4 +14,14 @@
 	type="checkerboard_detector">
     <remap from="image" to="image_rect" />
   </node>
+
+  <sphinxdoc><![CDATA[
+This script starts checkerbord detection program
+
+.. code-block:: bash
+
+  rosrun roseus_tutorial checkerboard-detector.l
+
+is sample client program
+  ]]></sphinxdoc>
 </launch>
