@@ -12,16 +12,16 @@
 (defun camshift-cb (msg)
   (let ((mrk (instance image_view2::ImageMarker2 :init))
         width height angle)
-    (send mrk :type image_view2::*CIRCLE*)
-    (send mrk :action image_view2::*ADD*)
+    (send mrk :type image_view2::ImageMarker::*CIRCLE*)
+    (send mrk :action image_view2::ImageMarker::*ADD*)
     (send mrk :position (instance geometry_msgs::Point :init
                                   :x (send msg :rect :x)
                                   :y (send msg :rect :y)))
     (send mrk :scale 20)
     (ros::publish "image_marker" mrk)
 
-    (send mrk :type image_view2::*LINE_LIST*)
-    (send mrk :action image_view2::*ADD*)
+    (send mrk :type image_view2::ImageMarker::*LINE_LIST*)
+    (send mrk :action image_view2::ImageMarker::*ADD*)
 
     (setq angle (deg2rad (send msg :rect :angle)))
     (setq width  (/ (send msg :rect :width) 2)

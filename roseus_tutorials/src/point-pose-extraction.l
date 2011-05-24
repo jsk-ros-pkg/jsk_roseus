@@ -14,8 +14,8 @@
     (print (list (send pt :x) (send pt :y)))
 
     (send mrk :ns (send msg :header :frame_id))
-    (send mrk :type image_view2::*CIRCLE*)
-    (send mrk :action image_view2::*ADD*)
+    (send mrk :type image_view2::ImageMarker::*CIRCLE*)
+    (send mrk :action image_view2::ImageMarker::*ADD*)
     (send mrk :position pt)
     (send mrk :scale 20)
 

@@ -15,8 +15,8 @@
     (send pt :y (send trans-msg :transform :translation :y))
 
     (send mrk :ns (send trans-msg :child_frame_id))
-    (send mrk :type image_view2::*CIRCLE*)
-    (send mrk :action image_view2::*ADD*)
+    (send mrk :type image_view2::ImageMarker::*CIRCLE*)
+    (send mrk :action image_view2::ImageMarker::*ADD*)
     (send mrk :position pt)
     (send mrk :scale 20)
 

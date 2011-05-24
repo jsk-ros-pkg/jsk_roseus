@@ -14,11 +14,11 @@
     (print (list x y))
     (ros::ros-info "~A" poi)
 
-    (send mrk :type image_view2::*POINTS*)
+    (send mrk :type image_view2::ImageMarker::*POINTS*)
     (send mrk :points (list poi))
     (ros::publish "image_marker" mrk)
 
-    (send mrk :type image_view2::*POLYGON*)
+    (send mrk :type image_view2::ImageMarker::*POLYGON*)
     (send mrk :points (list
                        (instance geometry_msgs::Point :init :x (- x 8) :y (- y 8))
                        (instance geometry_msgs::Point :init :x (- x 8) :y (+ y 8))
