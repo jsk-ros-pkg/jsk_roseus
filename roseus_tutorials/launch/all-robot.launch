@@ -10,7 +10,6 @@
     <param name="x" value="0" />
     <param name="y" value="3200" />
   </node>
-<!--
   <node pkg="roseus_tutorials" type="robot-publisher.l" name="$(anon robot_publisher)" output="screen" >
     <param name="robot" value="((bishamon) (taro) (millennium) (akira))" />
     <param name="x" value="-1000" />
@@ -36,5 +35,11 @@
     <param name="x" value="-4000" />
     <param name="y" value="0" />
   </node>
--->
+  <sphinxdoc><![CDATA[
+This script displays robot model in rviz
+
+.. image:: ../images/all-robot.png
+  :width: 400
+
+  ]]></sphinxdoc>
 </launch>
