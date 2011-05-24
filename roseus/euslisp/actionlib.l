@@ -143,16 +143,16 @@
 	     (if (> (send tm :to-sec) timeout) (return))))
        (ros::spin-once)
        (ros::sleep))
-     (eq (send self :get-state) actionlib_msgs::*succeeded*)))
+     (eq (send self :get-state) actionlib_msgs::GoalStatus::*succeeded*)))
   (:get-result () (send (send comm-state :latest-result) :result))
   (:get-state ()
     (let (state)
       (setq state (send (send comm-state :latest-goal-status) :status))
       (case state
-        (actionlib_msgs::*recalling*
-         (setq state actionlib_msgs::*pending*))
-        (actionlib_msgs::*preempting*
-         (setq state actionlib_msgs::*active*)))
+        (actionlib_msgs::GoalStatus::*recalling*
+         (setq state actionlib_msgs::GoalStatus::*pending*))
+        (actionlib_msgs::GoalStatus::*preempting*
+         (setq state actionlib_msgs::GoalStatus::*active*)))
       state))
   (:get-goal-status-text () (send (send comm-state :latest-goal-status) :text))
   (:cancel-all-goals
@@ -203,16 +203,16 @@
    (cond (pending-goal ;; recall this
 	  (let ((recall-msg (send self :result)))
 	    (send recall-msg :status :goal_id (send pending-goal :goal_id))
-	    (send recall-msg :status :status actionlib_msgs::*recalled*)
+	    (send recall-msg :status :status actionlib_msgs::GoalStatus::*recalled*)
 	    (send recall-msg :header :stamp (ros::time-now))
 	    (ros::publish (format nil "~A/result" name-space) recall-msg))
 	  (setq pending-goal msg))
 	 ((send self :is-active)
-	  (setq status actionlib_msgs::*preempting*)
+	  (setq status actionlib_msgs::GoalStatus::*preempting*)
 	  (if preempt-cb (funcall preempt-cb self goal))
 	  (setq pending-goal msg))
 	 (t
-	  (setq status actionlib_msgs::*active*)
+	  (setq status actionlib_msgs::GoalStatus::*active*)
 	  (setq goal msg goal-id (send msg :goal_id))
 	  (if accept-cb (funcall accept-cb self goal)))
 	 ))
@@ -228,9 +228,9 @@
    ;;
    (when (and pending-goal (funcall check-func msg pending-goal))
      (setq pending-goal nil))
-   (when (and (equal status actionlib_msgs::*active*)
+   (when (and (equal status actionlib_msgs::GoalStatus::*active*)
 	      (funcall check-func msg goal))
-     (setq status actionlib_msgs::*preempting*)
+     (setq status actionlib_msgs::GoalStatus::*preempting*)
      (if preempt-cb (funcall preempt-cb self goal))))
   ;;
   (:publish-result
@@ -241,7 +241,7 @@
    (send msg :status :text text)
    (send msg :header :stamp (ros::time-now))
    (ros::publish (format nil "~A/result" name-space) msg)
-   (setq status actionlib_msgs::*pending*)
+   (setq status actionlib_msgs::GoalStatus::*pending*)
    (let ((next-goal pending-goal))
      (setq goal nil pending-goal nil)
      (if next-goal (send self :goal-callback next-goal))))
@@ -256,22 +256,22 @@
   (:set-succeeded
    (msg &optional (text ""))
    (ros::ros-info ";; Action Succeeded ~A" (send goal-id :id))
-   (setq status actionlib_msgs::*succeeded*)
+   (setq status actionlib_msgs::GoalStatus::*succeeded*)
    (send self :publish-result msg text))
   (:set-aborted
    (msg &optional (text ""))
    (ros::ros-info ";; Action Aborted ~A" (send goal-id :id))
-   (setq status actionlib_msgs::*aborted*)
+   (setq status actionlib_msgs::GoalStatus::*aborted*)
    (send self :publish-result msg text))
   (:set-preempted
    (&optional (msg (send self :result)) (text ""))
    (ros::ros-info ";; Cancel Goal ~A" (send goal-id :id))
    (case status
-     ((actionlib_msgs::*pending* actionlib_msgs::*recalling*)
-      (setq status actionlib_msgs::*recalled*)
+     ((actionlib_msgs::GoalStatus::*pending* actionlib_msgs::GoalStatus::*recalling*)
+      (setq status actionlib_msgs::GoalStatus::*recalled*)
       )
-     ((actionlib_msgs::*active* actionlib_msgs::*preepmpting*)
-      (setq status actionlib_msgs::*preempted*)
+     ((actionlib_msgs::GoalStatus::*active* actionlib_msgs::GoalStatus::*preepmpting*)
+      (setq status actionlib_msgs::GoalStatus::*preempted*)
       ))
    (send self :publish-result msg text))
   ;;
@@ -296,7 +296,7 @@
    (setq execute-cb exec-f preempt-cb preempt-f accept-cb accept-f)
    ;;
    (setq seq-id 0 feed-seq-id 0)
-   (setq status actionlib_msgs::*pending*)
+   (setq status actionlib_msgs::GoalStatus::*pending*)
    ;;
    (setq action-goal-class     (class (send action-spec :action_goal))
          action-result-class   (class (send action-spec :action_result))
@@ -312,8 +312,8 @@
    )
   ;;
   (:worker () (send self :execute-cb))
-  (:is-preempt-requested () (eq status actionlib_msgs::*preempting*))
-  (:is-active () (memq status (list actionlib_msgs::*preempting* actionlib_msgs::*active*)))
+  (:is-preempt-requested () (eq status actionlib_msgs::GoalStatus::*preempting*))
+  (:is-active () (memq status (list actionlib_msgs::GoalStatus::*preempting* actionlib_msgs::GoalStatus::*active*)))
   (:name-space () name-space)
   (:next-seq-id () (incf seq-id))
   (:next-feed-seq-id () (incf feed-seq-id))

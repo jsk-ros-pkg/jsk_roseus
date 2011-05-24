@@ -58,7 +58,7 @@
 				      ((:alpha a) 1.0)
                                       ((:id idx) 0))
   (let ((msg (instance visualization_msgs::Marker :init
-                       :type visualization_msgs::*CYLINDER*
+                       :type visualization_msgs::Marker::*CYLINDER*
                        :header header
                        :id idx))
         (cent-coords (send cyl :copy-worldcoords))
@@ -76,7 +76,7 @@
    			         ((:alpha a) 1.0)
                                  ((:id idx) 0))
   (let ((msg (instance visualization_msgs::Marker :init
-                       :type visualization_msgs::*CUBE*
+                       :type visualization_msgs::Marker::*CUBE*
                        :header header
                        :id idx))
         (cent-coords (send cb :copy-worldcoords))
@@ -94,7 +94,7 @@
    			         ((:alpha a) 1.0)
                                  ((:id idx) 0))
   (let ((msg (instance visualization_msgs::Marker :init
-                       :type visualization_msgs::*SPHERE*
+                       :type visualization_msgs::Marker::*SPHERE*
                        :header header
                        :id idx))
         (cent-coords (send sp :copy-worldcoords))
@@ -119,7 +119,7 @@
                       (ros::pos->tf-point p))
                   tri-vertices))
          (msg (instance visualization_msgs::Marker :init
-                        :type visualization_msgs::*TRIANGLE_LIST*
+                        :type visualization_msgs::Marker::*TRIANGLE_LIST*
                         :header header
                         :id idx)))
     (send msg :pose (ros::coords->tf-pose (make-coords)))
@@ -136,7 +136,7 @@
   (let ((bodies (send obj :bodies)))
     (when (and bodies (listp bodies))
       (let* ((msg (instance visualization_msgs::Marker :init
-                           :type visualization_msgs::*TRIANGLE_LIST*
+                           :type visualization_msgs::Marker::*TRIANGLE_LIST*
                            :header header
                            :id idx))
              (body-colors
@@ -176,7 +176,7 @@
 
 (defun coords->marker-msg (coords header &key (size 1) (width 1) (id 0))
   (let* ((msg (instance visualization_msgs::Marker :init
-                        :type visualization_msgs::*LINE_LIST*
+                        :type visualization_msgs::Marker::*LINE_LIST*
                         :header header
                         :id id))
          (points (mapcar #'(lambda (p)
@@ -206,9 +206,9 @@
     (print type)
     (print (numberp type))
     (case type
-      (visualization_msgs::*CUBE*     (marker-msg->shape/cube msg))
-      (visualization_msgs::*CYLINDER* (marker-msg->shape/cylinder msg))
-      (visualization_msgs::*SPHERE*   (marker-msg->shape/sphere msg))
+      (visualization_msgs::Marker::*CUBE*     (marker-msg->shape/cube msg))
+      (visualization_msgs::Marker::*CYLINDER* (marker-msg->shape/cylinder msg))
+      (visualization_msgs::Marker::*SPHERE*   (marker-msg->shape/sphere msg))
       )))
 
 (defun marker-msg->shape/cube (msg)
