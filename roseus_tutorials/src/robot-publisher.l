@@ -57,7 +57,7 @@
       (send *tfb* :send-transform robot "/tmp" robot-frame-id)
       )))
 
-(ros::rate 10)
+(ros::rate 5)
 (do-until-key
  (dolist (msg *robot-msgs*)
    (let (frame-id)
