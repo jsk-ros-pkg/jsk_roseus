@@ -38,7 +38,7 @@
   <sphinxdoc><![CDATA[
 This script displays robot model in rviz
 
-.. image:: ../images/all-robot.png
+.. image:: launch/images/all-robot.png
   :width: 400
 
   ]]></sphinxdoc>
