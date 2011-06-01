@@ -52,7 +52,7 @@
       (setq type (send obj-pose :type))
       (unless (eq (char type 0) #\/) (setq type (concatenate string "/" type)))
       (setq ret (ros::tf-pose->coords (send obj-pose :pose)))
-      (send mrk :type image_view2::ImageMarker::*FRAMES*)
+      (send mrk :type image_view2::ImageMarker2::*FRAMES*)
       (send mrk :frames (list type))
       (send *tfb* :send-transform ret frame-id type)
       (ros::ros-info "~A ~A ~A" ret frame-id type)
