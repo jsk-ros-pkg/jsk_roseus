@@ -32,8 +32,8 @@
         (ros::publish "image_marker" mrk)
 	;;
 	;; greetings
-	(send msg :sound sound_play::*say*) ;; say
-	(send msg :command sound_play::*play_once*) ;; once
+	(send msg :sound sound_play::SoundRequest::*say*) ;; say
+	(send msg :command sound_play::SoundRequest::*play_once*) ;; once
 	(send msg :arg "こんにちは")
 	(ros::publish "robotsound" msg)
 	;;
@@ -80,6 +80,7 @@
 (while (ros::ok)
   (ros::spin-once)
   (ros::sleep)
+  (x::window-main-one)
   )
 (ros::exit)
 

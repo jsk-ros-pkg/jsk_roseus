@@ -13,7 +13,7 @@
     (setq target-local (ros::tf-pose->coords (send pose :pose)))
 
     ;; for display
-    (send mrk :type image_view2::*FRAMES*)
+    (send mrk :type image_view2::ImageMarker2::*FRAMES*)
     (send mrk :frames (list "/checkerboard_pose_frame"))
     (send *tfb* :send-transform
           target-local (send pose :header :frame_id) "/checkerboard_pose_frame")
