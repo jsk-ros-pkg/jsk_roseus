@@ -18,7 +18,7 @@
 	     (msg (instance sound_play::SoundRequest :init)))
         (format t "cx:~3d, cy:~3d, w:~3d, h:~3d~%" cx cy w h)
 
-        (send mrk :type image_view2::*POLYGON*)
+        (send mrk :type image_view2::ImageMarker2::*POLYGON*)
         (send mrk :points (list
                            (instance geometry_msgs::Point :init
                                      :x (- cx w/2) :y (- cy h/2))
