@@ -108,7 +108,7 @@
     (format strm "  (if (not (find-package \"~A\"))~%" upcase-pkg)
     (format strm "    (make-package \"~A\"))~%" upcase-pkg)
     (format strm "  (shadow '~A (find-package \"~A\")))~%" name upcase-pkg)
-    (format strm "(unless (find-package '~A::~A)~%" upcase-pkg upcase-name)
+    (format strm "(unless (find-package \"~A::~A\")~%" upcase-pkg upcase-name)
     (format strm "  (make-package \"~A::~a\"))~%" upcase-pkg upcase-name)
     (format strm "~%")
     (format strm "(in-package \"ROS\")~%")
