@@ -24,7 +24,7 @@ $(EUSC_PATCH): eus.c_DEFAULT_ENV.patch
 
 clean:
 	-rm $(EUSC_PATCH) rospack_nosubdirs
-	(cd jskeus;make clean)
+	-(cd jskeus;make clean)
 	-rm -fr $(EUSDIR)/$(ARCHDIR)
 
 wipe: clean
