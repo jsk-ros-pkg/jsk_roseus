@@ -27,7 +27,7 @@
     ;; reach to the target
     (send *pr2* :rarm :inverse-kinematics
 	  target-world :rotation-axis nil
-	  :stop 3 :revert-if-error nil :warnp nil)
+	  :stop 3 :revert-if-fail nil :warnp nil)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send (send target-world :copy-worldcoords)  :draw-on :flush t :size 200)
     ;;
