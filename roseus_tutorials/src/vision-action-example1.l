@@ -69,7 +69,7 @@
   (ros::subscribe "face_detector_mono/faces" face_detector_mono::RectArray #'facedetect-cb))
 
 ;;
-(ros::roseus "facedetect-example1")
+(ros::roseus "vision-action-example1")
 (init-robot)
 (init-roseus)
 ;; main loop

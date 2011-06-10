@@ -52,7 +52,7 @@
   (ros::subscribe "board_pose" geometry_msgs::PoseStamped #'checkerboard-cb))
 
 ;;
-(ros::roseus "facedetect-example3")
+(ros::roseus "vision-action-example3")
 (init-robot)
 (init-roseus)
 ;; main loop
