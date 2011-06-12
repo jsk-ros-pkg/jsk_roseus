@@ -9,7 +9,7 @@
   (let* ((fx (elt p 0))(fy (elt p 5))
          (cx (elt p 2))(cy (elt p 6))
          (tx (elt p 3))(ty (elt p 7)))
-    (make-camera-from-param :pwidth pwidth :height :pheight
+    (make-camera-from-param :pwidth pwidth :pheight pheight
 			    :fx fx :fy fy :cx cx :cy cy
 			    :tx tx :ty ty :parent-coords frame-coords)))
 
@@ -17,7 +17,8 @@
   (let ((pwidth (send msg :width))
         (pheight (send msg :height))
         (p (send msg :P)))
-    (make-camera-from-ros-camera-info-aux pwidth pheight p)))
+    ;; FIXME:: add coordinates of camera
+    (make-camera-from-ros-camera-info-aux pwidth pheight p nil)))
 
 ;;
 ;; Visualization
