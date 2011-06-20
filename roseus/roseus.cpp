@@ -899,6 +899,20 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
   return (bSuccess?T:NIL);
 }
 
+pointer ROSEUS_SERVICE_EXISTS(register context *ctx,int n,pointer *argv)
+{
+  isInstalledCheck;
+  string service;
+
+  ckarg(1);
+  if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
+  else error(E_NOSTRING);
+
+  bool bSuccess = service::exists(ros::names::resolve(service), true);
+
+  return (bSuccess?T:NIL);
+}
+
 pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
@@ -1216,6 +1230,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"GET-TOPIC-PUBLISHER",argv[0],(pointer (*)())ROSEUS_GETTOPICPUBLISHER);
 
   defun(ctx,"WAIT-FOR-SERVICE",argv[0],(pointer (*)())ROSEUS_WAIT_FOR_SERVICE);
+  defun(ctx,"SERVICE-EXISTS", argv[0], (pointer (*)())ROSEUS_SERVICE_EXISTS);
   defun(ctx,"SERVICE-CALL",argv[0],(pointer (*)())ROSEUS_SERVICE_CALL);
   defun(ctx,"ADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_ADVERTISE_SERVICE);
   defun(ctx,"UNADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE_SERVICE);
