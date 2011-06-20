@@ -894,7 +894,7 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
   if( n > 1 )
     timeout = (int32_t)ckintval(argv[1]);
 
-  bool bSuccess = service::waitForService(ros::names::resolve(service), timeout);
+  bool bSuccess = service::waitForService(ros::names::resolve(service), ros::Duration(timeout));
 
   return (bSuccess?T:NIL);
 }
