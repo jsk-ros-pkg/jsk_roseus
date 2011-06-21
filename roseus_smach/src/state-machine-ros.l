@@ -78,7 +78,8 @@
 		    :key #'(lambda(x)(send x :name))
 		    :test #'string=))
      (when nd
-       (send sm :active-state nd))
+       (send sm :start-state nd)
+       (send sm :reset-state))
      (ros::ros-info "Set initial state")
      (setq init-tm (ros::time-now))
      ))
