@@ -6,7 +6,7 @@
   (load-library "roseus.so" '("roseus")))
 
 (unless (member :ros *features*) (push :ros *features*))
-(warning-message 2 ";; loading roseus(~A) on euslisp(~A)~%" (car ros::roseus-svnversion) lisp::lisp-implementation-version)
+(warning-message 3 ";; loading roseus(~A) on euslisp(~A)~%" (car ros::roseus-svnversion) lisp::lisp-implementation-version)
 
 (in-package "ROS")
 
