@@ -580,14 +580,14 @@
     ))
 
 (defun gensrv-eus (fname)
-  (let (req-msgs res-msgs consts doc pkg name req-name res-name dummy oname)
+  (let (req-msgs res-msgs consts1 consts2 doc pkg name req-name res-name oname)
     (multiple-value-setq (pkg name) (genfile-header fname))
     (setq req-name (format nil "~ARequest"  name)
           res-name (format nil "~AResponse" name))
     (with-open-file
      (strm fname :direction :input)
-     (multiple-value-setq (req-msgs consts) (generate-msg-datatype-name-list strm))
-     (multiple-value-setq (res-msgs dummy) (generate-msg-datatype-name-list strm)))
+     (multiple-value-setq (req-msgs consts1) (generate-msg-datatype-name-list strm))
+     (multiple-value-setq (res-msgs consts2) (generate-msg-datatype-name-list strm)))
 
     (setq oname (generate-msg-output-file-name fname pkg name "srv"))
     (warning-message 6 ";; writing to ~A~%" oname)
@@ -596,7 +596,7 @@
      (strm oname :direction :output)
      (generate-msg-headers strm pkg name)
      ;; defconstants
-     (generate-msg-defconstants strm pkg name consts)
+     (generate-msg-defconstants strm pkg name (append consts1 consts2))
      ;;
      (genfile-body pkg req-name req-msgs strm)
      (genfile-body pkg res-name res-msgs strm)
