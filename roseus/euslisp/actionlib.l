@@ -68,6 +68,7 @@
   ;;
   (:init
    (ns spec)
+   (send self :name ns)
    (setq name-space ns)
    (setq action-spec (instance spec :init))
    (setq comm-state (instance actionlib-comm-state :init))
@@ -291,6 +292,7 @@
   ;;
   (:init
    (ns spec &key ((:execute-cb exec-f)) ((:preempt-cb preempt-f)) ((:accept-cb accept-f)))
+   (send self :name ns)
    (setq name-space ns)
    (setq action-spec (instance spec :init))
    (setq execute-cb exec-f preempt-cb preempt-f accept-cb accept-f)
