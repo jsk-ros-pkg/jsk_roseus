@@ -91,3 +91,15 @@ endmacro(gensrv_eus)
 # Call the macro we just defined.
 gensrv_eus()
 
+# run generate-all-msg-srv.sh only if generate-all-msg-srv.sh is updated
+macro(generate_all_msg_srv)
+  rosbuild_find_ros_package(roseus)
+  set(roshomedir $ENV{ROS_HOME})
+  set(generate_all_msg_srv_script "${roseus_PACKAGE_PATH}/scripts/generate-all-msg-srv.sh")
+  set(roseus_so "${roseus_PACKAGE_PATH}/euslisp/roseus.so")
+  if(EXISTS ${roseus_so} AND ${generate_all_msg_srv_script} IS_NEWER_THAN ${roseus_so})
+    execute_process(COMMAND ${generate_all_msg_srv_script})
+  endif(EXISTS ${roseus_so} AND ${generate_all_msg_srv_script} IS_NEWER_THAN ${roseus_so})
+endmacro(generate_all_msg_srv)
+
+generate_all_msg_srv()
