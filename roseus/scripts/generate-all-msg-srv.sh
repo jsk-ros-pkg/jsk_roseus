@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ALL=no
+
 function generate-msg-srv {
     local dir=$1;
     echo $dir
@@ -22,20 +24,41 @@ function check-warn {
 function print-usage {
     echo "$0 : [option] package_name "
     echo " [option]"
-    echo "   --help       : print this message"
+    echo "    --help       : print this message"
+    echo " -a, --all       : generate all the packages"
 }
 
 #trap 'kill -s HUP $$ ' INT TERM
-case $1 in
-    -h|--help)
-	print-usage; exit 0;
-esac
+while [ $# -gt 0 ]
+do
+    case $1 in
+	-h|--help)
+	    print-usage; exit 0;;
+	--all)
+            ALL=Yes;;
+	*) break;;
+    esac
+    shift
+done
 
 # profile
 rospack profile > /dev/null
 
+
+if [ "" != "$ROS_HOME" ] ; then
+    roshomedir="$ROS_HOME";
+else
+    roshomedir="$HOME/.ros";
+fi
+
+mkdir -p $roshomedir/roseus
 # listap all packages
-package_list_names=${@:-`rospack list-names`}
+if [ "${ALL}" = "Yes" ]; then
+    package_list_names=${@:-`rospack list-names`}
+else
+    package_list_names=${@:-`cd $roshomedir/roseus; find ./ -maxdepth 1 -type d -print | sed s%^./%%g`}
+fi
+echo $package_list_names
 for pkg in $package_list_names; do
     fullpath_pkg=`rospack find $pkg`;
     if [ "$fullpath_pkg" ] ; then
@@ -44,11 +67,6 @@ for pkg in $package_list_names; do
     fi
 done
 
-if [ "" != "$ROS_HOME" ] ; then
-    roshomedir="$ROS_HOME";
-else
-    roshomedir="$HOME/.ros";
-fi
 
 # generate msg file
 for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
@@ -81,7 +99,7 @@ if [ $((${#warn_list[@]})) -gt 0 ] ; then
     done
 fi
 
-touch ${roshomedir}/roseus/msggenerated
+touch ${roshomedir}/roseus/generated
 
 if [ $((${#err_list[@]})) -gt 0 ] ; then
     echo -e "\e[1;31m[ERROR] occurred while processing $0\e[m"
