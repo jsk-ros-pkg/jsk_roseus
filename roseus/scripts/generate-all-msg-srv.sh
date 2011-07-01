@@ -80,6 +80,9 @@ if [ $((${#warn_list[@]})) -gt 0 ] ; then
 	rospack depends -q `basename $warn`
     done
 fi
+
+touch ${roshomedir}/roseus/msggenerated
+
 if [ $((${#err_list[@]})) -gt 0 ] ; then
     echo -e "\e[1;31m[ERROR] occurred while processing $0\e[m"
     for err_i in $(seq 0 $((${#err_list[@]} - 1))); do
@@ -88,8 +91,5 @@ if [ $((${#err_list[@]})) -gt 0 ] ; then
     done
     exit 1
 fi
-
-
-
 
 
