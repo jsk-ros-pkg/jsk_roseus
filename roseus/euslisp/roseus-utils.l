@@ -91,6 +91,20 @@
     (send msg :color (vector->rgba col a))
     msg))
 
+(defun line->marker-msg (li header
+                            &key ((:color col) (float-vector 1 0 0))
+                                 ((:alpha a) 1.0)
+                                 ((:id idx) 0)
+                                 ((:scale sc) 10.0))
+  (let ((msg (instance visualization_msgs::Marker :init
+                       :type visualization_msgs::Marker::*LINE_STRIP*
+                       :header header
+                       :id idx)))
+    (send msg :points (mapcar #'(lambda (l) (ros::pos->tf-point l)) li))
+    (send msg :scale (ros::pos->tf-translation (float-vector sc sc sc)))
+    (send msg :color (vector->rgba col a))
+    msg))
+
 (defun faces->marker-msg (faces header &key
                                 ((:color col) (float-vector 1 0 0))
                                 ((:id idx) 0))
