@@ -11,6 +11,7 @@ ros-euslisp-all: wiped $(EUSC_PATCH)
 	## EUSDIR=$(EUSDIR)
 	## ARCHDIR=$(ARCHDIR)
 	-patch -r - --forward -p0 -d jskeus/eus < $(EUSC_PATCH)
+	-patch -r - --forward -p0 -d jskeus/eus < eus.h_MAXSTACK.patch
 	## compile jskeus
 	(cd jskeus; make)
 	## force hard link for rosrun
