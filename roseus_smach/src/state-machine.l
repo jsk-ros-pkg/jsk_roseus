@@ -46,7 +46,8 @@
   ;;
   (:sub-sm-node () (remove-if-not #'(lambda(n)(send n :submachine)) nodes))
   ;; @ from,to: state instance or its name
-  ;; @ exec-result: trans state when execution at from-state returns this
+  ;; @ exec-result: trans state when execution at from-state returns this.
+  ;;                must be {number,string,symbol} or list of these
   (:add-transition
    (from to exec-result)
    (if (not (derivedp from state))(setq from (or (send self :node from) from)))
@@ -68,11 +69,12 @@
        (return-from :execute-impl
 	 (send active-state :execute userdata :step (1- step))))
    ;; execute once on this machine
-   (let ((last-state active-state)
+   (let ((last-state active-state trans)
 	 (exec-result (send active-state :execute userdata)))
      (when (not (assoc exec-result (send last-state :transitions)))
        (error "undefined transition ~A from ~A~%" exec-result last-state))
-     (setq active-state (cdr (assoc exec-result (send last-state :transitions))))
+	 (setq trans (send last-state :transitions))
+     (setq active-state (cdr (assoc exec-result trans :test #'equal)))
      (if (send active-state :submachine)
 	 (send (send active-state :submachine) :reset-state))
      exec-result))
