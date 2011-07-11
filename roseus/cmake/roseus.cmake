@@ -101,7 +101,7 @@ macro(generate_all_msg_srv)
   set(generate_all_msg_srv_script "${roseus_PACKAGE_PATH}/scripts/generate-all-msg-srv.sh")
   set(msggenerated "${roshomedir}/roseus/generated")
   if(${generate_all_msg_srv_script} IS_NEWER_THAN ${msggenerated})
-    execute_process(COMMAND ${generate_all_msg_srv_script})
+    execute_process(COMMAND ${generate_all_msg_srv_script} --all)
   endif(${generate_all_msg_srv_script} IS_NEWER_THAN ${msggenerated})
 endmacro(generate_all_msg_srv)
 
