@@ -36,6 +36,7 @@
        (x::window-main-one)
        (ros::spin-once)
        (ros::sleep)
+       (print header)
        ))))
 
 (ros::advertise *pub-cylinder-topic* visualization_msgs::Marker 5)
