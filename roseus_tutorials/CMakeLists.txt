@@ -23,5 +23,5 @@ rosbuild_download_data(http://www.boj.or.jp/note_tfjgs/note/valid/img/bn_10000f_
 
 # roslaunch documentation
 rosbuild_find_ros_package("jsk_tools")
-execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} python ${jsk_tools_PACKAGE_PATH}/launchdoc-generator.py ${PROJECT_NAME} --output_dir=. --nomakefile RESULT_VARIABLE _make_failed)
-# execute_process(COMMAND rosrun rosdoc rosdoc ${PROJECT_NAME})
+execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} python ${jsk_tools_PACKAGE_PATH}/bin/launchdoc-generator.py ${PROJECT_NAME} --output_dir=. --nomakefile RESULT_VARIABLE _make_failed)
+
