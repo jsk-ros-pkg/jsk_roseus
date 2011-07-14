@@ -106,11 +106,12 @@
      (send *unit-test* :add-function ',name)
      ',name))
 
-(defmacro assert (pred &optional fail-message)
+(defmacro assert (pred &optional (message "") &rest args)
   `(progn
      (send *unit-test* :increment-tests)
+     (print (list ',pred ,message ,@args))
      (if (not ,pred)
-       (send *unit-test* :increment-failure ',pred ,fail-message))))
+       (send *unit-test* :increment-failure ',pred (format nil ,message ,@args)))))
 
 (defun run-test (func-sym)
   ;; initilize result
