@@ -4,6 +4,21 @@
 
 (defvar *unit-test* nil)
 
+(defun unittests-error (code msg1 form &optional (msg2))
+  (format *error-output* "~C[1;3~Cm~A unittest-error: ~A"
+	  #x1b (+ 1 48)   *program-name* msg1)
+  (if msg2 (format *error-output* " ~A" msg2))
+  (if form (format *error-output* " in ~s" form))
+  (format *error-output* ", exitting...~C[0m~%"  #x1b)
+  (send *unit-test* :increment-failure (format nil "~A" form) msg1)
+  (send *unit-test* :print-result)
+  (send *unit-test* :close)
+  (exit 1))
+
+(defun unittest-sigint-handler (sig code)
+  (format *error-output* "unittest-sigint-handler ~A" sig)
+  (exit 1))
+
 (defclass unit-test-result
   :super propertied-object
   :slots (name tests failures errors time))
@@ -139,6 +154,11 @@
          (s (find-if #'(lambda (x) (substringp p x)) lisp::*eustop-argument*))
          (xml-fname (if s (string-left-trim p s))))
     (if xml-fname (setq log-fname xml-fname))
+
+    (lisp::install-error-handler 'unittest-error)
+    (unix:signal unix::sigint 'unittest-sigint-handler)
+    (unix:signal unix::sighup 'unittest-sigint-handler)
+
     (setq *unit-test* (instance unit-test-container :init :log-fname log-fname))
     t))
 
