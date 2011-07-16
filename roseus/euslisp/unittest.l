@@ -4,7 +4,7 @@
 
 (defvar *unit-test* nil)
 
-(defun unittests-error (code msg1 form &optional (msg2))
+(defun unittest-error (code msg1 form &optional (msg2))
   (format *error-output* "~C[1;3~Cm~A unittest-error: ~A"
 	  #x1b (+ 1 48)   *program-name* msg1)
   (if msg2 (format *error-output* " ~A" msg2))
