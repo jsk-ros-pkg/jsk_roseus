@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ALL=no
+ALL=yes
 
 function generate-msg-srv {
     local dir=$1;
