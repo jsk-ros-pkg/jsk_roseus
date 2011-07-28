@@ -145,7 +145,7 @@ string getString(pointer message, pointer method) {
     r = NULL;
 #ifdef x86_64
     ROS_ERROR("could not find method %s for pointer %lx",
-              get_string(method), message);
+              get_string(method), (long unsigned int)message);
 #else
     ROS_ERROR("could not find method %s for pointer %x",
               get_string(method), (unsigned int)message);
@@ -175,7 +175,7 @@ int getInteger(pointer message, pointer method) {
   } else {
 #ifdef x86_64
     ROS_ERROR("could not find method %s for pointer %lx",
-              get_string(method), message);
+              get_string(method), (long unsigned int)message);
 #else
     ROS_ERROR("could not find method %s for pointer %x",
               get_string(method), (unsigned int)message);
@@ -185,14 +185,14 @@ int getInteger(pointer message, pointer method) {
   return 0;
 }
 
-class EuslispMessage : public ros::Message
+class EuslispMessage
 {
 public:
   pointer _message;
 
   EuslispMessage(pointer message) : _message(message) {
   }
-  EuslispMessage(const EuslispMessage &r) : Message() {
+  EuslispMessage(const EuslispMessage &r) {
     context *ctx = current_ctx;
     if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     if ( isclass(r._message) ) {
@@ -239,7 +239,7 @@ public:
     return getInteger(_message, K_ROSEUS_SERIALIZATION_LENGTH);
   }
 
-  virtual uint8_t *serialize(uint8_t *write_ptr, uint32_t seqid) const
+  virtual uint8_t *serialize(uint8_t *writePtr, uint32_t seqid) const
   {
     context *ctx = current_ctx;
     if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
@@ -251,34 +251,53 @@ public:
     ROS_ASSERT(a!=NIL);
     pointer r = csend(ctx,_message,K_ROSEUS_SERIALIZE,0);
     ROS_ASSERT(isstring(r));
-    memcpy(write_ptr, get_string(r), len);
+    memcpy(writePtr, get_string(r), len);
     //ROS_INFO("serialize");
 
-    return write_ptr + len;
+    return writePtr + len;
   }
 
-  virtual uint8_t *deserialize(uint8_t *readPtr)
+  virtual uint8_t *deserialize(uint8_t *readPtr, uint32_t sz)
   {
     context *ctx = current_ctx;
     if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     pointer a,curclass;
 
-    if ( __serialized_length == 0 ) {
+    if ( sz == 0 ) {
       ROS_WARN("empty message!");
       return readPtr;
     }
     vpush(_message);
     a = (pointer)findmethod(ctx,K_ROSEUS_DESERIALIZE,classof(_message),&curclass);
     ROS_ASSERT(a!=NIL);
-    pointer p = makestring((char *)readPtr,__serialized_length);
+    pointer p = makestring((char *)readPtr, sz);
     pointer r = csend(ctx,_message,K_ROSEUS_DESERIALIZE,1,p);
     ROS_ASSERT(r!=NIL);
     //ROS_INFO("deserialize %d", __serialized_length);
     vpop(); // pop _message
 
-    return readPtr+__serialized_length;
+    return readPtr + sz;
   }
 };
+
+namespace ros{
+  namespace serialization{
+template<> struct Serializer<EuslispMessage> {
+  template<typename Stream>
+  inline static void write(Stream& stream, boost::call_traits<EuslispMessage>::param_type t) {
+    t.serialize(stream.getData(), 0);
+  }
+
+  template<typename Stream>
+  inline static void read(Stream& stream, boost::call_traits<EuslispMessage>::reference t) {
+    t.deserialize(stream.getData(), stream.getLength());
+  }
+  inline static uint32_t serializedLength(boost::call_traits<EuslispMessage>::param_type t) {
+    return t.serializationLength();
+  }
+};
+  }
+}
 
 /************************************************************
  *   Subscriptions
@@ -319,8 +338,7 @@ public:
 #endif
     ros::VoidConstPtr ptr(new EuslispMessage(_msg));
     EuslispMessage *eus_msg = (EuslispMessage *)(ptr.get());
-    (*eus_msg).__serialized_length = param.length;
-    eus_msg->deserialize(param.buffer);
+    eus_msg->deserialize(param.buffer, param.length);
 
     return ptr;
   }
@@ -388,8 +406,8 @@ public:
   }
   ~EuslispServiceCallbackHelper() { }
 
-  virtual MessagePtr createRequest() { return boost::shared_ptr<Message>(new EuslispMessage(_req)); }
-  virtual MessagePtr createResponse() { return boost::shared_ptr<Message>(new EuslispMessage(_res)); }
+  virtual boost::shared_ptr<EuslispMessage> createRequest() { return boost::shared_ptr<EuslispMessage>(new EuslispMessage(_req)); }
+  virtual boost::shared_ptr<EuslispMessage> createResponse() { return boost::shared_ptr<EuslispMessage>(new EuslispMessage(_res)); }
 
   virtual std::string getMD5Sum() { return md5; }
   virtual std::string getDataType() { return datatype; }
@@ -411,9 +429,8 @@ public:
     }
     // Deserialization
     EuslispMessage eus_msg(_req);
-    eus_msg.__serialized_length = params.request.num_bytes;
     vpush(eus_msg._message);    // _res._message, _req._message, eus_msg._message
-    eus_msg.deserialize(params.request.message_start);
+    eus_msg.deserialize(params.request.message_start, params.request.num_bytes);
 
     while(argp!=NIL){ ckpush(ccar(argp)); argp=ccdr(argp); argc++;}
     vpush((pointer) eus_msg._message);argc++;
