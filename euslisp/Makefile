@@ -16,9 +16,6 @@ ros-euslisp-all: wiped $(EUSC_PATCH)
 	(cd jskeus; make)
 	## force hard link for rosrun
 	cd $(EUSDIR)/$(ARCHDIR)/bin; ln -f eus irteus; ln -f eusgl irteusgl;
-	## add manifest for eus, irteus
-	cp manifest.xml.in jskeus/eus/manifest.xml
-	cp manifest.xml.in jskeus/irteus/manifest.xml
 	touch installed
 
 $(EUSC_PATCH): eus.c_DEFAULT_ENV.patch
