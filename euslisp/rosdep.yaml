@@ -13,7 +13,7 @@ libx11-dev:
 libxext-dev:
     ubuntu: libxext-dev
     debian: libxext-dev
-    macports: 
+    macports: xorg-libX11
 libpng:
   ubuntu: libpng12-dev
   debian: libpng12-dev
