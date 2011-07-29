@@ -109,7 +109,7 @@ macro(generate_all_msg_srv)
     execute_process(COMMAND touch ${roshomedir}/roseus/generated)
   endif(NOT EXISTS ${msggenerated})
   # when generated file is older than msg script, then generate all existing files
-  if(EXISTS ${msggenerated} AND ${generate_all_msg_srv_main} IS_NEWER_THAN ${msggenerated})
+  if(EXISTS ${msggenerated} AND ${generate_all_msg_srv_script} IS_NEWER_THAN ${msggenerated})
     message("Generate all msg and srv files...")
     execute_process(COMMAND ${generate_all_msg_srv_script})
     execute_process(COMMAND touch ${roshomedir}/roseus/generated)
