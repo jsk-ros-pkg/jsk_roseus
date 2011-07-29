@@ -91,7 +91,8 @@ endmacro(gensrv_eus)
 # Call the macro we just defined.
 gensrv_eus()
 
-# run generate-all-msg-srv.sh only if generate-all-msg-srv.sh is updated
+# run ./generate-all-msg-srv.sh when generate-all-msg-srv.sh is updated
+# to recompile all existing msgs under .ros/roseus
 macro(generate_all_msg_srv)
   rosbuild_find_ros_package(roseus)
   set(roshomedir $ENV{ROS_HOME})
@@ -99,10 +100,22 @@ macro(generate_all_msg_srv)
     set(roshomedir "$ENV{HOME}/.ros")
   endif("" STREQUAL "${roshomedir}")
   set(generate_all_msg_srv_script "${roseus_PACKAGE_PATH}/scripts/generate-all-msg-srv.sh")
+  set(generate_all_msg_srv_main "${roseus_PACKAGE_PATH}/scripts/genmsg-main-eus.l")
   set(msggenerated "${roshomedir}/roseus/generated")
-  if(EXISTS ${msggenerated} AND ${generate_all_msg_srv_script} IS_NEWER_THAN ${msggenerated})
-    execute_process(COMMAND ${generate_all_msg_srv_script} --all)
+  # when no generated file are found generate all shared files
+  if(NOT EXISTS ${msggenerated})
+    message("Generate all msg and srv files in shared directory")
+    execute_process(COMMAND ${generate_all_msg_srv_script} --shared)
+    execute_process(COMMAND touch ${roshomedir}/roseus/generated)
+  endif(NOT EXISTS ${msggenerated})
+  # when generated file is older than msg script, then generate all existing files
+  if(EXISTS ${msggenerated} AND ${generate_all_msg_srv_main} IS_NEWER_THAN ${msggenerated})
+    message("Generate all msg and srv files...")
+    execute_process(COMMAND ${generate_all_msg_srv_script})
+    execute_process(COMMAND touch ${roshomedir}/roseus/generated)
   endif(EXISTS ${msggenerated} AND ${generate_all_msg_srv_script} IS_NEWER_THAN ${msggenerated})
 endmacro(generate_all_msg_srv)
+
+# generate all shared installed msgs
 
 generate_all_msg_srv()

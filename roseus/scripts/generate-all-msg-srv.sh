@@ -1,7 +1,5 @@
 #!/bin/bash
 
-ALL=yes
-
 function generate-msg-srv {
     local dir=$1;
     echo $dir
@@ -22,19 +20,25 @@ function check-warn {
 }
 
 function print-usage {
-    echo "$0 : [option] package_name "
-    echo " [option]"
-    echo "    --help       : print this message"
-    echo " -a, --all       : generate all the packages"
+    echo "Usage $0 : [option] [package_name] "
+    echo "    (no option)     : generate for all packages that previously build "
+    echo "    [package_name]  : generate for the [package_name] package"
+    echo "    --all           : generate for all packages in the ROS_PACKAGE_PATH"
+    echo "    --shared        : generate for all packages in the ROS_PACKAGE_PATH"
+    echo "    --help          : print this message"
 }
 
 #trap 'kill -s HUP $$ ' INT TERM
+ALL=No
+SHARED=No
 while [ $# -gt 0 ]
 do
     case $1 in
 	-h|--help)
 	    print-usage; exit 0;;
-	--all)
+	-s|--shared)
+            SHARED=Yes;;
+	-a|--all)
             ALL=Yes;;
 	*) break;;
     esac
@@ -55,10 +59,11 @@ mkdir -p $roshomedir/roseus
 # listap all packages
 if [ "${ALL}" = "Yes" ]; then
     package_list_names=${@:-`rospack list-names`}
+elif [ "${SHARED}" = "Yes" ] ;  then
+    package_list_names=${@:-`for pkg in \`rospack list | cut -d\\  -f 2\`; do if [ -e $pkg/ROS_NOBUILD ]; then echo \`basename $pkg\`; fi; done`}
 else
     package_list_names=${@:-`cd $roshomedir/roseus; find ./ -maxdepth 1 -type d -print | sed s%^./%%g`}
 fi
-echo $package_list_names
 for pkg in $package_list_names; do
     fullpath_pkg=`rospack find $pkg`;
     if [ "$fullpath_pkg" ] ; then
@@ -98,8 +103,6 @@ if [ $((${#warn_list[@]})) -gt 0 ] ; then
 	rospack depends -q `basename $warn`
     done
 fi
-
-touch ${roshomedir}/roseus/generated
 
 if [ $((${#err_list[@]})) -gt 0 ] ; then
     echo -e "\e[1;31m[ERROR] occurred while processing $0\e[m"
