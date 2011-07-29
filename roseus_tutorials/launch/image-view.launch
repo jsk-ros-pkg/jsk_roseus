@@ -2,12 +2,25 @@
   <node name="image_view2" pkg="image_view2" type="image_view2" output="screen" >
     <remap from="image" to="image_rect_color" />
     <param name="autosize" value="true" />
-    <param name="blurry" value="false" />
+    <param name="blurry" value="true" />
     <param name="window_name" value="image_view2" />
   </node>
   <sphinxdoc><![CDATA[
 This script start imageview2, which is jsk extention version of image view that supports
 image marker capabilities in order to draw the reuslt, coordinates, annotation  of target object, on the image view.
+
+.. code-block:: bash
+
+  rosrun tf static_transform_publisher 0 0 1 0 0 0 /camera /target  100
+  rosrun image_view2 test-imageview2.l
+
+to start demonstration
+
+.. code-block:: bash
+  rosrun image_view image_view image:=/image_marked
+
+to get output image
+
   ]]></sphinxdoc>
   
 </launch>
