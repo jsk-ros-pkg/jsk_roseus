@@ -42,7 +42,7 @@
 (defun cylinder->marker-msg (cyl header
 				 &key ((:color col) (float-vector 1.0 0 0))
 				      ((:alpha a) 1.0)
-                                      ((:id idx) 0))
+                                      ((:id idx) 0) ns)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*CYLINDER*
                        :header header
@@ -55,12 +55,13 @@
     (send msg :scale (ros::pos->tf-translation
                       (float-vector (* 2 radius) (* 2 radius) height)))
     (send msg :color (vector->rgba col a))
+    (if ns (send msg :ns ns))
     msg))
 
 (defun cube->marker-msg (cb header
 			    &key ((:color col) (float-vector 1.0 0 0))
    			         ((:alpha a) 1.0)
-                                 ((:id idx) 0))
+                                 ((:id idx) 0) ns)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*CUBE*
                        :header header
@@ -73,12 +74,13 @@
     (send msg :scale (ros::pos->tf-translation
                       (float-vector cx cy cz)))
     (send msg :color (vector->rgba col a))
+    (if ns (send msg :ns ns))
     msg))
 
 (defun sphere->marker-msg (sp header
 			    &key ((:color col) (float-vector 1.0 0 0))
    			         ((:alpha a) 1.0)
-                                 ((:id idx) 0))
+                                 ((:id idx) 0) ns)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*SPHERE*
                        :header header
@@ -89,6 +91,7 @@
     (send msg :scale (ros::pos->tf-translation
                       (scale 2.0 (float-vector r r r))))
     (send msg :color (vector->rgba col a))
+    (if ns (send msg :ns ns))
     msg))
 
 (defun line->marker-msg (li header
@@ -107,7 +110,7 @@
 
 (defun faces->marker-msg (faces header &key
                                 ((:color col) (float-vector 1 0 0))
-                                ((:id idx) 0))
+                                ((:id idx) 0) ns)
   (let* ((tri-faces
           (mapcan #'(lambda (f) (geo::face-to-triangle f))
                   faces))
@@ -128,53 +131,71 @@
     (send msg :color (vector->rgba (float-vector 1 0 0) 1.0))
 
     (send msg :points points)
+    (if ns (send msg :ns ns))
     msg))
 
 (defun object->marker-msg (obj header &key
                                ((:color col) (float-vector 1 1 1))
-                               ((:id idx) 0))
-  (let ((bodies (send obj :bodies)))
-    (when (and bodies (listp bodies))
-      (let* ((msg (instance visualization_msgs::Marker :init
-                           :type visualization_msgs::Marker::*TRIANGLE_LIST*
-                           :header header
-                           :id idx))
-             (body-colors
-              (mapcar
-               #'(lambda (b)
-                   (cond ((null (get b :face-color)) col)
-                         (t (gl::find-color (get b :face-color)))))
-               bodies))
-             (triface-vertices-list
-              (mapcar #'(lambda (fs)
-                          (mapcan #'(lambda (f) (cdr (send f :vertices)))
-                                  (send fs :faces)))
-                      (mapcar #'body-to-faces bodies)))
-             (color-list
-              (mapcar #'(lambda (vlist c)
-                          (if (derivedp c gl::colormaterial) (setq c (send c :diffuse))) ;; jsk
-                          (make-list (length vlist) :initial-element c))
-                      triface-vertices-list body-colors))
-             (points
-              (mapcar #'(lambda (v)
-                          (ros::pos->tf-point v))
-                      (apply #'append triface-vertices-list)))
-             (colors
-              (mapcar #'(lambda (c)
-                          (if (derivedp c gl::colormaterial) (setq c (send c :diffuse))) ;; jsk
-                          (vector->rgba c 1.0))
-                      (apply #'append color-list)))
-             )
-        (send msg :frame_locked t)
-        (send msg :pose (ros::coords->tf-pose (send obj :worldcoords)))
-        (send msg :scale (ros::pos->tf-translation
-                          (float-vector 1000 1000 1000)))
-        (send msg :points points)
-        (send msg :color  (vector->rgba (float-vector 0 0 0) 1.0))
-        (send msg :colors colors)
-        msg))))
+                               ((:id idx) 0) ns)
+  (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
+    (let* ((msg (instance visualization_msgs::Marker :init
+			  :type visualization_msgs::Marker::*TRIANGLE_LIST*
+			  :header header
+			  :id idx))
+	   (body-colors
+	    (mapcar
+	     #'(lambda (b)
+		 (cond ((null (get b :face-color)) col)
+		       (t (gl::find-color (get b :face-color)))))
+	     bodies))
+	   (triface-vertices-list
+	    (mapcar #'(lambda (fs)
+			(mapcan #'(lambda (f) (cdr (send f :vertices)))
+				(send fs :faces)))
+		    (mapcar #'body-to-faces bodies)))
+	   (color-list
+	    (mapcar #'(lambda (vlist c)
+			(if (derivedp c gl::colormaterial) (setq c (send c :diffuse))) ;; jsk
+			(make-list (length vlist) :initial-element c))
+		    triface-vertices-list body-colors))
+	   (points
+	    (mapcar #'(lambda (v)
+			(ros::pos->tf-point v))
+		    (apply #'append triface-vertices-list)))
+	   (colors
+	    (mapcar #'(lambda (c)
+			(if (derivedp c gl::colormaterial) (setq c (send c :diffuse))) ;; jsk
+			(vector->rgba c 1.0))
+		    (apply #'append color-list)))
+	   )
+      (send msg :frame_locked t)
+      (send msg :pose (ros::coords->tf-pose (send obj :worldcoords)))
+      (send msg :scale (ros::pos->tf-translation
+			(float-vector 1000 1000 1000)))
+      (send msg :points points)
+      (send msg :color  (vector->rgba (float-vector 0 0 0) 1.0))
+      (send msg :colors colors)
+      (if ns (send msg :ns ns))
+      msg))))
 
-(defun coords->marker-msg (coords header &key (size 1) (width 1) (id 0))
+(defun text->marker-msg (str c header
+			   &key
+			   ((:color col) (float-vector 1 1 1))
+			   ((:alpha a) 1.0)
+			   ((:id idx) 0)
+			   ((:scale sc) 200.0) ns)
+  (let ((msg (instance visualization_msgs::Marker :init
+                       :type visualization_msgs::Marker::*TEXT_VIEW_FACING*
+                       :header header
+                       :id idx)))
+    (if ns (send msg :ns ns))
+    (send msg :pose (ros::coords->tf-pose c))
+    (send msg :scale (ros::pos->tf-translation (float-vector sc sc sc)))
+    (send msg :color (vector->rgba col a))
+    (send msg :text str)
+    msg))
+
+(defun coords->marker-msg (coords header &key (size 1) (width 1) (id 0) ns)
   (let* ((msg (instance visualization_msgs::Marker :init
                         :type visualization_msgs::Marker::*LINE_LIST*
                         :header header
@@ -197,6 +218,7 @@
     (send msg :points points)
     (send msg :color  (vector->rgba (float-vector 0 0 0) 1.0))
     (send msg :colors colors)
+    (if ns (send msg :ns ns))
     msg))
 
 ;; visualization_msgs::Marker -> eus shape object
