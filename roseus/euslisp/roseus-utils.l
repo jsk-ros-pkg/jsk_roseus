@@ -183,7 +183,7 @@
 			   ((:color col) (float-vector 1 1 1))
 			   ((:alpha a) 1.0)
 			   ((:id idx) 0)
-			   ((:scale sc) 200.0) ns)
+			   ((:scale sc) 100.0) ns)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*TEXT_VIEW_FACING*
                        :header header
