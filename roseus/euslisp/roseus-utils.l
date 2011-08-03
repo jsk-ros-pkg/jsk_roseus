@@ -42,7 +42,7 @@
 (defun cylinder->marker-msg (cyl header
 				 &key ((:color col) (float-vector 1.0 0 0))
 				      ((:alpha a) 1.0)
-                                      ((:id idx) 0) ns)
+                                      ((:id idx) 0) ns lifetime)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*CYLINDER*
                        :header header
@@ -56,12 +56,13 @@
                       (float-vector (* 2 radius) (* 2 radius) height)))
     (send msg :color (vector->rgba col a))
     (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
 
 (defun cube->marker-msg (cb header
 			    &key ((:color col) (float-vector 1.0 0 0))
    			         ((:alpha a) 1.0)
-                                 ((:id idx) 0) ns)
+                                 ((:id idx) 0) ns lifetime)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*CUBE*
                        :header header
@@ -75,12 +76,13 @@
                       (float-vector cx cy cz)))
     (send msg :color (vector->rgba col a))
     (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
 
 (defun sphere->marker-msg (sp header
 			    &key ((:color col) (float-vector 1.0 0 0))
    			         ((:alpha a) 1.0)
-                                 ((:id idx) 0) ns)
+                                 ((:id idx) 0) ns lifetime)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*SPHERE*
                        :header header
@@ -92,13 +94,14 @@
                       (scale 2.0 (float-vector r r r))))
     (send msg :color (vector->rgba col a))
     (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
 
 (defun line->marker-msg (li header
                             &key ((:color col) (float-vector 1 0 0))
                                  ((:alpha a) 1.0)
                                  ((:id idx) 0)
-                                 ((:scale sc) 10.0))
+                                 ((:scale sc) 10.0) ns lifetime)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*LINE_STRIP*
                        :header header
@@ -106,11 +109,13 @@
     (send msg :points (mapcar #'(lambda (l) (ros::pos->tf-point l)) li))
     (send msg :scale (ros::pos->tf-translation (float-vector sc sc sc)))
     (send msg :color (vector->rgba col a))
+    (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
 
 (defun faces->marker-msg (faces header &key
                                 ((:color col) (float-vector 1 0 0))
-                                ((:id idx) 0) ns)
+                                ((:id idx) 0) ns lifetime)
   (let* ((tri-faces
           (mapcan #'(lambda (f) (geo::face-to-triangle f))
                   faces))
@@ -132,11 +137,12 @@
 
     (send msg :points points)
     (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
 
 (defun object->marker-msg (obj header &key
                                ((:color col) (float-vector 1 1 1))
-                               ((:id idx) 0) ns)
+                               ((:id idx) 0) ns lifetime)
   (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
     (let* ((msg (instance visualization_msgs::Marker :init
 			  :type visualization_msgs::Marker::*TRIANGLE_LIST*
@@ -176,6 +182,7 @@
       (send msg :color  (vector->rgba (float-vector 0 0 0) 1.0))
       (send msg :colors colors)
       (if ns (send msg :ns ns))
+      (if lifetime (send msg :lifetime (ros::time lifetime)))
       msg))))
 
 (defun text->marker-msg (str c header
@@ -183,19 +190,20 @@
 			   ((:color col) (float-vector 1 1 1))
 			   ((:alpha a) 1.0)
 			   ((:id idx) 0)
-			   ((:scale sc) 100.0) ns)
+			   ((:scale sc) 100.0) ns lifetime)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*TEXT_VIEW_FACING*
                        :header header
                        :id idx)))
-    (if ns (send msg :ns ns))
     (send msg :pose (ros::coords->tf-pose c))
     (send msg :scale (ros::pos->tf-translation (float-vector sc sc sc)))
     (send msg :color (vector->rgba col a))
     (send msg :text str)
+    (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
 
-(defun coords->marker-msg (coords header &key (size 1) (width 1) (id 0) ns)
+(defun coords->marker-msg (coords header &key (size 1) (width 1) (id 0) ns lifetime)
   (let* ((msg (instance visualization_msgs::Marker :init
                         :type visualization_msgs::Marker::*LINE_LIST*
                         :header header
@@ -219,6 +227,7 @@
     (send msg :color  (vector->rgba (float-vector 0 0 0) 1.0))
     (send msg :colors colors)
     (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
 
 ;; visualization_msgs::Marker -> eus shape object
