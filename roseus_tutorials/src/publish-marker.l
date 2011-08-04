@@ -5,6 +5,7 @@
 (defvar *pub-cylinder-topic* "/cylinder_marker")
 (defvar *pub-cube-topic* "/cube_marker")
 (defvar *pub-sphere-topic* "/sphere_marker")
+(defvar *pub-all-topic* "/all_marker_array")
 
 (setq *tfb* (instance ros::transform-broadcaster :init))
 
@@ -25,13 +26,26 @@
 				      :color (float-vector 0 1 0) :alpha 0.5))
 	    (sp-msg (sphere->marker-msg sp header
 					:color (float-vector 0 0 1) :alpha 0.5))
+	    (all-msg (instance visualization_msgs::MarkerArray :init))
 	    )
        (send *tfb* :send-transform (make-coords) "/tmp" "/test_id")
+
+       ;; for single msg
        (ros::publish *pub-cylinder-topic* cyl-msg)
        (ros::publish *pub-cube-topic* cb-msg)
        (ros::publish *pub-sphere-topic* sp-msg)
+
+       ;; for array msg
+       ;; you shold set up namespace (:ns ) or id (:id) for marker array
+       (send cyl-msg :ns "test_cyl")
+       (send cb-msg :ns "test_cb")
+       (send sp-msg :ns "test_sp")
+       (send all-msg :markers (list cyl-msg cb-msg sp-msg))
+       (ros::publish *pub-all-topic* all-msg)
+
        (send cyl :rotate (deg2rad 1) :x)
        (send cb :rotate (deg2rad 1) :x)
+
        (send *irtviewer* :draw-objects)
        (x::window-main-one)
        (ros::spin-once)
@@ -42,4 +56,5 @@
 (ros::advertise *pub-cylinder-topic* visualization_msgs::Marker 5)
 (ros::advertise *pub-cube-topic* visualization_msgs::Marker 5)
 (ros::advertise *pub-sphere-topic* visualization_msgs::Marker 5)
+(ros::advertise *pub-all-topic* visualization_msgs::MarkerArray 5)
 (test-pub)
