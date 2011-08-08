@@ -21,6 +21,31 @@
     (make-camera-from-ros-camera-info-aux pwidth pheight p nil)))
 
 ;;
+;; 3dpoint cloud
+;;
+(defun make-msg-from-3dpointcloud (points-list &key color-list (frame "/sensor_frame"))
+  (let (points hdr msg)
+    ;; make-points
+    (dolist (length points-list)
+      (push (instance geometry_msgs::Point32 :init) points))
+    (mapcar #'(lambda (p pt)
+		(send p :x (/ (elt pt 0) 1000.0))
+		(send p :y (/ (elt pt 1) 1000.0))
+		(send p :a (/ (elt pt 2) 1000.0)))
+	    points points-list)
+    ;;
+    (setq hdr (instance std_msgs::header :init
+               :stamp (ros::time-now) :frame_id frame))
+
+    (setq msg (instance sensor_msgs::PointCloud :init
+                        :header hdr
+                        :points points))
+    msg
+    ))
+;;
+
+
+;;
 ;; Visualization
 ;;
 (ros::roseus-add-msgs "visualization_msgs")
