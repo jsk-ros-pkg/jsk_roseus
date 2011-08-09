@@ -144,7 +144,7 @@
      (case new-state
            ('ros::*comm-state-no-transition*  t)
            ('ros::*comm-state-invalid-transition*
-            (ros::ros-error (format nil "invalid goal status tronasition from ~A to ~A" (quote s) (quote new-state))))
+            (ros::ros-error (format nil "invalid goal status transition from ~A to ~A" s new-state)))
            (t
             (setq state new-state)))
      state))
