@@ -264,7 +264,7 @@ public:
     pointer a,curclass;
 
     if ( sz == 0 ) {
-      ROS_WARN("empty message!");
+      ROS_DEBUG("empty message!");
       return readPtr;
     }
     vpush(_message);
