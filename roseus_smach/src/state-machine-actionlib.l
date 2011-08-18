@@ -106,6 +106,53 @@
 	  ))))
   )
 
+(defun actionlib-client-state2
+  (name client &key (timeout 10) (retry nil) (key #'identity))
+  (send client :wait-for-server)
+  (instance state :init name
+   ;; main loop
+   `(lambda (userdata)
+      (let ((start (ros::time-now)))
+	(send ,client :send-goal
+	      (funcall (quote ,key) (cdr (assoc :goal userdata))))
+	(while (ros::ok)
+	  (ros::sleep)
+	  (ros::spin-once)
+	  ;;
+	  (cond
+	   ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*SUCCEEDED*)
+	     (return :succeeded))
+	    ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*ABORTED*)
+	     (if ,retry
+		 (send ,client :send-goal
+		       (funcall (quote ,key) (cdr (assoc :goal userdata))))
+	       (return :failed)))
+	    ((member (send ,client :get-state)
+		     (list actionlib_msgs::GoalStatus::*PREEMPTED*
+			   actionlib_msgs::GoalStatus::*RECALLED*
+			   actionlib_msgs::GoalStatus::*REJECTED*))
+	     (return :failed))
+	    ((member (send ,client :get-state)
+		     (list actionlib_msgs::GoalStatus::*ACTIVE*
+			    actionlib_msgs::GoalStatus::*PENDING*))
+	     ;; user cancel
+	     (if (and (vectorp (cdr (assoc :cancel userdata)))
+		      (elt (cdr (assoc :cancel userdata)) 0))
+		 (send ,client :cancel-goal))
+	     ;; move-base-hack
+	     (unless (and (get ,client :last-status-time)
+			  (< (send (ros::time- (ros::time-now) (get ,client :last-status-time) ) :to-sec) 5))
+	       (ros::ros-info "move-base-hack!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	       (send ,client :send-goal
+		     (funcall (quote ,key) (cdr (assoc :goal userdata)))))
+	     ;; time out
+	     (if (and (numberp ,timeout)
+		      (< ,timeout (send (ros::time- (ros::time-now) start) :to-sec)))
+		 (send ,client :cancel-goal))))
+	  ))))
+  )
+
+
 ;; simple usage
 ;; (instance state-machine-action-server :init "/action_name" awesome_pkg::GreatAction (your-state-machine) userdata)
 ;; (do-until-key (ros::spin-once) (send s :worker) (unix::usleep 10000))
