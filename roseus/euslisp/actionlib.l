@@ -11,7 +11,7 @@
 
 (defclass ros::simple-action-client
   :super ros::object
-  :slots (name-space action-spec simple-state comm-state
+  :slots (name-space action-spec simple-state comm-state status-stamp
                      action-goal-class action-result-class action-feedback-class
                      action-done-cb action-active-cb action-feedback-cb
                      goal_id))
@@ -26,6 +26,7 @@
              (error-msg
               (format nil "Received comm state ~A when in simple state ~A"
                       comm-state simple-state)))
+	 (setq status-stamp (ros::time-now))
          (case
              com-state
            ('ros::*comm-state-active*
@@ -120,6 +121,7 @@
                              :id (format nil "~a" (send now :sec-nsec))))
      (send goal :goal_id goal_id)
      (setq simple-state ros::*simple-goal-state-pending*)
+     (setq status-stamp nil)
      (setq comm-state (instance actionlib-comm-state :init :action-goal goal :action-result (instance action-result-class :init)))
      (if done-cb (setq action-done-cb done-cb))
      (if active-cb (setq action-active-cb active-cb))
@@ -133,8 +135,10 @@
      (send self :wait-for-result :timeout timeout)
      ))
   (:wait-for-result
-   (&key (timeout 0)) ;; sec
-   (let ((start (ros::time-now)))
+   (&key (timeout 0) ;; sec
+	 (return-if-server-down) (maximum-status-interval 5))
+   (let ((start (ros::time-now))
+	 (result-topic (format nil "~A/result" name-space)))
      (ros::rate 10)
      (while (ros::ok)
        (if (= simple-state ros::*simple-goal-state-done*)
@@ -142,6 +146,13 @@
        (if (> timeout 0)
 	   (let* ((tm (ros::time- (ros::time-now) start)))
 	     (if (> (send tm :to-sec) timeout) (return-from :wait-for-result nil))))
+       (when return-if-server-down
+	 (when (= (ros::get-num-publishers result-topic) 0)
+	   (ros::ros-error "[~A] Unexpected returns from :wait-for-result : no publishers found for ~A" name-space result-topic)
+	   (return-from :wait-for-result nil))
+	 (when (and status-stamp maximum-status-interval (> (send (ros::time- (ros::time-now) status-stamp) :to-sec) maximum-status-interval))
+	   (ros::ros-error "[~A] Unexpected returns from :wait-for-result : status did not received for 5 seconds" name-space)
+	   (return-from :wait-for-result nil)))
        (ros::spin-once)
        (ros::sleep))
      (ros::ros-warn "[~A] :wait-for-result finished ~A" name-space (goal-status-to-string actionlib_msgs::GoalStatus::*succeeded*))
