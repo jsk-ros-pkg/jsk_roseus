@@ -19,7 +19,7 @@
 (defmethod ros::simple-action-client
   (:goal-status-cb
    (msg)
-   (ros::ros-debug ";; status ~A~%" msg)
+   (ros::ros-debug ";; [~A] status-cb (seq:~A ~A)" name-space (send msg :header :seq) (mapcar #'(lambda (s) (format nil "id:~A, status:~A" (send s :goal_id :id) (send s :status))) (send msg :status_list)))
    (let ((m (send comm-state :find-status-by-goal-id msg)))
      (when m
        (let ((com-state (send comm-state :update-status msg))
@@ -51,12 +51,12 @@
   (:action-result-cb
    (msg)
    (let ()
-     (ros::ros-debug ";; reuslt ~A~%" msg)
+     (ros::ros-debug ";; [~A] reuslt ~A" name-space msg)
      (send comm-state :update-result msg)
      ))
   (:action-feedback-cb
    (msg)
-   (ros::ros-debug ";; feedback ~A~%" msg)
+   (ros::ros-debug ";; [~A] feedback ~A" name-space msg)
    (if action-feedback-cb (funcall action-feedback-cb msg)))
   ;;
   (:make-goal-instance
@@ -141,9 +141,10 @@
 	   (return))
        (if (> timeout 0)
 	   (let* ((tm (ros::time- (ros::time-now) start)))
-	     (if (> (send tm :to-sec) timeout) (return))))
+	     (if (> (send tm :to-sec) timeout) (return-from :wait-for-result nil))))
        (ros::spin-once)
        (ros::sleep))
+     (ros::ros-warn "[~A] :wait-for-result finished ~A" name-space (goal-status-to-string actionlib_msgs::GoalStatus::*succeeded*))
      (eq (send self :get-state) actionlib_msgs::GoalStatus::*succeeded*)))
   (:get-result () (send (send comm-state :latest-result) :result))
   (:get-state ()

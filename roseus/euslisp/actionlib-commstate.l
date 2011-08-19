@@ -139,7 +139,7 @@
      (setq new-state
            (cdr (assoc (send comm-status :status)
                        (cdr (assoc state ros::*comm-state-machine*)))))
-     (ros::ros-debug "COMM-STATE ~A~%    (~A -> ~A)~%    by status:~A goal_id:~A~%" comm-status state new-state (goal-status-to-string (send comm-status :status)) (send comm-status :goal_id :id))
+     (ros::ros-debug "COMM-STATE ~A~%    (~A -> ~A)~%    by status:~A goal_id:~A" comm-status state new-state (goal-status-to-string (send comm-status :status)) (send comm-status :goal_id :id))
      (setq latest-goal-status comm-status)
      (case new-state
            ('ros::*comm-state-no-transition*  t)
