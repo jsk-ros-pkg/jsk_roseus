@@ -120,7 +120,7 @@
                              :id (format nil "~a" (send now :sec-nsec))))
      (send goal :goal_id goal_id)
      (setq simple-state ros::*simple-goal-state-pending*)
-     (setq comm-state (instance actionlib-comm-state :init :action-goal goal))
+     (setq comm-state (instance actionlib-comm-state :init :action-goal goal :action-result (instance action-result-class :init)))
      (if done-cb (setq action-done-cb done-cb))
      (if active-cb (setq action-active-cb active-cb))
      (if feedback-cb (setq action-feedback-cb feedback-cb))

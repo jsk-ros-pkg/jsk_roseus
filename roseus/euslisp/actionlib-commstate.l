@@ -111,11 +111,11 @@
   :slots (state action-goal latest-goal-status latest-result))
 (defmethod actionlib-comm-state
   (:init
-   (&key ((:action-goal ac)))
+   (&key ((:action-goal ac)) ((:action-result ar)))
    (setq state 'ros::*comm-state-waiting-for-ack*)
    (setq action-goal ac)
    (setq latest-goal-status (instance actionlib_msgs::GoalStatus :init :status actionlib_msgs::GoalStatus::*pending*))
-   (setq latest-result nil))
+   (setq latest-result ar))
   (:action-goal () action-goal)
   (:latest-goal-status () latest-goal-status)
   (:latest-result () latest-result)
