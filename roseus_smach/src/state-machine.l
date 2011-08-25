@@ -71,9 +71,9 @@
    ;; execute once on this machine
    (let ((last-state active-state trans)
 	 (exec-result (send active-state :execute userdata)))
-     (when (not (assoc exec-result (send last-state :transitions)))
-       (error "undefined transition ~A from ~A~%" exec-result last-state))
 	 (setq trans (send last-state :transitions))
+     (when (not (assoc exec-result trans :test #'equal))
+       (error "undefined transition ~A from ~A~%" exec-result last-state))
      (setq active-state (cdr (assoc exec-result trans :test #'equal)))
      (if (send active-state :submachine)
 	 (send (send active-state :submachine) :reset-state))
