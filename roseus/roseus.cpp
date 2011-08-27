@@ -974,6 +974,10 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   fncallback = argv[2];
   args=NIL;
   for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
+  if( s_mapServiced.find(service) != s_mapServiced.end() ) {
+    ROS_INFO("service %s already advertised", service.c_str());
+    return (NIL);
+  }
 
   EuslispMessage message(emessage);
   vpush(message._message);      // to avoid GC in csend
