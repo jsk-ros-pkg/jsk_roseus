@@ -67,16 +67,16 @@
   (:add-function (name) (push name functions))
   (:increment-tests
    ()
-   (incf (unit-test-result-tests (car result))))
+   (if result (incf (unit-test-result-tests (car result)))))
   (:increment-failure
    (test str)
-   (incf (unit-test-result-failures (car result)))
+   (if result (incf (unit-test-result-failures (car result))))
    (format *error-output* "~C[3~Cm[WARN] test ~A failed" #x1b 49 test)
    (if str (format *error-output* " ... (~A)" str))
    (format *error-output* ".~C[0m~%" #x1b))
   (:set-time-to-current-result
    (time)
-   (setf (unit-test-result-time (car result)) time))
+   (if result (setf (unit-test-result-time (car result)) time)))
   (:init-result
    (func-sym)
    (push (instance unit-test-result :init func-sym) result))
