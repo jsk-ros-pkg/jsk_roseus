@@ -24,11 +24,11 @@
                   "/fibonacci" actionlib_tutorials::FibonacciAction
                   :execute-cb #'fibonacci-execute-cb))
 
-(ros::rate 10)
+(ros::rate 500)
 (do-until-key
  (send s :worker)
  (ros::spin-once)
- (ros::sleep)
+ (ros::sleep))
 
 
 

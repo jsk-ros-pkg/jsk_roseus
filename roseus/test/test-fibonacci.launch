@@ -1,0 +1,5 @@
+<launch>
+  <node name="fibonacci_server" pkg="roseus" type="fibonacci-server.l" output="screen" />
+  <test test-name="fibonacci_client" pkg="roseus" type="fibonacci-client.l" />
+</launch>
+

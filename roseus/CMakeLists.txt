@@ -59,5 +59,6 @@ rosbuild_add_rostest(test/test-talker-listener.launch)
 rosbuild_add_rostest(test/test-add-two-ints.launch)
 rosbuild_add_rostest(test/test-simple-client.launch)
 rosbuild_add_rostest(test/test-simple-client-wait.launch)
+rosbuild_add_rostest(test/test-fibonacci.launch)
 
 #add_subdirectory(test EXCLUDE_FROM_ALL)

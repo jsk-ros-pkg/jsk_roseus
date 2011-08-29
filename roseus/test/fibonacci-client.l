@@ -26,7 +26,13 @@
     (warning-message 1 (format nil ";; result -> ~A~%"  (send (send c :get-result) :sequence)))
     ))
 
+(setq count 0) ;; for test-fibonaci.launch
 (do-until-key
+ (when (member "--gtest_output=xml:" lisp::*eustop-argument* :test #'substringp)
+   ;; for test-fibonacci.launch
+   (warning-message 2 "test-fibonacci ~A/~A~%" count 300)
+   (incf count)
+   (if (> count 300) (exit 0)))
  (fibonacci-client))
 
 
