@@ -5,6 +5,9 @@
 (ros::load-ros-manifest "roseus")
 (ros::load-ros-manifest "actionlib_tutorials")
 ;;;
+(when (member "--gtest_output=xml:" lisp::*eustop-argument* :test #'substringp)  ;; for test-fibonacci.launch
+  (load "unittest.l")
+  (init-unit-test))
 
 ;;;
 ;;;
@@ -28,8 +31,7 @@
 
 (setq count 0) ;; for test-fibonaci.launch
 (do-until-key
- (when (member "--gtest_output=xml:" lisp::*eustop-argument* :test #'substringp)
-   ;; for test-fibonacci.launch
+ (when (boundp '*unit-test*)
    (warning-message 2 "test-fibonacci ~A/~A~%" count 300)
    (incf count)
    (if (> count 300) (exit 0)))
