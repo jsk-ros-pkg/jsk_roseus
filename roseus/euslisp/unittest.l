@@ -12,11 +12,12 @@
   (format *error-output* ", exitting...~C[0m~%"  #x1b)
   (send *unit-test* :increment-failure (format nil "~A" form) msg1)
   (send *unit-test* :print-result)
-  (send *unit-test* :close)
   (exit 1))
 
 (defun unittest-sigint-handler (sig code)
-  (format *error-output* "unittest-sigint-handler ~A" sig)
+  (format *error-output* "unittest-sigint-handler ~A~%" sig)
+  (send *unit-test* :increment-failure "" (format nil "signal-handler ~A" sig))
+  (send *unit-test* :print-result)
   (exit 1))
 
 (defclass unit-test-result
@@ -47,22 +48,19 @@
 
 (defclass unit-test-container
   :super propertied-object
-  :slots (result functions log-stream output-mode))
+  :slots (result functions log-fname output-mode))
 
 (defmethod unit-test-container
   (:init
-   (&key log-fname)
+   (&key ((:log-fname fname)))
    (setq result nil)
    (setq functions nil)
+   (setq log-fname fname)
    (when log-fname
-     (setq log-stream (open log-fname :direction :output
-                              :if-exists :append
-                              :if-does-not-exist :create))
      (warning-message 3 "output to ~A~%" log-fname)
      (setq output-mode :xml))
    self)
   (:functions () (reverse functions))
-  (:close () (if log-stream (close log-stream)))
   ;;
   (:add-function (name) (push name functions))
   (:increment-tests
@@ -109,8 +107,12 @@
   (:print-result
    ()
    (send self :print-normal-result)
-   (if (eq output-mode :xml)
-       (send self :print-xml-result log-stream)))
+   (when (and result (eq output-mode :xml))
+     (let ((strm (open log-fname :direction :output
+		       :if-exists :append
+		       :if-does-not-exist :create)))
+       (send self :print-xml-result strm)
+       (close strm))))
   )
 
 (defmacro deftest (name &rest body)
@@ -146,7 +148,6 @@
   (dolist (u (send *unit-test* :functions))
     (run-test u))
   (send *unit-test* :print-result)
-  (send *unit-test* :close)
   t)
 
 (defun init-unit-test (&key log-fname)
@@ -155,6 +156,7 @@
          (xml-fname (if s (string-left-trim p s))))
     (if xml-fname (setq log-fname xml-fname))
 
+    (setq lisp::*exit-on-fatal-error* t)
     (lisp::install-error-handler 'unittest-error)
     (unix:signal unix::sigint 'unittest-sigint-handler)
     (unix:signal unix::sighup 'unittest-sigint-handler)
