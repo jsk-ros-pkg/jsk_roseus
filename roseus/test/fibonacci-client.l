@@ -32,9 +32,9 @@
 (setq count 0) ;; for test-fibonaci.launch
 (do-until-key
  (when (boundp '*unit-test*)
-   (warning-message 2 "test-fibonacci ~A/~A~%" count 300)
+   (warning-message 2 "test-fibonacci ~A/~A~%" count 1000)
    (incf count)
-   (if (> count 300) (exit 0)))
+   (if (> count 1000) (exit 0)))
  (fibonacci-client))
 
 
