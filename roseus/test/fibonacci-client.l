@@ -34,7 +34,7 @@
  (when (boundp '*unit-test*)
    (warning-message 2 "test-fibonacci ~A/~A~%" count 1000)
    (incf count)
-   (when (> count 1)
+   (when (> count 1000)
      (send *unit-test* :init-result "fibonacci-client")
      (send *unit-test* :print-result)
      (exit 0))
