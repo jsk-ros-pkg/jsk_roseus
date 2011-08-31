@@ -309,6 +309,7 @@ public:
 
   EuslispSubscriptionCallbackHelper(pointer scb, pointer args,pointer tmpl) :  _args(args), _msg(tmpl) {
     context *ctx = current_ctx;
+    mutex_trylock(&mark_lock);
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     if (piscode(scb)) { // compiled code
@@ -325,6 +326,7 @@ public:
     // avoid gc
     pointer p=gensym(ctx);
     setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    mutex_unlock(&mark_lock);
   }
   ~EuslispSubscriptionCallbackHelper() {
       ROS_ERROR("subcriptoin gc");
@@ -381,6 +383,7 @@ public:
 
   EuslispServiceCallbackHelper(pointer scb, pointer args, string smd5, string sdatatype, pointer reqclass, pointer resclass) : _args(args), _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype) {
     context *ctx = current_ctx;
+    mutex_trylock(&mark_lock);
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
 
@@ -403,6 +406,7 @@ public:
     responseDataType = _res.__getDataType();
     requestMessageDefinition = _req.__getMessageDefinition();
     responseMessageDefinition = _res.__getMessageDefinition();
+    mutex_unlock(&mark_lock);
   }
   ~EuslispServiceCallbackHelper() { }
 
@@ -651,7 +655,7 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
 {
   ROS_INFO("%s", __PRETTY_FUNCTION__);
   if( s_bInstalled ) {
-    ROS_INFO("exiting roseus");
+    ROS_INFO("exiting roseus %ld", (n==0)?n:ckintval(argv[0]));
     s_mapAdvertised.clear();
     s_mapSubscribed.clear();
     s_mapServiced.clear();
