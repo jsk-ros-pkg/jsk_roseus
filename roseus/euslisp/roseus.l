@@ -24,6 +24,7 @@
 
 (when (string= "__log:=" (subseq (car (last lisp::*eustop-argument*)) 0 7))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
+  (setq lisp::*exit-on-fatal-error* t)
   (lisp::install-error-handler 'ros::roseus-error)
   (unix:signal unix::sigint 'ros::roseus-sigint-handler)
   (unix:signal unix::sighup 'ros::roseus-sigint-handler)
