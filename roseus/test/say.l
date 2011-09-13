@@ -14,8 +14,8 @@
 
 (setq msg (instance sound_play::SoundRequest :init))
 ;;
-(send msg :sound sound_play::say) ;; say
-(send msg :command sound_play::play_once) ;; once
+(send msg :sound sound_play::SoundRequest::*say*) ;; say
+(send msg :command sound_play::SoundRequest::*play_once*) ;; once
 (send msg :arg "Hello")
 
 (ros::publish "robotsound" msg)
