@@ -38,6 +38,8 @@ http://www.ros.org/wiki/sound_playを使ってサウンド出力するサンプ�
 (send msg :sound sound_play::SoundRequest::*say*) ;; say
 (send msg :command sound_play::SoundRequest::*play_once*) ;; once
 (send msg :arg "おはようございま'す．きょ'うわ/い'い天気ですか？")
+;;(send msg :arg2 "aq_f1c.phont")
+;;(send msg :arg2 "aq_m4b.phont")
 (ros::publish "robotsound" msg)
 (unix:sleep 5)
 
