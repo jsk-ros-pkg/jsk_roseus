@@ -1,10 +1,6 @@
 <launch>
-  <node pkg="sound_play_jsk_patch" type="soundplay_node.py"
-	name="soundplay_node">
-    <param name="command" value="$(find aques_talk)/text2wave-jp.sh"/>
-    <param name="frequency" value="8000" />
-    <param name="channels" value="1" />
-    <param name="command_args" value="-p aq_m4b.phont" />
+  <node pkg="sound_play" type="soundplay_node.py" name="soundplay_node">
+    <env name="PATH" value="$(find aques_talk):$(env PATH)" />
   </node>
   <sphinxdoc><![CDATA[
 
