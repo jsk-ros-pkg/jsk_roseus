@@ -155,7 +155,7 @@
 	   (return-from :wait-for-result nil)))
        (ros::spin-once)
        (ros::sleep))
-     (ros::ros-warn "[~A] :wait-for-result finished ~A" name-space (goal-status-to-string actionlib_msgs::GoalStatus::*succeeded*))
+     (ros::ros-debug "[~A] :wait-for-result finished ~A" name-space (goal-status-to-string actionlib_msgs::GoalStatus::*succeeded*))
      (eq (send self :get-state) actionlib_msgs::GoalStatus::*succeeded*)))
   (:get-result () (send (send comm-state :latest-result) :result))
   (:get-state ()
