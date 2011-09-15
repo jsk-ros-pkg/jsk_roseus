@@ -1,9 +1,11 @@
 #!/usr/bin/env roseus
 ;;
 ;; /home/k-okada/ros/cturtle/stacks/geometry/tf/test/testPython.py
-;;
+;;  rosrun tf static_transform_publisher 1 0 0 0 0 0 /MANLAY /JUPITER 10
+
 
 (load "unittest.l")
+(ros::roseus "test-tf")
 
 (init-unit-test)
 
@@ -33,9 +35,12 @@
     (assert (= (send tm :to-sec) ti))
     )
 
-  (assert (not (send f :get-latest-common-time "MANDALAY" "JUPITER")))
-  (assert (not (send f :lookup-transform "MANDALAY" "JUPITER" (ros::time))))
-  (assert (not (send f :lookup-transform-safe "MANDALAY" "JUPITER" (ros::time))))
+  (setq l (instance ros::transform-listener :init))
+  (unix:sleep 1)
+  (assert (send l :can-transform "/MANDALAY" "/JUPITER" (ros::time-now)))
+  (assert (send l :wait-for-transform "/MANDALAY" "/JUPITER" (ros::time-now) 1))
+  (assert (send l :get-latest-common-time "MANDALAY" "JUPITER"))
+  (assert (send l :lookup-transform "MANDALAY" "JUPITER" (ros::time)))
   )
 
 (run-all-tests)
