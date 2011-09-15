@@ -1,0 +1,4 @@
+<launch>
+  <node name="tf_publisher" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 /MANDALAY /JUPITER 10" />
+  <test test-name="eustf" pkg="roseus" type="roseus" args="$(find roseus)/test/test-tf.l" />
+</launch>

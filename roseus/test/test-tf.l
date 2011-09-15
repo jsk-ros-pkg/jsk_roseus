@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 ;;
 ;; /home/k-okada/ros/cturtle/stacks/geometry/tf/test/testPython.py
-;;  rosrun tf static_transform_publisher 1 0 0 0 0 0 /MANLAY /JUPITER 10
+;;  rosrun tf static_transform_publisher 1 0 0 0 0 0 /MANDALAY /JUPITER 10
 
 
 (load "unittest.l")
