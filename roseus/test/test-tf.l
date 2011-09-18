@@ -7,6 +7,8 @@
 (load "unittest.l")
 (ros::roseus "test-tf")
 
+(setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
+
 (init-unit-test)
 
 (deftest test-common ()
@@ -37,6 +39,8 @@
 
   (setq l (instance ros::transform-listener :init))
   (unix:sleep 1)
+  (send l :wait-for-transform "/MANDALAY" "/JUPITER" (ros::time-now) 1)
+  (make-list 1000000)
   (assert (send l :can-transform "/MANDALAY" "/JUPITER" (ros::time-now)))
   (assert (send l :wait-for-transform "/MANDALAY" "/JUPITER" (ros::time-now) 1))
   (assert (send l :get-latest-common-time "MANDALAY" "JUPITER"))
