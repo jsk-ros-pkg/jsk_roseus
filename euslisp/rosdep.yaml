@@ -23,4 +23,13 @@ libpq-dev:
   debian: libpq-dev
   macports: |
     echo "PostgreSQL is not supported in Darwin"
+xfonts-100dpi:
+  ubuntu: xfonts-100dpi
+xfonts-75dpi:
+  ubuntu: xfonts-75dpi
+msttcorefonts:
+  ubuntu: |
+    #!/bin/sh
+    sudo apt-get install msttcorefonts
+    sudo fc-cache
 

@@ -19,6 +19,9 @@
   <rosdep name="libxext-dev" />
   <rosdep name="libpng" />
   <rosdep name="libpq-dev" />
+  <rosdep name="xfonts-100dpi" />
+  <rosdep name="xfonts-75dpi" />
+  <rosdep name="msttcorefonts" />
 
 </package>
 
