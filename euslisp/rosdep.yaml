@@ -27,7 +27,7 @@ ttf-mscorefonts-installer:
   ubuntu: |
     #!/bin/sh
     echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections 
-    sudo apt-get install ttf-mscorefonts-installer
+    sudo apt-get -y --force-yes install ttf-mscorefonts-installer
     sudo fc-cache
   debian: ttf-mscorefonts-installer
   macports:
