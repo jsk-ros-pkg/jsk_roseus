@@ -6,13 +6,12 @@
 (defun exec-smach-with-spin (sm &optional mydata &key (hz 1))
   (let ((insp (instance state-machine-inspector :init sm)))
     (send sm :reset-state)
-    (unix:sleep 1)
-    (send insp :publish-structure)
 
     (unwind-protect
      ;; try block
      (do-until-key
       (when (not (ros::ok)) (return))
+      (send insp :publish-structure)
       (ros::spin-once)
       (send insp :publish-status mydata)
       (when (not (send sm :goal-reached))
