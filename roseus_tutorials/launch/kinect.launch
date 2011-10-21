@@ -8,14 +8,18 @@
   </node>
   <node name="map_openni_camera" pkg="tf" type="static_transform_publisher"
 	args="0 0 1.5 0 0 0 /map /openni_camera 100" />
-  <node name="openni_depth_frame_openni_camera" pkg="tf" type="static_transform_publisher"
+  <anode name="openni_depth_frame_openni_camera" pkg="tf" type="static_transform_publisher"
 	args="0 0 0 1.57 0 1.57 /openni_depth_frame /openni_depth 100" />
   <sphinxdoc><![CDATA[
-This scripts start kinect node, 
+This scripts start kinect node,
+
+Checked with openni_kinect version 0.3.1, to get verrsion number, use `rosversion openni_kinect`
 
 .. code-block:: bash
 
-  roseus "(jsk)" "(rbrain)" irtbvh.l "(hrp2jsk-simple)" "(test-kinect :robot *hrp2*)"
+  rosrun roseus roseus `rospack find roseus_tutorials`/src/kinect-model-viewer.l "(test-kinect)"
+
+  (jsk internal user only) roseus "(jsk)" "(rbrain)" kinect-model-viewer.l "(hrp2jsk-simple)" "(test-kinect :robot *hrp2*)"
 
 to control hrp2 robot from kinect captured skelton image
   ]]></sphinxdoc>
