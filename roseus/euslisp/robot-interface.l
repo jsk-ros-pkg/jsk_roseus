@@ -320,6 +320,7 @@
    (&rest args)
    (ros::ros-error "please use robot-interface class, ros-interface class will be removed")
    (send-super* :init args))
+  )
 
 (provide :robot-interface "robot-interface.l")
 
