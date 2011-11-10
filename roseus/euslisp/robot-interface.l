@@ -77,6 +77,15 @@
      msg))
   (:angle-vector
    (av &optional (tm 3000) &key ((:controller-actions ca) controller-actions) ((:controller-type ct) controller-type))
+   ;; check max-joint-velocity
+   (let ((jlist (send robot :joint-list)) j
+	 (diff-av (v- av (or (send self :state :potentio-vector) (send robot :angle-vector)))))
+     (dotimes (i (length jlist))
+       (setq j (elt jlist i))
+       (cond ((derivedp j linear-joint) ;; msec = mm / [m/sec]
+	      (setq tm (max tm (/ (elt diff-av i) (send j :max-joint-velocity)))))
+	     ((derivedp j rotational-joint) ;; msec = deg2rad(deg) / [rad/s] / 0.001
+	      (setq tm (max tm (/ (deg2rad (elt diff-av i)) (send j :max-joint-velocity) 0.001)))))))
    ;; for simulation mode
    (unless joint-action-enable
      (if av
