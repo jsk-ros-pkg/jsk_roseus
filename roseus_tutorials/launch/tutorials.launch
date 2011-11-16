@@ -10,6 +10,7 @@
   <include file="$(find roseus_tutorials)/launch/cmvision.launch" />
   <include file="$(find roseus_tutorials)/launch/checkerboard-pose.launch" />
   <include file="$(find roseus_tutorials)/launch/checkerboard-detector.launch" />
+  <include file="$(find roseus_tutorials)/launch/ar-pose.launch" />
   <include file="$(find roseus_tutorials)/launch/point-pose-extraction.launch" />
   <include file="$(find roseus_tutorials)/launch/aques-talk.launch" />
   <include file="$(find roseus_tutorials)/launch/reconfigure-gui.launch" />
