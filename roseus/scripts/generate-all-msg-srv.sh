@@ -24,7 +24,7 @@ function print-usage {
     echo "    (no option)     : generate for all packages that previously build "
     echo "    [package_name]  : generate for the [package_name] package"
     echo "    --all           : generate for all packages in the ROS_PACKAGE_PATH"
-    echo "    --shared        : generate for all packages in the ROS_PACKAGE_PATH"
+    echo "    --shared        : generate for all packages in the ROS_PACKAGE_PATH with ROS_NOBUILD files"
     echo "    --help          : print this message"
 }
 
@@ -72,6 +72,7 @@ for pkg in $package_list_names; do
     fi
 done
 
+echo -e "\e[1;31mgenerating... ${#pkg_list[@]} files with ALL=${ALL}, SHARED=${SHARED} option\e[m"
 
 # generate msg file
 for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
