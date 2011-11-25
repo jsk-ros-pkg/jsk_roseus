@@ -38,7 +38,7 @@
    )
   (:prin1-xml
    (strm)
-   (format strm "  <testcase name=\"~A\">~%" name)
+   (format strm "  <testcase name=\"~A\" time=\"~0,3f\">~%" name time)
    (dotimes (i (send self :failures))
      (format strm "   <failure type=\"AssertionError\">[WARN]")
      (format strm "   </failure>~%"))
