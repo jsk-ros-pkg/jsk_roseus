@@ -104,6 +104,7 @@ macro(generate_all_msg_srv)
   set(msggenerated "${roshomedir}/roseus/generated")
   # when no generated file are found generate all shared files
   file(GLOB roseus_script_files "${roseus_PACKAGE_PATH}/scripts/*")
+  list(SORT roseus_script_files)
   if(NOT EXISTS ${msggenerated})
     message("Generate all msg and srv files in shared directory")
     execute_process(COMMAND ${generate_all_msg_srv_script} --shared)
