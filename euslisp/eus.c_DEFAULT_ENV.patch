@@ -8,7 +8,7 @@ Index: lisp/c/eus.c
    int i,j;
 -  char *eusdir, *eusrt;
 +  char *eusdir, *archdir, *eusrt;
-   char fname[128];
+   char fname[1024];
    extern pointer SRCLOAD();
  
    /* reset stack pointer and frame pointers*/
