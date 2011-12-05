@@ -5,6 +5,7 @@
 
 
 (load "unittest.l")
+;;(unix::putenv "ROSCONSOLE_CONFIG_FILE=/home/k-okada/ros/electric/jsk-ros-pkg/roseus/roseus.config")
 (ros::roseus "test-tf")
 
 (setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
@@ -39,10 +40,11 @@
 
   (setq l (instance ros::transform-listener :init))
   (unix:sleep 1)
-  (send l :wait-for-transform "/MANDALAY" "/JUPITER" (ros::time-now) 1)
+  (setq ret (send l :wait-for-transform "/MANDALAY" "/JUPITER" (ros::time-now) 1))
+  (warning-message 2 "wait-for-transform ~A~%" ret)
   (make-list 1000000)
-  (assert (send l :can-transform "/MANDALAY" "/JUPITER" (ros::time-now)))
   (assert (send l :wait-for-transform "/MANDALAY" "/JUPITER" (ros::time-now) 1))
+  (assert (send l :can-transform "/MANDALAY" "/JUPITER" (ros::time-now)))
   (assert (send l :get-latest-common-time "MANDALAY" "JUPITER"))
   (assert (send l :lookup-transform "MANDALAY" "JUPITER" (ros::time)))
   )
