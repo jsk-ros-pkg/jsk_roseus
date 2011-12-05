@@ -69,7 +69,7 @@
   (:increment-failure
    (test str)
    (if result (incf (unit-test-result-failures (car result))))
-   (format *error-output* "~C[3~Cm[WARN] test ~A failed" #x1b 49 test)
+   (format *error-output* "~C[3~Cm[ERROR] test ~A failed" #x1b 49 test)
    (if str (format *error-output* " ... (~A)" str))
    (format *error-output* ".~C[0m~%" #x1b))
   (:set-time-to-current-result
@@ -126,7 +126,7 @@
 (defmacro assert (pred &optional (message "") &rest args)
   `(progn
      (send *unit-test* :increment-tests)
-     (print (list ',pred ,message ,@args))
+     (warning-message 3 "(assert ~A)~%" (list ',pred ,message ,@args))
      (if (not ,pred)
        (send *unit-test* :increment-failure ',pred (format nil ,message ,@args)))))
 
