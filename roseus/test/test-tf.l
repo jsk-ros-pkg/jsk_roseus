@@ -40,13 +40,13 @@
 
   (setq l (instance ros::transform-listener :init))
   (unix:sleep 1)
-  (setq ret (send l :wait-for-transform "/MANDALAY" "/JUPITER" (ros::time-now) 1))
-  (warning-message 2 "wait-for-transform ~A~%" ret)
+  (setq tm (ros::time-now))
+  (setq ret (send l :wait-for-transform "/MANDALAY" "/JUPITER" tm 1))
+  (warning-message 2 "wait-for-transform at ~A returns ~A~%" tm ret)
   (make-list 1000000)
-  (assert (send l :wait-for-transform "/MANDALAY" "/JUPITER" (ros::time-now) 1))
-  (assert (send l :can-transform "/MANDALAY" "/JUPITER" (ros::time-now)))
+  (assert (send l :can-transform "/MANDALAY" "/JUPITER" tm))
   (assert (send l :get-latest-common-time "MANDALAY" "JUPITER"))
-  (assert (send l :lookup-transform "MANDALAY" "JUPITER" (ros::time)))
+  (assert (send l :lookup-transform "MANDALAY" "JUPITER" tm))
   )
 
 (run-all-tests)
