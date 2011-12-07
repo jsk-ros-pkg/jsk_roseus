@@ -14,7 +14,8 @@
       (send mrk :type image_view2::ImageMarker2::*FRAMES*)
       (send mrk :frames (list "/ar_marker_frame"))
       (send *tfb* :send-transform
-	    c (send marker :header :frame_id) "/ar_marker_frame")
+	    c (send marker :header :frame_id) "/ar_marker_frame"
+	    (send marker :header :stamp))
       (ros::ros-info "~A" c)
       (ros::publish "image_marker" mrk)
       )))
