@@ -11,12 +11,13 @@
 (init-unit-test)
 
 (deftest test-common ()
-  (ros::rate 10)
-  (dotimes (i 100)
+  (dotimes (i 5)
+    (unix::sleep 1)
     (when *m* (return)))
   (unix::system "rosnode kill publisher")
   (unix::sleep 1)
-  (if *m* t nil))
+  (assert *m*)
+  )
 
 (run-all-tests)
 
