@@ -1,0 +1,6 @@
+<launch>
+  <node name="publisher" pkg="rostopic" type="rostopic"
+	args='pub -1 "/string" std_msgs/String "test"' />
+  <test test-name="eus_disconnect" pkg="roseus" type="roseus"
+	args="$(find roseus)/test/test-disconnect.l" />
+</launch>
