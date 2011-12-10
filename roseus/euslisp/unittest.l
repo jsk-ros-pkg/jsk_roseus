@@ -136,7 +136,8 @@
   `(let* ((standard-output-org *standard-output*)
 	  (*standard-output* (make-string-output-stream 1024)))
      (send *unit-test* :increment-tests ',pred)
-     ,(if (and (listp pred) (functionp (car pred))) `(trace ,(car pred)))
+     ,(if (and (listp pred) (functionp (car pred))
+	       (not (eq #'equal (symbol-function (car pred))))) `(trace ,(car pred)))
      (if (not ,pred)
 	 ;; escape <> for xml
 	 (let* ((str1 (subseq (send *standard-output* :buffer) 0 (send *standard-output* :count)))
@@ -169,7 +170,8 @@
 	   ;;
 	   (send *unit-test* :increment-failure (format nil ,message ,@args)
 		 (format nil "Traceback (most recent call last):~%~A~%~A" ',pred str2))))
-     ,(if (and (listp pred) (functionp (car pred))) `(untrace ,(car pred)))
+     ,(if (and (listp pred) (functionp (car pred))
+	       (not (eq #'equal (symbol-function (car pred))))) `(untrace ,(car pred)))
      (setq *standard-output* standard-output-org)
      ))
 
