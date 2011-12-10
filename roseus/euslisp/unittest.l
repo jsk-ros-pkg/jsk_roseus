@@ -133,10 +133,11 @@
 (defmacro assert (pred &optional (message "") &rest args)
   `(let* ((standard-output-org *standard-output*)
 	  (*standard-output* (make-string-output-stream 1024))
-	  failure)
-     ,(if (and (listp pred) (functionp (car pred))
-	       (not (eq #'equal (symbol-function (car pred))))) `(trace ,(car pred)))
-     (if (not ,pred)
+	  (standarad-input-org  *standard-input*)
+	  ( *standard-input* (make-string-input-stream "s s s s s s s s s s s s s s s s q"))
+	  failure ret)
+     (setq ret (lisp::step ,pred))
+     (if (not ret)
 	 ;; escape <> for xml
 	 (let* ((str1 (subseq (send *standard-output* :buffer) 0 (send *standard-output* :count)))
 		(str2 (make-string (+ (length str1)
@@ -168,8 +169,7 @@
 	   (setq failure str2)))
      (send *unit-test* :increment-test ',pred (format nil ,message ,@args) failure)
 
-     ,(if (and (listp pred) (functionp (car pred))
-	       (not (eq #'equal (symbol-function (car pred))))) `(untrace ,(car pred)))
+     (setq *standard-input* standarad-input-org)
      (setq *standard-output* standard-output-org)
      ))
 
