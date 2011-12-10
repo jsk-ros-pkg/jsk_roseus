@@ -45,7 +45,7 @@
     (unless (send c :wait-for-result)
       (warning-message 1 "Goal didn't finish~%"))
     ;; The simple server can't reject goals
-    (assert (send c :get-state) actionlib_msgs::GoalStatus::*aborted*)
+    (assert (equal (send c :get-state) actionlib_msgs::GoalStatus::*aborted*))
 
     (setq saved-feedback nil)
     (send goal :goal :goal 9)
