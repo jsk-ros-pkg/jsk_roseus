@@ -10,26 +10,24 @@
   (if msg2 (format *error-output* " ~A" msg2))
   (if form (format *error-output* " in ~s" form))
   (format *error-output* ", exitting...~C[0m~%"  #x1b)
-  (send *unit-test* :increment-failure (format nil "~A" form) msg1)
+  (send *unit-test* :increment-test (format nil "~A" form) msg1 code)
   (send *unit-test* :print-result)
   (exit 1))
 
 (defun unittest-sigint-handler (sig code)
   (format *error-output* "unittest-sigint-handler ~A~%" sig)
-  (send *unit-test* :increment-failure (format nil "signal-handler ~A" sig) code)
+  (send *unit-test* :increment-test "" (format nil "signal-handler ~A" sig) code)
   (send *unit-test* :print-result)
   (exit 1))
 
 (defclass unit-test-result
   :super propertied-object
-  :slots (name tests failures traces time))
+  :slots (name tests time))
 (defmethod unit-test-result
   (:init (n) (setq name n tests nil failures nil time 0))
   (:tests () tests)
-  (:failures () failures)
-  (:traces () traces)
   (:num-tests () (length tests))
-  (:num-failures () (length failures))
+  (:num-failures () (count-if #'(lambda (x) (elt x 2)) tests))
   (:num-successes () (- (send self :num-tests) (send self :num-failures)))
   (:time () time)
   (:prin1
@@ -42,14 +40,17 @@
   (:prin1-xml
    (strm)
    (format strm "<testsuite name=\"AllTests\" tests=\"~A\" time=\"~0,3f\" failures=\"~A\" errors=\"~A\">~%" (send self :num-tests) time (send self :num-failures) 0)
-
-   (mapcar #'(lambda (failure trace)
-	       (format strm "  <testcase name=\"~A.~A\" time=\"~0,3f\">~%" name failure time)
-	       (format strm "   <failure type=\"AssertionError\">~%")
-	       (format strm "~A~%" trace)
-	       (format strm "   </failure>~%")
-	       (format strm "  </testcase>~%"))
-	   (send self :failures) (send self :traces))
+   (dolist (ret tests)
+     (let ((test (elt ret 0))
+	   (msg  (elt ret 1))
+	   (trace (elt ret 2)))
+       (format strm "  <testcase name=\"~A.~A\" time=\"~0,3f\">~%" name msg time)
+       (when trace
+	 (format strm "   <failure type=\"AssertionError\">~%")
+	 (format strm "~A~%" test)
+	 (format strm "~A~%" trace)
+	 (format strm "   </failure>~%"))
+       (format strm "  </testcase>~%")))
    (format strm "</testsuite>~%")
    )
   )
@@ -71,16 +72,13 @@
   (:functions () (reverse functions))
   ;;
   (:add-function (name) (push name functions))
-  (:increment-tests
-   (test)
-   (if result (push test (unit-test-result-tests (car result)))))
-  (:increment-failure
-   (test trace)
-   (if result (push test (unit-test-result-failures (car result))))
-   (if result (push trace (unit-test-result-traces (car result))))
-   (format *error-output* "~C[3~Cm[ERROR] test ~A failed" #x1b 49 test)
-   (if trace (format *error-output* " ... (~A)" test))
-   (format *error-output* ".~C[0m~%" #x1b))
+  (:increment-test
+   (test msg trace)
+   (if result (push (list test msg trace) (unit-test-result-tests (car result))))
+   (when trace
+     (format *error-output* "~C[3~Cm[ERROR] test ~A failed" #x1b 49 test)
+     (format *error-output* " ... (~A)" msg)
+     (format *error-output* ".~C[0m~%" #x1b)))
   (:set-time-to-current-result
    (time)
    (if result (setf (unit-test-result-time (car result)) time)))
@@ -134,8 +132,8 @@
 
 (defmacro assert (pred &optional (message "") &rest args)
   `(let* ((standard-output-org *standard-output*)
-	  (*standard-output* (make-string-output-stream 1024)))
-     (send *unit-test* :increment-tests ',pred)
+	  (*standard-output* (make-string-output-stream 1024))
+	  failure)
      ,(if (and (listp pred) (functionp (car pred))
 	       (not (eq #'equal (symbol-function (car pred))))) `(trace ,(car pred)))
      (if (not ,pred)
@@ -167,9 +165,9 @@
 		   (t
 		    (setf (elt str2 i2) (elt str1 i1))))
 	     )
-	   ;;
-	   (send *unit-test* :increment-failure (format nil ,message ,@args)
-		 (format nil "Traceback (most recent call last):~%~A~%~A" ',pred str2))))
+	   (setq failure str2)))
+     (send *unit-test* :increment-test ',pred (format nil ,message ,@args) failure)
+
      ,(if (and (listp pred) (functionp (car pred))
 	       (not (eq #'equal (symbol-function (car pred))))) `(untrace ,(car pred)))
      (setq *standard-output* standard-output-org)
