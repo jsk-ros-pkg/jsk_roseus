@@ -16,7 +16,7 @@
 
 (defun unittest-sigint-handler (sig code)
   (format *error-output* "unittest-sigint-handler ~A~%" sig)
-  (send *unit-test* :increment-failure "" (format nil "signal-handler ~A" sig))
+  (send *unit-test* :increment-failure (format nil "signal-handler ~A" sig) code)
   (send *unit-test* :print-result)
   (exit 1))
 
@@ -41,14 +41,16 @@
    )
   (:prin1-xml
    (strm)
-   (format strm "  <testcase name=\"~A\" time=\"~0,3f\">~%" name time)
+   (format strm "<testsuite name=\"AllTests\" tests=\"~A\" time=\"~0,3f\" failures=\"~A\" errors=\"~A\">~%" (send self :num-tests) time (send self :num-failures) 0)
+
    (mapcar #'(lambda (failure trace)
+	       (format strm "  <testcase name=\"~A.~A\" time=\"~0,3f\">~%" name failure time)
 	       (format strm "   <failure type=\"AssertionError\">~%")
-	       (format strm "~A~%" failure)
 	       (format strm "~A~%" trace)
-	       (format strm "   </failure>~%"))
+	       (format strm "   </failure>~%")
+	       (format strm "  </testcase>~%"))
 	   (send self :failures) (send self :traces))
-   (format strm "  </testcase>~%")
+   (format strm "</testsuite>~%")
    )
   )
 
@@ -73,11 +75,11 @@
    (test)
    (if result (push test (unit-test-result-tests (car result)))))
   (:increment-failure
-   (test str &optional trace)
+   (test trace)
    (if result (push test (unit-test-result-failures (car result))))
    (if result (push trace (unit-test-result-traces (car result))))
    (format *error-output* "~C[3~Cm[ERROR] test ~A failed" #x1b 49 test)
-   (if str (format *error-output* " ... (~A)" str))
+   (if trace (format *error-output* " ... (~A)" test))
    (format *error-output* ".~C[0m~%" #x1b))
   (:set-time-to-current-result
    (time)
@@ -92,9 +94,9 @@
    (let ((all-tests (apply #'+ (send-all result :num-tests)))
          (all-times (apply #'+ (send-all result :time)))
          (all-failures (apply #'+ (send-all result :num-failures))))
-     (format strm "<testsuite name=\"AllTests\" tests=\"~A\" time=\"~0,3f\" failures=\"~A\" errors=\"~A\">~%" all-tests all-times all-failures 0)
+     (format strm "<testsuites>~%")
      (dolist (r (reverse result)) (send r :prin1-xml strm))
-     (format strm "</testsuite>~%")
+     (format strm "</testsuites>~%")
      ))
   (:print-normal-result
    (&optional (strm t))
@@ -136,9 +138,9 @@
      (send *unit-test* :increment-tests ',pred)
      ,(if (and (listp pred) (functionp (car pred))) `(trace ,(car pred)))
      (if (not ,pred)
-       (send *unit-test* :increment-failure ',pred (format nil ,message ,@args)
-	     (subseq (send *standard-output* :buffer) 0 (send *standard-output* :count))
-	     ))
+       (send *unit-test* :increment-failure (format nil ,message ,@args)
+	     (format nil "Traceback (most recent call last):~%~A~%~A" ',pred
+		     (subseq (send *standard-output* :buffer) 0 (send *standard-output* :count)))))
      ,(if (and (listp pred) (functionp (car pred))) `(untrace ,(car pred)))
      (setq *standard-output* standard-output-org)
      ))
