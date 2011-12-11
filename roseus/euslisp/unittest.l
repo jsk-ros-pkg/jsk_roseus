@@ -190,7 +190,7 @@
     (setq tm (instance mtimer :init))
     (send tm :start)
     (funcall func)
-    (send *unit-test* :set-time-to-current-result (* 1000 (send tm :stop)))))
+    (send *unit-test* :set-time-to-current-result (send tm :stop))))
 
 (defun run-all-tests ()
   ;; initalize *unit-test-result*
