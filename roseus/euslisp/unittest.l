@@ -10,24 +10,24 @@
   (if msg2 (format *error-output* " ~A" msg2))
   (if form (format *error-output* " in ~s" form))
   (format *error-output* ", exitting...~C[0m~%"  #x1b)
-  (send *unit-test* :increment-test (format nil "~A" form) msg1 code)
+  (send *unit-test* :increment-failure (format nil "~A" form) msg1 code)
   (send *unit-test* :print-result)
   (exit 1))
 
 (defun unittest-sigint-handler (sig code)
   (format *error-output* "unittest-sigint-handler ~A~%" sig)
-  (send *unit-test* :increment-test "" (format nil "signal-handler ~A" sig) code)
+  (send *unit-test* :increment-failure "" (format nil "signal-handler ~A" sig) code)
   (send *unit-test* :print-result)
   (exit 1))
 
 (defclass unit-test-result
   :super propertied-object
-  :slots (name tests time))
+  :slots (name tests failures time))
 (defmethod unit-test-result
   (:init (n) (setq name n tests nil failures nil time 0))
   (:tests () tests)
   (:num-tests () (length tests))
-  (:num-failures () (count-if #'(lambda (x) (elt x 2)) tests))
+  (:num-failures () (if failures 1 0)) ;; need fix
   (:num-successes () (- (send self :num-tests) (send self :num-failures)))
   (:time () time)
   (:prin1
@@ -39,7 +39,6 @@
    )
   (:prin1-xml
    (strm)
-   (format strm "<testsuite name=\"~s\" tests=\"~d\" failures=\"~d\" disabled=\"~d\" errors=\"~A\" time=\"~d\">~%" name (send self :num-tests) (send self :num-failures) 0 0 (send self :time))
    (format strm "  <testcase name=\"~s\" status=~s time=\"~d\" classname=\"~s\">~%" name "run" time name)
    (dolist (ret tests)
      (let ((test (elt ret 0))
@@ -51,7 +50,6 @@
 	 (format strm "~A~%" trace)
 	 (format strm "   </failure>~%"))))
    (format strm "  </testcase>~%")
-   (format strm "</testsuite>~%")
    )
   )
 
@@ -73,8 +71,11 @@
   ;;
   (:add-function (name) (push name functions))
   (:increment-test
+   (test)
+   (if result (push test (unit-test-result-tests (car result)))))
+  (:increment-failure
    (test msg trace)
-   (if result (push (list test msg trace) (unit-test-result-tests (car result))))
+   (if result (push (list test msg trace) (unit-test-result-failures (car result))))
    (when trace
      (format *error-output* "~C[3~Cm[ERROR] test ~A failed" #x1b 49 test)
      (format *error-output* " ... (~A)" msg)
@@ -92,9 +93,9 @@
    (let ((all-tests (apply #'+ (send-all result :num-tests)))
          (all-failures (apply #'+ (send-all result :num-failures)))
          (all-times (apply #'+ (send-all result :time))))
-     (format strm "<testsuites tests=\"~d\" failures=\"~d\" disabled=\"0\" errors=\"0\" time=\"~d\" name=\"AllTests\">~%" all-tests all-failures all-times)
+     (format strm "<testsuite tests=\"~d\" failures=\"~d\" disabled=\"~d\" errors=\"~d\" time=\"~d\" name=\"AllTests\">~%" all-tests all-failures 0 0 all-times)
      (dolist (r (reverse result)) (send r :prin1-xml strm))
-     (format strm "</testsuites>~%")
+     (format strm "</testsuite>~%")
      ))
   (:print-normal-result
    (&optional (strm t))
@@ -137,7 +138,7 @@
 	  ( *standard-input* (make-string-input-stream "s s s s s s s s s s s s s s s s q"))
 	  failure ret)
      ;; lisp::step could not work with macros..
-     (if (functionp (car ',pred))
+     (if (and (listp ',pred) (functionp (car ',pred)))
 	 (setq ret (lisp::step ,pred))
        (setq ret ,pred))
      ;;
@@ -170,24 +171,24 @@
 		   (t
 		    (setf (elt str2 i2) (elt str1 i1))))
 	     )
-	   (setq failure str2)))
-     (send *unit-test* :increment-test ',pred (format nil ,message ,@args) failure)
+	   (setq failure str2)
+	   (send *unit-test* :increment-failure ',pred (format nil ,message ,@args) failure)))
 
      (setq *standard-input* standarad-input-org)
      (setq *standard-output* standard-output-org)
      ))
 
 (defun run-test (func-sym)
-  ;; initilize result
-  (send *unit-test* :init-result func-sym)
-  (format t "TEST-NAME: ~A~%" func-sym)
-  (format t "  now testing...~%")
-  (let ((func (symbol-function func-sym))
-        (tm (instance mtimer :init)))
+  (let ((func (symbol-function func-sym)) tm)
+    ;; initilize result
+    (send *unit-test* :init-result func-sym)
+    (format t "TEST-NAME: ~A~%" func-sym)
+    (format t "  now testing...~%")
+    (send *unit-test* :increment-test func)
+    (setq tm (instance mtimer :init))
     (send tm :start)
-    (let ((r (funcall func)))
-      (let ((time (send tm :stop)))
-        (send *unit-test* :set-time-to-current-result (* 1000 time))))))
+    (funcall func)
+    (send *unit-test* :set-time-to-current-result (* 1000 (send tm :stop)))))
 
 (defun run-all-tests ()
   ;; initalize *unit-test-result*
