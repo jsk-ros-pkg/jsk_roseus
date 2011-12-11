@@ -39,12 +39,12 @@
    )
   (:prin1-xml
    (strm)
-   (format strm "<testsuite name=\"AllTests\" tests=\"~A\" time=\"~0,3f\" failures=\"~A\" errors=\"~A\">~%" (send self :num-tests) time (send self :num-failures) 0)
+   (format strm "<testsuite name=\"~s\" tests=\"~d\" failures=\"~d\" disabled=\"~d\" errors=\"~A\" time=\"~0,3f\">~%" name (send self :num-tests) (send self :num-failures) 0 0 (send self :time))
    (dolist (ret tests)
      (let ((test (elt ret 0))
 	   (msg  (elt ret 1))
 	   (trace (elt ret 2)))
-       (format strm "  <testcase name=\"~A.~A\" time=\"~0,3f\">~%" name msg time)
+       (format strm "  <testcase name=\"~A\" status=~s time=\"~0,3f\" classname=\"~s\">~%" msg "run" time name)
        (when trace
 	 (format strm "   <failure type=\"AssertionError\">~%")
 	 (format strm "~A~%" test)
@@ -90,9 +90,9 @@
   (:print-xml-result
    (&optional (strm t))
    (let ((all-tests (apply #'+ (send-all result :num-tests)))
-         (all-times (apply #'+ (send-all result :time)))
-         (all-failures (apply #'+ (send-all result :num-failures))))
-     (format strm "<testsuites>~%")
+         (all-failures (apply #'+ (send-all result :num-failures)))
+         (all-times (apply #'+ (send-all result :time))))
+     (format strm "<testsuites tests=\"~d\" failures=\"~d\" disabled=\"0\" errors=\"0\" time=\"~0,3f\" name=\"AllTests\">~%" all-tests all-failures all-times)
      (dolist (r (reverse result)) (send r :prin1-xml strm))
      (format strm "</testsuites>~%")
      ))
