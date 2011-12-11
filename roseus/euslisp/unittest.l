@@ -45,9 +45,10 @@
 	   (msg  (elt ret 1))
 	   (trace (elt ret 2)))
        (when trace
-	 (format strm "   <failure type=\"AssertionError\">~%")
-	 (format strm "~A~%" test)
-	 (format strm "~A~%" trace)
+	 (format strm "   <failure message=~s type=\"AssertionError\">~%" msg)
+	 (format strm "Test:~A~%" test)
+	 (format strm "Trace:~A~%" trace)
+	 (format strm "Message:~A~%" msg)
 	 (format strm "   </failure>~%"))))
    (format strm "  </testcase>~%")
    )
@@ -138,9 +139,10 @@
 	  ( *standard-input* (make-string-input-stream "s s s s s s s s s s s s s s s s q"))
 	  failure ret)
      ;; lisp::step could not work with macros..
-     (if (and (listp ',pred) (functionp (car ',pred)))
-	 (setq ret (lisp::step ,pred))
-       (setq ret ,pred))
+;     (if (and (listp ',pred) (functionp (car ',pred)))
+;	 (setq ret (lisp::step ,pred))
+;       (setq ret ,pred))
+     (setq ret ,pred)
      ;;
      (if (not ret)
 	 ;; escape <> for xml
