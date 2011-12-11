@@ -10,8 +10,8 @@
   (if msg2 (format *error-output* " ~A" msg2))
   (if form (format *error-output* " in ~s" form))
   (format *error-output* ", exitting...~C[0m~%"  #x1b)
-  (send *unit-test* :increment-failure (format nil "~A" form) msg1 code)
-  (send *unit-test* :print-result)
+  (send *unit-test* :increment-failure form msg1 code)
+  ;(send *unit-test* :print-result)
   (exit 1))
 
 (defun unittest-sigint-handler (sig code)
@@ -40,7 +40,7 @@
   (:prin1-xml
    (strm)
    (format strm "  <testcase name=\"~s\" status=~s time=\"~d\" classname=\"~s\">~%" name "run" time name)
-   (dolist (ret tests)
+   (dolist (ret failures)
      (let ((test (elt ret 0))
 	   (msg  (elt ret 1))
 	   (trace (elt ret 2)))
@@ -184,7 +184,7 @@
     (send *unit-test* :init-result func-sym)
     (format t "TEST-NAME: ~A~%" func-sym)
     (format t "  now testing...~%")
-    (send *unit-test* :increment-test func)
+    (send *unit-test* :increment-test func-sym)
     (setq tm (instance mtimer :init))
     (send tm :start)
     (funcall func)
