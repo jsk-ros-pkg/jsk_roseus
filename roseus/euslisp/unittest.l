@@ -173,22 +173,6 @@
      (setq *standard-output* standard-output-org)
      ))
 
-(in-package "LISP")
-(defun tracex (name arglist)
-   (let (result evaluated-arguments (*tracelevel* (1+ *tracelevel*)))
-     (setf (symbol-function name) (get name 'traced-function))
-     (format t ";; ~d: --> ~s ~s~%"
-	     *tracelevel* name (if (eq name 'send) nil arglist))
-     (trace1 (intern (symbol-name name)))
-     (setq result
-	 (apply (get name 'traced-function) arglist))
-     (setf (symbol-function name) (get name 'traced-function))
-     (format t ";; ~d: ~s <-- ~s~%"    *tracelevel* result name)
-     (trace1 (intern (symbol-name name)))
-     (and (equal *tracelevel* 1) (terpri))
-     result))
-(in-package "USER")
-
 (defun run-test (func-sym)
   ;; initilize result
   (send *unit-test* :init-result func-sym)
