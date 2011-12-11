@@ -39,12 +39,12 @@
    )
   (:prin1-xml
    (strm)
-   (format strm "<testsuite name=\"~s\" tests=\"~d\" failures=\"~d\" disabled=\"~d\" errors=\"~A\" time=\"~0,3f\">~%" name (send self :num-tests) (send self :num-failures) 0 0 (send self :time))
+   (format strm "<testsuite name=\"~s\" tests=\"~d\" failures=\"~d\" disabled=\"~d\" errors=\"~A\" time=\"~d\">~%" name (send self :num-tests) (send self :num-failures) 0 0 (send self :time))
    (dolist (ret tests)
      (let ((test (elt ret 0))
 	   (msg  (elt ret 1))
 	   (trace (elt ret 2)))
-       (format strm "  <testcase name=\"~A\" status=~s time=\"~0,3f\" classname=\"~s\">~%" msg "run" time name)
+       (format strm "  <testcase name=\"~A\" status=~s time=\"~d\" classname=\"~s\">~%" msg "run" time name)
        (when trace
 	 (format strm "   <failure type=\"AssertionError\">~%")
 	 (format strm "~A~%" test)
@@ -80,8 +80,8 @@
      (format *error-output* " ... (~A)" msg)
      (format *error-output* ".~C[0m~%" #x1b)))
   (:set-time-to-current-result
-   (time)
-   (if result (setf (unit-test-result-time (car result)) time)))
+   (time) ;; msec
+   (if result (setf (unit-test-result-time (car result)) (round time))))
   (:init-result
    (func-sym)
    (push (instance unit-test-result :init func-sym) result))
@@ -92,7 +92,7 @@
    (let ((all-tests (apply #'+ (send-all result :num-tests)))
          (all-failures (apply #'+ (send-all result :num-failures)))
          (all-times (apply #'+ (send-all result :time))))
-     (format strm "<testsuites tests=\"~d\" failures=\"~d\" disabled=\"0\" errors=\"0\" time=\"~0,3f\" name=\"AllTests\">~%" all-tests all-failures all-times)
+     (format strm "<testsuites tests=\"~d\" failures=\"~d\" disabled=\"0\" errors=\"0\" time=\"~d\" name=\"AllTests\">~%" all-tests all-failures all-times)
      (dolist (r (reverse result)) (send r :prin1-xml strm))
      (format strm "</testsuites>~%")
      ))
@@ -199,7 +199,7 @@
     (send tm :start)
     (let ((r (funcall func)))
       (let ((time (send tm :stop)))
-        (send *unit-test* :set-time-to-current-result time)))))
+        (send *unit-test* :set-time-to-current-result (* 1000 time))))))
 
 (defun run-all-tests ()
   ;; initalize *unit-test-result*
