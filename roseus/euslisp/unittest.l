@@ -40,17 +40,17 @@
   (:prin1-xml
    (strm)
    (format strm "<testsuite name=\"~s\" tests=\"~d\" failures=\"~d\" disabled=\"~d\" errors=\"~A\" time=\"~d\">~%" name (send self :num-tests) (send self :num-failures) 0 0 (send self :time))
+   (format strm "  <testcase name=\"~s\" status=~s time=\"~d\" classname=\"~s\">~%" name "run" time name)
    (dolist (ret tests)
      (let ((test (elt ret 0))
 	   (msg  (elt ret 1))
 	   (trace (elt ret 2)))
-       (format strm "  <testcase name=\"~A\" status=~s time=\"~d\" classname=\"~s\">~%" msg "run" time name)
        (when trace
 	 (format strm "   <failure type=\"AssertionError\">~%")
 	 (format strm "~A~%" test)
 	 (format strm "~A~%" trace)
-	 (format strm "   </failure>~%"))
-       (format strm "  </testcase>~%")))
+	 (format strm "   </failure>~%"))))
+   (format strm "  </testcase>~%")
    (format strm "</testsuite>~%")
    )
   )
@@ -136,7 +136,11 @@
 	  (standarad-input-org  *standard-input*)
 	  ( *standard-input* (make-string-input-stream "s s s s s s s s s s s s s s s s q"))
 	  failure ret)
-     (setq ret (lisp::step ,pred))
+     ;; lisp::step could not work with macros..
+     (if (functionp (car ',pred))
+	 (setq ret (lisp::step ,pred))
+       (setq ret ,pred))
+     ;;
      (if (not ret)
 	 ;; escape <> for xml
 	 (let* ((str1 (subseq (send *standard-output* :buffer) 0 (send *standard-output* :count)))
