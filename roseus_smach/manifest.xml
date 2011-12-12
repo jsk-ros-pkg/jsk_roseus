@@ -17,5 +17,6 @@
   <depend package="roseus"/>
   <depend package="smach_viewer"/>
   <depend package="smach_msgs"/>
+  <depend package="actionlib_tutorials"/>
 
 </package>
