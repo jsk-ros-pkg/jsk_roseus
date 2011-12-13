@@ -1,4 +1,0 @@
-<launch>
-  <test test-name="test_bignum" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/bignum.l" />
-</launch>
