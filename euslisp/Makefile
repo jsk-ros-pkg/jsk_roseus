@@ -1,9 +1,9 @@
-all-target: ros-euslisp-all
+all-target: all ros-euslisp-all
+
 include $(shell rospack find mk)/cmake.mk
 
 EUSC_PATCH=eus.c_CUSTUM_EUSDIR.patch
 
-include jskeus/Makefile
 export EUSDIR=$(shell pwd)/jskeus/eus
 
 ros-euslisp-all: wiped $(EUSC_PATCH)
