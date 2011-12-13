@@ -1,0 +1,7 @@
+<launch>
+  <test test-name="test_read_img" pkg="euslisp"
+	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/read-img.l"
+	time-limit="600" >
+	<!-- launch-prefix=xterm -e gdb args -->
+  </test>
+</launch>
