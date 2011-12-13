@@ -11,7 +11,7 @@
   (if form (format *error-output* " in ~s" form))
   (format *error-output* ", exitting...~C[0m~%"  #x1b)
   (send *unit-test* :increment-failure form msg1 code)
-  ;(send *unit-test* :print-result)
+  (send *unit-test* :print-result)
   (exit 1))
 
 (defun unittest-sigint-handler (sig code)
@@ -212,6 +212,8 @@
     (unix:signal unix::sighup 'unittest-sigint-handler)
 
     (setq *unit-test* (instance unit-test-container :init :log-fname log-fname))
+    (send *unit-test* :init-result 'all-test)
+    (send *unit-test* :increment-test 'all-test)
     t))
 
 (provide :gtest)
