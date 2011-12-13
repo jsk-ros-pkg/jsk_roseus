@@ -140,7 +140,7 @@
 	   (standarad-input-org  *standard-input*)
 	   ( *standard-input* (make-string-input-stream "s s s s s s s s s s s s s s s s q"))
 	   failure
-	   (,ret ,pred))
+	   (ret ,pred))
       ;; lisp::step could not work with macros..
       ;;     (if (and (listp ',pred) (functionp (car ',pred)))
       ;;	 (setq ret (lisp::step ,pred))
