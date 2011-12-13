@@ -229,12 +229,16 @@
      (send action :send-goal goal)
      ))
   ;;
+  (:set-robot-state1
+   (key msg)
+     (if (assoc key robot-state)
+	 (setf (cdr (assoc key robot-state)) msg)
+       (push (cons key msg) robot-state)))   
   (:ros-state-callback
    (msg)
    (dolist (key '(:name :position :velocity :effort))
-     (if (assoc key robot-state)
-	 (setf (cdr (assoc key robot-state)) (send msg key))
-       (push (cons key (send msg key)) robot-state))))
+     (send self :set-robot-state1 key (send msg key)))
+   (send self :set-robot-state1 :stamp (send msg :header :stamp)))
   (:update-robot-state
    ()
    (let (joint-names positions velocities efforts)
