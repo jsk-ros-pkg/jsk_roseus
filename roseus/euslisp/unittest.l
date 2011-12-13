@@ -133,16 +133,18 @@
      ',name))
 
 (defmacro assert (pred &optional (message "") &rest args)
+  (with-gensyms
+   (ret)
   `(let* ((standard-output-org *standard-output*)
 	  (*standard-output* (make-string-output-stream 1024))
 	  (standarad-input-org  *standard-input*)
 	  ( *standard-input* (make-string-input-stream "s s s s s s s s s s s s s s s s q"))
-	  failure ret)
+	  failure
+	  (,ret ,pred))
      ;; lisp::step could not work with macros..
 ;     (if (and (listp ',pred) (functionp (car ',pred)))
 ;	 (setq ret (lisp::step ,pred))
 ;       (setq ret ,pred))
-     (setq ret ,pred)
      ;;
      (if (not ret)
 	 ;; escape <> for xml
@@ -178,7 +180,7 @@
 
      (setq *standard-input* standarad-input-org)
      (setq *standard-output* standard-output-org)
-     ))
+     )))
 
 (defun run-test (func-sym)
   (let ((func (symbol-function func-sym)) tm)
