@@ -13,8 +13,8 @@
 (objects (list *box*))
 
 (deftest read-img
-  (let ()
-    (dolist (file (directory (format nil "~A/img/" *eusdir*)))
+  (let ((dir (format nil "~A/img/" *eusdir*)))
+    (dolist (file (and (lisp::directory-p dir) (directory dir)))
       (let ((fname (format nil "~A/img/~A" *eusdir* file)) img)
 	(format *error-output* "loading ~A~%" fname)
 	#+:jsk
