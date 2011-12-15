@@ -28,7 +28,7 @@ clean:
 	-rm -fr $(EUSDIR)/$(ARCHDIR)
 
 wipe: clean
-	-rm -fr build bin installed wiped
+	-rm -fr bin installed wiped
 
 wiped: Makefile
 	make -f Makefile.eus wipe
