@@ -87,7 +87,10 @@
   (:init-result
    (func-sym)
    (push (instance unit-test-result :init func-sym) result))
-  (:clear-result () (setq result nil))
+  (:clear-result ()
+   (setq result nil)
+   (send self :init-result 'all-test)
+   (send self :increment-test 'all-test))
   ;;
   (:print-xml-result
    (&optional (strm t))
@@ -214,8 +217,6 @@
     (unix:signal unix::sighup 'unittest-sigint-handler)
 
     (setq *unit-test* (instance unit-test-container :init :log-fname log-fname))
-    (send *unit-test* :init-result 'all-test)
-    (send *unit-test* :increment-test 'all-test)
     t))
 
 (provide :gtest)
