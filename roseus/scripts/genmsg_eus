@@ -5,6 +5,8 @@ EUS2_EXE=`find $EUSLISP_PKGDIR -name eus2`
 
 if [ "$EUS2_EXE" ] ; then
     rosrun euslisp eus2 `rospack find roseus`/scripts/genmsg-main-eus.l -c "(prog1 (genmsg-eus \"$@\")(exit))" >> /dev/null
+else
+    exit 1
 fi
 
 
