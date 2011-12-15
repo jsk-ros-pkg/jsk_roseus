@@ -1,5 +1,13 @@
 #!/bin/bash
 
+EUSLISP_PKGDIR=`rospack find euslisp`
+EUS2_EXE=`find $EUSLISP_PKGDIR -name eus2`
+
+if [ ! "$EUS2_EXE" ] ; then
+    echo -e "\e[1;31mERROR in eus2 is not found\e[m"
+    exit 1
+fi
+
 function generate-msg-srv {
     local dir=$1;
     echo $dir
