@@ -536,9 +536,17 @@
 ;;;
 ;;;
 
+(defun check-srv-file (pkg name)
+  (read-line (piped-fork (format nil "rossrv show ~A/~A" pkg name)) nil))
+(defun check-msg-file (pkg name)
+  (read-line (piped-fork (format nil "rosmsg show ~A/~A" pkg name)) nil))
+
 (defun genmsg-eus (fname)
   (let (msgs consts def pkg name oname)
     (multiple-value-setq (pkg name) (genfile-header fname))
+    (unless (check-msg-file pkg name)
+      (warning-message 1 ";; error occured when parsing ~A/msg/~A~%" pkg name)
+      (return-from gensrv-eus nil))
     (with-open-file
      (strm fname :direction :input)
      (multiple-value-setq (msgs consts) (generate-msg-datatype-name-list strm)))
@@ -584,6 +592,9 @@
     (multiple-value-setq (pkg name) (genfile-header fname))
     (setq req-name (format nil "~ARequest"  name)
           res-name (format nil "~AResponse" name))
+    (unless (check-srv-file pkg name)
+      (warning-message 1 ";; error occured when parsing ~A/srv/~A~%" pkg name)
+      (return-from gensrv-eus nil))
     (with-open-file
      (strm fname :direction :input)
      (multiple-value-setq (req-msgs consts1) (generate-msg-datatype-name-list strm))
