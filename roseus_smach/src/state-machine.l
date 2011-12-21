@@ -70,11 +70,14 @@
        (return-from :execute-impl
 	 (send active-state :execute userdata :step (1- step))))
    ;; execute once on this machine
-   (let ((last-state active-state trans)
-	 (exec-result (send active-state :execute userdata)))
-	 (setq trans (send last-state :transitions))
+   (let* ((last-state active-state)
+	  (trans (send last-state :transitions))
+	  (exec-result (send last-state :execute userdata)))
      (when (not (assoc exec-result trans :test #'equal))
        (error "undefined transition ~A from ~A~%" exec-result last-state))
+     ;; check if active state has changed
+     (if (not (eq active-state last-state))
+	 (return-from :execute-impl (send active-state :name)))
      (setq active-state (cdr (assoc exec-result trans :test #'equal)))
      (if (send active-state :submachine)
 	 (send (send active-state :submachine) :reset-state))

@@ -67,19 +67,15 @@
      )
   (:set-initial-state-cb
    (msg)
-   (let (nd (path (send msg :path))
+   (let ((path (send msg :path))
 	 (name (car (send msg :initial_states)))) ;; this smach takes only one state
      ;; initialize can be called every 5 sec
      (when init-tm
        (when (< (send (ros::time- (ros::time-now) init-tm) :to-sec) 5)
 	 (return-from :set-initial-state-cb)))
      ;; TODO enable to parse the path string
-     (setq nd (find name (send sm :nodes)
-		    :key #'(lambda(x)(send x :name))
-		    :test #'string=))
      (when nd
-       (send sm :start-state nd)
-       (send sm :reset-state))
+       (send sm :active-state name))
      (ros::ros-info "Set initial state")
      (setq init-tm (ros::time-now))
      ))
