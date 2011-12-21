@@ -258,8 +258,9 @@ always the rank of list is 2"
 (defun ros::load-ros-manifest (pkg)
   (let ((manifest (format nil "~A/roseus/~A/manifest.l"
 			  (ros::ros-home-dir) pkg)))
-    (when (probe-file manifest)
-      (load-org-for-ros manifest))))
+    (if (probe-file manifest)
+	(load-org-for-ros manifest)
+      (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg))))
 
 (defun ros::load-ros-package (pkg)
   (unless (find-package (string-upcase pkg))
