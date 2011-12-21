@@ -191,7 +191,7 @@
 		    triface-vertices-list body-colors))
 	   (points
 	    (mapcar #'(lambda (v)
-			(ros::pos->tf-point v))
+			(ros::pos->tf-point (send obj :inverse-transform-vector v)))
 		    (apply #'append triface-vertices-list)))
 	   (colors
 	    (mapcar #'(lambda (c)
