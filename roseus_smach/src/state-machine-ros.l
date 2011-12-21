@@ -1,7 +1,13 @@
 (load "state-machine.l")
+(load "state-machine-utils.l")
 (require :pickle "pickle.l")
 
 (ros::roseus-add-msgs "smach_msgs")
+
+;;
+;; inspector publishes structure and status of state-machine
+;; and it changes active-state of state-machine by init message
+;;
 
 (defclass state-machine-inspector
   :super propertied-object
@@ -18,7 +24,7 @@
     smach_msgs::SmachContainerStructure 10)
    (ros::subscribe (concatenate string srv-name "/smach/container_init")
 		   smach_msgs::SmachContainerInitialStatusCmd
-		   #'send self :set-initial-state-cb 1)
+		   #'send self :set-initial-state-cb)
    self)
   ;;
   (:publish-status
@@ -68,15 +74,33 @@
   (:set-initial-state-cb
    (msg)
    (let ((path (send msg :path))
-	 (name (car (send msg :initial_states)))) ;; this smach takes only one state
+	 ;; this smach takes only one state
+	 (name (car (send msg :initial_states))))
+     ;; path should be start from root-name
+     (when (not (string= (subseq path 1 (1+ (length root-name))) root-name))
+       (return-from :set-initial-state-cb))
+     (setq path (format nil "~A/~A"
+			(subseq path (1+ (length root-name))) name))
      ;; initialize can be called every 5 sec
      (when init-tm
        (when (< (send (ros::time- (ros::time-now) init-tm) :to-sec) 5)
 	 (return-from :set-initial-state-cb)))
-     ;; TODO enable to parse the path string
-     (when nd
-       (send sm :active-state name))
-     (ros::ros-info "Set initial state")
+     ;; parse the path string and get target node
+     (let ((nd sm)
+	   (node-list (cdr (send (pathname path) :directory))))
+       (dolist (node-name node-list)
+	 (when nd
+	   (setq nd (find node-name (send nd :nodes) :test #'string=
+			  :key #'(lambda(x)(string (send x :name)))))
+	   (setq nd (send nd :submachine))))
+       ;; set active-state
+       (when nd
+	 (setq nd (find name (send nd :nodes) :test #'string=
+			:key #'(lambda(x)(string (send x :name)))))
+	 (send sm :active-state nd)
+	 (ros::ros-info "Set initial state [~a]" nd)))
+     ;; TODO apply userdata
      (setq init-tm (ros::time-now))
      ))
   )
+

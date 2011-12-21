@@ -16,6 +16,7 @@
     (send insp :publish-status mydata)
     (while (not (send sm :goal-reached))
       (unix:sleep 1)
+      (ros::spin-once)
       (send insp :publish-status mydata)
       ;; you can execute state-machine step by step
       (send sm :execute mydata :step -1))

@@ -1,5 +1,3 @@
-(load "state-machine-ros.l")
-
 ;; execute the state-machine with spining
 ;; when it occures an error, stop and return the initial state
 ;; the loop is do-until-key type
