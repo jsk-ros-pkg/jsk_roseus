@@ -144,6 +144,7 @@
 	   ( *standard-input* (make-string-input-stream "s s s s s s s s s s s s s s s s q"))
 	   failure
 	   (ret ,pred))
+      (warning-message 2 "testing [~A] ~A~%" (format nil ,message ,@args) ',pred)
       ;; lisp::step could not work with macros..
       ;;     (if (and (listp ',pred) (functionp (car ',pred)))
       ;;	 (setq ret (lisp::step ,pred))
