@@ -774,13 +774,17 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   string topicname;
   pointer message;
   int queuesize = 1;
+  bool latch = false;
 
-  ckarg2(2,3);
+  ckarg2(2,4);
   if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
   message = argv[1];
   if ( n > 2 ) {
     queuesize = ckintval(argv[2]);
+  }
+  if ( n > 3 ) {
+    latch = (argv[3]!=NIL ? true : false);
   }
 
   if( s_mapAdvertised.find(topicname) != s_mapAdvertised.end() ) {
@@ -790,7 +794,7 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
 
   EuslispMessage msg(message);
   AdvertiseOptions ao(topicname, queuesize, msg.__getMD5Sum(), msg.__getDataType(), msg.__getMessageDefinition());
-  //ao.latch = latch;
+  ao.latch = latch;
   Publisher publisher = s_node->advertise(ao);
   boost::shared_ptr<Publisher> pub = boost::shared_ptr<Publisher>(new Publisher(publisher));
   if ( !!pub ) {
