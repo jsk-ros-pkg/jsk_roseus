@@ -21,7 +21,7 @@
     smach_msgs::SmachContainerStatus 10)
    (ros::advertise
     (concatenate string srv-name "/smach/container_structure")
-    smach_msgs::SmachContainerStructure 10)
+    smach_msgs::SmachContainerStructure 10 t) ;; latch type
    (ros::subscribe (concatenate string srv-name "/smach/container_init")
 		   smach_msgs::SmachContainerInitialStatusCmd
 		   #'send self :set-initial-state-cb)
@@ -97,8 +97,9 @@
        (when nd
 	 (setq nd (find name (send nd :nodes) :test #'string=
 			:key #'(lambda(x)(string (send x :name)))))
-	 (send sm :active-state nd)
-	 (ros::ros-info "Set initial state [~a]" nd)))
+	 (send sm :start-state nd)
+	 (send sm :reset-state)
+	 (ros::ros-info "Set initial/active state [~a]" nd)))
      ;; TODO apply userdata
      (setq init-tm (ros::time-now))
      ))
