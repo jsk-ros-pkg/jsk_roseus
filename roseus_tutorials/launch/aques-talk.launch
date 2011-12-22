@@ -1,6 +1,7 @@
 <launch>
   <node pkg="sound_play" type="soundplay_node.py" name="soundplay_node">
     <env name="PATH" value="$(find aques_talk):$(env PATH)" />
+    <remap from="robotsound" to="j_robotsound" />
   </node>
   <sphinxdoc><![CDATA[
 
