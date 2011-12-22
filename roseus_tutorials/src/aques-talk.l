@@ -43,7 +43,7 @@ http://www.ros.org/wiki/sound_playを使ってサウンド出力するサンプ�
 ;;(send msg :arg2 "aq_m4b.phont")
 ;;(ros::publish "robotsound" msg)
 
-(speak-jp "こんにちは。")
+(speak-jp "こんにちわ。")
 (unix:sleep 3)
 
 (speak-jp "おはようございま'す．きょ'うわ/い'い天気ですか？")
