@@ -16,7 +16,7 @@ http://www.ros.org/wiki/sound_playを使ってサウンド出力するサンプ�
 (ros::roseus "aques_talk")
 
 ;; メッセージをアドバタイズする
-(ros::advertise "j_robotsound" sound_play::SoundRequest 5)
+(ros::advertise "robotsound_jp" sound_play::SoundRequest 5)
 (unix:sleep 1) ;; this is VERY important
 
 ;; メッセージのインスタンスを作りパブリッシュする
@@ -25,14 +25,14 @@ http://www.ros.org/wiki/sound_playを使ってサウンド出力するサンプ�
 ;; 組み込みサウンド
 (send msg :sound sound_play::SoundRequest::*needs_plugging*) ;; need_plugging sound
 (send msg :command sound_play::SoundRequest::*play_once*) ;; once
-(ros::publish "j_robotsound" msg)
+(ros::publish "robotsound_jp" msg)
 (unix:sleep 2)
 
 ;; サウンドファイルの再生 (skype をインストールしておくこと）
 (send msg :sound sound_play::SoundRequest::*play_file*) ;; need_plugging sound
 (send msg :command sound_play::SoundRequest::*play_once*) ;; once
 (send msg :arg "/usr/share/skype/sounds/CallRingingIn.wav")
-(ros::publish "j_robotsound" msg)
+(ros::publish "robotsound_jp" msg)
 (unix:sleep 4)
 
 ;; 音声合成を利用する
