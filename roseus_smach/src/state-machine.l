@@ -50,11 +50,15 @@
   ;; @ exec-result: trans state when execution at from-state returns this.
   ;;                must be {number,string,symbol} or list of these
   (:add-transition
-   (from to exec-result)
+   (from to exec-result &key (test #'equal))
    (if (not (derivedp from state))(setq from (or (send self :node from) from)))
    (if (not (derivedp to state))(setq to (or (send self :node to) to)))
-   (send from :add-transition (cons exec-result to))
-   (send-super :add-arc from to))
+   (if (and from to)
+       (send self :add-arc from to exec-result test)))
+  (:add-arc (from to val test)
+    (send self :add-arc-from-to from to val test))
+  (:add-arc-from-to (from to val test)
+    (instance transition :init from to val test))
   ;; arg-keys is a list of userdata keys used by this state-machine
   (:arg-keys (&rest names)
    (if names (setq arg-keys names) arg-keys))
@@ -71,14 +75,17 @@
 	 (send active-state :execute userdata :step (1- step))))
    ;; execute once on this machine
    (let* ((last-state active-state)
-	  (trans (send last-state :transitions))
+	  (trans (send last-state :arc-list))
 	  (exec-result (send last-state :execute userdata)))
-     (when (not (assoc exec-result trans :test #'equal))
-       (error "undefined transition ~A from ~A~%" exec-result last-state))
+     (setq trans (remove-if-not #'(lambda(tr)(send tr :check exec-result)) trans))
+     (case (length trans)
+       (0 (error "undefined transition ~A from ~A~%" exec-result last-state))
+       (1 t) ;; OK
+       (t (warn "multiple transitions ~A from ~A~%" exec-result last-state)))
      ;; check if active state has changed
      (if (not (eq active-state last-state))
 	 (return-from :execute-impl (send active-state :name)))
-     (setq active-state (cdr (assoc exec-result trans :test #'equal)))
+     (setq active-state (send (car trans) :to))
      (if (send active-state :submachine)
 	 (send (send active-state :submachine) :reset-state))
      exec-result))
@@ -103,16 +110,12 @@
 ;; action is function or state-machine instance
 (defclass state
   :super node
-  :slots (action transitions remap-list))
+  :slots (action remap-list))
 (defmethod state
   (:init
    (name act &key ((:remap-list rlst) nil))
    (setq action act remap-list rlst)
    (send-super :init name))
-  (:transitions
-   (&rest args)
-   (if (car args) (setq transitions (car args))) transitions)
-  (:add-transition (trans) (push trans transitions))
   ;; check if this state is state-machine, then return it
   (:submachine () (if (derivedp action state-machine) action nil))
   ;; remap userdata names
@@ -138,3 +141,17 @@
      (send self :remap userdata :invert t) ;; unremap
      res ))
   )
+
+(defclass transition
+  :super costed-arc
+  :slots (value testfunc))
+(defmethod transition
+  (:init
+   (from to val test)
+   (send self :name val)
+   (setq value val testfunc test)
+   (send-super :init from to 1))
+  (:check
+   (arg)
+   (funcall testfunc arg value)))
+

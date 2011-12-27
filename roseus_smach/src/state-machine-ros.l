@@ -58,10 +58,10 @@
      (send msg :container_outcomes
 	   (mapcar #'string (send-all (send machine :goal-state) :name)))
      (dolist (from (send machine :nodes))
-       (dolist (tra (send from :transitions))
-	 (push (string (car tra)) transitions)
+       (dolist (tra (send from :arc-list))
+	 (push (string (send tra :name)) transitions)
 	 (push (string (send from :name)) from-nodes)
-	 (push (string (send (cdr tra) :name)) to-nodes)))
+	 (push (string (send (send tra :to) :name)) to-nodes)))
      (send msg :internal_outcomes transitions)
      (send msg :outcomes_from from-nodes)
      (send msg :outcomes_to to-nodes)

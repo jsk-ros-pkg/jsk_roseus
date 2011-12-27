@@ -3,6 +3,7 @@
 ;; the loop is do-until-key type
 (defun exec-smach-with-spin (sm &optional mydata &key (hz 1))
   (let ((insp (instance state-machine-inspector :init sm)))
+    (unix::sleep 2)
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
 
