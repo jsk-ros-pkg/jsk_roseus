@@ -76,8 +76,8 @@
        (when trace
 	 (format strm "   <failure message=~s type=\"AssertionError\">~%" msg)
 	 (format strm "Test:~A~%" (escape-xml-string (prin1-to-string test)))
-	 (format strm "Trace:~A~%" (escape-xml-string trace))
-	 (format strm "Message:~A~%" (escape-xml-string msg))
+	 (format strm "Trace:~A~%" (escape-xml-string (prin1-to-string trace)))
+	 (format strm "Message:~A~%" (escape-xml-string (prin1-to-string msg)))
 	 (format strm "   </failure>~%"))))
    (format strm "  </testcase>~%")
    )
