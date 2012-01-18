@@ -255,6 +255,24 @@
     (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
 
+(defun mesh->marker-msg
+  (cds mesh_resource header
+       &key ((:color col) (float-vector 1 1 1)) ((:scale sc) 1000)
+       ((:id idx) 0) ((:mesh_use_embedded_materials use_embedded) t)
+       (alpha 1.0) ns lifetime)
+    (let* ((msg (instance visualization_msgs::Marker :init
+			  :type visualization_msgs::Marker::*MESH_RESOURCE*
+			  :header header :id idx)))
+      (send msg :mesh_resource mesh_resource)
+      (send msg :mesh_use_embedded_materials use_embedded)
+      (send msg :scale (ros::pos->tf-translation (float-vector sc sc sc)))
+      (send msg :color (vector->rgba col alpha))
+      (send msg :frame_locked t)
+      (send msg :pose (ros::coords->tf-pose cds))
+      (if ns (send msg :ns ns))
+      (if lifetime (send msg :lifetime (ros::time lifetime)))
+      msg))
+
 ;; visualization_msgs::Marker -> eus shape object
 
 (defun marker-msg->shape (msg)
