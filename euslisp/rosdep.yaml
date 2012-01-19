@@ -37,4 +37,12 @@ xfont-server:
   ubuntu: xfs
   debian: xfs
   macports:
+xfonts-100dpi:
+  ubuntu: xfs
+  debian: xfs
+  macports:
+xfonts-75dpi:
+  ubuntu: xfs
+  debian: xfs
+  macports:
 
