@@ -4,7 +4,7 @@
   <node name="camera_image_to_usb_cam_camera_image" pkg="topic_tools"
 	type="relay" args="image_raw usb_cam/image_raw" />
   <node name="ar_pose" pkg="ar_pose" type="ar_multi" respawn="false" output="screen">
-    <param name="marker_pattern_list" type="string" value="data/object_4x4"/>
+    <param name="marker_pattern_list" type="string" value="$(find roseus_tutorials)/launch/object_4x4_70"/>
     <param name="threshold" type="int" value="100"/>
   </node>
   <sphinxdoc><![CDATA[
