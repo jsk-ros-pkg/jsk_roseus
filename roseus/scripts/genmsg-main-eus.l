@@ -232,6 +232,8 @@
     (format strm "  (:serialization-length~%")
     (format strm "   ()~%")
     (format strm "   (+~%")
+    (unless msgs ;; empty message
+      (format strm "    0~%"))
     (dolist (msg msgs)
       (setq type (elt msg 0) var (elt msg 1)
 	    vec-size (elt msg 2)
