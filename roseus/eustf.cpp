@@ -140,8 +140,8 @@ pointer EUSTF_SETTRANSFORM(register context *ctx,int n,pointer *argv)
   std::string child_frame_id = std::string((char*)(argv[5]->c.str.chars));
   std::string authority= std::string((char*)(argv[6]->c.str.chars));
   tf::StampedTransform transform;
-  transform.setOrigin(btVector3(pos[0], pos[1], pos[2]));
-  transform.setRotation(btQuaternion(rot[3], rot[0], rot[1], rot[2]));
+  transform.setOrigin(tf::Vector3(pos[0], pos[1], pos[2]));
+  transform.setRotation(tf::Quaternion(rot[3], rot[0], rot[1], rot[2]));
   transform.frame_id_ = frame_id;
   transform.child_frame_id_ = child_frame_id;
   transform.stamp_.sec = stamp[0];
