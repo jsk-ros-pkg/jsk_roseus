@@ -74,7 +74,7 @@
 	   (msg  (elt ret 1))
 	   (trace (elt ret 2)))
        (when trace
-	 (format strm "   <failure message=~s type=\"AssertionError\">~%" msg)
+	 (format strm "   <failure message=~s type=\"AssertionError\">~%" (escape-xml-string msg))
 	 (format strm "Test:~A~%" (escape-xml-string (prin1-to-string test)))
 	 (format strm "Trace:~A~%" (escape-xml-string (prin1-to-string trace)))
 	 (format strm "Message:~A~%" (escape-xml-string (prin1-to-string msg)))
