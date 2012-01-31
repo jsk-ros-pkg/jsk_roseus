@@ -24,4 +24,5 @@
   <export>
     <cpp cflags="-I${prefix}/msg/cpp" />
   </export>
+  <rosdep name="glc"/>
 </package>
