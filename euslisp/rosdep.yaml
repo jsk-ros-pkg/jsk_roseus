@@ -46,11 +46,3 @@ xfonts-75dpi:
   debian: xfonts-75dpi
   macports:
 
-glc:
-  ubuntu: |
-    if [ ! -f /usr/bin/glc-capture ] ; then
-      sudo apt-add-repository -y ppa:arand
-      sudo apt-get update
-      sudo apt-get install -y glc
-    fi
-     
