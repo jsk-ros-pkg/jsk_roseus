@@ -10,4 +10,7 @@
 	time-limit="600" >
 	<!-- launch-prefix=xterm -e gdb args -->
   </test>
+  <test test-name="test_graph" pkg="euslisp"
+	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/graph.l"
+	time-limit="600" />
 </launch>
