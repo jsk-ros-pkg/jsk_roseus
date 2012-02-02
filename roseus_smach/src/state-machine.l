@@ -1,5 +1,3 @@
-;;(load "package://euslib/jsk/graph.l")
-(load "package://euslib/irteus_proposals/irtgraph.l")
 
 ;; manipulate a list of cons as a associative array
 (defun set-alist (k v alist &key (key 'car) (test 'eq))
