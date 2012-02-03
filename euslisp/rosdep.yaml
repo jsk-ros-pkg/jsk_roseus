@@ -46,3 +46,7 @@ xfonts-75dpi:
   debian: xfonts-75dpi
   macports:
 
+coreutils:
+  ubuntu: coreutils
+  debian: coreutils
+  macports: coreutils
