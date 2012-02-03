@@ -523,6 +523,7 @@ pointer EUSTF_TRANSFORMPOSE(register context *ctx,int n,pointer *argv)
 
 pointer EUSTF_LOOKUPVELOCITY(register context *ctx,int n,pointer *argv)
 {
+#if 0
   numunion nu;
   ckarg(4);
   tf::Transformer *tf;
@@ -543,6 +544,7 @@ pointer EUSTF_LOOKUPVELOCITY(register context *ctx,int n,pointer *argv)
   if (isint(argv[4])) duration = (float)intval(argv[4]);
   else if (isflt(argv[4])) duration = (float)fltval(argv[4]);
   else error(E_NONUMBER);
+#endif
 
   geometry_msgs::TwistStamped velocity;
   ROS_ERROR("%s is not implemented yet since lookupVelocity seems obsoluted", __PRETTY_FUNCTION__);

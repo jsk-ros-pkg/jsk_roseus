@@ -709,8 +709,6 @@ pointer ROSEUS_UNSUBSCRIBE(register context *ctx,int n,pointer *argv)
   if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
-  map<string, boost::shared_ptr<Subscriber> >::iterator it = s_mapSubscribed.find(topicname);
-
   bool bSuccess = s_mapSubscribed.erase(topicname)>0;
 
   return (bSuccess?T:NIL);
@@ -813,8 +811,6 @@ pointer ROSEUS_UNADVERTISE(register context *ctx,int n,pointer *argv)
   ckarg(1);
   if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
-
-  map<string, boost::shared_ptr<Publisher> >::iterator it = s_mapAdvertised.find(topicname);
 
   bool bSuccess = s_mapAdvertised.erase(topicname)>0;
 
@@ -1021,8 +1017,6 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   ckarg(1);
   if (isstring(argv[0])) service.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
-
-  map<string, boost::shared_ptr<ServiceServer> >::iterator it = s_mapServiced.find(service);
 
   ROS_DEBUG("unadvertise %s", service.c_str());
   bool bSuccess = s_mapServiced.erase(service)>0;
