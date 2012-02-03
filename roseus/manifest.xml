@@ -17,7 +17,7 @@
   <depend package="sensor_msgs" />
   <depend package="visualization_msgs" />
   <depend package="actionlib_tutorials"/> <!-- for test-fibonacci.test -->
-  <depend package="coreutils" /> <!-- for md5sum -->
+  <rosdep name="coreutils" /> <!-- for md5sum -->
   <export>
     <roslang cmake="${prefix}/cmake/roseus.cmake"/>
   </export>
