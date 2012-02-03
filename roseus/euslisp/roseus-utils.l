@@ -166,7 +166,9 @@
     msg))
 
 (defun object->marker-msg (obj header &key
+			       coords
                                ((:color col) (float-vector 1 1 1))
+			       ((:alpha a) 1.0)
                                ((:id idx) 0) ns lifetime)
   (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
     (let* ((msg (instance visualization_msgs::Marker :init
@@ -200,11 +202,11 @@
 		    (apply #'append color-list)))
 	   )
       (send msg :frame_locked t)
-      (send msg :pose (ros::coords->tf-pose (send obj :worldcoords)))
+      (send msg :pose (ros::coords->tf-pose (if coords coords (send obj :worldcoords))))
       (send msg :scale (ros::pos->tf-translation
 			(float-vector 1000 1000 1000)))
       (send msg :points points)
-      (send msg :color  (vector->rgba (float-vector 0 0 0) 1.0))
+      (send msg :color  (vector->rgba (float-vector 0 0 0) a))
       (send msg :colors colors)
       (if ns (send msg :ns ns))
       (if lifetime (send msg :lifetime (ros::time lifetime)))
