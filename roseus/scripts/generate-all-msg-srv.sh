@@ -89,17 +89,20 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     pkg_name=`basename $pkg`
     if [ -e $pkg/msg/ ] ; then
 	for file in `find $pkg/msg -type f -name "*.msg"`; do
+	    echo -e "\e[1;31mgenerating msg... ${file}\e[m"
 	    `rospack find roseus`/scripts/genmsg_eus $file;
 	    check-error
 	done
     fi
     if [ -e $pkg/srv/ ] ; then
 	for file in `find $pkg/srv -type f -name "*.srv"`; do
+	    echo -e "\e[1;31mgenerating srv... ${file}\e[m"
 	    `rospack find roseus`/scripts/gensrv_eus $file;
 	    check-error
 	done
     fi
     rospack depends $pkg_name > /dev/null ; check-warn ; ## just for check depends error
+    echo -e "\e[1;31mgenerating manifest... ${pkg_name}\e[m"
     `rospack find roseus`/scripts/genmanifest_eus $pkg_name
     check-error
 done
