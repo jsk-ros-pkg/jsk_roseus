@@ -94,7 +94,13 @@ gensrv_eus()
 # run ./generate-all-msg-srv.sh when generate-all-msg-srv.sh is updated
 # to recompile all existing msgs under .ros/roseus
 macro(generate_all_msg_srv)
-  rosbuild_find_ros_package(roseus)
+  # return if eus2 is not found
+  execute_process(COMMAND rosrun euslisp eus2 "(exit)" RESULT_VARIABLE _eus2_failed ERROR_QUIET OUTPUT_QUIET)
+  if(_eus2_failed)
+    message("[roseus.cmake] could not generate roseus message files since eus2 did not exist")
+    return()
+  endif(_eus2_failed)
+  # setup variables
   set(roshomedir $ENV{ROS_HOME})
   if("" STREQUAL "${roshomedir}")
     set(roshomedir "$ENV{HOME}/.ros")
@@ -102,34 +108,122 @@ macro(generate_all_msg_srv)
   set(generate_all_msg_srv_script "${roseus_PACKAGE_PATH}/scripts/generate-all-msg-srv.sh")
   set(generate_all_msg_srv_main "${roseus_PACKAGE_PATH}/scripts/genmsg-main-eus.l")
   set(msggenerated "${roshomedir}/roseus/generated")
-  # when no generated file are found generate all shared files
-  message("[roseus.cmake] generate roseus_script_files list under ${roseus_PACKAGE_PATH}")
+  # use rospack depends for packages needs to generate msg/srv
+  execute_process(COMMAND rospack depends ${PROJECT_NAME} OUTPUT_VARIABLE depends_packages OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(depends_packages)
+    string(REGEX REPLACE "\n" ";" depends_packages ${depends_packages})
+  endif(depends_packages)
+  list(APPEND depends_packages "${PROJECT_NAME}")
+  list(LENGTH depends_packages depends_length)
+  message("[roseus.cmake] check depend packages for ${PROJECT_NAME} -> ${depends_packages}")
+  # file list under roseus/scirpt directory
   file(GLOB roseus_script_files RELATIVE ${roseus_PACKAGE_PATH} "${roseus_PACKAGE_PATH}/scripts/[^.]*")
   list(SORT roseus_script_files)
   message("[roseus.cmake] ${roseus_PACKAGE_PATH}: ${roseus_script_files}")
-  message("[roseus.cmake] Check if ${msggenerated} exists ...")
-  if(NOT EXISTS ${msggenerated})
-    message("[roseus.cmake] Generate all msg and srv files in shared directory")
-    execute_process(COMMAND ${generate_all_msg_srv_script} --shared RESULT_VARIABLE _generate_all_msg_srv_script_failed)
-    if (_generate_all_msg_srv_script_failed)
-      message("[roseus.cmake] ${generate_all_msg_srv_script} failed")
-    else (_generate_all_msg_srv_script_failed)
-      execute_process(COMMAND md5sum ${roseus_script_files} WORKING_DIRECTORY ${roseus_PACKAGE_PATH} OUTPUT_VARIABLE script_md5sum)
-      file(WRITE ${msggenerated} ${script_md5sum})
-    endif(_generate_all_msg_srv_script_failed)
-  endif(NOT EXISTS ${msggenerated})
-  # when generated file is older than msg script, then generate all existing files
-  execute_process(COMMAND md5sum ${roseus_script_files} WORKING_DIRECTORY ${roseus_PACKAGE_PATH} OUTPUT_VARIABLE script_md5sum_generated)
-  execute_process(COMMAND cat ${msggenerated}           OUTPUT_VARIABLE script_md5sum_current)
-  message("[roseus.cmake] Check md5sum of ${msggenerated}\n${script_md5sum_generated}==\n${script_md5sum_current}\n")
-  if(EXISTS ${msggenerated} AND NOT "${script_md5sum_generated}" STREQUAL "${script_md5sum_current}")
-    message("[roseus.cmake] Generate all msg and srv files...")
-    execute_process(COMMAND ${generate_all_msg_srv_script})
-    execute_process(COMMAND md5sum ${roseus_script_files} WORKING_DIRECTORY ${roseus_PACKAGE_PATH} OUTPUT_VARIABLE script_md5sum)
-    file(WRITE ${msggenerated} ${script_md5sum})
-  endif(EXISTS ${msggenerated} AND NOT "${script_md5sum_generated}" STREQUAL "${script_md5sum_current}")
+  # setup file list for generate md5sum
+  execute_process(COMMAND md5sum ${roseus_script_files} WORKING_DIRECTORY ${roseus_PACKAGE_PATH} OUTPUT_VARIABLE md5sum_script_base)
+  # for each packages...
+  set(depends_counter 1)
+  foreach(_package ${depends_packages})
+    message("[roseus.cmake] [${depends_counter}/${depends_length}] Check ${_package} for ${PROJECT_NAME}")
+    math(EXPR depends_counter "${depends_counter} + 1")
+    # setup file list for generate md5sum
+    set(md5sum_script ${md5sum_script_base})
+    #
+    # get msg list to ${msg}
+    #
+    rosbuild_find_ros_package(${_package})
+    file(GLOB _msg_files RELATIVE "${${_package}_PACKAGE_PATH}/msg" "${${_package}_PACKAGE_PATH}/msg/*.msg")
+    set(msgs "")
+    foreach(_msg_file ${_msg_files})
+      if(${_msg_file} MATCHES "^[^\\.].*\\.msg$")
+	string(REGEX REPLACE "([^.]*).msg" "\\1" _msg ${_msg_file})
+	list(APPEND msgs ${_msg})
+      endif(${_msg_file} MATCHES "^[^\\.].*\\.msg$")
+    endforeach(_msg_file ${_msg_files})
+    list(LENGTH msgs msgs_length)
+    #
+    # generate md5sum infomation for msg list to ${md5sum_script}
+    #
+    if(${msgs_length} GREATER 0)
+      set(_md5sum_generate_command "import roslib; roslib.load_manifest('${_package}'); import ${_package}.msg")
+      foreach(_msg ${msgs})
+	set(_md5sum_generate_command "${_md5sum_generate_command}; print ${_package}.msg.${_msg}._md5sum,' ${_package}/${_msg}.msg'")
+      endforeach(_msg ${msgs})
+      execute_process(COMMAND python -c "${_md5sum_generate_command}"
+	OUTPUT_VARIABLE _msg_md5sum RESULT_VARIABLE _msg_md5sum_failed OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+      if(NOT _msg_md5sum_failed)
+	set(md5sum_script "${md5sum_script}${_msg_md5sum}\n")
+      else(NOT _msg_md5sum_failed)
+	foreach(_msg ${msgs})
+	  execute_process(COMMAND rosmsg md5 "${_package}/${_msg}" OUTPUT_VARIABLE _msg_md5sum OUTPUT_STRIP_TRAILING_WHITESPACE)
+	  set(md5sum_script "${md5sum_script}${_msg_md5sum}  ${_package}/${_msg}.msg\n")
+	endforeach(_msg ${msgs})
+      endif(NOT _msg_md5sum_failed)
+    endif(${msgs_length} GREATER 0)
+    #
+    # get srv list to ${srv}
+    #
+    file(GLOB _srv_files RELATIVE "${${_package}_PACKAGE_PATH}/srv" "${${_package}_PACKAGE_PATH}/srv/*.srv")
+    set(srvs "")
+    foreach(_srv_file ${_srv_files})
+      if(${_srv_file} MATCHES "^[^\\.].*\\.srv$")
+	string(REGEX REPLACE "([^.]*).srv" "\\1" _srv ${_srv_file})
+	list(APPEND srvs ${_srv})
+      endif(${_srv_file} MATCHES "^[^\\.].*\\.srv$")
+    endforeach(_srv_file ${_srv_files})
+    list(LENGTH srvs srvs_length)
+    #
+    # generate md5sum infomation for srv list to ${md5sum_script}
+    #
+    if(${srvs_length} GREATER 0)
+      set(_md5sum_generate_command "import roslib; roslib.load_manifest('${_package}'); import ${_package}.srv")
+      foreach(_srv ${srvs})
+	set(_md5sum_generate_command "${_md5sum_generate_command}; print ${_package}.srv.${_srv}._md5sum,' ${_package}/${_srv}.srv'")
+      endforeach(_srv ${srvs})
+      execute_process(COMMAND python -c "${_md5sum_generate_command}"
+	OUTPUT_VARIABLE _srv_md5sum RESULT_VARIABLE _srv_md5sum_failed OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+      if(NOT _srv_md5sum_failed)
+	set(md5sum_script "${md5sum_script}${_srv_md5sum}\n")
+      else(NOT _srv_md5sum_failed)
+	foreach(_srv ${srvs})
+	  execute_process(COMMAND rossrv md5 "${_package}/${_srv}" OUTPUT_VARIABLE _srv_md5sum OUTPUT_STRIP_TRAILING_WHITESPACE)
+	  set(md5sum_script "${md5sum_script}${_srv_md5sum}  ${_package}/${_srv}.srv\n")
+	endforeach(_srv ${srvs})
+      endif(NOT _srv_md5sum_failed)
+    endif(${srvs_length} GREATER 0)
+    #
+    # check if md5sum exists or changes and genearte file if needed
+    #
+    message("${md5sum_script}")
+    # check if we need to generate msg/srvs
+    set(msggenerated "${roshomedir}/roseus/${_package}/generated")
+    # check if generated file exists
+    set(need_generate 0)
+    if(NOT EXISTS ${msggenerated})
+      set(need_generate 1)
+    else(NOT EXISTS ${msggenerated})
+      execute_process(COMMAND cat ${msggenerated} OUTPUT_VARIABLE md5sum_file)
+      #message("== generated md5sum in ${msggenerated} =\n${md5sum_file}==")
+      if(NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
+	message("[roseus.cmake] md5sum is not equal\n== generated md5sum in ${msggenerated} =\n${md5sum_file}\n== generated md5sum of ${roseus_script_files} =\n${md5sum_script}")
+	set(need_generate 1)
+      endif(NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
+    endif(NOT EXISTS ${msggenerated})
+    # generate files
+    if(${need_generate})
+      message("[roseus.cmake] run msg/srv for ${_package}")
+      execute_process(COMMAND ${generate_all_msg_srv_script} ${_package} ERROR_QUIET)
+      message("[roseus.cmake] generate ${msggenerated}")
+      file(WRITE ${msggenerated} ${md5sum_script})
+    else(${need_generate})
+      message("[roseus.cmake] ${msggenerated} is already generated")
+    endif(${need_generate})
+    #
+  endforeach(_package ${depends_packages})
 endmacro(generate_all_msg_srv)
 
-# generate all shared installed msgs
+
+# generate all shared installed msg/srv
 
 generate_all_msg_srv()
