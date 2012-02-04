@@ -195,7 +195,7 @@ macro(generate_all_msg_srv)
     #
     # check if md5sum exists or changes and genearte file if needed
     #
-    message("${md5sum_script}")
+    #message("${md5sum_script}")
     # check if we need to generate msg/srvs
     set(msggenerated "${roshomedir}/roseus/${_package}/generated")
     # check if generated file exists
