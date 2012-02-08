@@ -98,10 +98,7 @@ robots and object models
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_hanoi_arm" args="$(find euslisp)/build/hanoi_arm.glc" time-limit="1000"/>
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_particle" args="$(find euslisp)/build/particle.glc" time-limit="1000"/>
 
-  <test test-name="test_all_robots" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/robots-objects.l"
-	time-limit="600" />
-  <test test-name="test_all_objects" pkg="euslisp"
+  <test test-name="test_all_robots_objects" pkg="euslisp"
 	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/all-robots-objects.l"
 	time-limit="600" />
 </launch>
