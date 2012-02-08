@@ -100,6 +100,14 @@ gensrv_eus()
 
 # generate msg for package contains ROS_NOBUILD
 macro(generate_ros_nobuild_eus)
+  # if euslisp is not compiled, return from
+  execute_process(COMMAND rosrun euslisp eus2 "(exit)"
+    RESULT_VARIABLE _eus2_failed)
+  if(_eus2_failed)
+    message("[roseus.cmake] eus2 is not ready yet, try rosmake euslisp")
+    return()
+  endif(_eus2_failed)
+
   # use rospack depends for packages needs to generate msg/srv
   execute_process(COMMAND rospack depends ${PROJECT_NAME} OUTPUT_VARIABLE depends_packages OUTPUT_STRIP_TRAILING_WHITESPACE)
   if(depends_packages)
