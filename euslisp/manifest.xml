@@ -11,6 +11,7 @@
 
   <export>
     <cpp cflags="-I${prefix}/eus/include" />
+    <rosdoc config="rosdoc.yaml" />
   </export>
 
   <rosdep name="opengl" />

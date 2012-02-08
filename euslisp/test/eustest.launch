@@ -1,4 +1,28 @@
 <launch>
+
+  <sphinxdoc><![CDATA[
+
+robots and object models
+------------------------
+
+.. code-block:: bash
+
+  $ irteusgl models/irt-all-robots.l "(make-all-robots)"
+
+.. image:: build/irt_all_robots.png
+  :width: 400
+
+.. code-block:: bash
+
+  $ irteusgl models/irt-all-objects.l "(make-all-objects)"
+
+.. image:: build/irt_all_objects.png
+  :width: 400
+
+  ]]></sphinxdoc>
+
+
+
   <test test-name="test_sortgc" pkg="euslisp"
 	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/sort.l" />
   <test test-name="test_bignum" pkg="euslisp"
@@ -12,5 +36,8 @@
   </test>
   <test test-name="test_graph" pkg="euslisp"
 	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/graph.l"
+	time-limit="600" />
+  <test test-name="test_all_robots_objects" pkg="euslisp"
+	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/all-robots-objects.l"
 	time-limit="600" />
 </launch>
