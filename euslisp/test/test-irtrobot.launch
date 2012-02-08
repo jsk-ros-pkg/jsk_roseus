@@ -2,7 +2,7 @@
 
   <sphinxdoc><![CDATA[
 
-irteusgl examples
+irteus robot model examples
 ------------------------
 
 .. image:: build/full_body_ik.gif
@@ -51,22 +51,6 @@ robots and object models
 
   ]]></sphinxdoc>
 
-
-
-  <test test-name="test_sortgc" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/sort.l" />
-  <test test-name="test_bignum" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/bignum.l" />
-  <test test-name="test_vector" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/vector.l" />
-  <test test-name="test_read_img" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/read-img.l"
-	time-limit="600" >
-	<!-- launch-prefix=xterm -e gdb args -->
-  </test>
-  <atest test-name="test_graph" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/graph.l"
-	time-limit="600" />
 
   <test test-name="test_full_body_ik_demo" pkg="euslisp"
 	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (setq\ demo-func\ #\'full-body-ik) $(find euslisp)/test/irteus-demo.l"
