@@ -140,14 +140,9 @@ macro(generate_ros_nobuild_eus)
       genmanifest_eus()
       genmsg_eus()
       gensrv_eus()
-      add_custom_target(ROSBUILD_genmsg_roseus_${PROJECT_NAME}_all ALL
-	DEPENDS ROSBUILD_genmsg_roseus_${PROJECT_NAME})
-      add_dependencies(ROSBUILD_genmsg_roseus_${PROJECT_NAME}_all ROSBUILD_genmsg_roseus_${PROJECT_NAME}_precompile)
-      add_dependencies(rosbuild_precompile ROSBUILD_genmsg_roseus_${PROJECT_NAME}_precompile)
-      add_custom_target(ROSBUILD_gensrv_roseus_${PROJECT_NAME}_all ALL
-	DEPENDS ROSBUILD_gensrv_roseus_${PROJECT_NAME})
-      add_dependencies(ROSBUILD_gensrv_roseus_${PROJECT_NAME}_all ROSBUILD_gensrv_roseus_${PROJECT_NAME}_precompile)
-      add_dependencies(rosbuild_precompile ROSBUILD_gensrv_roseus_${PROJECT_NAME}_precompile)
+      add_dependencies(rosbuild_precompile ROSBUILD_genmanifest_roseus_${PROJECT_NAME})
+      add_dependencies(rosbuild_precompile ROSBUILD_genmsg_roseus_${PROJECT_NAME})
+      add_dependencies(rosbuild_precompile ROSBUILD_gensrv_roseus_${PROJECT_NAME})
       file(WRITE ${msggenerated} ${md5sum_script})
     endif(EXISTS ${${_package}_PACKAGE_PATH}/ROS_NOBUILD AND
       NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
