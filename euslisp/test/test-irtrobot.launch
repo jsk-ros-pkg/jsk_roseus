@@ -3,31 +3,67 @@
   <sphinxdoc><![CDATA[
 
 irteus robot model examples
-------------------------
+---------------------------
+
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik)"
 
 .. image:: build/full_body_ik.gif
   :width: 400
 
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik :use-torso nil)"
+
 .. image:: build/full_body_ik_no_torso.gif
   :width: 400
+
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik :use-leg t)"
 
 .. image:: build/full_body_ik_use_leg.gif
   :width: 400
 
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(dual-arm-ik)"
+
 .. image:: build/dual_arm_ik.gif
   :width: 400
+
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(dual-manip-ik)"
 
 .. image:: build/dual_manip_ik.gif
   :width: 400
 
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(crank-motion)"
+
 .. image:: build/crank_motion.gif
   :width: 400
+
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(hand-grasp)"
 
 .. image:: build/hand_grasp.gif
   :width: 400
 
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(hanoi-arm)"
+
 .. image:: build/hanoi_arm.gif
   :width: 400
+
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(particle)"
 
 .. image:: build/particle.gif
   :width: 400
@@ -37,14 +73,14 @@ robots and object models
 
 .. code-block:: bash
 
-  $ irteusgl models/irt-all-robots.l "(make-all-robots)"
+  $ rosrun euslisp irteusgl models/irt-all-robots.l "(make-all-robots)"
 
 .. image:: build/irt_all_robots.png
   :width: 400
 
 .. code-block:: bash
 
-  $ irteusgl models/irt-all-objects.l "(make-all-objects)"
+  $ rosrun euslisp irteusgl models/irt-all-objects.l "(make-all-objects)"
 
 .. image:: build/irt_all_objects.png
   :width: 400
