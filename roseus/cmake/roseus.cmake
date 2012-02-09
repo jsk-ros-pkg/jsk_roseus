@@ -119,7 +119,7 @@ macro(generate_ros_nobuild_eus)
   # get roseus/script files
   file(GLOB _roseus_script_files RELATIVE ${roseus_PACKAGE_PATH} "${roseus_PACKAGE_PATH}/scripts/[^.]*")
   list(SORT _roseus_script_files)
-  execute_process(COMMAND md5sum ${_roseus_script_files} WORKING_DIRECTORY ${roseus_PACKAGE_PATH} OUTPUT_VARIABLE md5sum_script)
+  execute_process(COMMAND ${roseus_PACKAGE_PATH}/scripts/gengenerated_eus OUTPUT_VARIABLE md5sum_script)
   # for each packages...
   set(depends_counter 1)
   foreach(_package ${depends_packages})
@@ -140,10 +140,14 @@ macro(generate_ros_nobuild_eus)
       genmanifest_eus()
       genmsg_eus()
       gensrv_eus()
-      add_dependencies(rosbuild_precompile ROSBUILD_genmanifest_roseus_${PROJECT_NAME})
-      add_dependencies(rosbuild_precompile ROSBUILD_genmsg_roseus_${PROJECT_NAME})
-      add_dependencies(rosbuild_precompile ROSBUILD_gensrv_roseus_${PROJECT_NAME})
-      file(WRITE ${msggenerated} ${md5sum_script})
+      add_custom_target(ROSBUILD_gengenerated_roseus_${PROJECT_NAME} ALL DEPENDS ${msggenerated})
+      add_dependencies(ROSBUILD_gengenerated_roseus_${PROJECT_NAME} ROSBUILD_genmanifest_roseus_${PROJECT_NAME})
+      add_dependencies(ROSBUILD_gengenerated_roseus_${PROJECT_NAME} ROSBUILD_genmsg_roseus_${PROJECT_NAME})
+      add_dependencies(ROSBUILD_gengenerated_roseus_${PROJECT_NAME} ROSBUILD_gensrv_roseus_${PROJECT_NAME})
+      # write md5sum to generate if genmsg, gensrv are execute
+      add_custom_command(OUTPUT ${msggenerated}
+	COMMAND ${roseus_PACKAGE_PATH}/scripts/gengenerated_eus ${PROJECT_NAME} ${msggenerated})
+      add_dependencies(rosbuild_precompile ROSBUILD_gengenerated_roseus_${PROJECT_NAME})
     endif(EXISTS ${${_package}_PACKAGE_PATH}/ROS_NOBUILD AND
       NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
     # check the generated file
