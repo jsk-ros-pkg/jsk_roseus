@@ -9,63 +9,63 @@ irteus robot model examples
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik)"
 
-.. image:: build/full_body_ik.gif
+.. video:: build/full_body_ik
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik :use-torso nil)"
 
-.. image:: build/full_body_ik_no_torso.gif
+.. video:: build/full_body_ik_no_torso
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik :use-leg t)"
 
-.. image:: build/full_body_ik_use_leg.gif
+.. video:: build/full_body_ik_use_leg
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(dual-arm-ik)"
 
-.. image:: build/dual_arm_ik.gif
+.. video:: build/dual_arm_ik
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(dual-manip-ik)"
 
-.. image:: build/dual_manip_ik.gif
+.. video:: build/dual_manip_ik
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(crank-motion)"
 
-.. image:: build/crank_motion.gif
+.. video:: build/crank_motion
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(hand-grasp)"
 
-.. image:: build/hand_grasp.gif
+.. video:: build/hand_grasp
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(hanoi-arm)"
 
-.. image:: build/hanoi_arm.gif
+.. video:: build/hanoi_arm
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(particle)"
 
-.. image:: build/particle.gif
+.. video:: build/particle
   :width: 400
 
 robots and object models
