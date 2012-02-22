@@ -456,10 +456,17 @@
     (format strm "   ;;~%")
     (format strm "   self)~%")))
 
+(setq *md5table* nil)
+(defun get-md5sum (fname)
+  (let ((key fname) val)
+    (setq val (assoc key *md5table* :test #'string=))
+    (when (not val)
+      (setq val (read-line (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --md5 ~A" fname))))
+      (push (cons key val) *md5table*))
+    val))
 (defun generate-msg-md5sum (strm pkg name fname)
   (let ()
-    (format strm "(setf (get ~A::~A :md5sum-) \"~A\")~%" pkg name
-	    (read-line (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --md5 ~A" fname))))))
+    (format strm "(setf (get ~A::~A :md5sum-) \"~A\")~%" pkg name (get-md5sum fname))))
 
 (defun generate-msg-datatype (strm pkg name)
   (let ()
@@ -496,8 +503,7 @@
   (let ()
     (format strm "~%~%")
     (format strm "(provide :~A/~A \"~A\")~%"
-	    pkg name
-	    (read-line (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --md5 ~A" fname))))))
+	    pkg name (get-md5sum fname))))
 
 ;;;
 ;;;
