@@ -459,7 +459,7 @@
 (setq *md5table* nil)
 (defun get-md5sum (fname)
   (let ((key fname) val)
-    (setq val (assoc key *md5table* :test #'string=))
+    (setq val (cdr (assoc key *md5table* :test #'string=)))
     (when (not val)
       (setq val (read-line (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --md5 ~A" fname))))
       (push (cons key val) *md5table*))
