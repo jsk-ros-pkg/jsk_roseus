@@ -22,6 +22,7 @@
    (format *error-output* ", exitting...~C[0m~%"  #x1b)
    (exit 1))
 
+;; check if this process is created by roslaunch
 (when (string= "__log:=" (subseq (car (last lisp::*eustop-argument*)) 0 7))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
   (setq lisp::*exit-on-fatal-error* t)
@@ -34,7 +35,14 @@
 (defun ros::roseus (name &key
                     (option (list ros::*anonymous-name*))
                     (args lisp::*eustop-argument*))
-  (ros::roseus-raw name (apply #'logior option) args))
+  (prog1
+    (ros::roseus-raw name (apply #'logior option) args)
+    (dotimes (i (length lisp::*eustop-argument*))
+      (when (substringp ":=" (elt lisp::*eustop-argument* i))
+	(setf (elt lisp::*eustop-argument* i)
+	      (format nil "(warning-message 1 \"ignore ~a~%\""
+		      (elt lisp::*eustop-argument* i)))))
+    ))
 
 (setq ros::*compile-message* nil)
 
