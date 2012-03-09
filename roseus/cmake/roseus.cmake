@@ -145,12 +145,12 @@ macro(generate_ros_nobuild_eus)
       add_custom_command(OUTPUT ${msggenerated}
 	COMMAND ${roseus_PACKAGE_PATH}/scripts/gengenerated_eus ${PROJECT_NAME} ${msggenerated})
       add_dependencies(rosbuild_precompile ROSBUILD_gengenerated_roseus_${PROJECT_NAME})
+      set(PROJECT_NAME ${_project})
+      set(PROJECT_SOURCE_DIR ${${_project}_PACKAGE_PATH})
     endif(EXISTS ${${_package}_PACKAGE_PATH}/ROS_NOBUILD AND
       NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
     # check the generated file
   endforeach(_package ${depends_packages})
-  set(PROJECT_NAME ${_project})
-  set(PROJECT_SOURCE_DIR ${${_project}_PACKAGE_PATH})
 endmacro(generate_ros_nobuild_eus)
 
 # call the macro we just defined
