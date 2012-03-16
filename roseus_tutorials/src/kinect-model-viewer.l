@@ -147,6 +147,8 @@
 			 ((:lleg :rleg) . (hip knee nil))
 			 ((:head) . (neck)))
 		args)
+   (send robot :rarm :shoulder-y :joint-angle
+	  (- (send robot :rarm :shoulder-y :joint-angle) 90))
    (send robot :rotate -pi/2 :x)
    (send robot :rotate  pi/2 :z)
    )
@@ -206,9 +208,9 @@
 #-:ros
 (unless (find-package "ROS") (make-package "ROS"))
 #+:ros
-(defun test-kinect (&key robot (fname "test-kinect.bvh"))
-  (let ((floor (make-cube 2000 1000 10 :pos #f(1000 0 0)))
-	(f (open fname :direction :output)))
+(defun test-kinect (&key robot fname) ;; :fname "test-kinect.bvh"
+  (let ((floor (make-cube 2000 1000 10 :pos #f(1000 0 0))) f)
+    (if fname (setq f (open fname :direction :output)))
     (ros::roseus "kinect_bvh")
     (if (not (boundp '*tl*))
         (setq *tl* (instance ros::transform-listener :init)))
@@ -216,7 +218,7 @@
     (objects (list floor b))
     (if robot (objects robot))
     ;;(defun find-node (name) (find name *arrows* :key #'(lambda (x) (send x :name)) :test #'string=))
-    ;; (send b :dump-hierarchy f)
+    (if f (send b :dump-hierarchy f))
     (do-until-key
      (let ()
        (when (send b :copy-state-from-tf *tl*)
@@ -230,7 +232,7 @@
 	 (send b :copy-state-to robot))
        (send (get *viewer* :pickviewer) :look-all)
        (x::window-main-one)
-       ;; (send b :dump-motion f)
+       (if f (send b :dump-motion f))
        )) ;; do-until-key
     ))
 
