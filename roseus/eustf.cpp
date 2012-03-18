@@ -276,7 +276,7 @@ pointer EUSTF_CANTRANSFORM(register context *ctx,int n,pointer *argv)
   std::string err_str = std::string();
   ret = tf->canTransform(target_frame, source_frame, time, &err_str);
   if(!ret) {
-    ROS_WARN_STREAM("canTransform failed! : " << err_str);
+    ROS_WARN_STREAM("canTransform " << target_frame << " " << source_frame << " failed! : " << err_str);
   }
   ROS_DEBUG_STREAM("canTransform : "
                    << "target_frame : " << target_frame
@@ -317,7 +317,7 @@ pointer EUSTF_CANTRANSFORMFULL(register context *ctx,int n,pointer *argv)
                          source_frame, source_time,
                          fixed_frame, &err_str);
   if(!ret) {
-    ROS_WARN_STREAM("canTransform failed! : " << err_str);
+    ROS_WARN_STREAM("canTransformFull " << target_frame << " " << source_frame << " failed! : " << err_str);
   }
   ROS_DEBUG_STREAM("canTransformFull : "
                    << "target_frame : " << target_frame
@@ -388,7 +388,7 @@ pointer EUSTF_GETLATERSTCOMMONTIME(register context *ctx,int n,pointer *argv)
   if ( r == 0 ) {
     return(cons(ctx,makeint(time.sec),makeint(time.nsec)));
   } else {
-    ROS_ERROR("%s", error_string.c_str());
+    ROS_ERROR_STREAM("getLatestCommonTime " << target_frame << " " << source_frame << " failed! : " << error_string);
     return(NIL);
   }
 }
