@@ -6,15 +6,17 @@
   `(let (num3)
      (format *error-output* "check (~a #x~x #x~x) -> " (quote ,op) ,num1 ,num2)
      (setq num3 (funcall ,op ,num1 ,num2))
-     (format *error-output* "#x~x,  " num3)
-     (if (= num3 ,ans)
+     (if (numberp num3)
+	 (format *error-output* "#x~x,  " num3)
+       (format *error-output* "~a,  " num3))
+     (if (eq num3 ,ans)
          (format *error-output* "passed~%")
        (progn
          (warn "failed!! : answer(~x)~%" ,ans)
          (print (list 'ans (class ,ans)
                       'num3 (class num3)))
          ))
-     (assert (= num3 ,ans))))
+     (assert (eq num3 ,ans))))
 
 (deftest test-bignum
   (dotimes (i 10)
@@ -60,6 +62,14 @@
 
     (check-bignum #'mod #x20000000 #x40000000 #x20000000)
     ;;(check-bignum #'mod #x40000000 #x100000000 #x40000000)
+
+    ;; bignum eq bignum
+    (check-bignum #'eq #x20000000 #x20000000 t)
+    (check-bignum #'eq #x40000000 #x40000000 t)
+    (check-bignum #'eq #x200000000 #x200000000 t)
+    (check-bignum #'eq #x20000000 #x20000001 nil)
+    (check-bignum #'eq #x40000000 #x40000001 nil)
+    (check-bignum #'eq #x200000000 #x200000001 nil)
     )
   (print 'done)
   )
