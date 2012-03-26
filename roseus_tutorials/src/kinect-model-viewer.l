@@ -147,8 +147,6 @@
 			 ((:lleg :rleg) . (hip knee nil))
 			 ((:head) . (neck)))
 		args)
-   (send robot :rarm :shoulder-y :joint-angle
-	  (- (send robot :rarm :shoulder-y :joint-angle) 90))
    (send robot :rotate -pi/2 :x)
    (send robot :rotate  pi/2 :z)
    )
@@ -156,27 +154,47 @@
    (name)
    (let ((r (unit-matrix 3)))
      (case name
-       ((/left_shoulder /left_elbow)
+       ((/left_shoulder)
 	(setq r (rotate-matrix r (deg2rad -90) :z)))
-       ((/right_shoulder /right_elbow)
-	(setq r (rotate-matrix r (deg2rad 90) :z))))
+       ((/right_shoulder)
+	(setq r (rotate-matrix r (deg2rad 90) :z)))
+       )
      r))
+  (:fix-joint-order (jo limb)
+   (case limb
+     ((:larm :rarm)
+      (mapc #'(lambda (x) (replace-elm x :y :x)) jo)
+      (mapc #'(lambda (x) (replace-elm x :p :y)) jo)
+      (mapc #'(lambda (x) (replace-elm x :r :z)) jo))
+     (t
+      (mapc #'(lambda (x) (replace-elm x :y :y)) jo)
+      (mapc #'(lambda (x) (replace-elm x :p :x)) jo) ;; cub
+      (mapc #'(lambda (x) (replace-elm x :r :z)) jo))) ;; cyl
+   jo)
   (:fix-joint-angle
    (i limb joint-name joint-order a)
-   (when (and (memq limb '(:rarm :rleg :head :torso))
-	      (memq (elt joint-order i) '(:x :y))) ;; z is roll
+   (when (and (memq limb '(:rarm))
+	      (memq (elt joint-order i) '(:y)))
      (setf (elt a i) (- (elt a i)))
      )
-   (when (and (memq limb '(:larm :lleg))
-	      (memq (elt joint-order i) '(:z :x))) ;; z is roll ;; :x pictch
+   (when (and (memq limb '(:larm))
+	      (memq (elt joint-order i) '(:z)))
      (setf (elt a i) (- (elt a i)))
      )
+   (when (and (memq limb '(:rleg))
+	      (memq (elt joint-order i) '(:x :y)))
+     (setf (elt a i) (- (elt a i)))
+     )
+   (when (and (memq limb '(:lleg))
+	      (memq (elt joint-order i) '(:z :x)))
+     (setf (elt a i) (- (elt a i)))
+     )
+   (when (and (memq limb '(:head))
+	      (memq (elt joint-order i) '(:x :y)))
+     (setf (elt a i) (- (elt a i)))
+     )
+
    a)
-  (:fix-joint-order (jo limb)
-   (mapc #'(lambda (x) (replace-elm x :y :y)) jo)
-   (mapc #'(lambda (x) (replace-elm x :p :x)) jo)
-   (mapc #'(lambda (x) (replace-elm x :r :z)) jo)
-   jo)
   ) ;; kinect-bvh-robot-model
 
 (defmethod kinect-bvh-robot-model
@@ -192,8 +210,7 @@
 		 to   (format nil "~a_~d" (string-downcase (send j :name)) i))
 	   (setq m (send tf-listener :lookup-transform from to tm))
 	   (if m
-	       (send j :joint-angle (map cons #'rad2deg (transform (transpose (send self :bvh-offset-rotate (send j :name)))
-								   (matrix-log (send m :worldrot)))))
+	       (send j :joint-angle (map cons #'rad2deg (matrix-log (send m :worldrot))))
 	     (setq ret nil)))
 	 (setq m (send tf-listener :lookup-transform "/map" (format nil "/torso_~d" i) tm))
 	 (if m
