@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(load "unittest.l")
+(require :unittest "lib/llib/unittest.l")
 
 (ros::roseus "test-disconnect")
 

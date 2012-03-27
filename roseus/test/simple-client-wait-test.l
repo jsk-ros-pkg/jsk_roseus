@@ -3,7 +3,7 @@
 ;;; euslisp version of ~/ros/cturtle/stacks/common/actionlib/test/test_client_wait_test.cpp
 ;;;
 
-(load "unittest.l")
+(require :unittest "lib/llib/unittest.l")
 (ros::load-ros-manifest "roseus")
 (ros::load-ros-manifest "actionlib")
 (ros::load-ros-manifest "roscpp")

@@ -3,7 +3,7 @@
 ;;; euslisp version of ros_tutorials/rospy_tutorials/talker_listener_test.py
 ;;;
 
-(load "unittest.l")
+(require :unittest "lib/llib/unittest.l")
 
 (ros::load-ros-manifest "roseus")
 

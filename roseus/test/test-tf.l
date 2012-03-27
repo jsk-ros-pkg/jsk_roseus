@@ -4,7 +4,7 @@
 ;;  rosrun tf static_transform_publisher 1 0 0 0 0 0 /MANDALAY /JUPITER 10
 
 
-(load "unittest.l")
+(require :unittest "lib/llib/unittest.l")
 ;;(unix::putenv "ROSCONSOLE_CONFIG_FILE=/home/k-okada/ros/electric/jsk-ros-pkg/roseus/roseus.config")
 (ros::roseus "test-tf")
 

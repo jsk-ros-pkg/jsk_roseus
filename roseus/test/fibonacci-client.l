@@ -6,7 +6,7 @@
 (ros::load-ros-manifest "actionlib_tutorials")
 ;;;
 (when (member "--gtest_output=xml:" lisp::*eustop-argument* :test #'substringp)  ;; for test-fibonacci.launch
-  (load "unittest.l")
+  (require :unittest "lib/llib/unittest.l")
   (init-unit-test))
 
 ;;;

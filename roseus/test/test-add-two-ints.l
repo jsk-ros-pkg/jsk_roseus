@@ -5,7 +5,7 @@
 
 (setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
 
-(load "unittest.l")
+(require :unittest "lib/llib/unittest.l")
 (ros::load-ros-manifest "roseus")
 ;;;
 ;;;
