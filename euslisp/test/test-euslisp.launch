@@ -4,18 +4,18 @@
   ]]></sphinxdoc>
 
   <test test-name="test_sortgc" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/sort.l" />
+	type="irteusgl" args="$(find euslisp)/test/sort.l" />
   <test test-name="test_bignum" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/bignum.l" />
+	type="irteusgl" args="$(find euslisp)/test/bignum.l" />
   <test test-name="test_vector" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/vector.l" />
+	type="irteusgl" args="$(find euslisp)/test/vector.l" />
   <test test-name="test_read_img" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/read-img.l"
+	type="irteusgl" args="$(find euslisp)/test/read-img.l"
 	time-limit="600" >
 	<!-- launch-prefix=xterm -e gdb args -->
   </test>
   <test test-name="test_graph" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/graph.l"
+	type="irteusgl" args="$(find euslisp)/test/graph.l"
 	time-limit="600" />
 
 </launch>

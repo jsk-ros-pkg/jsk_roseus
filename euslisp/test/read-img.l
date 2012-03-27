@@ -1,3 +1,5 @@
+(require :unittest "lib/llib/unittest.l")
+
 (init-unit-test)
 
 (setq sys::*gc-hook* #'(lambda (a b) (format *error-output* "GC! free:~A  tota:~A~%" a b)))

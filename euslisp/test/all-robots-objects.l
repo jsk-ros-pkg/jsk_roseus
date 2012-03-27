@@ -1,3 +1,5 @@
+(require :unittest "lib/llib/unittest.l")
+
 (init-unit-test)
 
 (setq euslisp-dir (read-from-string (read-line (piped-fork "rospack" "find" "euslisp"))))

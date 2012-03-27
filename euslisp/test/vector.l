@@ -1,3 +1,5 @@
+(require :unittest "lib/llib/unittest.l")
+
 (init-unit-test)
 
 (deftest coerse

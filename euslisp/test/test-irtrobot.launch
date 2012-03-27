@@ -89,39 +89,39 @@ robots and object models
 
 
   <test test-name="test_full_body_ik_demo" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (setq\ demo-func\ #\'full-body-ik) $(find euslisp)/test/irteus-demo.l"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'full-body-ik) $(find euslisp)/test/irteus-demo.l"
         launch-prefix="glc-capture --start --out=$(find euslisp)/build/full_body_ik.glc"
 	time-limit="600" />
   <test test-name="test_full_body_ik_no_torso_demo" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (defun\ full-body-ik-no-torso\ nil\ (full-body-ik\ :use-torso\ nil)) (setq\ demo-func\ #\'full-body-ik-no-torso) $(find euslisp)/test/irteus-demo.l"
+	type="irteusgl" args="irteus/demo/demo.l  (defun\ full-body-ik-no-torso\ nil\ (full-body-ik\ :use-torso\ nil)) (setq\ demo-func\ #\'full-body-ik-no-torso) $(find euslisp)/test/irteus-demo.l"
         launch-prefix="glc-capture --start --out=$(find euslisp)/build/full_body_ik_no_torso.glc"
 	time-limit="600" />
   <test test-name="test_full_body_ik_use_leg_demo" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (defun\ full-body-ik-use-leg\ nil\ (full-body-ik\ :use-leg\ t)) (setq\ demo-func\ #\'full-body-ik-use-leg) $(find euslisp)/test/irteus-demo.l"
+	type="irteusgl" args="irteus/demo/demo.l  (defun\ full-body-ik-use-leg\ nil\ (full-body-ik\ :use-leg\ t)) (setq\ demo-func\ #\'full-body-ik-use-leg) $(find euslisp)/test/irteus-demo.l"
         launch-prefix="glc-capture --start --out=$(find euslisp)/build/full_body_ik_use_leg.glc"
 	time-limit="600" />
   <test test-name="test_dual_arm_ik_demo" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (setq\ demo-func\ #\'dual-arm-ik) $(find euslisp)/test/irteus-demo.l"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'dual-arm-ik) $(find euslisp)/test/irteus-demo.l"
         launch-prefix="glc-capture --start --out=$(find euslisp)/build/dual_arm_ik.glc"
 	time-limit="600" />
   <test test-name="test_dual_manip_ik_demo" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (setq\ demo-func\ #\'dual-manip-ik) $(find euslisp)/test/irteus-demo.l"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'dual-manip-ik) $(find euslisp)/test/irteus-demo.l"
         launch-prefix="glc-capture --start --out=$(find euslisp)/build/dual_manip_ik.glc"
 	time-limit="600" />
   <test test-name="test_crank_motion_demo" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (setq\ demo-func\ #\'crank-motion) $(find euslisp)/test/irteus-demo.l"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'crank-motion) $(find euslisp)/test/irteus-demo.l"
         launch-prefix="glc-capture --start --out=$(find euslisp)/build/crank_motion.glc"
 	time-limit="600" />
   <test test-name="test_hand_grasp_demo" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (setq\ demo-func\ #\'hand-grasp) $(find euslisp)/test/irteus-demo.l"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'hand-grasp) $(find euslisp)/test/irteus-demo.l"
         launch-prefix="glc-capture --start --out=$(find euslisp)/build/hand_grasp.glc"
 	time-limit="600" />
   <test test-name="test_hanoi_arm_demo" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (setq\ demo-func\ #\'hanoi-arm) $(find euslisp)/test/irteus-demo.l"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'hanoi-arm) $(find euslisp)/test/irteus-demo.l"
         launch-prefix="glc-capture --start --out=$(find euslisp)/build/hanoi_arm.glc"
 	time-limit="600" />
   <test test-name="test_particle_demo" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l irteus/demo/demo.l  (setq\ demo-func\ #\'particle) $(find euslisp)/test/irteus-demo.l"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'particle) $(find euslisp)/test/irteus-demo.l"
         launch-prefix="glc-capture --start --out=$(find euslisp)/build/particle.glc"
 	time-limit="600" />
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_full_body_ik" args="$(find euslisp)/build/full_body_ik.glc" time-limit="1000"/>
@@ -135,6 +135,6 @@ robots and object models
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_particle" args="$(find euslisp)/build/particle.glc" time-limit="1000"/>
 
   <test test-name="test_all_robots_objects" pkg="euslisp"
-	type="irteusgl" args="$(find roseus)/euslisp/unittest.l $(find euslisp)/test/all-robots-objects.l"
+	type="irteusgl" args="$(find euslisp)/test/all-robots-objects.l"
 	time-limit="600" />
 </launch>
