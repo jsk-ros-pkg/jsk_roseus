@@ -9,14 +9,14 @@
      (if (numberp num3)
 	 (format *error-output* "#x~x,  " num3)
        (format *error-output* "~a,  " num3))
-     (if (eq num3 ,ans)
+     (if (= num3 ,ans)
          (format *error-output* "passed~%")
        (progn
          (warn "failed!! : answer(~x)~%" ,ans)
          (print (list 'ans (class ,ans)
                       'num3 (class num3)))
          ))
-     (assert (eq num3 ,ans))))
+     (assert (= num3 ,ans))))
 
 (deftest test-bignum
   (dotimes (i 10)
