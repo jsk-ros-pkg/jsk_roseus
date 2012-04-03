@@ -23,6 +23,7 @@ include_directories(/usr/include /usr/X11R6/include ${euslisp_PACKAGE_PATH}/jske
 #link_directories()
 rosbuild_add_library(roseus roseus.cpp)
 rosbuild_add_library(eustf eustf.cpp)
+rosbuild_add_library(roseus_c_util roseus_c_util.c)
 
 # compile flags
 set(COMPILE_FLAGS "-O2 -Wno-write-strings -Wno-comment")
@@ -42,6 +43,7 @@ endif()
 
 rosbuild_add_compile_flags(roseus ${COMPILE_FLAGS})
 rosbuild_add_compile_flags(eustf ${COMPILE_FLAGS})
+rosbuild_add_compile_flags(roseus_c_util ${COMPILE_FLAGS})
 #rosbuild_add_link_flags(eustf)
 
 #target_link_libraries(roseus)
@@ -49,6 +51,7 @@ rosbuild_add_compile_flags(eustf ${COMPILE_FLAGS})
 
 set_target_properties(roseus PROPERTIES PREFIX "" SUFFIX ".so")
 set_target_properties(eustf PROPERTIES PREFIX "" SUFFIX ".so")
+set_target_properties(roseus_c_util PROPERTIES PREFIX "" SUFFIX ".so")
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/euslisp)
 

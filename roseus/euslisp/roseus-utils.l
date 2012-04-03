@@ -1,8 +1,10 @@
 ;; this is a collection of utility functions and macros
 ;; for ros<->euslisp interface
 
-;; Sensors
+;; load c-binding library
+(load-library "roseus_c_util.so" '("roseus_c_util"))
 
+;; Sensors
 (ros::roseus-add-msgs "sensor_msgs")
 
 (defun make-camera-from-ros-camera-info-aux (pwidth pheight p frame-coords &rest args)
@@ -327,6 +329,211 @@
     (gl::transparent sp (send rgba :a))
     sp))
 
+;;
+;; for pointcloud
+;;
+(defun make-ros-msg-from-eus-pointcloud (pcloud &key with-color with-normal (frame "/sensor_frame"))
+  "convert from pointcloud in eus to sensor_msgs::PointCloud2 in ros"
+  (let ((size (send pcloud :size))
+        fld-lst hdr msg psize raw_data
+        (width (send pcloud :width))
+        (height (send pcloud :height))
+        w h)
+    (cond
+     ((and width height)
+      (setq w width h height)
+      (unless (= size (* w h))
+        (setq w size h 1)))
+     (t
+      (setq w size h 1)))
+
+    (push (instance sensor_msgs::PointField :init :name "x"
+                    :offset 0 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+          fld-lst)
+    (push (instance sensor_msgs::PointField :init :name "y"
+                    :offset 4 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+          fld-lst)
+    (push (instance sensor_msgs::PointField :init :name "z"
+                    :offset 8 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+          fld-lst)
+
+    (cond
+     ((eq with-color :r-g-b)
+      (push (instance sensor_msgs::PointField :init :name "r"
+                      :offset 12 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+            fld-lst)
+      (push (instance sensor_msgs::PointField :init :name "g"
+                      :offset 16 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+            fld-lst)
+      (push (instance sensor_msgs::PointField :init :name "b"
+                      :offset 20 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+            fld-lst)
+      (setq psize 24))
+     (with-color
+      (push (instance sensor_msgs::PointField :init :name "rgb"
+                      :offset 12 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+            fld-lst)
+      (setq psize 16))
+     (t (setq psize 12)))
+
+    (when (and with-normal (send pcloud :normals))
+      (push (instance sensor_msgs::PointField :init :name "normal_x"
+                      :offset (+ psize 0) :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+            fld-lst)
+      (push (instance sensor_msgs::PointField :init :name "normal_y"
+                      :offset (+ psize 4) :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+            fld-lst)
+      (push (instance sensor_msgs::PointField :init :name "normal_z"
+                      :offset (+ psize 8) :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+            fld-lst)
+      (push (instance sensor_msgs::PointField :init :name "curvature"
+                      :offset (+ psize 12) :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
+            fld-lst)
+      (incf psize 16))
+
+    (nreverse fld-lst)
+    (setq raw_data (make-string (* size psize)))
+
+    (convert-pointcloud-msg2 raw_data size psize
+                             (send pcloud :points)
+                             (if (and with-color (send pcloud :colors)) (send pcloud :colors))
+                             (if (and with-normal (send pcloud :normals)) (send pcloud :normals)))
+
+    (setq hdr (instance std_msgs::header :init
+               :stamp (ros::time-now) :frame_id frame))
+
+    (setq msg (instance sensor_msgs::PointCloud2 :init
+                        :header hdr
+                        :width w
+                        :height h
+                        :fields fld-lst
+                        :point_step psize ;; point size by byte
+                        :row_step   (* w psize) ;; row size by byte
+                        :data raw_data
+                        :is_dense 1
+                        ))
+    msg
+    ))
+
+(defun make-eus-pointcloud-from-ros-msg (msg &key (pcloud) (remove-nan))
+  "convert from sensor_msgs::PointCloud2 in ros to pointcloud in eus"
+  (let* ((f-lst (send msg :fields))
+         (w (send msg :width))
+         (h (send msg :height))
+         (step (send msg :point_step))
+         (data (send msg :data))
+         (size (* w h))
+         mat cmat nmat
+         use-point use-color use-normal
+         px py pz nx ny nz prgb
+         (field-names (vector "x" "y" "z" "rgb" "normal_x" "normal_y" "normal_z"))
+         (field-indices (make-array (length field-names) :element-type integer-vector :initial-element -1))
+         )
+
+    (unless (and f-lst (/= (* w h) 0))
+      (warn "empty sensor_msgs::PointCloud2 message~%")
+      (return-from make-eus-pointcloud-from-ros-msg pcloud))
+
+    (let (fld)
+      (dotimes (i (length field-names))
+        (when (setq fld (find-if #'(lambda (x) (string= (send x :name) (elt field-names i))) f-lst))
+          (setf (elt field-indices i) (send fld :offset)))))
+
+    (if (>= (elt field-indices 0) 0)
+        (setq mat (make-matrix size 3)))
+    (if (>= (elt field-indices 3) 0)
+        (setq cmat (make-matrix size 3)))
+    (if (>= (elt field-indices 4) 0)
+        (setq nmat (make-matrix size 3)))
+
+    (convert-msg2-pointcloud data step size
+                             mat (elt field-indices 0) (elt field-indices 1) (elt field-indices 2)
+                             nmat (elt field-indices 4) (elt field-indices 5) (elt field-indices 6)
+                             cmat (elt field-indices 3)
+                             (if (eq remove-nan :replace) 1 0))
+
+    (cond
+     (pcloud
+      (if mat (send pcloud :points mat))
+      (if cmat (send pcloud :colors cmat))
+      (if nmat (send pcloud :normals nmat)))
+     (t
+      (setq pcloud (instance pointcloud :init :width w :height h
+                          :points mat :colors cmat :normals nmat))))
+
+    (when (and remove-nan (not (eq remove-nan :replace)))
+      (let (index-lst
+            (p (instantiate float-vector 3))
+            (n (if nmat (instantiate float-vector 3))))
+        (dotimes (i size)
+          (c-matrix-row mat i p)
+          (if n (c-matrix-row nmat i n))
+          (if (and (not (c-isnan (elt p 0)))
+                   (if n (not (c-isnan (elt n 0))) t))
+              (push i index-lst)))
+        (nreverse index-lst)
+        (send pcloud :filter-with-indices index-lst)
+        ))
+    pcloud
+    ))
+
+(defun dump-pointcloud-to-pcd-file (fname pcloud &key (rgb :rgb) (binary) (scale 0.001))
+  (let ((pmat (send pcloud :points))
+        (cmat (send pcloud :colors))
+        (nmat (send pcloud :normals))
+        (f (open fname :direction :output)))
+    (format f "# .PCD v.6 - Point Cloud Data file format~%")
+    ;; FIELDS
+    (format f "FIELDS x y z")
+    (if cmat (case rgb
+               (:r-g-b (format f " r g b"))
+               (:rgb (format f " rgb"))
+               (t (format f " rgba"))))
+    (if nmat (format f " normal_x normal_y normal_z curvature"))
+    ;; SIZE
+    (format f "~%SIZE 4 4 4")
+    (if cmat (case rgb
+               (:r-g-b (format f " 4 4 4"))
+               (:rgb (format f " 4"))
+               (t (format f " 4"))))
+    (if nmat (format f " 4 4 4 4"))
+    ;; TYPE
+    (format f "~%TYPE F F F")
+    (if cmat (case rgb
+               (:r-g-b (format f " F F F"))
+               (:rgb (format f " F"))
+               (t (format f " U"))))
+    (if nmat (format f " F F F F"))
+
+    (format f "~%WIDTH ~A~%" (send pcloud :size))
+    (format f "HEIGHT 1~%")
+    (format f "POINTS ~A~%" (send pcloud :size))
+    (format f "DATA ascii~%") ;; binary mode is not implemented
+    (dotimes (i (send pcloud :size))
+      (let ((p (matrix-row pmat i))
+            (c (if cmat (matrix-row cmat i)))
+            (n (if nmat (matrix-row nmat i))))
+        (if scale (scale scale p p))
+        (format f "~8,8F ~8,8F ~8,8F" (elt p 0) (elt p 1) (elt p 2))
+        (cond
+         ((and c (eq rgb :r-g-b))
+          (format f " ~8,8F ~8,8F ~8,8F" (elt c 0) (elt c 1) (elt c 2)) ) ;; not implimented
+         ((and c (eq rgb :rgb))
+          (let ((rgba (+ (* 256 256 (floor (* 255.0 (elt c 0))))
+                         (* 256 (floor (* 255.0 (elt c 1))))
+                         (floor (* 255.0 (elt c 2)))))
+                (flt (make-string  4)))
+            (sys::poke rgba flt 0 :integer)
+            (format f " ~20,20e" (sys::peek flt 0 :float))
+            ))
+         (c (let ((rgba (+ (* 256 256 (floor (* 255.0 (elt c 0))))
+                           (* 256 (floor (* 255.0 (elt c 1))))
+                           (floor (* 255.0 (elt c 2))))))
+              (format f " ~D" rgba))))
+        (if  n (format f " ~8,8F ~8,8F ~8,8F 0.0" (elt n 0) (elt n 1) (elt n 2)))
+        (format f "~%")))
+    (close f)
+    ))
 
 ;;
 ;; misc unction
