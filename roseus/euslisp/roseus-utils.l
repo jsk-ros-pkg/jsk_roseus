@@ -436,7 +436,7 @@
 
     (let (fld)
       (dotimes (i (length field-names))
-        (when (setq fld (find-if #'(lambda (x) (string= (send x :name) (elt field-names i))) f-lst))
+        (when (setq fld (find-if #'(lambda (flx) (string= (send flx :name) (elt field-names i))) f-lst))
           (setf (elt field-indices i) (send fld :offset)))))
 
     (if (>= (elt field-indices 0) 0)
