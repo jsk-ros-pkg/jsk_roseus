@@ -458,10 +458,16 @@
 
 (setq *md5table* nil)
 (defun get-md5sum (fname)
-  (let ((key fname) val)
+  (let ((type (pathname-type fname))
+	(name (pathname-name fname))
+	(pkg  (car (last (butlast (pathname-directory fname)))))
+	(key fname) val)
     (setq val (cdr (assoc key *md5table* :test #'string=)))
     (when (not val)
-      (setq val (read-line (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --md5 ~A" fname))))
+      (cond ((string= type "msg")
+	     (setq val (read-line (piped-fork (format nil "rosmsg md5 ~A/~A" pkg name)))))
+	    (t
+	     (setq val (read-line (piped-fork (format nil "rossrv md5 ~A/~A" pkg name))))))
       (push (cons key val) *md5table*))
     val))
 (defun generate-msg-md5sum (strm pkg name fname)
