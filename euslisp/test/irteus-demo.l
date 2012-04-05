@@ -2,7 +2,7 @@
 
 (init-unit-test)
 
-(defmacro do-until-key (&rest forms) (with-gensyms (do-until-key-counter) `(dotimes (do-until-key-counter 500) ,@forms)))
+(defmacro do-until-key (&rest forms) (with-gensyms (do-until-key-counter tm) `(progn (setq tm (instance mtimer :init)) (dotimes (do-until-key-counter 500) (warning-message 2 ";; do-until-key ~7,3f ~A/~A~%" (send tm :stop) do-until-key-counter 500) ,@forms))))
 (deftest demo
   (funcall demo-func)
   )
