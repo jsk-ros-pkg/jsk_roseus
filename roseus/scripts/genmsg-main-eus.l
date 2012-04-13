@@ -1,5 +1,13 @@
 (setq lisp::*error-handler* #'(lambda (&rest args) (print args *error-output*)(exit 1)))
 (make-package "ROS")
+(defvar *roslib-dir* (read-line (piped-fork "rospack find roslib")))
+(defvar *gendeps-bin*
+  (cond ((probe-file (format nil "~A/scripts/gendeps" *roslib-dir*))
+	 (format nil "~A/scripts/gendeps" *roslib-dir*))
+	((probe-file (format nil "~A/bin/gendeps" *roslib-dir*))
+	 (format nil "~A/bin/gendeps" *roslib-dir*))
+	(t
+	 nil)))
 
 (defun generate-msg-datatype-name-list (strm)
   (let (msgs consts line pos type var init-elem vec-size)
@@ -458,16 +466,10 @@
 
 (setq *md5table* nil)
 (defun get-md5sum (fname)
-  (let ((type (pathname-type fname))
-	(name (pathname-name fname))
-	(pkg  (car (last (butlast (pathname-directory fname)))))
-	(key fname) val)
+  (let ((key fname) val)
     (setq val (cdr (assoc key *md5table* :test #'string=)))
     (when (not val)
-      (cond ((string= type "msg")
-	     (setq val (read-line (piped-fork (format nil "rosmsg md5 ~A/~A" pkg name)))))
-	    (t
-	     (setq val (read-line (piped-fork (format nil "rossrv md5 ~A/~A" pkg name))))))
+      (setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname))))
       (push (cons key val) *md5table*))
     val))
 (defun generate-msg-md5sum (strm pkg name fname)
@@ -489,7 +491,7 @@
 (defun generate-msg-definition (strm pkg name fname)
   (let (p def)
     (format strm "(setf (get ~A::~A :definition-)~%      \"" pkg name)
-    (setq p (piped-fork (format nil "`rospack find roslib`/scripts/gendeps --cat ~A" fname)))
+    (setq p (piped-fork (format nil "~A --cat ~A" *gendeps-bin* fname)))
     (while (setq def (read-line p nil nil))
       (format strm "~A~%" (escape-double-quote def)))
     (format strm "\")~%")
