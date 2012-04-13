@@ -1191,12 +1191,13 @@ pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
   if (isstring(argv[0])) pkg.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
-  rospack::ROSPack rp;
   try {
 #ifdef ROSPACK_EXPORT
+      rospack::ROSPack rp;
       rospack::Package *p = rp.get_pkg(pkg);
       if (p!=NULL) return(makestring((char *)p->path.c_str(),p->path.length()));
 #else
+      rospack::Rospack rp;
       std::vector<std::string> search_path;
       rp.getSearchPathFromEnv(search_path);
       rp.crawl(search_path, 1);
