@@ -1193,8 +1193,16 @@ pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
 
   rospack::ROSPack rp;
   try {
-    rospack::Package *p = rp.get_pkg(pkg);
-    if (p!=NULL) return(makestring((char *)p->path.c_str(),p->path.length()));
+#ifdef ROSPACK_EXPORT
+      rospack::Package *p = rp.get_pkg(pkg);
+      if (p!=NULL) return(makestring((char *)p->path.c_str(),p->path.length()));
+#else
+      std::vector<std::string> search_path;
+      rp.getSearchPathFromEnv(search_path);
+      rp.crawl(search_path, 1);
+      std::string path;
+      if (rp.find(pkg,path)==true) return(makestring((char *)path.c_str(),path.length()));
+#endif
   } catch (runtime_error &e) {
   }
   return(NIL);
