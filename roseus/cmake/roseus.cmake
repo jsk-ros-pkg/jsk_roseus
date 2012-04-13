@@ -7,7 +7,7 @@ rosbuild_find_ros_package(roseus)
 ##  2) check if depends packages need genmsg/gensrv...
 ##     use rospack depends to get list of depend packages
 ##      for each package...
-##       if the package have ROS_NOBUILD file, then ...
+##       if the package have ROS_NOBUILD fileor package does not have Makefile, then...
 ##         check generated file if we need to generate manifest,msg,srv
 ##       else (if the package does not hve ROS_NOBUILD file) do nothing
 ##
@@ -128,8 +128,9 @@ macro(generate_ros_nobuild_eus)
     if(EXISTS ${msggenerated})
       execute_process(COMMAND cat ${msggenerated} OUTPUT_VARIABLE md5sum_file)
     endif(EXISTS ${msggenerated})
-    if(EXISTS ${${_package}_PACKAGE_PATH}/ROS_NOBUILD AND
-	NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
+    if((EXISTS ${${_package}_PACKAGE_PATH}/ROS_NOBUILD OR
+	  (NOT EXISTS ${${_package}_PACKAGE_PATH}/Makefile))
+	AND NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
       message("[roseus.cmake] need to re-generate files, remove ${msggenerated}")
       file(REMOVE ${msggenerated})
       set(PROJECT_NAME ${_package})
@@ -147,8 +148,9 @@ macro(generate_ros_nobuild_eus)
       add_dependencies(rosbuild_precompile ROSBUILD_gengenerated_roseus_${PROJECT_NAME})
       set(PROJECT_NAME ${_project})
       set(PROJECT_SOURCE_DIR ${${_project}_PACKAGE_PATH})
-    endif(EXISTS ${${_package}_PACKAGE_PATH}/ROS_NOBUILD AND
-      NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
+    endif((EXISTS ${${_package}_PACKAGE_PATH}/ROS_NOBUILD OR
+	(NOT EXISTS ${${_package}_PACKAGE_PATH}/Makefile))
+      AND NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
     # check the generated file
   endforeach(_package ${depends_packages})
 endmacro(generate_ros_nobuild_eus)
