@@ -1,11 +1,21 @@
 <launch>
   <node pkg="rviz" type="rviz" name="rviz"
         args="-d $(find roseus_tutorials)/launch/tabletop-object-detector.vcg" />
-  <include file="$(find roseus_tutorials)/launch/kinect.launch" />
   <include file="$(find tabletop_object_detector)/launch/tabletop_segmentation.launch" >
     <arg name="tabletop_segmentation_points_in" value="/camera/rgb/points" />
     <arg name="tabletop_segmentation_convert_to_base_link" value="false" />
   </include>
 
-  <node name="tabletop_object_detector_eus" pkg="roseus_tutorials" type="tabletop-object-detector.l" />
+  <sphinxdoc><![CDATA[
+This script starts table top dector program
+
+.. code-block:: bash
+
+  roslaunch roseus_tutorial kinect.launch
+  roslaunch roseus_tutorial tabletop-object-detector.launch
+  rosrun roseus_tutorial tabletop-object-detector.l
+
+
+  ]]></sphinxdoc>
+
 </launch>
