@@ -44,6 +44,21 @@
                         :points points))
     msg
     ))
+(defun make-eus-pointcloud-from-ros-msg1 (sensor_msgs_pointcloud)
+  (let* ((pts (send sensor_msgs_pointcloud :points))
+         (mat (make-matrix (length pts) 3))
+         (ary (array-entity mat))
+         (cntr 0))
+    (dolist (p pts)
+      (setf (elt ary cntr) (send p :x))
+      (incf cntr)
+      (setf (elt ary cntr) (send p :y))
+      (incf cntr)
+      (setf (elt ary cntr) (send p :z))
+      (incf cntr))
+    (scale 1000.0 ary ary)
+    (instance pointcloud :init :points mat)))
+
 ;;
 
 
@@ -332,7 +347,8 @@
 ;;
 ;; for pointcloud
 ;;
-(defun make-ros-msg-from-eus-pointcloud (pcloud &key with-color with-normal (frame "/sensor_frame"))
+(defun make-ros-msg-from-eus-pointcloud (pcloud &key (with-color :rgb)
+                                                (with-normal t) (frame "/sensor_frame"))
   "convert from pointcloud in eus to sensor_msgs::PointCloud2 in ros"
   (let ((size (send pcloud :size))
         fld-lst hdr msg psize raw_data
@@ -358,7 +374,7 @@
           fld-lst)
 
     (cond
-     ((eq with-color :r-g-b)
+     ((and (eq with-color :r-g-b) (send pcloud :colors))
       (push (instance sensor_msgs::PointField :init :name "r"
                       :offset 12 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
             fld-lst)
@@ -369,7 +385,7 @@
                       :offset 20 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
             fld-lst)
       (setq psize 24))
-     (with-color
+     ((and with-color (send pcloud :colors))
       (push (instance sensor_msgs::PointField :init :name "rgb"
                       :offset 12 :datatype sensor_msgs::PointField::*FLOAT32* :count 1)
             fld-lst)
