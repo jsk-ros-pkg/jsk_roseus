@@ -551,6 +551,201 @@
     (close f)
     ))
 
+(defun read-header-symbol (str sym)
+  (when (eq sym (read-from-string str))
+    (let ((s (make-string-input-stream str))
+          elm ret)
+      (read s) ;; eq sym
+      (while (setq elm (read s nil nil))
+        (push elm ret))
+      (setq ret (nreverse ret))
+      )))
+(defun read-pcd-file (fname &key (scale 1000.0))
+  (let (str
+        version pfields
+        psize ptype pcount
+        width height
+        vp points dtype)
+    (with-open-file
+     (f fname)
+     ;; read header
+     (while (setq str (read-line f))
+       (unless (= (elt str 0) #\#)
+         (let ((s (make-string-input-stream str))
+               elem lst)
+           (while (setq elem (read s nil nil))
+             (push elem lst))
+           (setq lst (nreverse lst))
+           (case
+            (car lst)
+            ('VERSION
+             (setq version (cadr lst)))
+            ('FIELDS
+             (setq pfields (cdr lst)))
+            ('SIZE
+             (setq psize (cdr lst)))
+            ('TYPE
+             (setq ptype (cdr lst)))
+            ('COUNT
+             (setq pcount (cdr lst)))
+            ('WIDTH
+             (setq width (cadr lst)))
+            ('HEIGHT
+             (setq height (cadr lst)))
+            ('VIEWPOINT
+             (setq vp (cdr lst)))
+            ('POINTS
+             (setq points (cadr lst)))
+            ('DATA
+             (setq dtype (cadr lst))
+             (return))
+            (t
+             (warn ";; unknown symbol ~A~%" (car lst))
+             )))))
+#|
+     (when debug
+       (pprint version)
+       (pprint pfields)
+       (pprint psize)
+       (pprint ptype)
+       (pprint pcount)
+       (pprint width)
+       (pprint height)
+       (pprint vp)
+       (pprint points)
+       (pprint dtype))
+|#
+     ;; read data
+     ;; size check
+     (let (off-lst
+           pbytes bytes adtype
+           xidx yidx zidx xoff yoff zoff xtp ytp ztp pmat
+           frgb rgba rgboff rgbtp cmat rgbidx
+           nx ny nz nxoff nyoff nzoff nxtp nytp nztp nmat)
+
+       (setq pbytes (apply #'+ psize))
+       (setq bytes (* pbytes points))
+
+       (setq adtype
+             (mapcar #'(lambda (sz tp)
+                         (case tp
+                               ('I (case sz (1 :char) (2 :short) (4 :integer)))
+                               ('U (case sz (1 :char) (2 :short) (4 :integer)))
+                               ('F (case sz (4 :float) (8 :double))))) psize ptype))
+
+       (let ((cntr 0))
+         (dotimes (i (length psize))
+           (push cntr off-lst)
+           (incf cntr (elt psize i))))
+       (setq off-lst (nreverse off-lst))
+
+       (setq xidx (position 'x pfields))
+       (setq yidx (position 'y pfields))
+       (setq zidx (position 'z pfields))
+       (when (and xidx yidx zidx)
+         (setq xoff (elt off-lst xidx))
+         (setq xtp (elt adtype xidx))
+         (setq yoff (elt off-lst yidx))
+         (setq ytp (elt adtype yidx))
+         (setq zoff (elt off-lst zidx))
+         (setq ztp (elt adtype zidx))
+         (setq pmat (make-matrix points 3)))
+
+       (setq frgb (position 'rgb pfields))
+       (setq rgba (position 'rgba pfields))
+       (when (or frgb rgba)
+         (setq rgbidx (if frgb frgb rgba))
+         (setq rgboff (elt off-lst rgbidx))
+         (setq rgbtp (elt adtype rgbidx))
+         (setq cmat (make-matrix points 3)))
+
+       (setq nx (position 'normal_x pfields))
+       (setq ny (position 'normal_y pfields))
+       (setq nz (position 'normal_z pfields))
+       (when (and nx ny nz)
+         (setq nxoff (elt off-lst nx))
+         (setq nxtp (elt adtype nx))
+         (setq nyoff (elt off-lst ny))
+         (setq nytp (elt adtype ny))
+         (setq nzoff (elt off-lst nz))
+         (setq nztp (elt adtype nz))
+         (setq nmat (make-matrix points 3)))
+
+       (cond
+        ((eq dtype 'binary)
+         ;; binary read
+         (let ((buf (make-string pbytes))
+               (vec (instantiate float-vector 3))
+               addr)
+           (setq addr (+ (sys::address buf) lisp::sizeof-header-offset))
+           (dotimes (i points)
+             (send f :read-bytes pbytes buf)
+             (when pmat
+               (setf (elt vec 0) (sys::peek (+ addr xoff) xtp))
+               (setf (elt vec 1) (sys::peek (+ addr yoff) ytp))
+               (setf (elt vec 2) (sys::peek (+ addr zoff) ztp))
+               (c-matrix-row pmat i vec t))
+             (when nmat
+               (setf (elt vec 0) (sys::peek (+ addr nxoff) nxtp))
+               (setf (elt vec 1) (sys::peek (+ addr nyoff) nytp))
+               (setf (elt vec 2) (sys::peek (+ addr nzoff) nztp))
+               (c-matrix-row nmat i vec t))
+             (when cmat
+               (cond
+                ((eq rgbtp :float)
+                 (let ((fval (sys::peek (+ addr rgboff) :integer)))
+                   (setf (elt vec 2) (/ (ldb fval 0 8) 255.0))
+                   (setf (elt vec 1) (/ (ldb fval 8 8) 255.0))
+                   (setf (elt vec 0) (/ (ldb fval 16 8) 255.0))
+                   ))
+                (t
+                 (let ((ival (sys::peek (+ addr rgboff) rgbtp)))
+                   (setf (elt vec 2) (/ (ldb ival 0 8) 255.0))
+                   (setf (elt vec 1) (/ (ldb ival 8 8) 255.0))
+                   (setf (elt vec 0) (/ (ldb ival 16 8) 255.0))
+                   )))
+               (c-matrix-row cmat i vec t)))))
+         (t ;; ascii
+          (let (
+                (vec (instantiate float-vector 3))
+                (rdvec (instantiate vector (length pfields)))
+                )
+            (dotimes (i points)
+              (dotimes (j (length pfields))
+                (setf (elt rdvec j) (read f)))
+              (when pmat
+                (setf (elt vec 0) (elt rdvec xidx))
+                (setf (elt vec 1) (elt rdvec yidx))
+                (setf (elt vec 2) (elt rdvec zidx))
+                (c-matrix-row pmat i vec t))
+              (when nmat
+                (setf (elt vec 0) (elt rdvec nxidx))
+                (setf (elt vec 1) (elt rdvec nyidx))
+                (setf (elt vec 2) (elt rdvec nzidx))
+                (c-matrix-row nmat i vec t))
+              (when cmat
+                (cond
+                 ((eq rgbtp :float)
+                  (let ((fval (elt rdvec rgbidx))
+                        (buf (make-string 4)) ival)
+                    (sys::poke fval buf 0 :float)
+                    (setq ival (sys::peek buf 0 :integer))
+                    (setf (elt vec 2) (/ (ldb ival 0 8) 255.0))
+                    (setf (elt vec 1) (/ (ldb ival 8 8) 255.0))
+                    (setf (elt vec 0) (/ (ldb ival 16 8) 255.0))
+                    ))
+                 (t
+                  (let ((ival (elt rdvec rgbidx)))
+                    (setf (elt vec 2) (/ (ldb ival 0 8) 255.0))
+                    (setf (elt vec 1) (/ (ldb ival 8 8) 255.0))
+                    (setf (elt vec 0) (/ (ldb ival 16 8) 255.0))
+                    )))
+                (c-matrix-row cmat i vec t))))))
+       (scale scale (array-entity pmat) (array-entity pmat))
+       (instance pointcloud :init :points pmat
+                 :colors cmat :normals nmat :height height :width width)
+       ))
+    ))
 ;;
 ;; misc unction
 ;;
