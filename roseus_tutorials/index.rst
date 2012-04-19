@@ -99,6 +99,7 @@ Contents
   <launch>
     <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py">
       <env name="PATH" value="$(find aques_talk):$(env PATH)" />
+      <remap from="robotsound" to="robotsound_jp" />
     </node>
     </launch>
 
@@ -133,7 +134,7 @@ Contents
     <node args="camera_info usb_cam/camera_info" name="camera_info_to_usb_cam_camera_info" pkg="topic_tools" type="relay" />
     <node args="image_raw usb_cam/image_raw" name="camera_image_to_usb_cam_camera_image" pkg="topic_tools" type="relay" />
     <node name="ar_pose" output="screen" pkg="ar_pose" respawn="false" type="ar_multi">
-      <param name="marker_pattern_list" type="string" value="data/object_4x4" />
+      <param name="marker_pattern_list" type="string" value="$(find roseus_tutorials)/launch/object_4x4_70" />
       <param name="threshold" type="int" value="100" />
     </node>
     </launch>
@@ -304,8 +305,10 @@ Contents
 
   <launch>
     <node name="face_detector_mono" pkg="face_detector_mono" type="facedetect">
-      <param name="cascade_name" value="$(find opencv2)/opencv/share/opencv/haarcascades/haarcascade_frontalface_alt.xml" />
-      <param name="nested_cascade_name" value="$(find opencv2)/opencv/share/opencv/haarcascades/haarcascade_eye_tree_eyeglasses.xml" />
+      
+      
+      <param name="cascade_name" value="/usr/share/OpenCV-2.3.1/haarcascades/haarcascade_frontalface_alt.xml" />
+      <param name="nested_cascade_name" value="/usr/share/OpenCV-2.3.1/haarcascades/haarcascade_eye_tree_eyeglasses.xml" />
       <param name="scale" value="1.3" />
       <param name="display" value="true" />
       <remap from="/yarp_to_ros_image/yarp_to_ros_image" to="image_rect" />
@@ -421,6 +424,9 @@ Contents
   
     <node name="point_pose_extractor" pkg="jsk_perception" type="point_pose_extractor">
       <param name="child_frame_name" value="opencv_logo" />
+      <param name="template_filename" value="$(find roseus_tutorials)/img/1000yen.jpg" />
+      <param name="object_width" value="0.15" />
+      <param name="object_height" value="0.076" />
       <param name="reprojection_threshold" value="10.0" />  
       <param name="distanceratio_threshold" value="0.60" /> 
       <param name="error_threshold" value="50.0" />
@@ -483,6 +489,38 @@ Contents
     <node name="saliency_track" pkg="saliency_tracking" type="saliency_track">
       <remap from="image" to="image_rect_color" />
     </node>
+  
+    </launch>
+
+tabletop-object-detector.launch
+-------------------------------
+
+.. code-block:: bash
+
+  roslaunch roseus_tutorials tabletop-object-detector.launch
+
+
+This script starts table top dector program
+
+.. code-block:: bash
+
+  roslaunch roseus_tutorials kinect.launch
+  roslaunch roseus_tutorials tabletop-object-detector.launch
+  rosrun roseus_tutorials tabletop-object-detector.l
+
+  
+
+Contents
+########
+
+.. code-block:: xml
+
+  <launch>
+    <node args="-d $(find roseus_tutorials)/launch/tabletop-object-detector.vcg" name="rviz" pkg="rviz" type="rviz" />
+    <include file="$(find tabletop_object_detector)/launch/tabletop_segmentation.launch">
+      <arg name="tabletop_segmentation_points_in" value="/camera/rgb/points" />
+      <arg name="tabletop_segmentation_convert_to_base_link" value="false" />
+    </include>
   
     </launch>
 

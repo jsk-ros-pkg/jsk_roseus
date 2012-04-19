@@ -11,10 +11,9 @@ This script starts table top dector program
 
 .. code-block:: bash
 
-  roslaunch roseus_tutorial kinect.launch
-  roslaunch roseus_tutorial tabletop-object-detector.launch
-  rosrun roseus_tutorial tabletop-object-detector.l
-
+  roslaunch roseus_tutorials kinect.launch
+  roslaunch roseus_tutorials tabletop-object-detector.launch
+  rosrun roseus_tutorials tabletop-object-detector.l
 
   ]]></sphinxdoc>
 
