@@ -639,9 +639,14 @@
            (incf cntr (elt psize i))))
        (setq off-lst (nreverse off-lst))
 
-       (setq xidx (position 'x pfields))
-       (setq yidx (position 'y pfields))
-       (setq zidx (position 'z pfields))
+       ;;(setq xidx (position 'x pfields))
+       ;;(setq yidx (position 'y pfields))
+       ;;(setq zidx (position 'z pfields))
+       (setq pfields (mapcar #'(lambda (fsym) (symbol-string fsym)) pfields))
+       (setq xidx (position "X" pfields :test #'string=))
+       (setq yidx (position "Y" pfields :test #'string=))
+       (setq zidx (position "Z" pfields :test #'string=))
+
        (when (and xidx yidx zidx)
          (setq xoff (elt off-lst xidx))
          (setq xtp (elt adtype xidx))
