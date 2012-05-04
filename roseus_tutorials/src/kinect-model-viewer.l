@@ -225,7 +225,7 @@
 #-:ros
 (unless (find-package "ROS") (make-package "ROS"))
 #+:ros
-(defun test-kinect (&key robot fname) ;; :fname "test-kinect.bvh"
+(defun test-kinect (&key robot fname loop-hook) ;; :fname "test-kinect.bvh", loop-hook is a function to call inside do-until-key loop
   (let ((floor (make-cube 2000 1000 10 :pos #f(1000 0 0))) f)
     (if fname (setq f (open fname :direction :output)))
     (ros::roseus "kinect_bvh")
@@ -247,6 +247,7 @@
 		 (send (send (send b :torso :end-coords) :transformation (send b :rarm :end-coords)) :worldpos)))
        (when robot
 	 (send b :copy-state-to robot))
+       (if (functionp loop-hook) (funcall loop-hook))
        (send (get *viewer* :pickviewer) :look-all)
        (x::window-main-one)
        (if f (send b :dump-motion f))
