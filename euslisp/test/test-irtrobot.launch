@@ -30,7 +30,7 @@ irteus robot model examples
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(dual-arm-ik)"
 
-.. comment video:: build/dual_arm_ik
+.. video:: build/dual_arm_ik
   :width: 400
 
 .. code-block:: bash
@@ -127,7 +127,7 @@ robots and object models
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_full_body_ik" args="$(find euslisp)/build/full_body_ik.glc" time-limit="1000"/>
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_full_body_ik_no_torso" args="$(find euslisp)/build/full_body_ik_no_torso.glc" time-limit="1000"/>
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_full_body_ik_use_leg" args="$(find euslisp)/build/full_body_ik_use_leg.glc" time-limit="1000"/>
-  <!-- test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_dual_arm_ik" args="$(find euslisp)/build/dual_arm_ik.glc" time-limit="1000"/ -->
+  <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_dual_arm_ik" args="$(find euslisp)/build/dual_arm_ik.glc" time-limit="1000"/>
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_dual_manip_ik" args="$(find euslisp)/build/dual_manip_ik.glc" time-limit="1000"/>
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_crank_motion" args="$(find euslisp)/build/crank_motion.glc" time-limit="1000"/>
   <test type="glc_encode.sh" pkg="jsk_tools" test-name="z_test_hand_grasp" args="$(find euslisp)/build/hand_grasp.glc" time-limit="1000"/>
