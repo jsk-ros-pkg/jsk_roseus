@@ -102,7 +102,7 @@ robots and object models
 	time-limit="600" />
   <!-- <test test-name="test_dual_arm_ik_demo" pkg="euslisp" -->
   <!-- 	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'dual-arm-ik) $(find euslisp)/test/irteus-demo.l" -->
-  <!--       launch-prefix="glc-capture --start --out=$(find euslisp)/build/dual_arm_ik.glc" -->
+  <!--       launch-prefix="glc-capture -x-start -x-out=$(find euslisp)/build/dual_arm_ik.glc" -->
   <!-- 	time-limit="600" /> -->
   <test test-name="test_dual_manip_ik_demo" pkg="euslisp"
 	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'dual-manip-ik) $(find euslisp)/test/irteus-demo.l"
