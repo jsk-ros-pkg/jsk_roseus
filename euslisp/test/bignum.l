@@ -87,9 +87,12 @@
 
     ;;
     (check-bignum #'equal (elt #i(536870912) 0) #x20000000 t)
-    (check-bignum #'equal (elt #i(2305843009213693952) 0) #x2000000000000000 t)
     (check-bignum #'equal (elt (integer-vector 536870912) 0) #x20000000 t)
-    (check-bignum #'equal (elt (integer-vector 2305843009213693952) 0) #x2000000000000000 t)
+#+:x86_64
+    (progn
+      ;;(check-bignum #'equal (elt #i(2305843009213693952) 0) #x2000000000000000 t)
+      (check-bignum #'equal (elt (integer-vector 2305843009213693952) 0) #x2000000000000000 t)
+      )
     )
   (print 'done)
   )
