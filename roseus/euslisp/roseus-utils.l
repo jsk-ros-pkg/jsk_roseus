@@ -724,9 +724,9 @@
                 (setf (elt vec 2) (elt rdvec zidx))
                 (c-matrix-row pmat i vec t))
               (when nmat
-                (setf (elt vec 0) (elt rdvec nxidx))
-                (setf (elt vec 1) (elt rdvec nyidx))
-                (setf (elt vec 2) (elt rdvec nzidx))
+                (setf (elt vec 0) (elt rdvec nx))
+                (setf (elt vec 1) (elt rdvec ny))
+                (setf (elt vec 2) (elt rdvec nz))
                 (c-matrix-row nmat i vec t))
               (when cmat
                 (cond
