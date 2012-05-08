@@ -523,7 +523,6 @@ pointer EUSTF_TRANSFORMPOSE(register context *ctx,int n,pointer *argv)
 
 pointer EUSTF_LOOKUPVELOCITY(register context *ctx,int n,pointer *argv)
 {
-#if 0
   numunion nu;
   ckarg(4);
   tf::Transformer *tf;
@@ -544,20 +543,19 @@ pointer EUSTF_LOOKUPVELOCITY(register context *ctx,int n,pointer *argv)
   if (isint(argv[4])) duration = (float)intval(argv[4]);
   else if (isflt(argv[4])) duration = (float)fltval(argv[4]);
   else error(E_NONUMBER);
-#endif
 
-  geometry_msgs::TwistStamped velocity;
-  ROS_ERROR("%s is not implemented yet since lookupVelocity seems obsoluted", __PRETTY_FUNCTION__);
-  /* tf->lookupVelocity(reference_frame, moving_frame, ros::Time(time), ros::Time(duration), velocity); */
+  geometry_msgs::Twist velocity;
+  // ROS_ERROR("%s is not implemented yet since lookupVelocity seems obsoluted", __PRETTY_FUNCTION__);
+  tf->lookupTwist(reference_frame, moving_frame, ros::Time(time), ros::Duration(duration), velocity);
 
-  pointer vs = makefvector(6);          //pos[3] + rot[4](angle-axis quaternion)
+  pointer vs = makefvector(6);          //pos[3] + rot[3](angle-axis)
   vpush(vs);
-  vs->c.fvec.fv[0] = velocity.twist.linear.x;
-  vs->c.fvec.fv[1] = velocity.twist.linear.y;
-  vs->c.fvec.fv[2] = velocity.twist.linear.z;
-  vs->c.fvec.fv[3] = velocity.twist.angular.x;
-  vs->c.fvec.fv[4] = velocity.twist.angular.x;
-  vs->c.fvec.fv[5] = velocity.twist.angular.x;
+  vs->c.fvec.fv[0] = velocity.linear.x;
+  vs->c.fvec.fv[1] = velocity.linear.y;
+  vs->c.fvec.fv[2] = velocity.linear.z;
+  vs->c.fvec.fv[3] = velocity.angular.x;
+  vs->c.fvec.fv[4] = velocity.angular.y;
+  vs->c.fvec.fv[5] = velocity.angular.z;
   vpop();
   return(vs);
 }
