@@ -14,7 +14,7 @@
   :slots (name-space action-spec simple-state comm-state status-stamp
                      action-goal-class action-result-class action-feedback-class
                      action-done-cb action-active-cb action-feedback-cb
-                     goal_id nodehandlename))
+                     goal_id groupname))
 
 (defmethod ros::simple-action-client
   (:goal-status-cb
@@ -68,10 +68,10 @@
      msg))
   ;;
   (:init
-   (ns spec &key ((:nodehandle-name nh)))
+   (ns spec &key ((:groupname gp)))
    (send self :name ns)
    (setq name-space ns)
-   (setq nodehandlename nh)
+   (setq groupname gp)
    (setq action-spec (instance spec :init))
    (setq comm-state (instance actionlib-comm-state :init))
    (setq action-goal-class     (class (send action-spec :action_goal))
@@ -80,13 +80,13 @@
    (ros::advertise (format nil "~A/goal" name-space) action-goal-class)
    (ros::advertise (format nil "~A/cancel" name-space) actionlib_msgs::GoalID)
    (cond
-    (nodehandlename
+    (groupname
      (ros::subscribe (format nil "~A/status" name-space)
-                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb nodehandlename)
+                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb :groupname groupname)
      (ros::subscribe (format nil "~A/result" name-space)
-                     action-result-class #'send self :action-result-cb nodehandlename)
+                     action-result-class #'send self :action-result-cb :groupname groupname)
      (ros::subscribe (format nil "~A/feedback" name-space)
-                     action-feedback-class #'send self :action-feedback-cb nodehandlename))
+                     action-feedback-class #'send self :action-feedback-cb :groupname groupname))
     (t
      (ros::subscribe (format nil "~A/status" name-space)
                      actionlib_msgs::GoalStatusArray #'send self :goal-status-cb)
@@ -193,7 +193,7 @@
      (send comm-state :state 'ros::*comm-state-waiting-for-cancel-ack*)))
   (:spin-once ()
    (cond
-    (nodehandlename (ros::spin-once nodehandlename))
+    (groupname (ros::spin-once groupname))
     (t (ros::spin-once))))
   ;;
   )
@@ -206,7 +206,7 @@
                      execute-cb accept-cb preempt-cb
                      goal goal-id pending-goal
                      seq-id feed-seq-id
-                     nodehandlename))
+                     groupname))
 
 (defmethod ros::simple-action-server
   (:execute-cb
@@ -319,7 +319,7 @@
   ;;
   (:init
    (ns spec &key ((:execute-cb exec-f)) ((:preempt-cb preempt-f))
-       ((:nodehandle-name nh)) ((:accept-cb accept-f)))
+       ((:groupname gp)) ((:accept-cb accept-f)))
    (send self :name ns)
    (setq name-space ns)
    (setq action-spec (instance spec :init))
@@ -328,7 +328,7 @@
    (setq seq-id 0 feed-seq-id 0)
    (setq status actionlib_msgs::GoalStatus::*pending*)
    ;;
-   (setq nodehandlename nh)
+   (setq groupname gp)
    ;;
    (setq action-goal-class     (class (send action-spec :action_goal))
          action-result-class   (class (send action-spec :action_result))
@@ -337,11 +337,11 @@
    (ros::advertise (format nil "~A/result" name-space) action-result-class)
    (ros::advertise (format nil "~A/feedback" name-space) action-feedback-class)
    (cond
-    (nodehandlename
+    (groupname
      (ros::subscribe (format nil "~A/goal" name-space)
-                     action-goal-class #'send self :goal-callback nodehandlename)
+                     action-goal-class #'send self :goal-callback :groupname groupname)
      (ros::subscribe (format nil "~A/cancel" name-space)
-                     actionlib_msgs::GoalID #'send self :cancel-callback nodehandlename))
+                     actionlib_msgs::GoalID #'send self :cancel-callback :groupname groupname))
     (t
      (ros::subscribe (format nil "~A/goal" name-space)
                      action-goal-class #'send self :goal-callback)
@@ -358,7 +358,7 @@
   (:next-feed-seq-id () (incf feed-seq-id))
   (:spin-once ()
    (cond
-    (nodehandlename (ros::spin-once nodehandlename))
+    (groupname (ros::spin-once groupname))
     (t (ros::spin-once))))
   )
 

@@ -130,7 +130,7 @@ static bool s_bInstalled = false;
 #define s_mapServiced s_staticdata.mapServiced
 #define s_mapHandle s_staticdata.mapHandle
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOOUT,QSVNVERSION;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,QANON,QNOOUT,QSVNVERSION;
 extern pointer LAMCLOSURE;
 
 /***********************************************************
@@ -534,6 +534,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   K_ROSEUS_INIT = defkeyword(ctx,"INIT");
   K_ROSEUS_REQUEST  = defkeyword(ctx,"REQUEST");
   K_ROSEUS_RESPONSE = defkeyword(ctx,"RESPONSE");
+  K_ROSEUS_GROUPNAME = defkeyword(ctx,"GROUPNAME");
 
   s_mapAdvertised.clear();
   s_mapSubscribed.clear();
@@ -595,7 +596,7 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
   }
 
   if( s_mapHandle.find(groupname) != s_mapHandle.end() ) {
-    ROS_WARN("handlename %s is already used", groupname.c_str());
+    ROS_WARN("groupname %s is already used", groupname.c_str());
     return (NIL);
   }
 
@@ -637,7 +638,7 @@ pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
 
     map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
     if( it == s_mapHandle.end() ) {
-      ROS_WARN("handlename %s is missing", groupname.c_str());
+      ROS_WARN("groupname %s is missing", groupname.c_str());
       return (T);
     }
     boost::shared_ptr<NodeHandle > hdl = (it->second);
@@ -739,19 +740,21 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   NodeHandle *lnode = s_node.get();
 
   // ;; arguments ;;
-  // topicname message_type callbackfunc args0 ... argsN [ queuesize ] [ groupname ]
+  // topicname message_type callbackfunc args0 ... argsN [ queuesize ] [ :groupname groupname ]
 
-  if (isstring(argv[n-1])) {
-    string groupname;
-    groupname.assign((char *)get_string(argv[n-1]));
-    map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
-    if( it != s_mapHandle.end() ) {
-      lnode = (it->second).get();
-    } else {
-      ROS_WARN("handlename %s is missing", groupname.c_str());
-      return (NIL);
+  if (n > 1 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
+    if (argv[n-2] == K_ROSEUS_GROUPNAME) {
+      string groupname;
+      groupname.assign((char *)get_string(argv[n-1]));
+      map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+      if( it != s_mapHandle.end() ) {
+        lnode = (it->second).get();
+      } else {
+        ROS_WARN("groupname %s is missing", groupname.c_str());
+        return (NIL);
+      }
+      n -= 2;
     }
-    n--;
   }
   if (isint(argv[n-1])) {queuesize = ckintval(argv[n-1]);n--;}
   if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));

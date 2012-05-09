@@ -18,7 +18,7 @@
   (setq *subscribed-string* (send msg :data)))
 
 (ros::subscribe "/a" std_msgs::String #'callback-a)
-(ros::subscribe "/b" std_msgs::String #'callback-b "spinb")
+(ros::subscribe "/b" std_msgs::String #'callback-b :groupname "spinb")
 
 (init-unit-test)
 
