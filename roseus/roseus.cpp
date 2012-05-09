@@ -119,7 +119,6 @@ public:
   map<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
 
   map<string, boost::shared_ptr<NodeHandle> > mapHandle; ///< for grouping nodehandle
-  map<string, boost::shared_ptr<CallbackQueue> > mapQueue; ///< for grouping nodehandle
 };
 
 static RoseusStaticData s_staticdata;
@@ -130,7 +129,6 @@ static bool s_bInstalled = false;
 #define s_mapSubscribed s_staticdata.mapSubscribed
 #define s_mapServiced s_staticdata.mapServiced
 #define s_mapHandle s_staticdata.mapHandle
-#define s_mapQueue s_staticdata.mapQueue
 
 pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOOUT,QSVNVERSION;
 extern pointer LAMCLOSURE;
@@ -541,7 +539,6 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   s_mapSubscribed.clear();
   s_mapServiced.clear();
   s_mapHandle.clear();
-  s_mapQueue.clear();
   
   /*
     force to flag ros::init_options::NoSigintHandler.
@@ -611,8 +608,7 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
     s_mapHandle[groupname] = hd;
   }
   //add callbackqueue to hd
-  s_mapQueue[groupname] = boost::shared_ptr<CallbackQueue > (new CallbackQueue());
-  hd->setCallbackQueue( (CallbackQueueInterface *)( s_mapQueue[groupname].get() ));
+  hd->setCallbackQueue( new CallbackQueue() );
 
   return (T);
 }
@@ -646,7 +642,8 @@ pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
     }
     boost::shared_ptr<NodeHandle > hdl = (it->second);
     // spin this nodehandle
-    ((CallbackQueue *) (hdl->getCallbackQueue()))->callOne();
+    ((CallbackQueue *)hdl->getCallbackQueue())->callAvailable();
+
     return (NIL);
   } else {
     ros::spinOnce();
@@ -724,7 +721,6 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
     s_mapSubscribed.clear();
     s_mapServiced.clear();
     s_mapHandle.clear();
-    s_mapQueue.clear();
     ros::shutdown();
   }
   if (n==0) _exit(0);
@@ -815,7 +811,7 @@ pointer ROSEUS_GETNUMPUBLISHERS(register context *ctx,int n,pointer *argv)
 
   if ( ! bSuccess ) {
     ROS_ERROR("attempted to getNumPublishers to topic %s, which was not " \
-              "previously advertised. call (ros::advertise \"%s\") first.",
+              "previously subscribed. call (ros::subscribe \"%s\") first.",
               topicname.c_str(), topicname.c_str());
   }
 
