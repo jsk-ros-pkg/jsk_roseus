@@ -22,7 +22,7 @@ rosbuild_find_ros_package(euslisp)
 include_directories(/usr/include /usr/X11R6/include ${euslisp_PACKAGE_PATH}/jskeus/eus/include)
 #link_directories()
 rosbuild_add_library(roseus roseus.cpp)
-target_link_libraries(roseus rospack)
+target_link_libraries(roseus rospack) # see https://code.ros.org/trac/ros/ticket/3955 for the fix,  > fuerte. eturtle does not have rospack-config.cmake
 rosbuild_add_library(eustf eustf.cpp)
 rosbuild_add_library(roseus_c_util roseus_c_util.c)
 
