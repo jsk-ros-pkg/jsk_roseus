@@ -14,7 +14,7 @@
   :slots (name-space action-spec simple-state comm-state status-stamp
                      action-goal-class action-result-class action-feedback-class
                      action-done-cb action-active-cb action-feedback-cb
-                     goal_id))
+                     goal_id nodehandlename))
 
 (defmethod ros::simple-action-client
   (:goal-status-cb
@@ -68,9 +68,10 @@
      msg))
   ;;
   (:init
-   (ns spec)
+   (ns spec &key ((:nodehandle-name nh)))
    (send self :name ns)
    (setq name-space ns)
+   (setq nodehandlename nh)
    (setq action-spec (instance spec :init))
    (setq comm-state (instance actionlib-comm-state :init))
    (setq action-goal-class     (class (send action-spec :action_goal))
@@ -78,12 +79,21 @@
          action-feedback-class (class (send action-spec :action_feedback)))
    (ros::advertise (format nil "~A/goal" name-space) action-goal-class)
    (ros::advertise (format nil "~A/cancel" name-space) actionlib_msgs::GoalID)
-   (ros::subscribe (format nil "~A/status" name-space)
-                   actionlib_msgs::GoalStatusArray #'send self :goal-status-cb)
-   (ros::subscribe (format nil "~A/result" name-space)
-                   action-result-class #'send self :action-result-cb)
-   (ros::subscribe (format nil "~A/feedback" name-space)
-                   action-feedback-class #'send self :action-feedback-cb)
+   (cond
+    (nodehandlename
+     (ros::subscribe (format nil "~A/status" name-space)
+                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb nodehandlename)
+     (ros::subscribe (format nil "~A/result" name-space)
+                     action-result-class #'send self :action-result-cb nodehandlename)
+     (ros::subscribe (format nil "~A/feedback" name-space)
+                     action-feedback-class #'send self :action-feedback-cb nodehandlename))
+    (t
+     (ros::subscribe (format nil "~A/status" name-space)
+                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb)
+     (ros::subscribe (format nil "~A/result" name-space)
+                     action-result-class #'send self :action-result-cb)
+     (ros::subscribe (format nil "~A/feedback" name-space)
+                     action-feedback-class #'send self :action-feedback-cb)))
    (setq simple-state ros::*simple-goal-state-done*)
    self)
   (:wait-for-server
@@ -101,7 +111,7 @@
        (ros::ros-debug ";; num subscribers ~A ~d, ~A ~d"
 		       goal-topic (ros::get-num-subscribers goal-topic)
 		       cancel-topic (ros::get-num-subscribers cancel-topic))
-       (ros::spin-once)
+       (send self :spin-once)
        (ros::sleep)
        (when (and timeout (>= count (* timeout 10)))
          (ros::ros-warn "action server(~A) is not found" name-space)
@@ -153,7 +163,7 @@
 	 (when (and status-stamp maximum-status-interval (> (send (ros::time- (ros::time-now) status-stamp) :to-sec) maximum-status-interval))
 	   (ros::ros-error "[~A] Unexpected returns from :wait-for-result : status did not received for 5 seconds" name-space)
 	   (return-from :wait-for-result nil)))
-       (ros::spin-once)
+       (send self :spin-once)
        (ros::sleep))
      (ros::ros-debug "[~A] :wait-for-result finished ~A" name-space (goal-status-to-string actionlib_msgs::GoalStatus::*succeeded*))
      (eq (send self :get-state) actionlib_msgs::GoalStatus::*succeeded*)))
@@ -181,6 +191,10 @@
                             :id (send (send comm-state :action-goal) :goal_id :id)))
      (ros::publish (format nil "~A/cancel" name-space) cancel)
      (send comm-state :state 'ros::*comm-state-waiting-for-cancel-ack*)))
+  (:spin-once ()
+   (cond
+    (nodehandlename (ros::spin-once nodehandlename))
+    (t (ros::spin-once))))
   ;;
   )
 
@@ -190,8 +204,9 @@
   :slots (name-space action-spec status
                      action-goal-class action-result-class action-feedback-class
                      execute-cb accept-cb preempt-cb
-		     goal goal-id pending-goal
-		     seq-id feed-seq-id))
+                     goal goal-id pending-goal
+                     seq-id feed-seq-id
+                     nodehandlename))
 
 (defmethod ros::simple-action-server
   (:execute-cb
@@ -303,7 +318,8 @@
      msg))
   ;;
   (:init
-   (ns spec &key ((:execute-cb exec-f)) ((:preempt-cb preempt-f)) ((:accept-cb accept-f)))
+   (ns spec &key ((:execute-cb exec-f)) ((:preempt-cb preempt-f))
+       ((:nodehandle-name nh)) ((:accept-cb accept-f)))
    (send self :name ns)
    (setq name-space ns)
    (setq action-spec (instance spec :init))
@@ -312,16 +328,25 @@
    (setq seq-id 0 feed-seq-id 0)
    (setq status actionlib_msgs::GoalStatus::*pending*)
    ;;
+   (setq nodehandlename nh)
+   ;;
    (setq action-goal-class     (class (send action-spec :action_goal))
          action-result-class   (class (send action-spec :action_result))
          action-feedback-class (class (send action-spec :action_feedback)))
    (ros::advertise (format nil "~A/status" name-space) actionlib_msgs::GoalStatusArray)
    (ros::advertise (format nil "~A/result" name-space) action-result-class)
    (ros::advertise (format nil "~A/feedback" name-space) action-feedback-class)
-   (ros::subscribe (format nil "~A/goal" name-space)
-                   action-goal-class #'send self :goal-callback)
-   (ros::subscribe (format nil "~A/cancel" name-space)
-                   actionlib_msgs::GoalID #'send self :cancel-callback)
+   (cond
+    (nodehandlename
+     (ros::subscribe (format nil "~A/goal" name-space)
+                     action-goal-class #'send self :goal-callback nodehandlename)
+     (ros::subscribe (format nil "~A/cancel" name-space)
+                     actionlib_msgs::GoalID #'send self :cancel-callback nodehandlename))
+    (t
+     (ros::subscribe (format nil "~A/goal" name-space)
+                     action-goal-class #'send self :goal-callback)
+     (ros::subscribe (format nil "~A/cancel" name-space)
+                     actionlib_msgs::GoalID #'send self :cancel-callback)))
    ;; need getparam for status_frequence, status_list_timeout
    )
   ;;
@@ -331,6 +356,10 @@
   (:name-space () name-space)
   (:next-seq-id () (incf seq-id))
   (:next-feed-seq-id () (incf feed-seq-id))
+  (:spin-once ()
+   (cond
+    (nodehandlename (ros::spin-once nodehandlename))
+    (t (ros::spin-once))))
   )
 
 (provide :actionlib "actionlib.l")
