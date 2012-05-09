@@ -560,9 +560,11 @@
 (defun genmsg-eus (fname)
   (let (msgs consts def pkg name oname)
     (multiple-value-setq (pkg name) (genfile-header fname))
-    (unless (check-msg-file pkg name)
+    ;;; https://github.com/willowgarage/catkin/issues/122
+    (unless (or (check-msg-file pkg name)
+		(string= (format nil "~A/roseus/~A/action_msg/~A.msg" (ros::ros-home-dir) pkg name) fname))
       (warning-message 1 ";; error occured when parsing ~A/msg/~A~%" pkg name)
-      (return-from gensrv-eus nil))
+      (return-from genmsg-eus nil))
     (with-open-file
      (strm fname :direction :input)
      (multiple-value-setq (msgs consts) (generate-msg-datatype-name-list strm)))

@@ -123,6 +123,22 @@ macro(generate_ros_nobuild_eus)
     math(EXPR depends_counter "${depends_counter} + 1")
     # check if the package have ROS_NOBUILD
     rosbuild_find_ros_package(${_package})
+    ### https://github.com/willowgarage/catkin/issues/122
+    if(EXISTS ${${_package}_PACKAGE_PATH}/action AND
+	(NOT EXISTS ${${_package}_PACKAGE_PATH}/msg))
+      message("[roseus.cmake] generate msg from action")
+      file(GLOB _actions RELATIVE "${${_package}_PACKAGE_PATH}/action/" "${${_package}_PACKAGE_PATH}/action/*.action")
+      foreach(_action ${_actions})
+	message("[roseus.cmake] genaction.py ${_action} -o ${roshomedir}/roseus/${_package}/action_msg/")
+	execute_process(COMMAND rosrun actionlib_msgs genaction.py ${${_package}_PACKAGE_PATH}/action/${_action} -o ${roshomedir}/roseus/${_package}/action_msg)
+      endforeach()
+      file(GLOB _action_msgs "${roshomedir}/roseus/${_package}/action_msg/*.msg")
+      foreach(_action_msg ${_action_msgs})
+	message("[roseus.cmake] rosrun roseus genmsg_eus ${_action_msg}")
+	execute_process(COMMAND rosrun roseus genmsg_eus ${_action_msg})
+      endforeach()
+    endif()
+    ###
     set(msggenerated "${roshomedir}/roseus/${_package}/generated")
     set(md5sum_file "")
     if(EXISTS ${msggenerated})
