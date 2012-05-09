@@ -1,0 +1,8 @@
+<launch>
+  <node name="publish_a" pkg="rostopic" type="rostopic"
+        args="pub -r 4 /a std_msgs/String 'from a'" output="screen" />
+  <node name="publish_b" pkg="rostopic" type="rostopic"
+        args="pub -r 4 /b std_msgs/String 'from b'" output="screen" />
+  <test test-name="multi_queue" pkg="roseus" type="roseus"
+        args="$(find roseus)/test/test-multi-queue.l" />
+</launch>

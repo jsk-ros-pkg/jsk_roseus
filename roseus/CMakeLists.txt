@@ -67,5 +67,6 @@ rosbuild_add_rostest(test/test-simple-client-wait.launch)
 rosbuild_add_rostest(test/test-fibonacci.launch)
 rosbuild_add_rostest(test/test-tf.launch)
 rosbuild_add_rostest(test/test-disconnect.launch)
+rosbuild_add_rostest(test/test-multi-queue.launch)
 
 #add_subdirectory(test EXCLUDE_FROM_ALL)

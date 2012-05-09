@@ -67,6 +67,7 @@
 #include <ros/service.h>
 #include <rospack/rospack.h>
 #include <ros/param.h>
+#include <ros/callback_queue.h>
 
 // for eus.h
 #define class   eus_class
@@ -117,6 +118,8 @@ public:
   map<string, boost::shared_ptr<Subscriber> > mapSubscribed; ///< subscribed topics
   map<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
 
+  map<string, boost::shared_ptr<NodeHandle> > mapHandle; ///< for grouping nodehandle
+  map<string, boost::shared_ptr<CallbackQueue> > mapQueue; ///< for grouping nodehandle
 };
 
 static RoseusStaticData s_staticdata;
@@ -126,6 +129,8 @@ static bool s_bInstalled = false;
 #define s_mapAdvertised s_staticdata.mapAdvertised
 #define s_mapSubscribed s_staticdata.mapSubscribed
 #define s_mapServiced s_staticdata.mapServiced
+#define s_mapHandle s_staticdata.mapHandle
+#define s_mapQueue s_staticdata.mapQueue
 
 pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,QANON,QNOOUT,QSVNVERSION;
 extern pointer LAMCLOSURE;
@@ -535,6 +540,8 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   s_mapAdvertised.clear();
   s_mapSubscribed.clear();
   s_mapServiced.clear();
+  s_mapHandle.clear();
+  s_mapQueue.clear();
   
   /*
     force to flag ros::init_options::NoSigintHandler.
@@ -573,6 +580,43 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   return (T);
 }
 
+pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
+{
+  isInstalledCheck;
+  string groupname;
+  string ns;
+
+  ckarg2(1, 2);
+  // ;; arguments ;;
+  // groupname [ namespace ]
+
+  if (isstring(argv[0])) groupname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+  if ( n > 1 ) {
+    if(isstring(argv[1])) ns.assign((char *)get_string(argv[1]));
+    else error(E_NOSTRING);
+  }
+
+  if( s_mapHandle.find(groupname) != s_mapHandle.end() ) {
+    ROS_WARN("handlename %s is already used", groupname.c_str());
+    return (NIL);
+  }
+
+  boost::shared_ptr<NodeHandle> hd;
+  if ( n > 1 ) {
+    hd = boost::shared_ptr<NodeHandle> (new NodeHandle(ns));
+    s_mapHandle[groupname] = hd;
+  } else {
+    hd = boost::shared_ptr<NodeHandle>(new NodeHandle());
+    s_mapHandle[groupname] = hd;
+  }
+  //add callbackqueue to hd
+  s_mapQueue[groupname] = boost::shared_ptr<CallbackQueue > (new CallbackQueue());
+  hd->setCallbackQueue( (CallbackQueueInterface *)( s_mapQueue[groupname].get() ));
+
+  return (T);
+}
+
 pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
@@ -586,8 +630,28 @@ pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
-  ros::spinOnce();
-  return (NIL);
+  ckarg2(0, 1);
+  // ;; arguments ;;
+  // [ groupname ]
+
+  if ( n > 0 ) {
+    string groupname;
+    if (isstring(argv[0])) groupname.assign((char *)get_string(argv[0]));
+    else error(E_NOSTRING);
+
+    map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+    if( it == s_mapHandle.end() ) {
+      ROS_WARN("handlename %s is missing", groupname.c_str());
+      return (T);
+    }
+    boost::shared_ptr<NodeHandle > hdl = (it->second);
+    // spin this nodehandle
+    ((CallbackQueue *) (hdl->getCallbackQueue()))->callOne();
+    return (NIL);
+  } else {
+    ros::spinOnce();
+    return (NIL);
+  }
 }
 
 pointer ROSEUS_TIME_NOW(register context *ctx,int n,pointer *argv)
@@ -659,6 +723,8 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
     s_mapAdvertised.clear();
     s_mapSubscribed.clear();
     s_mapServiced.clear();
+    s_mapHandle.clear();
+    s_mapQueue.clear();
     ros::shutdown();
   }
   if (n==0) _exit(0);
@@ -674,7 +740,23 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   string topicname;
   pointer message, fncallback, args;
   int queuesize = 1;
+  NodeHandle *lnode = s_node.get();
 
+  // ;; arguments ;;
+  // topicname message_type callbackfunc args0 ... argsN [ queuesize ] [ groupname ]
+
+  if (isstring(argv[n-1])) {
+    string groupname;
+    groupname.assign((char *)get_string(argv[n-1]));
+    map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+    if( it != s_mapHandle.end() ) {
+      lnode = (it->second).get();
+    } else {
+      ROS_WARN("handlename %s is missing", groupname.c_str());
+      return (NIL);
+    }
+    n--;
+  }
   if (isint(argv[n-1])) {queuesize = ckintval(argv[n-1]);n--;}
   if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
@@ -690,7 +772,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
       (new EuslispSubscriptionCallbackHelper(fncallback, args, message)));
   SubscribeOptions so(topicname, queuesize, msg.__getMD5Sum(), msg.__getDataType());
   so.helper = *callback;
-  Subscriber subscriber = s_node->subscribe(so);
+  Subscriber subscriber = lnode->subscribe(so);
   boost::shared_ptr<Subscriber> sub = boost::shared_ptr<Subscriber>(new Subscriber(subscriber));
   if ( !!sub ) {
     s_mapSubscribed[topicname] = sub;
@@ -1277,6 +1359,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"GET-NAMESPACE",argv[0],(pointer (*)())ROSEUS_GETNAMESPACE);
 
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
+  defun(ctx,"CREATE-NODEHANDLE", argv[0], (pointer (*)())ROSEUS_CREATE_NODEHANDLE);
 
   pointer_update(Spevalof(PACKAGE),p);
 
