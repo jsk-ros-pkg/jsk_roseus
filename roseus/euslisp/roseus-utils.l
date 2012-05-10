@@ -292,6 +292,39 @@
       (if lifetime (send msg :lifetime (ros::time lifetime)))
       msg))
 
+(defun pointcloud->marker-msg (pc header
+                                  &key ((:color col) (float-vector 1.0 0 0))
+                                  ((:alpha a) 1.0)
+                                  (use-color)
+                                  ((:id idx) 0) ns lifetime)
+  (let ((msg (instance visualization_msgs::Marker :init
+                       :type visualization_msgs::Marker::*POINTS*
+                       :header header
+                       :id idx)))
+
+    (send msg :pose (ros::coords->tf-pose (send pc :worldcoords)))
+    (send msg :color (vector->rgba col a))
+    (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
+
+    (let ((mat (send pc :points))
+          (p (float-vector 0 0 0)) lst)
+      (dotimes (i (send pc :size))
+        (c-matrix-row mat i p)
+        (push (instance geometry_msgs::Point :init
+                        :x (elt p 0) :y (elt p 1) :z (elt p 2)) lst))
+      (send msg :points lst))
+
+    (when (and use-color (send pc :colors))
+      (let ((mcol (send pc :points))
+            (c (float-vector 0 0 0)) lst)
+        (dotimes (i (send pc :size))
+          (c-matrix-row mcol i c)
+          (push (instance std_msgs::ColorRGBA :init
+                          :r (elt c 0) :g (elt c 1) :b (elt c 2) :a a) lst))
+        (send msg :colors lst)))
+    msg))
+
 ;; visualization_msgs::Marker -> eus shape object
 
 (defun marker-msg->shape (msg)
