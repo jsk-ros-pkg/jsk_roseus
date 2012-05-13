@@ -469,9 +469,9 @@
   (let ((key fname) val)
     (setq val (cdr (assoc key *md5table* :test #'string=)))
     (when (not val)
-      ;(setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname)))) ;; workaround for fuerte https://code.ros.org/trac/ros/ticket/3956
-      (print (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name))
-      (setq val (read-line (piped-fork (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name))))
+      (setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname)) nil nil)) ;; workaround for fuerte https://code.ros.org/trac/ros/ticket/3956
+      (when (null val)
+	(setq val (read-line (piped-fork (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)))))
       (push (cons key val) *md5table*))
     val))
 (defun generate-msg-md5sum (strm pkg name fname)
