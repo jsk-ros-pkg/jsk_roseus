@@ -465,16 +465,18 @@
     (format strm "   self)~%")))
 
 (setq *md5table* nil)
-(defun get-md5sum (fname)
+(defun get-md5sum (pkg name fname)
   (let ((key fname) val)
     (setq val (cdr (assoc key *md5table* :test #'string=)))
     (when (not val)
-      (setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname))))
+      ;(setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname)))) ;; workaround for fuerte https://code.ros.org/trac/ros/ticket/3956
+      (print (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name))
+      (setq val (read-line (piped-fork (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name))))
       (push (cons key val) *md5table*))
     val))
 (defun generate-msg-md5sum (strm pkg name fname)
   (let ()
-    (format strm "(setf (get ~A::~A :md5sum-) \"~A\")~%" pkg name (get-md5sum fname))))
+    (format strm "(setf (get ~A::~A :md5sum-) \"~A\")~%" pkg name (get-md5sum pkg name fname))))
 
 (defun generate-msg-datatype (strm pkg name)
   (let ()
@@ -511,7 +513,7 @@
   (let ()
     (format strm "~%~%")
     (format strm "(provide :~A/~A \"~A\")~%"
-	    pkg name (get-md5sum fname))))
+	    pkg name (get-md5sum pkg name fname))))
 
 ;;;
 ;;;
