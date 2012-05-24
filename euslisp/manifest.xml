@@ -18,7 +18,7 @@
   <rosdep name="libjpeg" />
   <rosdep name="libx11-dev" />
   <rosdep name="libxext-dev" />
-  <rosdep name="libpng" />
+  <rosdep name="libpng12-dev" />
   <rosdep name="libpq-dev" />
   <rosdep name="xfonts-100dpi" />
   <rosdep name="xfonts-75dpi" />
