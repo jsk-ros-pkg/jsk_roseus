@@ -10,7 +10,7 @@ libx11-dev:
     ubuntu: libx11-dev
     debian: libx11-dev
     macports: xorg-libX11
-libxext-dev:
+libxext:
     ubuntu: libxext-dev
     debian: libxext-dev
     macports: xorg-libX11

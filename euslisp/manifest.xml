@@ -17,7 +17,7 @@
   <rosdep name="opengl" />
   <rosdep name="libjpeg" />
   <rosdep name="libx11-dev" />
-  <rosdep name="libxext-dev" />
+  <rosdep name="libxext" />
   <rosdep name="libpng12-dev" />
   <rosdep name="libpq-dev" />
   <rosdep name="xfonts-100dpi" />
