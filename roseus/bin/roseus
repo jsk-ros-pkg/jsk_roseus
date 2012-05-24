@@ -1,13 +1,22 @@
 #!/bin/bash
 set -e
 
-
 ROSEUS_DIR=`rospack find roseus`
 ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
         roseus.l eustf.l actionlib.l roseus-utils.l)
 
 exec rosrun euslisp irteusgl "${ARG_STR[@]}" "$@"
-# if you want to run in gdb, please use the line below
-# xterm -e gdb -x `rospack find roseus`/bin/roseus_gdb.cmd --args `rospack find euslisp`/jskeus/eus/Linux64/bin/irteusgl "${ARG_STR[@]}" "$@"
+
+# if you want to run in gdb, please use lines below
+# CMD_NAME=/tmp/roseus_$$
+# cat <<EOF > $CMD_NAME
+# break error
+# run
+# where
+
+# EOF
+# gdb -x $CMD_NAME --args `rospack find euslisp`/jskeus/eus/Linux64/bin/irteusgl "${ARG_STR[@]}" "$@"
+# rm -rf $CMD_NAME
+# // end of using gdb
 
 exit $?
