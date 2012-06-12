@@ -107,7 +107,7 @@
 (defun ros::tf-twist->coords (twist)
   (let* ((pos (ros::tf-point->pos (send twist :linear)))
          (ang (send twist :angular))
-         (rot (matrix-exponent (float-vector (send ang :x) (send ang :y) (send ang :z))))
+         (rot (user::matrix-exponent (float-vector (send ang :x) (send ang :y) (send ang :z))))
          (cds (make-coords :pos pos :rot rot)))
     cds))
 
