@@ -104,6 +104,12 @@
 (defun ros::tf-transform-stamped->coords (trans)
   (ros::tf-transform->coords trans))
 
+(defun ros::tf-twist->coords (twist)
+  (let* ((pos (ros::tf-point->pos (send twist :linear)))
+         (ang (send twist :angular))
+         (rot (matrix-exponent (float-vector (send ang :x) (send ang :y) (send ang :z))))
+         (cds (make-coords :pos pos :rot rot)))
+    cds))
 
 ;; helper functions
 (defun ros::create-identity-quaternion () (ros::create-quaternion-from-rpy 0 0 0))
