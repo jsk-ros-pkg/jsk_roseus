@@ -530,8 +530,10 @@
   (let ((pmat (send pcloud :points))
         (cmat (send pcloud :colors))
         (nmat (send pcloud :normals))
+        (cnt 0)
         (f (open fname :direction :output)))
-    (format f "# .PCD v.6 - Point Cloud Data file format~%")
+    (format f "# .PCD v.7 - Point Cloud Data file format~%")
+    (format f "VERSION .7~%") ;;;;
     ;; FIELDS
     (format f "FIELDS x y z")
     (if cmat (case rgb
@@ -548,14 +550,17 @@
     (if nmat (format f " 4 4 4 4"))
     ;; TYPE
     (format f "~%TYPE F F F")
+    (incf cnt 3)
     (if cmat (case rgb
-               (:r-g-b (format f " F F F"))
-               (:rgb (format f " F"))
-               (t (format f " U"))))
-    (if nmat (format f " F F F F"))
-
+               (:r-g-b (format f " F F F") (incf cnt 3))
+               (:rgb (format f " F") (incf cnt 3))
+               (t (format f " U") (incf cnt 3))))
+    (when nmat (format f " F F F F") (incf cnt 4))
+    (format f "~%COUNT")
+    (dotimes (i cnt) (format f " 1"))
     (format f "~%WIDTH ~A~%" (send pcloud :size))
     (format f "HEIGHT 1~%")
+    (format f "VIEWPOINT 0 0 0 1 0 0 0~%")
     (format f "POINTS ~A~%" (send pcloud :size))
     (format f "DATA ascii~%") ;; binary mode is not implemented
     (dotimes (i (send pcloud :size))
