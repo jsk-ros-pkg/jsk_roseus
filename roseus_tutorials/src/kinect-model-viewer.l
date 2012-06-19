@@ -44,6 +44,13 @@
 		(find '/torso         links :key #'(lambda (x) (send x :name))))
 	 head  (list
 		(find '/neck          links :key #'(lambda (x) (send x :name)))))
+  ;;
+   (mapcar #'(lambda (limb name)
+	       (eval `(let ((l (find-if #'(lambda (x) (eq (send x :name) 'site)) (send (car (last ,limb)) :descendants))))
+			(send l :name ',name)
+			(setq ,limb (append ,limb (list l))))))
+	   (list 'rarm 'larm 'rleg 'lleg 'head)
+	   (list '/right_hand '/left_hand '/right_foot '/left_foot '/head))
    ;;
    (send self :init-end-coords)
    (send self :init-root-link)
