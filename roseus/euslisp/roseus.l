@@ -154,6 +154,20 @@
 	 (package-name (send urlname :host))
 	 (path-name (namestring urlname))
 	 (package-path (ros::rospack-find package-name)))
+    (when ros::*compile-message*
+      (let* ((fname (pathname-name path-name))
+             (old-module (find (format nil "~A_~A" package-name fname)
+                               *loaded-modules*
+                               :key #'lisp::load-module-file-name
+                               :test #'equal)))
+        (unless old-module
+          (let ((ros-home (ros::ros-home-dir)))
+            (comp::compile-file-if-src-newer-so (format nil "~A/~A" package-path path-name)
+                                                :out-prefix (format nil "~A_" package-name)
+                                                :output-dir (format nil "~A/roseus/" ros-home)
+                                                :clear-files t)))
+        (load-org-for-ros (format nil "~A_~A.so" package-name fname) :entry (format nil "___~A" fname))
+        (return-from ros::resolve-ros-path nil)))
     (if package-path
 	(format nil "~A/~A" package-path path-name)
       (progn (warning-message 1 ";; counldn't find pacakge [~a]~%" package-name) nil))))
