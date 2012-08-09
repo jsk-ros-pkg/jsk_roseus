@@ -54,72 +54,63 @@ irteus robot model examples
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik)"
 
-.. video:: build/full_body_ik
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/euslisp-example/_images/full_body_ik
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//full_body_ik
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik :use-torso nil)"
 
-.. video:: build/full_body_ik_no_torso
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/euslisp-example/_images/full_body_ik_no_torso
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//full_body_ik_no_torso
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik :use-leg t)"
 
-.. video:: build/full_body_ik_use_leg
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/euslisp-example/_images/full_body_ik_use_leg
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//full_body_ik_use_leg
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(dual-arm-ik)"
 
-.. video:: build/dual_arm_ik
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/euslisp-example/_images/dual_arm_ik
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//dual_arm_ik
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(dual-manip-ik)"
 
-.. video:: build/dual_manip_ik
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/euslisp-example/_images/dual_manip_ik
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//dual_manip_ik
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(crank-motion)"
 
-.. video:: build/crank_motion
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/euslisp-example/_images/crank_motion
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//crank_motion
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(hand-grasp)"
 
-.. video:: build/hand_grasp
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/euslisp-example/_images/hand_grasp
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//hand_grasp
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(hanoi-arm)"
 
-.. video:: build/hanoi_arm
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/euslisp-example/_images/hanoi_arm
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//hanoi_arm
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(particle)"
 
-.. video:: build/particle
-  :url: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/job/agentsystem-test/lastSuccessfulBuild/artifact/euslisp-example/_images/particle
+.. video:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//particle
   :width: 400
 
 robots and object models
@@ -129,14 +120,14 @@ robots and object models
 
   $ rosrun euslisp irteusgl models/irt-all-robots.l "(make-all-robots)"
 
-.. image:: build/irt_all_robots.png
+.. image:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//irt_all_robots.png
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl models/irt-all-objects.l "(make-all-objects)"
 
-.. image:: build/irt_all_objects.png
+.. image:: $JENKINS_URL/job/$JOB_NAME/lastSuccessfulBuild/artifact/doc/$JOB_NAME/html/_images//irt_all_objects.png
   :width: 400
 
   
