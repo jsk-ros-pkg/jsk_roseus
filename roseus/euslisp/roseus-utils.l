@@ -253,13 +253,13 @@
     (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
 
-(defun coords->marker-msg (coords header &key (size 1) (width 1) (id 0) ns lifetime)
+(defun coords->marker-msg (coords header &key (size 100) (width 10) (id 0) ns lifetime)
   (let* ((msg (instance visualization_msgs::Marker :init
                         :type visualization_msgs::Marker::*LINE_LIST*
                         :header header
                         :id id))
          (points (mapcar #'(lambda (p)
-                             (ros::pos->tf-point (scale (* 100 size) p)))
+                             (ros::pos->tf-point (scale size p)))
                          (list (float-vector 0 0 0)
                                (float-vector 1 0 0)
                                (float-vector 0 0 0)
@@ -272,7 +272,7 @@
                                (float-vector 0 0 1) (float-vector 0 0 1)))))
     (send msg :pose (ros::coords->tf-pose coords))
     (send msg :scale (ros::pos->tf-translation
-                      (float-vector width 0 0)))
+                      (float-vector width width width)))
     (send msg :points points)
     (send msg :color  (vector->rgba (float-vector 0 0 0) 1.0))
     (send msg :colors colors)
