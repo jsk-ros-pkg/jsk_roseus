@@ -85,6 +85,7 @@
 				 &key ((:color col) (float-vector 1.0 0 0))
 				      ((:alpha a) 1.0)
                                       ((:id idx) 0) ns lifetime)
+  (send cyl :worldcoords) ;; make sure to update vertices
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*CYLINDER*
                        :header header
@@ -105,6 +106,7 @@
 			    &key ((:color col) (float-vector 1.0 0 0))
    			         ((:alpha a) 1.0)
                                  ((:id idx) 0) ns lifetime)
+  (send cb :worldcoords) ;; make sure to update vertices
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*CUBE*
                        :header header
@@ -125,6 +127,7 @@
 			    &key ((:color col) (float-vector 1.0 0 0))
    			         ((:alpha a) 1.0)
                                  ((:id idx) 0) ns lifetime)
+  (send sp :worldcoords) ;; make sure to update vertices
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*SPHERE*
                        :header header
@@ -144,6 +147,7 @@
                                  ((:alpha a) 1.0)
                                  ((:id idx) 0)
                                  ((:scale sc) 10.0) ns lifetime)
+  (send faces :worldcoords) ;; make sure to update vertices
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*LINE_STRIP*
                        :header header
@@ -158,6 +162,7 @@
 (defun faces->marker-msg (faces header &key
                                 ((:color col) (float-vector 1 0 0))
                                 ((:id idx) 0) ns lifetime)
+  (send faces :worldcoords) ;; make sure to update vertices
   (let* ((tri-faces
           (mapcan #'(lambda (f) (geo::face-to-triangle f))
                   faces))
@@ -187,6 +192,7 @@
                                ((:color col) (float-vector 1 1 1))
 			       ((:alpha a) 1.0)
                                ((:id idx) 0) ns lifetime)
+  (send obj :worldcoords) ;; make sure to update vertices
   (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
     (let* ((msg (instance visualization_msgs::Marker :init
 			  :type visualization_msgs::Marker::*TRIANGLE_LIST*
