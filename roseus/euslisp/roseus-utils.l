@@ -147,7 +147,6 @@
                                  ((:alpha a) 1.0)
                                  ((:id idx) 0)
                                  ((:scale sc) 10.0) ns lifetime)
-  (send faces :worldcoords) ;; make sure to update vertices
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*LINE_STRIP*
                        :header header
