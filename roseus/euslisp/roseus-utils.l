@@ -251,7 +251,7 @@
       msg))))
 
 (defun wireframe->marker-msg (wf header &rest args)
-  (apply #'line-list->marker-msg (mapcan #'(lambda (x) (send x :vertices)) (send wf :edges)) header args))
+  (apply #'line-list->marker-msg (mapcan #'(lambda (eds) (send eds :vertices)) (send wf :edges)) header args))
 
 (defun text->marker-msg (str c header
 			   &key
