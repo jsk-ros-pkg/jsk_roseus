@@ -12,7 +12,37 @@
 
 (defun tabletop-detect()
   (let ((req (instance tabletop_object_detector::TabletopSegmentationRequest :init))
-        res ret)
+        res ret convex-hull msg)
+#|
+    (setq convex-hull (instance arm_navigation_msgs::Shape :init
+                                                      :type arm_navigation_msgs::Shape::*MESH*
+                                                      :triangles (list 0 1 2 3)
+                                                      :vertices (mapcar #'ros::pos->tf-point (list #f(300 -1000 700) #f(300 1000 700) #f(2000 1000 700) #f(2000 -1000 700) ))
+                                                      ))
+    (setq req (instance tabletop_object_detector::TabletopSegmentationRequest :init
+                        :table (instance tabletop_object_detector::Table
+                                         :init
+                                         :pose
+                                         (ros::coords->tf-pose-stamped (make-cascoords) "/base_link")
+                                         :convex_hull convex-hull)))
+    (setq msg (instance visualization_msgs::Marker :init
+                        :action visualization_msgs::Marker::*ADD*
+                        :lifetime (ros::time 1)
+                        :type visualization_msgs::Marker::*LINE_STRIP*
+                        :color  (vector->rgba #f(0 1 1) 1)
+                        :scale  (ros::pos->tf-translation #f(1 1 1))
+                        :points (send convex-hull :vertices)
+                        :header (instance std_msgs::header :init)
+                        :pose   (ros::coords->tf-pose (make-coords))
+                        :ns     "tabletop_node"
+                        :id     0))
+    (ros::publish "/tabletop_segmentation_markers" msg)
+|#
+    ;; this program only segment points 0.5[m] above the tabale, based on the followin param
+    ;; <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_min" value="0.01" />
+    ;; <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_max" value="0.5" />
+
+    ;;
     (setq res (ros::service-call "tabletop_segmentation" req))
     (unless res
       (ros::ros-warn ";; tabletop service failed")
@@ -61,6 +91,7 @@
     ))
 
 (ros::advertise "tabletop_detection_marker_array" visualization_msgs::MarkerArray 5)
+(ros::advertise "tabletop_segmentation_markers" visualization_msgs::Marker 5)
 
 (ros::rate 1)
 (while (ros::ok)
