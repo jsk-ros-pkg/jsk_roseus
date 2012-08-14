@@ -17,7 +17,7 @@
       (setq convex-hull (instance arm_navigation_msgs::Shape :init
                                   :type arm_navigation_msgs::Shape::*MESH*
                                   :triangles (list 0 1 2 3)
-                                  :vertices (mapcar #'ros::pos->tf-point (list #f(500 -1000 900) #f(500 1000 900) #f(2000 1000 900) #f(2000 -1000 900) ))
+                                  :vertices (mapcar #'ros::pos->tf-point (list #f(300 -1000 700) #f(300 1000 700) #f(1200 1000 700) #f(1200 -1000 700) ))
                                   ))
       (ros::ros-info ";; tabletop detection with given table surface ~A" (mapcar #'ros::tf-point->pos (send convex-hull :vertices)))
       (setq req (instance tabletop_object_detector::TabletopSegmentationRequest :init
@@ -28,10 +28,10 @@
                                            :convex_hull convex-hull)))
       (setq msg (instance visualization_msgs::Marker :init
                           :action visualization_msgs::Marker::*ADD*
-                          :lifetime (ros::time 1)
+                          :lifetime (ros::time 5)
                           :type visualization_msgs::Marker::*LINE_STRIP*
                           :color  (vector->rgba #f(0 1 1) 1)
-                          :scale  (ros::pos->tf-translation #f(1 1 1))
+                          :scale  (ros::pos->tf-translation #f(10 10 10))
                           :points (send convex-hull :vertices)
                           :header (instance std_msgs::header :init :frame_id "/base_link")
                           :pose   (ros::coords->tf-pose (make-coords))
@@ -117,7 +117,7 @@
                                   (apply #'make-cube (coerce (send b :diagonal) cons))))
                             (send cb :translate c)
                             (send cb :worldcoords)
-                            (cube->marker-msg cb (get p :header) :id (incf cntr)))) plst))
+                            (wireframe->marker-msg cb (get p :header) :id (incf cntr) :lifetime 5))) plst))
 
         (ros::publish "tabletop_detection_marker_array" msg-array))))
   (ros::sleep)
