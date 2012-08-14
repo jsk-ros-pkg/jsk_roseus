@@ -235,6 +235,9 @@
       (if lifetime (send msg :lifetime (ros::time lifetime)))
       msg))))
 
+(defun wireframe->marker-msg (wf header &rest args)
+  (apply #'line->marker-msg (mapcan #'(lambda (x) (send x :vertices)) (send wf :edges)) header args))
+
 (defun text->marker-msg (str c header
 			   &key
 			   ((:color col) (float-vector 1 1 1))
@@ -330,6 +333,28 @@
                           :r (elt c 0) :g (elt c 1) :b (elt c 2) :a a) lst))
         (send msg :colors lst)))
     msg))
+
+#|
+(defun eusgeom->marker-msg (eusgeom header &key (wireframe) &rest args
+                                    &allow-other-keys)
+  (cond
+   (wireframe
+    (apply #'wireframe->marker-msg eusgeom header args))
+   ((derivedp eusgeom body)
+    (let ((tp (send body :body-type)))
+      ))
+   ((and (listp eusgeom) (derivedp (car eusgeom) line))
+    (apply #'line->marker-msg eusgeom header args))
+   ((derivedp eusgeom line)
+    (apply #'line->marker-msg (list eusgeom) header args))
+   ((derivedp pointcloud)
+    (apply #'pointcloud->marker-msg eusgeom header args))
+   ((derivedp coordinates)
+    (apply #'coords->marker-msg (send eusgeom :worldcoords) header args))
+   ((stringp eusgeom)
+    (apply #'string->marker-msg eusgeom header args))
+   ))
+|#
 
 ;; visualization_msgs::Marker -> eus shape object
 
