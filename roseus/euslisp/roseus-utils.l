@@ -157,6 +157,22 @@
     (if ns (send msg :ns ns))
     (if lifetime (send msg :lifetime (ros::time lifetime)))
     msg))
+(defun line-list->marker-msg (li header
+                            &key ((:color col) (float-vector 1 0 0))
+                                 ((:alpha a) 1.0)
+                                 ((:id idx) 0)
+                                 ((:scale sc) 10.0) ns lifetime)
+  (send faces :worldcoords) ;; make sure to update vertices
+  (let ((msg (instance visualization_msgs::Marker :init
+                       :type visualization_msgs::Marker::*LINE_LIST*
+                       :header header
+                       :id idx)))
+    (send msg :points (mapcar #'(lambda (l) (ros::pos->tf-point l)) li))
+    (send msg :scale (ros::pos->tf-translation (float-vector sc sc sc)))
+    (send msg :color (vector->rgba col a))
+    (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
+    msg))
 
 (defun faces->marker-msg (faces header &key
                                 ((:color col) (float-vector 1 0 0))
@@ -235,7 +251,7 @@
       msg))))
 
 (defun wireframe->marker-msg (wf header &rest args)
-  (apply #'line->marker-msg (mapcan #'(lambda (x) (send x :vertices)) (send wf :edges)) header args))
+  (apply #'line-list->marker-msg (mapcan #'(lambda (x) (send x :vertices)) (send wf :edges)) header args))
 
 (defun text->marker-msg (str c header
 			   &key
