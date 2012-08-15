@@ -177,7 +177,7 @@
 (defun faces->marker-msg (faces header &key
                                 ((:color col) (float-vector 1 0 0))
                                 ((:id idx) 0) ns lifetime)
-  (send faces :worldcoords) ;; make sure to update vertices
+  (send-all faces :worldcoords) ;; make sure to update vertices
   (let* ((tri-faces
           (mapcan #'(lambda (f) (geo::face-to-triangle f))
                   faces))
@@ -349,27 +349,30 @@
         (send msg :colors lst)))
     msg))
 
-#|
-(defun eusgeom->marker-msg (eusgeom header &key (wireframe) &rest args
+(defun eusobj->marker-msg (eusgeom header &rest args &key (wireframe)
                                     &allow-other-keys)
   (cond
    (wireframe
     (apply #'wireframe->marker-msg eusgeom header args))
    ((derivedp eusgeom body)
     (let ((tp (send body :body-type)))
+      (case tp
+        (:box (apply #'cube->marker-msg eusgeom header args))
+        (:cylinder (apply #'cylinder->marker-msg eusgeom header args))
+        (:sphere (apply #'sphere->marker-msg eusgeom header args))
+        (t (apply #'object->marker-msg eusgeom header args)))
       ))
    ((and (listp eusgeom) (derivedp (car eusgeom) line))
     (apply #'line->marker-msg eusgeom header args))
    ((derivedp eusgeom line)
-    (apply #'line->marker-msg (list eusgeom) header args))
-   ((derivedp pointcloud)
+    (apply #'line->marker-msg (send eusgeom :vertices) header args))
+   ((derivedp eusgeom pointcloud)
     (apply #'pointcloud->marker-msg eusgeom header args))
-   ((derivedp coordinates)
+   ((derivedp eusgeom coordinates)
     (apply #'coords->marker-msg (send eusgeom :worldcoords) header args))
    ((stringp eusgeom)
     (apply #'string->marker-msg eusgeom header args))
    ))
-|#
 
 ;; visualization_msgs::Marker -> eus shape object
 
