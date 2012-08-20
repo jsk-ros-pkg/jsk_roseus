@@ -1290,6 +1290,16 @@ pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
   return(NIL);
 }
 
+pointer ROSEUS_RESOLVE_NAME(register context *ctx,int n,pointer *argv)
+{
+  ckarg(1);
+  if (!isstring(argv[0])) error(E_NOSTRING);
+  std::string src;
+  src.assign((char *)(argv[0]->c.str.chars));
+  std::string dst = ros::names::resolve(src);
+  return(makestring((char *)dst.c_str(), dst.length()));
+}
+
 pointer ROSEUS_GETNAME(register context *ctx,int n,pointer *argv)
 {
   ckarg(0);
@@ -1354,6 +1364,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM);
 
   defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND);
+  defun(ctx,"RESOLVE-NAME",argv[0],(pointer (*)())ROSEUS_RESOLVE_NAME);
   defun(ctx,"GET-NAME",argv[0],(pointer (*)())ROSEUS_GETNAME);
   defun(ctx,"GET-NAMESPACE",argv[0],(pointer (*)())ROSEUS_GETNAMESPACE);
 
