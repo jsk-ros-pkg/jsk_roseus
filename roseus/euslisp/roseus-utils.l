@@ -426,6 +426,37 @@
     (gl::transparent sp (send rgba :a))
     sp))
 
+(defun marker-msg->shape/cube-list (msg)
+  (let* ((scale (ros::tf-point->pos (send msg :scale)))
+         (rgba (send msg :color))
+         (cds (ros::tf-pose->coords (send msg :pose)))
+         (points (send msg :points))
+         (colors (send msg :colors)))
+    (cond
+     (colors
+      (mapcar
+       #'(lambda (pt cl)
+           (let ((cb (make-cube (elt scale 0) (elt scale 1) (elt scale 2))))
+             (send cb :translate (ros::tf-point->pos pt))
+             (setf (get cb :face-color)
+                   (float-vector (send cl :r)
+                                 (send cl :g)
+                                 (send cl :b)))
+             cb)) points colors))
+     (t
+      (mapcar
+       #'(lambda (pt)
+           (let ((cb (make-cube (elt scale 0) (elt scale 1) (elt scale 2))))
+             (send cb :translate
+                   (float-vector (* 1000.0 (send pt :x))
+                                 (* 1000.0 (send pt :y))
+                                 (* 1000.0 (send pt :z))))
+             (setf (get cb :face-color)
+                   (float-vector (send rgba :r)
+                                 (send rgba :g)
+                                 (send rgba :b)))
+             cb)) points)))
+    ))
 ;;
 ;; for pointcloud
 ;;
