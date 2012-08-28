@@ -376,7 +376,7 @@
 
 ;; visualization_msgs::Marker -> eus shape object
 
-(defun marker-msg->shape (msg)
+(defun marker-msg->shape (msg &rest args)
   (let ((type (send msg :type)))
     (print type)
     (print (numberp type))
@@ -384,6 +384,8 @@
       (visualization_msgs::Marker::*CUBE*     (marker-msg->shape/cube msg))
       (visualization_msgs::Marker::*CYLINDER* (marker-msg->shape/cylinder msg))
       (visualization_msgs::Marker::*SPHERE*   (marker-msg->shape/sphere msg))
+      (visualization_msgs::Marker::*CUBE_LIST*
+       (apply #'marker-msg->shape/cube_list msg args))
       )))
 
 (defun marker-msg->shape/cube (msg)
@@ -426,13 +428,27 @@
     (gl::transparent sp (send rgba :a))
     sp))
 
-(defun marker-msg->shape/cube-list (msg)
+(defun marker-msg->shape/cube_list (msg &key ((:pointcloud pt)))
   (let* ((scale (ros::tf-point->pos (send msg :scale)))
          (rgba (send msg :color))
          (cds (ros::tf-pose->coords (send msg :pose)))
          (points (send msg :points))
          (colors (send msg :colors)))
     (cond
+     (pt
+      (let ((p (instance pointcloud :init
+                         :point-color (float-vector (send rgba :r)
+                                                    (send rgba :g)
+                                                    (send rgba :b))
+                         :points (mapcar #'(lambda (p)
+                                             (ros::tf-point->pos p))
+                                         points)
+                         :colors (mapcar #'(lambda (c)
+                                             (float-vector (send c :r)
+                                                           (send c :g)
+                                                           (send c :b)))
+                                         colors))))
+        p))
      (colors
       (mapcar
        #'(lambda (pt cl)
@@ -447,10 +463,7 @@
       (mapcar
        #'(lambda (pt)
            (let ((cb (make-cube (elt scale 0) (elt scale 1) (elt scale 2))))
-             (send cb :translate
-                   (float-vector (* 1000.0 (send pt :x))
-                                 (* 1000.0 (send pt :y))
-                                 (* 1000.0 (send pt :z))))
+             (send cb :translate (ros::tf-point->pos pt))
              (setf (get cb :face-color)
                    (float-vector (send rgba :r)
                                  (send rgba :g)
