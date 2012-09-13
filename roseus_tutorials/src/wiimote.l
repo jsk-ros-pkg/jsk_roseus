@@ -33,7 +33,7 @@
 			  *imu-linearacceleration*
 			  (ros::vector3->vector (send msg :linear_acceleration)))))
 
-(ros::subscribe "/joy" joy::Joy
+(ros::subscribe "/joy" sensor_msgs::Joy
 		#'(lambda (msg)
 		    (setq *joy-axes* (send msg :axes)
 			  *joy-buttons* (send msg :buttons))))
