@@ -33,12 +33,14 @@ function print-usage {
     echo "    [package_name]  : generate for the [package_name] package"
     echo "    --all           : generate for all packages in the ROS_PACKAGE_PATH"
     echo "    --shared        : generate for all packages in the ROS_PACKAGE_PATH with ROS_NOBUILD files"
+    echo "    --compile       : compile generated message files"
     echo "    --help          : print this message"
 }
 
 #trap 'kill -s HUP $$ ' INT TERM
 ALL=No
 SHARED=No
+COMPILE=No
 while [ $# -gt 0 ]
 do
     case $1 in
@@ -48,6 +50,8 @@ do
             SHARED=Yes;;
 	-a|--all)
             ALL=Yes;;
+        -c|--compile)
+            COMPILE=Yes;;
 	*) break;;
     esac
     shift
@@ -80,7 +84,7 @@ for pkg in $package_list_names; do
     fi
 done
 
-echo -e "\e[1;31mgenerating... ${#pkg_list[@]} files with ALL=${ALL}, SHARED=${SHARED} option\e[m"
+echo -e "\e[1;31mgenerating... ${#pkg_list[@]} files with ALL=${ALL}, SHARED=${SHARED}, COMPILE=${COMPILE} option\e[m"
 
 # generate msg file
 for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
@@ -105,6 +109,10 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     echo -e "\e[1;31mgenerating manifest... ${pkg_name}\e[m"
     `rospack find roseus`/scripts/genmanifest_eus $pkg_name
     check-error
+    if [ "${COMPILE}" = "Yes" ]; then
+        rosrun roseus roseus "(progn (setq lisp::*error-handler* #'(lambda (&rest args) (print args *error-output*)(exit 1))) (setq ros::*compile-message* t) (ros::load-ros-manifest \"$pkg_name\") (exit 0))"
+        check-error
+    fi
 done
 
 if [ $((${#warn_list[@]})) -gt 0 ] ; then
