@@ -23,8 +23,7 @@
   <rosdep name="xfonts-100dpi" />
   <rosdep name="xfonts-75dpi" />
   <rosdep name="xfont-server" />
-  <rosdep name="ttf-mscorefonts-installer" />
-
+  <!-- rosdep name="ttf-mscorefonts-installer" / -->
 </package>
 
 
