@@ -388,7 +388,7 @@
 		       :id idx)))
     (if (listp arg)
 	(progn
-	  (send msg :points (mapcar #'(lambda(p)(ros::pos->tf-point p)) (arg)))
+	  (send msg :points (mapcar #'(lambda(p)(ros::pos->tf-point p)) arg))
 	  (unless sc
 	    (setq sc (float-vector 0.1 0.1 0))))
       (progn
