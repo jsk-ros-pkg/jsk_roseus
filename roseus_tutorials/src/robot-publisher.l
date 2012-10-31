@@ -18,10 +18,9 @@
         (tama) (tamaii)
         (penguin)
         (h7)(h6)
-#+:rbrain-basic
-        (sasuke) (komokuten) (tamonten) (jikokuten) (Alviss) (kamakiri) (hoap) (hoap2) (h5)
-        
         ))
+#+:rbrain-basic
+(setq *robot-forms* (append  *robot-forms* '( (sasuke) (komokuten) (tamonten) (jikokuten) (Alviss) (kamakiri) (hoap) (hoap2) (h5))))
 
 (ros::roseus "robot_publisher")
 
