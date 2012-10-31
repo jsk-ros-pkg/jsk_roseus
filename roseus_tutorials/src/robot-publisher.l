@@ -1,25 +1,26 @@
 #! /usr/bin/env roseus
 
-#-:jsk
-(jsk)
-#-:rbrain-basic
-(rbrain)
+(if (and (fboundp 'jsk) (fboundp 'rbrain))
+    (progn (jsk) (rbrain))
+  (load "models/irt-all-robots.l"))
 
 (setq *robot-forms*
       '((ape) (ape3)
-        (hanzou) (sasuke)
+        (hanzou)
         (miharu) (saizo)
-        (komokuten) (tamonten)
-        (jikokuten) (hanzous)
+        (hanzous)
         (bishamon)
         (igoid) (igoid2) (igoid3)
         (kuma)
         (taro) (millennium) (akira) (akira2) (akira3) (zero)
-        (kaz) (kaz2) (kaz3) (tot) (Alviss) (chibikaz)
-        (tama) (tamaii) (kamakiri)
+        (kaz) (kaz2) (kaz3) (tot)
+        (chibikaz)
+        (tama) (tamaii)
         (penguin)
-        (hoap) (hoap2)
-        (h7)(h6) (h5)
+        (h7)(h6)
+#+:rbrain-basic
+        (sasuke) (komokuten) (tamonten) (jikokuten) (Alviss) (kamakiri) (hoap) (hoap2) (h5)
+        
         ))
 
 (ros::roseus "robot_publisher")
