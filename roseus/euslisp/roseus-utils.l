@@ -374,6 +374,34 @@
     (apply #'string->marker-msg eusgeom header args))
    ))
 
+;;http://www.ros.org/wiki/rviz/DisplayTypes/Marker#Arrow_.28ARROW.3D0.29
+;;arg type : coords -> Pose/Orientation way
+;;         : 3d float-vector list -> Start/End Points way
+(defun arrow->marker-msg (arg header
+			      &key ((:color col) (float-vector 1.0 0 0))
+			           ((:alpha a) 1.0)
+			           ((:id idx) 0)
+			           (:scale sc) ns lifetime)
+  (let ((msg (instance visualization_msgs::Marker :init
+		       :type visualization_msgs::Marker::*ARROW*
+		       :header header
+		       :id idx)))
+    (if (listp arg)
+	(progn
+	  (send msg :points (mapcar #'(lambda(p)(ros::pos->tf-point p)) (arg)))
+	  (unless sc
+	    (setq sc (float-vector 0.1 0.1 0))))
+      (progn
+	(send msg :pose ros::coords->pose arg)
+	(unless sc
+	  (setq sc (float-vector 1.0 0.1 0.1)))))
+    (send msg :scale sc)
+    (send msg :color (vector->rgba col a))
+    (if ns (send msg :ns ns))
+    (if lifetime (send msg :lifetime (ros::time lifetime)))
+    msg))
+
+
 ;; visualization_msgs::Marker -> eus shape object
 
 (defun marker-msg->shape (msg &rest args)
