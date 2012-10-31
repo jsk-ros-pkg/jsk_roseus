@@ -381,7 +381,7 @@
 			      &key ((:color col) (float-vector 1.0 0 0))
 			           ((:alpha a) 1.0)
 			           ((:id idx) 0)
-			           (:scale sc) ns lifetime)
+			           ((:scale sc) nil) ns lifetime)
   (let ((msg (instance visualization_msgs::Marker :init
 		       :type visualization_msgs::Marker::*ARROW*
 		       :header header
