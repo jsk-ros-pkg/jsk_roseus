@@ -395,7 +395,7 @@
 	(send msg :pose ros::coords->pose arg)
 	(unless sc
 	  (setq sc (float-vector 1.0 0.1 0.1)))))
-    (send msg :scale sc)
+    (send msg :scale (ros::pos->tf-translation sc))
     (send msg :color (vector->rgba col a))
     (if ns (send msg :ns ns))
     (if lifetime (send msg :lifetime (ros::time lifetime)))
