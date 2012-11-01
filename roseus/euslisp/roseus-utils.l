@@ -390,11 +390,11 @@
 	(progn
 	  (send msg :points (mapcar #'(lambda(p)(ros::pos->tf-point p)) arg))
 	  (unless sc
-	    (setq sc (float-vector 0.1 0.1 0))))
+	    (setq sc (float-vector 100.0 100.0 0))))
       (progn
 	(send msg :pose ros::coords->pose arg)
 	(unless sc
-	  (setq sc (float-vector 1.0 0.1 0.1)))))
+	  (setq sc (float-vector 1000.0 100.0 100.0)))))
     (send msg :scale (ros::pos->tf-translation sc))
     (send msg :color (vector->rgba col a))
     (if ns (send msg :ns ns))
