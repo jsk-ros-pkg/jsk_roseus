@@ -6,7 +6,9 @@
   </include>
   <!-- add to launch openni_node2 for PS sensors, since node1 usually die -->
   <!-- node pkg="openni_camera" type="openni_node" name="openni_node2" output="screen" respawn="true" / -->
-  <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" output="screen" respawn="true" />
+  <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" output="screen" respawn="true" >
+    <param name="camera_frame_id" value="camera_depth_frame"/>
+  </node>
   <node name="openni_dispairty_view" pkg="image_view" type="disparity_view">
     <remap from="image" to="/camera/depth/disparity" />
   </node>
