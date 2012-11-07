@@ -1,5 +1,10 @@
 <launch>
   <include file="$(find openni_camera)/launch/openni_node.launch" />
+  <include file="$(find openni_launch)/launch/openni.launch"
+    <!--arg name="camera" value="openni"/-->
+    <arg name="respawn" value="true"/>
+    <arg name="publish_tf" value="true"/>
+    />
   <!-- add to launch openni_node2 for PS sensors, since node1 usually die -->
   <!-- node pkg="openni_camera" type="openni_node" name="openni_node2" output="screen" respawn="true" / -->
   <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" output="screen" respawn="true" />
@@ -7,9 +12,7 @@
     <remap from="image" to="/camera/depth/disparity" />
   </node>
   <node name="map_openni_camera" pkg="tf" type="static_transform_publisher"
-	args="0 0 1.5 0 0 0 /map /openni_camera 100" />
-  <anode name="openni_depth_frame_openni_camera" pkg="tf" type="static_transform_publisher"
-	args="0 0 0 1.57 0 1.57 /openni_depth_frame /openni_depth 100" />
+	args="0 0 1.5 0 0 0 /map /camera_link 100" />
   <sphinxdoc><![CDATA[
 This scripts start kinect node,
 
