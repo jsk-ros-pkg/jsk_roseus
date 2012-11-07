@@ -1,10 +1,10 @@
 <launch>
   <include file="$(find openni_camera)/launch/openni_node.launch" />
-  <include file="$(find openni_launch)/launch/openni.launch"
+  <include file="$(find openni_launch)/launch/openni.launch">
     <!--arg name="camera" value="openni"/-->
     <arg name="respawn" value="true"/>
     <arg name="publish_tf" value="true"/>
-    />
+  </include>
   <!-- add to launch openni_node2 for PS sensors, since node1 usually die -->
   <!-- node pkg="openni_camera" type="openni_node" name="openni_node2" output="screen" respawn="true" / -->
   <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" output="screen" respawn="true" />
