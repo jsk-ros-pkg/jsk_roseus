@@ -159,6 +159,7 @@
    (setq latest-result msg)
    (cond ((member state
                   (list 'ros::*comm-state-waiting-for-ack*
+                        'ros::*comm-state-waiting-for-cancel-ack*
                         'ros::*comm-state-pending* 'ros::*comm-state-active*
                         'ros::*comm-state-waiting-for-result*
                         'ros::*comm-state-recalling*
@@ -169,7 +170,7 @@
          ((eq state 'ros::*comm-state-done*)
           (ros::ros-error "Get a result when we ware already in the DONE state"))
          (t
-          (ros::ros-error (format nil "In a fanny state ~A" state))))
+          (ros::ros-error (format nil "In a funny state ~A" state))))
    )
   )
 
