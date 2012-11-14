@@ -106,9 +106,9 @@
     (when plst
       (let ((msg-array (instance visualization_msgs::MarkerArray :init))
             clst blst hdr (cntr 0))
-
+        (pprint plst)
         ;; centroid list
-        ;;(setq clst (mapcar #'(lambda (p) (send p :centroid)) plst))
+        (setq clst (mapcar #'(lambda (p) (send p :centroid)) plst))
         ;; bounding box list
         ;;(setq blst (mapcar #'(lambda (p) (send p :box)) plst))
 
