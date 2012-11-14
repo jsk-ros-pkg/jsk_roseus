@@ -13,6 +13,7 @@
 (defun tabletop-detect()
   (let ((req (instance tabletop_object_detector::TabletopSegmentationRequest :init))
         res ret convex-hull msg)
+    ;; PR2
     (when (substringp "http://pr1012" (unix::getenv "ROS_MASTER_URI"))
       (setq convex-hull (instance arm_navigation_msgs::Shape :init
                                   :type arm_navigation_msgs::Shape::*MESH*
@@ -38,8 +39,10 @@
                           :ns     "tabletop_node"
                           :id     0))
       (ros::publish "tabletop_segmentation_markers" msg))
+    ;; /PR2
 
-    ;; this program only segment points 0.5[m] above the tabale, based on the followin param
+    ;;
+    ;; this program only segment points 0.5[m] above the tabale, based on the following param
     ;; <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_min" value="0.01" />
     ;; <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_max" value="0.5" />
 
