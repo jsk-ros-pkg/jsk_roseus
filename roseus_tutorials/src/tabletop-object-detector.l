@@ -1,59 +1,35 @@
 #!/usr/bin/env roseus
 
 (defvar *transform-table* t)
+(defvar *result-topic* "/ObjectDetection")
 
 (ros::load-ros-manifest "tabletop_object_detector")
+(ros::roseus-add-msgs "posedetection_msgs")
 
 (ros::roseus "roseus_tabletop_object_detector")
 
+(ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
 (ros::wait-for-service "/tabletop_segmentation")
 
 (setq *tfb* (instance ros::transform-broadcaster :init))
 
 (defun tabletop-detect()
   (let ((req (instance tabletop_object_detector::TabletopSegmentationRequest :init))
-        res ret convex-hull msg)
-    ;; PR2
-    (when nil ;;(substringp "http://pr1012" (unix::getenv "ROS_MASTER_URI"))
-      (setq convex-hull (instance arm_navigation_msgs::Shape :init
-                                  :type arm_navigation_msgs::Shape::*MESH*
-                                  :triangles (list 0 1 2 3)
-                                  :vertices (mapcar #'ros::pos->tf-point (list #f(300 -1000 700) #f(300 1000 700) #f(1200 1000 700) #f(1200 -1000 700) ))
-                                  ))
-      (ros::ros-info ";; tabletop detection with given table surface ~A" (mapcar #'ros::tf-point->pos (send convex-hull :vertices)))
-      (setq req (instance tabletop_object_detector::TabletopSegmentationRequest :init
-                          :table (instance tabletop_object_detector::Table
-                                           :init
-                                           :pose
-                                           (ros::coords->tf-pose-stamped (make-cascoords) "/base_link")
-                                           :convex_hull convex-hull)))
-      (setq msg (instance visualization_msgs::Marker :init
-                          :action visualization_msgs::Marker::*ADD*
-                          :lifetime (ros::time 5)
-                          :type visualization_msgs::Marker::*LINE_STRIP*
-                          :color  (vector->rgba #f(0 1 1) 1)
-                          :scale  (ros::pos->tf-translation #f(10 10 10))
-                          :points (send convex-hull :vertices)
-                          :header (instance std_msgs::header :init :frame_id "/base_link")
-                          :pose   (ros::coords->tf-pose (make-coords))
-                          :ns     "tabletop_node"
-                          :id     0))
-      (ros::publish "tabletop_segmentation_markers" msg))
-    ;; /PR2
-
+        res ret msg)
     ;;
     ;; this program only segment points 0.5[m] above the tabale, based on the following param
     ;; <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_min" value="0.01" />
     ;; <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_max" value="0.5" />
 
-    ;;
+    ;; call service
     (setq res (ros::service-call "tabletop_segmentation" req))
     (unless res
       (ros::ros-warn ";; tabletop service failed")
       (return-from tabletop-detect nil))
 
     (cond
-     ((= (send res :result) tabletop_object_detector::TabletopSegmentation::*SUCCESS*)
+     ((= (send res :result)
+         tabletop_object_detector::TabletopSegmentation::*SUCCESS*)
       (ros::ros-info ";; tabletop detection succeeded ~d" (send res :result))
       (cond
        (*transform-table*
@@ -63,7 +39,6 @@
                (cds (ros::tf-pose->coords (send pose :pose)))
                (icds (send cds :inverse-transformation))
                hdr)
-
           ;;(send cds :translate (float-vector (- (send tbl :x_min)) (- (send tbl :y_min)) 0))
           (send *tfb* :send-transform
                 cds (send pose :header :frame_id) "/table"
@@ -98,6 +73,9 @@
 (ros::advertise "tabletop_detection_marker_array" visualization_msgs::MarkerArray 5)
 (ros::advertise "tabletop_segmentation_markers" visualization_msgs::Marker 5)
 
+;;
+;; 処理をしているところ (main loop)
+;;
 (ros::rate 3)
 (while (ros::ok)
   (ros::spin-once)
@@ -106,11 +84,31 @@
     (when plst
       (let ((msg-array (instance visualization_msgs::MarkerArray :init))
             clst blst hdr (cntr 0))
-        (pprint plst)
+        ;; PointCloudの表示
+        ;;(pprint plst)
         ;; centroid list
-        (setq clst (mapcar #'(lambda (p) (send p :centroid)) plst))
+        ;;(setq clst (mapcar #'(lambda (p) (send p :centroid)) plst))
+        ;; 重心の表示
+        ;;(pprint clst)
         ;; bounding box list
         ;;(setq blst (mapcar #'(lambda (p) (send p :box)) plst))
+
+        ;; /ObjectDetectionをpublish
+        (let ((res (instance posedetection_msgs::ObjectDetection :init))
+              (cnt 0) lst)
+          (dolist (p plst)
+            (let* ((c (send p :centroid))
+                   (bb (send p :box))
+                   (o6dp (instance posedetection_msgs::Object6DPose :init))
+                   (pos (send bb :center)))
+              (send o6dp :pose (ros::coords->tf-pose (make-coords :pos pos)))
+              (send o6dp :type (format nil "tabletop~D" cnt))
+              (incf cnt)
+              (push o6dp lst)
+              ))
+          (send res :header (get (car plst) :header))
+          (send res :objects lst)
+          (ros::publish *result-topic* res))
 
         (send msg-array :markers
               (mapcar #'(lambda (p)
