@@ -14,7 +14,7 @@
   (let ((req (instance tabletop_object_detector::TabletopSegmentationRequest :init))
         res ret convex-hull msg)
     ;; PR2
-    (when (substringp "http://pr1012" (unix::getenv "ROS_MASTER_URI"))
+    (when nil ;;(substringp "http://pr1012" (unix::getenv "ROS_MASTER_URI"))
       (setq convex-hull (instance arm_navigation_msgs::Shape :init
                                   :type arm_navigation_msgs::Shape::*MESH*
                                   :triangles (list 0 1 2 3)
@@ -98,7 +98,7 @@
 (ros::advertise "tabletop_detection_marker_array" visualization_msgs::MarkerArray 5)
 (ros::advertise "tabletop_segmentation_markers" visualization_msgs::Marker 5)
 
-(ros::rate 1)
+(ros::rate 3)
 (while (ros::ok)
   (ros::spin-once)
   (x::window-main-one)

@@ -5,7 +5,7 @@
   <!-- copy from tabletop_object_detector/launch/tabletop_segmentation.launch -->
 
   <!-- arg name="tabletop_segmentation_points_in" default="narrow_stereo_textured/points2" / -->
-  <arg name="tabletop_segmentation_points_in" default="/camera/depth_registered/points" />
+  <arg name="tabletop_segmentation_points_in" default="/openni/depth_registered/points_throttled" />
 
   <aarg name="tabletop_segmentation_convert_to_base_link" value="true" /> <!-- for pr2 -->
   <arg name="tabletop_segmentation_convert_to_base_link" value="false" />  <!-- for kinect -->
