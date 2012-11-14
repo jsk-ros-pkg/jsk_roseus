@@ -47,8 +47,9 @@
   ;;
    (mapcar #'(lambda (limb name)
 	       (eval `(let ((l (find-if #'(lambda (x) (eq (send x :name) 'site)) (send (car (last ,limb)) :descendants))))
-			(send l :name ',name)
-			(setq ,limb (append ,limb (list l))))))
+                        (when l
+                          (send l :name ',name)
+			  (setq ,limb (append ,limb (list l)))))))
 	   (list 'rarm 'larm 'rleg 'lleg 'head)
 	   (list '/right_hand '/left_hand '/right_foot '/left_foot '/head))
    ;;
