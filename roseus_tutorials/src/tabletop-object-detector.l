@@ -1,12 +1,13 @@
 #!/usr/bin/env roseus
 
-(defvar *transform-table* t)
 (defvar *result-topic* "/ObjectDetection")
 
 (ros::load-ros-manifest "tabletop_object_detector")
 (ros::roseus-add-msgs "posedetection_msgs")
 
 (ros::roseus "roseus_tabletop_object_detector")
+
+(ros::defrosparam *transform-table* "~transform_table" t)
 
 (ros::advertise *result-topic* posedetection_msgs::ObjectDetection)
 (ros::wait-for-service "/tabletop_segmentation")
@@ -33,7 +34,6 @@
       (ros::ros-info ";; tabletop detection succeeded ~d" (send res :result))
       (cond
        (*transform-table*
-        ;;(setq *res* res)
         (let* ((tbl (send res :table))
                (pose (send tbl :pose))
                (cds (ros::tf-pose->coords (send pose :pose)))
@@ -79,7 +79,7 @@
 (ros::rate 3)
 (while (ros::ok)
   (ros::spin-once)
-  (x::window-main-one)
+  (if x::*display* (x::window-main-one))
   (let ((plst (tabletop-detect)))
     (when plst
       (let ((msg-array (instance visualization_msgs::MarkerArray :init))
@@ -118,6 +118,7 @@
                                   (apply #'make-cube (coerce (send b :diagonal) cons))))
                             (send cb :translate c)
                             (send cb :worldcoords)
+			    ;;(print (send cb :vertices))
                             (wireframe->marker-msg cb (get p :header) :id (incf cntr) :lifetime 5))) plst))
 
         (ros::publish "tabletop_detection_marker_array" msg-array))))
