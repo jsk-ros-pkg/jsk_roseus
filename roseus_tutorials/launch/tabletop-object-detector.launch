@@ -2,6 +2,7 @@
   <arg name="playbag" default="false" />
   <arg name="run_roseus" default="true" />
   <arg name="run_rviz" default="true" />
+  <arg name="launch_tabletop_detector" default="true" />
 
   <node if="$(arg run_rviz)"
         pkg="rviz" type="rviz" name="rviz"
@@ -9,6 +10,7 @@
 
   <node if="$(arg run_roseus)"
         pkg="roseus" type="roseus" name="eus_tabletop_detector"
+	output="screen"
         args="&quot;$(find roseus_tutorials)/src/tabletop-object-detector.l&quot;" />
 
   <node if="$(arg playbag)"
@@ -24,7 +26,11 @@
   <arg name="flatten_table" default="false"/>
   <arg name="table_padding" default="0.02"/>
 
-  <node pkg="tabletop_object_detector" name="tabletop_segmentation" type="tabletop_segmentation" respawn="true" output="screen">
+  <node if="$(arg launch_tabletop_detector)"
+	pkg="tabletop_object_detector"
+	name="tabletop_segmentation"
+	type="tabletop_segmentation"
+	respawn="true" output="screen">
     <!--topic remapping-->
     <remap from="cloud_in" to="$(arg tabletop_segmentation_points_in)" />
     <remap from="segmentation_srv" to="tabletop_segmentation" />
@@ -50,8 +56,7 @@
     <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="x_filter_min" value="0.3" />
     <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="x_filter_max" value="1.5" />
     <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_min" value="-0.5" />
-    <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_max" value="-0.01" />		
-
+    <param if="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_max" value="-0.01" />
     <!-- all clouds will be processed in the incoming frame, which is -->
     <!-- assumed to the the camera's optical frame -->
     <param unless="$(arg tabletop_segmentation_convert_to_base_link)" name="processing_frame" value="" />
@@ -63,7 +68,7 @@
     <param unless="$(arg tabletop_segmentation_convert_to_base_link)" name="x_filter_min" value="-1.2" />
     <param unless="$(arg tabletop_segmentation_convert_to_base_link)" name="x_filter_max" value="1.2" />
     <param unless="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_min" value="0.01" />
-    <param unless="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_max" value="0.5" />			
+    <param unless="$(arg tabletop_segmentation_convert_to_base_link)" name="table_z_filter_max" value="0.5" />
 
   </node>
 
