@@ -7,6 +7,7 @@
 
 (setq *points* nil)
 (defun callback ( msg )
+  ;; ROSのメッセージをeuslispのpointcloudに変換
   (setq *points*
         (make-eus-pointcloud-from-ros-msg
          msg :remove-nan t)) ;; for replace -> :remove-nan :replace
@@ -21,7 +22,7 @@
 
 (setq *tfb* (instance ros::transform-broadcaster :init))
 
-(ros::subscribe "/camera/depth_registered/points"
+(ros::subscribe "/openni/depth_registered/points"
                 sensor_msgs::PointCloud2
                 #'callback)
 
@@ -29,6 +30,7 @@
 (do-until-key
  (setq *points* nil)
  (ros::spin-once)
+ ;; *points*にpointcloudが入っている
  (when *points*
    (let* ((pos (send *points* :centroid))
           (cds (make-coords :pos pos)))

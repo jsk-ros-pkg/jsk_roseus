@@ -3,17 +3,25 @@
     <!--arg name="camera" value="openni"/-->
     <arg name="respawn" value="true"/>
     <arg name="publish_tf" value="true"/>
+    <arg name="camera" value="openni"/>
   </include>
+
+  <node name="kinect_points_throttle" pkg="topic_tools" type="throttle"
+        args="messages /openni/depth_registered/points 3.0" />
+  <nnode name="kinect_image_throttle" pkg="topic_tools" type="throttle"
+         args="messages /openni/rgb/image_rect_color/compressed 5.0" />
+
   <!-- add to launch openni_node2 for PS sensors, since node1 usually die -->
   <!-- node pkg="openni_camera" type="openni_node" name="openni_node2" output="screen" respawn="true" / -->
   <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" output="screen" respawn="true" >
     <param name="camera_frame_id" value="camera_depth_frame"/>
   </node>
   <node name="openni_dispairty_view" pkg="image_view" type="disparity_view">
-    <remap from="image" to="/camera/depth/disparity" />
+    <remap from="image" to="/openni/depth/disparity" />
   </node>
   <node name="map_openni_camera" pkg="tf" type="static_transform_publisher"
-	args="0 0 1.5 0 0 0 /map /camera_link 100" />
+        args="0 0 1.5 0 0 0 /map /camera_link 100" />
+
   <sphinxdoc><![CDATA[
 This scripts start kinect node,
 

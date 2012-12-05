@@ -4,7 +4,7 @@
 
   <node pkg="nodelet" type="nodelet" name="passthrough"
         args="load pcl/PassThrough pcl_manager" output="screen">
-    <remap from="~input" to="/camera/depth_registered/points" />
+    <remap from="~input" to="/openni/depth_registered/points" />
     <remap from="~output" to="/hsv_input" />
     <rosparam>
       filter_field_name: z
@@ -33,7 +33,7 @@
   <node pkg="roseus" type="roseus" name="publish_red_centroid"
         args="$(find roseus_tutorials)/src/subscribe-pointcloud.l"
         output="screen" >
-    <param name="centrodi_frame" value="/red_centroid" />
+    <param name="centroid_frame" value="/red_centroid" />
     <remap from="/camera/depth_registered/points" to="/filtered_red" />
   </node>
 </launch>
