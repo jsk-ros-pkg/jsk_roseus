@@ -3,6 +3,7 @@
   <arg name="run_roseus" default="true" />
   <arg name="run_rviz" default="true" />
   <arg name="launch_tabletop_detector" default="true" />
+  <arg name="convert_to_base_link" default="false" />
 
   <node if="$(arg run_rviz)"
         pkg="rviz" type="rviz" name="rviz"
@@ -19,9 +20,11 @@
 
   <!-- copy from tabletop_object_detector/launch/tabletop_segmentation.launch -->
   <!-- arg name="tabletop_segmentation_points_in" default="narrow_stereo_textured/points2" / -->
-  <arg name="tabletop_segmentation_points_in" default="/openni/depth_registered/points_throttle" />
+  <arg name="tabletop_segmentation_points_in"
+       default="/openni/depth_registered/points_throttle" />
 
-  <arg name="tabletop_segmentation_convert_to_base_link" value="false" />
+  <arg name="tabletop_segmentation_convert_to_base_link"
+       value="$(arg convert_to_base_link)" />
   <arg name="tabletop_segmentation_clustering_voxel_size" default="0.003" />
   <arg name="flatten_table" default="false"/>
   <arg name="table_padding" default="0.02"/>
