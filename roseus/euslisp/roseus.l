@@ -35,13 +35,16 @@
 (defun ros::roseus (name &key
                     (option (list ros::*anonymous-name*))
                     (args lisp::*eustop-argument*))
+  (pprint (list 'args args))
   (prog1
     (ros::roseus-raw name (apply #'logior option) args)
     (dotimes (i (length lisp::*eustop-argument*))
-      (when (substringp ":=" (elt lisp::*eustop-argument* i))
-	(setf (elt lisp::*eustop-argument* i)
-	      (format nil "(warning-message 1 \"ignore ~a~%\""
-		      (elt lisp::*eustop-argument* i)))))
+      (when (and
+             (not (substringp "warning-message" (elt lisp::*eustop-argument* i)))
+             (substringp ":=" (elt lisp::*eustop-argument* i)))
+        (setf (elt lisp::*eustop-argument* i)
+              (format nil "(warning-message 1 \"ignore ~a~%\")"
+                      (elt lisp::*eustop-argument* i)))))
     ))
 
 (setq ros::*compile-message* nil)
