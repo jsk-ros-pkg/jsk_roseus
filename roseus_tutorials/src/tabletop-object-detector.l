@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 (defvar *result-topic* "/ObjectDetection")
+(defvar *visualize-topic* "tabletop_detection_marker_array")
 
 (ros::load-ros-manifest "tabletop_object_detector")
 (ros::roseus-add-msgs "posedetection_msgs")
@@ -70,8 +71,8 @@
     ret
     ))
 
-(ros::advertise "tabletop_detection_marker_array" visualization_msgs::MarkerArray 5)
-(ros::advertise "tabletop_segmentation_markers" visualization_msgs::Marker 5)
+(ros::advertise *visualize-topic* visualization_msgs::MarkerArray 5)
+;;(ros::advertise "tabletop_segmentation_markers" visualization_msgs::Marker 5)
 
 ;;
 ;; 処理をしているところ (main loop)
@@ -118,9 +119,9 @@
                                   (apply #'make-cube (coerce (send b :diagonal) cons))))
                             (send cb :translate c)
                             (send cb :worldcoords)
-			    ;;(print (send cb :vertices))
+                            ;;(print (send cb :vertices))
                             (wireframe->marker-msg cb (get p :header) :id (incf cntr) :lifetime 5))) plst))
 
-        (ros::publish "tabletop_detection_marker_array" msg-array))))
+        (ros::publish *visualize-topic* msg-array))))
   (ros::sleep)
   )

@@ -11,7 +11,7 @@
 
   <node if="$(arg run_roseus)"
         pkg="roseus" type="roseus" name="eus_tabletop_detector"
-	output="screen"
+        output="screen"
         args="&quot;$(find roseus_tutorials)/src/tabletop-object-detector.l&quot;" />
 
   <node if="$(arg playbag)"
