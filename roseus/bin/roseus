@@ -4,7 +4,7 @@ set -e
 ROSEUS_DIR=`rospack find roseus`
 ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
         roseus.l eustf.l actionlib.l roseus-utils.l)
-
+# echo "rosrun euslisp irteusgl ${ARG_STR[@]} $@"
 exec rosrun euslisp irteusgl "${ARG_STR[@]}" "$@"
 
 # if you want to run in gdb, please use lines below

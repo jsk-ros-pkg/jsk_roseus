@@ -35,7 +35,7 @@
 (defun ros::roseus (name &key
                     (option (list ros::*anonymous-name*))
                     (args lisp::*eustop-argument*))
-  (pprint (list 'args args))
+  ;; (pprint (list 'roseus_args args))
   (prog1
     (ros::roseus-raw name (apply #'logior option) args)
     (dotimes (i (length lisp::*eustop-argument*))
