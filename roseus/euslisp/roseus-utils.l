@@ -917,3 +917,26 @@
 (defun call-empty-service (srvname)
   (ros::wait-for-service srvname)
   (ros::service-call srvname (instance std_srvs::EmptyRequest :init)))
+
+(defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
+  (let (lmsg (cntr 0))
+    (unless (ros::get-num-publishers topic-name)
+      (cond
+       (after-stamp
+        (ros::subscribe topic-name mclass
+                        #'(lambda (msg)
+                            (let ((st (send msg :header :stamp)))
+                              (when (> (send st :to-sec)
+                                       (send after-stamp :to-sec))
+                                (setq lmsg msg))))))
+       (t
+        (ros::subscribe topic-name mclass
+                        #'(lambda (msg) (setq lmsg msg))))))
+    (while (not (and timeout
+                     (> timeout (* 50 cntr))))
+      (unix::usleep (* 50 1000))
+      (ros::spin-once)
+      (incf cntr)
+      (if lmsg (return)))
+    (if unsubscribe (ros::unsubscribe topic-name))
+    lmsg))
