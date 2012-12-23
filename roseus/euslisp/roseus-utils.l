@@ -933,7 +933,7 @@
         (ros::subscribe topic-name mclass
                         #'(lambda (msg) (setq lmsg msg))))))
     (while (not (and timeout
-                     (> timeout (* 50 cntr))))
+                     (< timeout (* 50 cntr))))
       (unix::usleep (* 50 1000))
       (ros::spin-once)
       (incf cntr)
