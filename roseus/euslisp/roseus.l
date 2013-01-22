@@ -59,6 +59,7 @@
   (:datatype- ()  (get (class self) :datatype-))
   )
 
+(shadow 'time *package*)
 (defclass ros::time
   :super ros::object
   :slots (sec-nsec))
