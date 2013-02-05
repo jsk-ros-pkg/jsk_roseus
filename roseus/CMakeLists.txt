@@ -29,7 +29,7 @@ rosbuild_add_library(roseus_c_util roseus_c_util.c)
 # compile flags
 set(COMPILE_FLAGS "-O2 -Wno-write-strings -Wno-comment")
 add_definitions(-Di486 -DLinux -D_REENTRANT -DVERSION='\"${8.26}\"' -DTHREADED -DPTHREAD -DX11R6_1)
-add_definitions(-DSVNVERSION='\"r${SVNVERSION}\"')
+add_definitions(-DSVNVERSION="\\"r${SVNVERSION}\\"")
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
    ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
  add_definitions(-Dx86_64)
