@@ -23,7 +23,11 @@ macro(genmanifest_eus)
   set(genmanifest_eus_exe ${roseus_PACKAGE_PATH}/scripts/genmanifest_eus)
   set(manifest_eus_target_dir ${roshomedir}/roseus/${PROJECT_NAME})
   set(manifest_eus_target ${manifest_eus_target_dir}/manifest.l)
-  set(manifest_xml ${PROJECT_SOURCE_DIR}/manifest.xml)
+  if(EXISTS ${PROJECT_SOURCE_DIR}/package.xml)
+    set(manifest_xml ${PROJECT_SOURCE_DIR}/package.xml)
+  else()
+    set(manifest_xml ${PROJECT_SOURCE_DIR}/manifest.xml)
+  endif()
   message("[roseus.cmake] add custom target ROSBUILD_genmanifest_roseus_${PROJECT_NAME}")
   add_custom_command(OUTPUT ${manifest_eus_target}
     COMMAND ${genmanifest_eus_exe} ${PROJECT_NAME}
