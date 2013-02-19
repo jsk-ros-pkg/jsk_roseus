@@ -107,6 +107,8 @@
 	 (cnsec (- (send a :nsec) (send b :nsec))))
     (if (< cnsec 0) (setq csec (- csec 1) cnsec (+ cnsec 1000000000)))
     (instance ros::time :init :sec csec :nsec cnsec)))
+(defun ros::time= (a b)
+  (equal (a . sec-nsec) (b . sec-nsec)))
 
 (defun ros::ros-home-dir ()
   (let ((ros-home (unix::getenv "ROS_HOME")))
