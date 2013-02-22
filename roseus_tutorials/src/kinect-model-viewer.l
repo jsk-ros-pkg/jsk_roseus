@@ -221,7 +221,7 @@
 	   (if m
 	       (send j :joint-angle (map cons #'rad2deg (matrix-log (send m :worldrot))))
 	     (setq ret nil)))
-	 (setq m (send tf-listener :lookup-transform "/map" (format nil "/torso_~d" i) tm))
+	 (setq m (send tf-listener :lookup-transform "/map" (format nil "/torso_~d" i) tm)) ;;; change from /map to /base_footprint for pr2
 	 (if m
 	     (send (car (send self :joint-list))
 		   :joint-angle (coerce (append (coerce (send m :worldpos) cons)
@@ -231,6 +231,9 @@
      nil))
   )
 
+;;
+;; Kinect Body Tracker Example
+;;
 #-:ros
 (unless (find-package "ROS") (make-package "ROS"))
 #+:ros
@@ -240,18 +243,24 @@
     (ros::roseus "kinect_bvh")
     (if (not (boundp '*tl*))
         (setq *tl* (instance ros::transform-listener :init)))
-    (setq b (make-kinect-bvh-robot-model))
+    (setq b (make-kinect-bvh-robot-model)) ;; Kinect Human Model
     (objects (list floor b))
     (if robot (objects robot))
     ;;(defun find-node (name) (find name *arrows* :key #'(lambda (x) (send x :name)) :test #'string=))
     (if f (send b :dump-hierarchy f))
+    ;;;
+    ;;; Main Loop
+    ;;;
     (do-until-key
      (let ()
-       (when (send b :copy-state-from-tf *tl*)
-	 (format t "kinect robot : larm pos=~A, rarm pos=~A (world)~%"
+       (when (send b :copy-state-from-tf *tl*) ;; copy kinect human tracker information to human body
+         ;;
+         ;; track human body
+         ;;
+	 (format t "kinect robot : larm pos=~A, rarm pos=~A (world)~%" ;; display arm tool coordinates in world coordinates
 		 (send b :larm :end-coords :worldpos)
 		 (send b :rarm :end-coords :worldpos))
-	 (format t "             : larm pos=~A, rarm pos=~A (local)~%"
+	 (format t "             : larm pos=~A, rarm pos=~A (local)~%" ;; display arm tool cooridnates with reference to human torso coordinates
 		 (send (send (send b :torso :end-coords) :transformation (send b :larm :end-coords)) :worldpos)
 		 (send (send (send b :torso :end-coords) :transformation (send b :rarm :end-coords)) :worldpos)))
        (when robot
