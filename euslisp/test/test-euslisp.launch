@@ -9,6 +9,8 @@
 	type="irteusgl" args="$(find euslisp)/test/bignum.l" />
   <test test-name="test_vector" pkg="euslisp"
 	type="irteusgl" args="$(find euslisp)/test/vector.l" />
+  <test test-name="test_vector" pkg="euslisp"
+	type="irteusgl" args="$(find euslisp)/test/matrix.l" />
   <test test-name="test_read_img" pkg="euslisp"
 	type="irteusgl" args="$(find euslisp)/test/read-img.l"
 	time-limit="600" >
