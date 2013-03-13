@@ -626,7 +626,8 @@
      (pcloud
       (if mat (send pcloud :points mat))
       (if cmat (send pcloud :colors cmat))
-      (if nmat (send pcloud :normals nmat)))
+      (if nmat (send pcloud :normals nmat))
+      (send pcloud :size-change w h))
      (t
       (setq pcloud (instance pointcloud :init :width w :height h
                           :points mat :colors cmat :normals nmat))))
