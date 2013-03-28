@@ -31,6 +31,7 @@ Contents
     <test args="$(find euslisp)/test/sort.l" pkg="euslisp" test-name="test_sortgc" type="irteusgl" />
     <test args="$(find euslisp)/test/bignum.l" pkg="euslisp" test-name="test_bignum" type="irteusgl" />
     <test args="$(find euslisp)/test/vector.l" pkg="euslisp" test-name="test_vector" type="irteusgl" />
+    <test args="$(find euslisp)/test/matrix.l" pkg="euslisp" test-name="test_matrix" type="irteusgl" />
     <test args="$(find euslisp)/test/read-img.l" pkg="euslisp" test-name="test_read_img" time-limit="600" type="irteusgl">
   	
     </test>
