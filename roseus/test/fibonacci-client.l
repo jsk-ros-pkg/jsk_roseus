@@ -37,7 +37,7 @@
    (when (> count 1000)
      (send *unit-test* :init-result "fibonacci-client")
      (send *unit-test* :print-result)
-     (exit 0))
+     (exit 0)))
  (fibonacci-client))
 
 
