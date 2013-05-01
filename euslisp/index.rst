@@ -55,63 +55,63 @@ irteus robot model examples
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik)"
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/full_body_ik
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/full_body_ik
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik :use-torso nil)"
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/full_body_ik_no_torso
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/full_body_ik_no_torso
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(full-body-ik :use-leg t)"
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/full_body_ik_use_leg
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/full_body_ik_use_leg
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(dual-arm-ik)"
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/dual_arm_ik
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/dual_arm_ik
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(dual-manip-ik)"
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/dual_manip_ik
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/dual_manip_ik
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(crank-motion)"
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/crank_motion
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/crank_motion
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(hand-grasp)"
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/hand_grasp
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/hand_grasp
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(hanoi-arm)"
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/hanoi_arm
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/hanoi_arm
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(particle)"
 
-.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/particle
+.. video:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/particle
   :width: 400
 
 robots and object models
@@ -121,14 +121,14 @@ robots and object models
 
   $ rosrun euslisp irteusgl models/irt-all-robots.l "(make-all-robots)"
 
-.. image:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/irt_all_robots.png
+.. image:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/irt_all_robots.png
   :width: 400
 
 .. code-block:: bash
 
   $ rosrun euslisp irteusgl models/irt-all-objects.l "(make-all-objects)"
 
-.. image:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-fuerte/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/irt_all_objects.png
+.. image:: http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080//job/jsk-ros-pkg-electric/lastSuccessfulBuild/artifact/doc/euslisp/html/_images/irt_all_objects.png
   :width: 400
 
   
