@@ -26,18 +26,21 @@
                 sensor_msgs::PointCloud2
                 #'callback)
 
-(ros::rate 100)
-(do-until-key
- (setq *points* nil)
- (ros::spin-once)
- ;; *points*にpointcloudが入っている
- (when *points*
-   (let* ((pos (send *points* :centroid))
-          (cds (make-coords :pos pos)))
-     (send *tfb* :send-transform cds
-           (send (get *points* :header) :frame_id)
-           *frame-id*
-           (send (get *points* :header) :stamp)))
-   )
- (ros::sleep)
- )
+(defun start-subscribe ()
+  (ros::rate 100)
+  (do-until-key
+   (setq *points* nil)
+   (ros::spin-once)
+   ;; *points*にpointcloudが入っている
+   (when *points*
+     (let* ((pos (send *points* :centroid))
+            (cds (make-coords :pos pos)))
+       (send *tfb* :send-transform cds
+             (send (get *points* :header) :frame_id)
+             *frame-id*
+             (send (get *points* :header) :stamp)))
+     )
+   (ros::sleep)
+   ))
+
+(start-subscribe)
