@@ -915,8 +915,8 @@
 ;; misc unction
 ;;
 (ros::roseus-add-srvs "std_srvs")
-(defun call-empty-service (srvname)
-  (ros::wait-for-service srvname)
+(defun call-empty-service (srvname &key (wait nil))
+  (if wait (ros::wait-for-service srvname))
   (ros::service-call srvname (instance std_srvs::EmptyRequest :init)))
 
 (defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
