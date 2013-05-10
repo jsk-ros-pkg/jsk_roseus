@@ -319,7 +319,7 @@
 (defun pointcloud->marker-msg (pc header
                                   &key ((:color col) (float-vector 1.0 0 0))
                                   ((:alpha a) 1.0)
-                                  (use-color)
+                                  (use-color) (point-width 0.01) (point-height 0.01)
                                   ((:id idx) 0) ns lifetime)
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*POINTS*
@@ -328,6 +328,8 @@
 
     (send msg :pose (ros::coords->tf-pose (send pc :worldcoords)))
     (send msg :color (vector->rgba col a))
+    (send msg :scale :x point-width)
+    (send msg :scale :y point-height)
     (if ns (send msg :ns ns))
     (if lifetime (send msg :lifetime (ros::time lifetime)))
 
@@ -336,7 +338,8 @@
       (dotimes (i (send pc :size))
         (c-matrix-row mat i p)
         (push (instance geometry_msgs::Point :init
-                        :x (elt p 0) :y (elt p 1) :z (elt p 2)) lst))
+                        :x (* 0.001 (elt p 0)) :y (* 0.001 (elt p 1))
+                        :z (* 0.001 (elt p 2))) lst))
       (send msg :points lst))
 
     (when (and use-color (send pc :colors))
