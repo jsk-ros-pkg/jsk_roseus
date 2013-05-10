@@ -941,3 +941,16 @@
       (if lmsg (return)))
     (if unsubscribe (ros::unsubscribe topic-name))
     lmsg))
+
+(defun one-shot-publish (topic-name msg &key (wait 500) (after-stamp) (unadvertise t))
+  (ros::advertise topic-name (class msg))
+  (unix::usleep (round (* wait 1000)))
+  (while after-stamp
+    (let ((tm (ros::time-now)))
+      (if (< (send (ros::time- after-stamp tm) :tosec) 0)
+          (return)))
+    (unix::usleep 50000))
+  (ros::publish topic-name msg)
+  (unix::usleep (round (* wait 1000)))
+  (if unadvertise (ros::unadvertise topic-name))
+  msg)
