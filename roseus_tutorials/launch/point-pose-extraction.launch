@@ -12,6 +12,8 @@
     <param name="object_height" value="0.076" />
     <param name="reprojection_threshold" value="10.0" />  <!-- 3.0 -->
     <param name="distanceratio_threshold" value="0.60" /> <!-- 0.49 -->
+	<param name="relative_pose" value="0 0 0 0 0 0 1" />    <!-- quaternion expression -->
+	<!-- param name="relative_pose" value="0 0 0 0 0 0" / --> <!-- you can also use rpy expression. --> -->
     <param name="error_threshold" value="50.0" />
   </node>
 
