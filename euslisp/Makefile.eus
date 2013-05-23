@@ -13,14 +13,14 @@ ros-euslisp-all: wiped $(EUSC_PATCH)
 	## compile jskeus
 	(cd jskeus; make)
 	## check model update
-	(cd jskeus/eus/models; svn up)
+	(cd jskeus/eus/models; [ -e .svn ] && svn up)
 	## force hard link for rosrun
 	cd $(EUSDIR)/$(ARCHDIR)/bin; ln -f eus irteus; ln -f eusgl irteusgl;
 	touch installed
 
 $(EUSC_PATCH): eus.c_DEFAULT_ENV.patch
 	cat eus.c_DEFAULT_ENV.patch | sed s@DEFAULT_EUSDIR@$(EUSDIR)@ | sed s@DEFAULT_ARCHDIR@$(ARCHDIR)@ > $(EUSC_PATCH)
-	if [ -e jskeus/eus/lisp/c/eus.c ] ; then svn revert jskeus/eus/lisp/c/eus.c; fi
+	if [ -e jskeus/eus/lisp/c/eus.c -a jskeus/eus/lisp/c/.svn ] ; then svn revert jskeus/eus/lisp/c/eus.c; fi
 
 
 clean:
