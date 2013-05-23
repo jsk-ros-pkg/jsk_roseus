@@ -116,3 +116,6 @@ install(DIRECTORY test/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
   FILES_MATCHING PATTERN "*.l" PATTERN "*.launch" PATTERN ".svn" EXCLUDE)
 
+# dummy test target
+add_custom_target(test COMMAND echo "DUMMY test target")
+add_custom_target(test-results COMMAND echo "DUMMY test-results target")

@@ -98,3 +98,7 @@ install(FILES
   jskeus/bashrc.eus
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+
+# dummy test target
+add_custom_target(test COMMAND echo "DUMMY test target")
+add_custom_target(test-results COMMAND echo "DUMMY test-results target")
