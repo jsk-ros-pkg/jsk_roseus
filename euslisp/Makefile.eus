@@ -31,6 +31,6 @@ clean:
 wipe: clean
 	-rm -fr bin installed wiped
 
-wiped: Makefile
+wiped: Makefile.eus
 	make -f Makefile.eus wipe
 	touch wiped
