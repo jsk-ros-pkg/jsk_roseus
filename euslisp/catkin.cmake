@@ -27,7 +27,22 @@ add_rostest(test/test-euslisp.launch)
 
 # install under EUSDIR/ARCHDIR ...
 set(EUSDIR ${CATKIN_PACKAGE_SHARE_DESTINATION})
-set(ARCHDIR Linux64)
+if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
+  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
+      ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
+    set(ARCHDIR Linux64)
+  else()
+    set(ARCHDIR Linux)
+  endif()
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
+  set(ARCHDIR Darwin)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Cygwin)
+  set(ARCHDIR Cygwin)
+else()
+  set(ARCHDIR Generic)
+endif()
+message("-- Set EUSDIR  to ${CMAKE_INSTALL_PREFIX}/${EUSDIR}")
+message("-- Set ARCHDIR to ${ARCHDIR}")
 
 # for all executable files under ${PROJECT_SOURCE_DIR}/jskeus/eus/Linux64/bin/
 file(GLOB executables "${PROJECT_SOURCE_DIR}/jskeus/eus/${ARCHDIR}/bin/*")
