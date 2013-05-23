@@ -57,22 +57,23 @@ file(WRITE ${CMAKE_BINARY_DIR}/post_install.cmake
   "# strip rpath, since euslisp is compile outside of cmake script, we need post install script to change rpath")
 foreach(executable ${executables})
   get_filename_component(target ${executable} NAME)
-  set(exe \${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${target})
+  set(exe \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${target})
   get_filename_component(rpath ${executable} PATH) # get path   .. eus/Linux64/bin
   get_filename_component(rpath ${rpath} PATH)      # get parent .. eus/Linux64/
   set(rpath "${rpath}/lib")                        # move to lib . eus/Linux64/lib
   file(APPEND ${CMAKE_BINARY_DIR}/post_install.cmake "
     file(RPATH_CHECK FILE \"${exe}\" RPATH ${rpath}) ## this removes target file, so we need recopy them
     if(NOT EXISTS \"${exe}\")
-      file(COPY ${executable} DESTINATION  \${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin)
+      file(COPY ${executable} DESTINATION  \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin)
     else()
       file(RPATH_CHANGE
            FILE      ${exe}
            OLD_RPATH ${rpath}
-           NEW_RPATH \${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/lib)
+           NEW_RPATH \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/lib)
     endif()
-    file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
-    execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink ${exe} \${CMAKE_INSTALL_PREFIX}/bin/${target})
+    file(MAKE_DIRECTORY \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin)
+    message(\"-- create_symlink ${exe} \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin/${target}\")
+    execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink ${exe} \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin/${target})
   ")
 endforeach()
 install(SCRIPT ${CMAKE_BINARY_DIR}/post_install.cmake)
