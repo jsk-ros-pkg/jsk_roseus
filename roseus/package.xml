@@ -1,0 +1,51 @@
+<package>
+  <name>roseus</name>
+  <version>0.1.0</version>
+  <description>EusLisp client for ROs Robot Operating System.</description>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://pr.willowgarage.com/wiki/roseus</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roslang</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospack</build_depend>
+  <build_depend>euslisp</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>bullet</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>actionlib_tutorials</build_depend>
+
+  <run_depend>roslang</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospack</run_depend>
+  <run_depend>euslisp</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>bullet</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>actionlib_tutorials</run_depend>
+
+  <export>
+    <roslang cmake="${prefix}/cmake/roseus.cmake"/>
+  </export>
+</package>
