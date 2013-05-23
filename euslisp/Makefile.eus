@@ -20,7 +20,7 @@ ros-euslisp-all: wiped $(EUSC_PATCH)
 
 $(EUSC_PATCH): eus.c_DEFAULT_ENV.patch
 	cat eus.c_DEFAULT_ENV.patch | sed s@DEFAULT_EUSDIR@$(EUSDIR)@ | sed s@DEFAULT_ARCHDIR@$(ARCHDIR)@ > $(EUSC_PATCH)
-	if [ -e jskeus/eus/lisp/c/eus.c -a jskeus/eus/lisp/c/.svn ] ; then svn revert jskeus/eus/lisp/c/eus.c; fi
+	if [ -e jskeus/eus/lisp/c/eus.c -a -e jskeus/eus/lisp/c/.svn ] ; then svn revert jskeus/eus/lisp/c/eus.c; fi
 
 
 clean:
