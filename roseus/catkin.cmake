@@ -102,6 +102,12 @@ catkin_package(
 )
 
 install(PROGRAMS bin/roseus  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+# set symlink from /opt/groovy/bin to /opt/groovy/share/roseus/roseus
+file(WRITE ${CMAKE_BINARY_DIR}/post_install.cmake "
+     execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink ${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION}/roseus ${CMAKE_INSTALL_PREFIX}/bin/roseus)
+")
+install(SCRIPT ${CMAKE_BINARY_DIR}/post_install.cmake)
+
 install(TARGETS roseus  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/euslisp)
 install(TARGETS eustf   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/euslisp)
 install(TARGETS roseus_c_util  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/euslisp)
