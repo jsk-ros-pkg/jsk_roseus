@@ -49,34 +49,34 @@ file(GLOB executables "${PROJECT_SOURCE_DIR}/jskeus/eus/${ARCHDIR}/bin/*")
 install(PROGRAMS ${executables} # PROGRAM command installs file and chmod u+x
         DESTINATION ${EUSDIR}/${ARCHDIR}/bin/
 )
-#        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} original distination
 
-
-# strip rpath, since euslisp is compile outside of cmake script, we need post install script to change rpath
-file(WRITE ${CMAKE_BINARY_DIR}/post_install.cmake
-  "# strip rpath, since euslisp is compile outside of cmake script, we need post install script to change rpath")
+# since euslisp is compile outside of cmake script, we need change rpath
 foreach(executable ${executables})
-  get_filename_component(target ${executable} NAME)
-  set(exe \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${target})
-  get_filename_component(rpath ${executable} PATH) # get path   .. eus/Linux64/bin
-  get_filename_component(rpath ${rpath} PATH)      # get parent .. eus/Linux64/
-  set(rpath "${rpath}/lib")                        # move to lib . eus/Linux64/lib
-  file(APPEND ${CMAKE_BINARY_DIR}/post_install.cmake "
-    file(RPATH_CHECK FILE \"${exe}\" RPATH ${rpath}) ## this removes target file, so we need recopy them
-    if(NOT EXISTS \"${exe}\")
-      file(COPY ${executable} DESTINATION  \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin)
+  get_filename_component(filename ${executable} NAME)
+  get_filename_component(rpath ${executable} PATH) # get path    .. eus/Linux64/bin
+  get_filename_component(rpath ${rpath} PATH)      # get parent  .. eus/Linux64
+  set(rpath "${rpath}/lib")                        # move to lib .. eus/Linux64/lib
+  install(CODE "
+    file(RPATH_CHECK FILE \${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename} RPATH ${rpath}) ## this removes target file, so we need recopy them
+    if(NOT EXISTS \${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename})
+      file(COPY ${executable} DESTINATION  \${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin)
     else()
       file(RPATH_CHANGE
-           FILE      ${exe}
+           FILE      \${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}
            OLD_RPATH ${rpath}
-           NEW_RPATH \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/lib)
-    endif()
-    file(MAKE_DIRECTORY \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin)
-    message(\"-- create_symlink ${exe} \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin/${target}\")
-    execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink ${exe} \${DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin/${target})
-  ")
+           NEW_RPATH \${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/lib)
+    endif()")
 endforeach()
-install(SCRIPT ${CMAKE_BINARY_DIR}/post_install.cmake)
+
+message("-- Create Symlink to \${CMAKE_INSTALL_PREFIX}/bin")
+file(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/bin)
+foreach(executable ${executables})
+  get_filename_component(filename ${executable} NAME)
+  install(CODE "
+    message(\"-- CreateLink: \${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\")
+    execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink ${EUSDIR}/${ARCHDIR}/bin/${filename} bin/${filename} WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX})
+")
+endforeach()
 
 # libraries
 install(DIRECTORY jskeus/eus/${ARCHDIR}/lib/
