@@ -70,7 +70,7 @@ endforeach()
 
 install(CODE "
   message(\"-- Create Symlink to \"$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/bin\"\")
-  file(MAKE_DIRECTORY \"$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin\")
+  file(MAKE_DIRECTORY \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin\")
 ")
 foreach(executable ${executables})
   get_filename_component(filename ${executable} NAME)
