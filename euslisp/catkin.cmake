@@ -68,12 +68,14 @@ foreach(executable ${executables})
     endif()")
 endforeach()
 
-message("-- Create Symlink to \"$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/bin\"")
-file(MAKE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/bin")
+install(CODE "
+  message(\"-- Create Symlink to \"$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/bin\"\")
+  file(MAKE_DIRECTORY \"$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin\")
+")
 foreach(executable ${executables})
   get_filename_component(filename ${executable} NAME)
   install(CODE "
-    message(\"-- CreateLink: \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\")
+    message(\"-- CreateLink: \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin/${filename} -> \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\")
     execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink ${EUSDIR}/${ARCHDIR}/bin/${filename} bin/${filename} WORKING_DIRECTORY \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}\")
 ")
 endforeach()
