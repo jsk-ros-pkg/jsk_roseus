@@ -24,15 +24,15 @@ message (STATUS "Build svn revision: ${SVNVERSION}")
 # CATKIN_MIGRATION: removed during catkin migration
 # rosbuild_add_boost_directories()
 
-execute_process(COMMAND rospack find euslisp OUTPUT_VARIABLE euslisp_PACKAGE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("-- Set euslisp_PACKAGE_PATH to ${euslisp_PACKAGE_PATH}")
-if(EXISTS ${euslisp_PACKAGE_PATH}/jskeus/eus)
-  set(EUSDIR ${euslisp_PACKAGE_PATH}/jskeus/eus)
-else()
-  set(EUSDIR ${euslisp_PACKAGE_PATH})
+#find_package(euslisp)
+find_package(catkin COMPONENTS euslisp)
+if(NOT euslisp_FOUND)
+  message("-- could not found euslisp (catkin) package, use rospack to find euslisp dir")
+  execute_process(COMMAND rospack find euslisp OUTPUT_VARIABLE euslisp_PACKAGE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(euslisp_INCLUDE_DIRS ${euslisp_PACKAGE_PATH}/jskeus/eus/include)
 endif()
-message("-- Set EUSDIR to ${EUSDIR}")
-include_directories(/usr/include /usr/X11R6/include ${EUSDIR}/include)
+message("-- Set euslisp_INCLUDE_DIRS to ${euslisp_INCLUDE_DIRS}")
+include_directories(/usr/include /usr/X11R6/include ${euslisp_INCLUDE_DIRS})
 add_library(roseus roseus.cpp)
 add_library(eustf eustf.cpp)
 add_library(roseus_c_util roseus_c_util.c)
@@ -95,8 +95,8 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-    DEPENDS roslang roscpp rospack euslisp actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs actionlib_tutorials coreutils
-    CATKIN-DEPENDS euslisp # TODO
+    DEPENDS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs actionlib_tutorials coreutils
+    CATKIN-DEPENDS # euslisp TODO
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
