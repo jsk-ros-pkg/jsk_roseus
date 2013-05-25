@@ -121,8 +121,8 @@ install(FILES
 
 # could not found a way to set custom install directory for installed configuration file
 install(CODE "
-   message(\"-- Force change Cflags of $ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc $ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/${PROJECT_NAME}Config.cmake\")
-   execute_process(COMMAND sed -i s@${CMAKE_INSTALL_PREFIX}/include@${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include@ $ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc $ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/${PROJECT_NAME}Config.cmake)
+   message(\"-- Force change Cflags of \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/\${PROJECT_NAME}Config.cmake\")
+   execute_process(COMMAND sed -i s@\${CMAKE_INSTALL_PREFIX}/include@\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include@ \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/${PROJECT_NAME}Config.cmake)
    ")
 
 # dummy test target
