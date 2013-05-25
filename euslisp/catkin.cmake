@@ -45,7 +45,7 @@ message("-- Set EUSDIR  to ${CMAKE_INSTALL_PREFIX}/${EUSDIR}")
 message("-- Set ARCHDIR to ${ARCHDIR}")
 
 # could not found a way to set custom install directory for installed configuration file
-execute_process(COMMAND sed -i s@${CMAKE_INSTALL_PREFIX}/include@${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include@ ${PROJECT_SOURCE_DIR}/build/catkin_generated/installspace/euslisp.pc ${PROJECT_SOURCE_DIR}/build/catkin_generated/installspace/euslispConfig.cmake)
+execute_process(COMMAND sed -i s@${CMAKE_INSTALL_PREFIX}/include@${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include@ $ENV{DESTDIR}/${PROJECT_SOURCE_DIR}/build/catkin_generated/installspace/euslisp.pc $ENV{DESTDIR}/${PROJECT_SOURCE_DIR}/build/catkin_generated/installspace/euslispConfig.cmake)
 message("-- Force change Cflags of euslisp.pc and euslispConfig.cmake to ${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include for installspace")
 
 
