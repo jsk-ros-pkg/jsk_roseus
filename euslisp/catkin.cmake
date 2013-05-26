@@ -126,6 +126,11 @@ install(DIRECTORY jskeus/irteus/
   DESTINATION ${EUSDIR}/../irteus
   FILES_MATCHING PATTERN "*" PATTERN ".svn" EXCLUDE
 )
+# includes
+install(CODE "
+  message(\"-- CreateLink: \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/irteus -> \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/../irteus\")
+  execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink ../irteus \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/irteus)
+")
 
 # could not found a way to set custom install directory for installed configuration file
 install(CODE "
