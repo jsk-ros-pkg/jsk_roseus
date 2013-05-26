@@ -19,7 +19,7 @@ add_rostest(test/test-euslisp.launch)
 
 # build euslisp before catkin_package, since catkin_pakcage/INCLUDE_DIRS needs to be exists
 catkin_package(
-    DEPENDS opengl libjpeg libx11-dev libxext libpng12
+    DEPENDS opengl libjpeg libx11-dev libxext libpng12-dev
     CATKIN-DEPENDS # TODO
     INCLUDE_DIRS jskeus/eus/include
     LIBRARIES # TODO

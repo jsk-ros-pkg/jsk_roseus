@@ -17,13 +17,13 @@
   <build_depend>libjpeg</build_depend>
   <build_depend>libx11-dev</build_depend>
   <build_depend>libxext</build_depend>
-  <build_depend>libpng12</build_depend>
+  <build_depend>libpng12-dev</build_depend>
 
   <run_depend>opengl</run_depend>
   <run_depend>libjpeg</run_depend>
   <run_depend>libx11-dev</run_depend>
   <run_depend>libxext</run_depend>
-  <run_depend>libpng12</run_depend>
+  <run_depend>libpng12-dev</run_depend>
 
   <export>
     <cpp cflags="-I${prefix}/eus/include"/>
