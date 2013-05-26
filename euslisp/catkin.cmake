@@ -71,7 +71,7 @@ foreach(executable ${executables})
 endforeach()
 
 install(CODE "
-  message(\"-- Create Symlink to \"$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/bin\"\")
+  message(\"-- CreateDirectory: \"$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/bin\"\")
   file(MAKE_DIRECTORY \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin\")
 ")
 foreach(executable ${executables})
@@ -88,10 +88,10 @@ install(DIRECTORY jskeus/eus/${ARCHDIR}/lib/
 )
 
 # includes
-install(DIRECTORY jskeus/eus/lisp/c/
-  DESTINATION ${EUSDIR}/include
-  FILES_MATCHING PATTERN "*.h" PATTERN ".svn" EXCLUDE
-)
+install(CODE "
+  message(\"-- CreateLink: \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include -> \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/lisp/c\")
+  execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink lisp/c \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include)
+")
 
 # lib
 install(DIRECTORY jskeus/eus/lib/
@@ -116,7 +116,15 @@ install(FILES
   jskeus/manual.pdf
   jskeus/jmanual.pdf
   jskeus/bashrc.eus
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/jskeus
+)
+install(FILES jskeus/eus/doc/latex/manual.pdf DESTINATION ${EUSDIR}/doc/latex)
+install(FILES jskeus/eus/doc/jlatex/jmanual.pdf DESTINATION ${EUSDIR}/doc/jlatex)
+
+# irteus
+install(DIRECTORY jskeus/irteus/
+  DESTINATION ${EUSDIR}/../irteus
+  FILES_MATCHING PATTERN "*" PATTERN ".svn" EXCLUDE
 )
 
 # could not found a way to set custom install directory for installed configuration file
