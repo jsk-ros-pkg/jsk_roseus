@@ -102,7 +102,7 @@ install(DIRECTORY jskeus/eus/lib/
 # lisp
 install(DIRECTORY jskeus/eus/lisp/
   DESTINATION ${EUSDIR}/lisp
-  FILES_MATCHING PATTERN "*.l" PATTERN ".svn" EXCLUDE
+  FILES_MATCHING PATTERN "*" PATTERN ".svn" EXCLUDE
 )
 
 # models
