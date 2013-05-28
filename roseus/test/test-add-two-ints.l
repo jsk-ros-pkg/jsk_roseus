@@ -35,6 +35,19 @@
       (sys::gc)
       )))
 
+(deftest test-add-two-ints-many
+  (ros::wait-for-service "add_two_ints")
+  (dotimes (i 2000)
+    (let ((a i) (b (random 100000000)))
+      (warning-message 2 "Requesting ~A(~A) + ~A(~A) -> ~A(~A)~%" a (class a) b (class b) (+ a b) (class (+ a b)))
+      (setq req (instance roseus::AddTwoIntsRequest :init :a a :b b))
+      (setq res (ros::service-call "add_two_ints" req))
+      (assert (= (+ (send req :a) (send req :b)) (send res :sum))
+              (format nil "integration failure (~A+~A)=~A(~A)/=~A(~A)"
+                           a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum))))
+      (sys::gc)
+      )))
+
 (ros::roseus "add_two_ints_client")
 (run-all-tests)
 
