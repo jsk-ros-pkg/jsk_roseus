@@ -49,6 +49,31 @@
   (assert (send l :lookup-transform "MANDALAY" "JUPITER" tm))
   )
 
+(deftest test-tf-many ()
+  (setq l (instance ros::transform-listener :init))
+  (unix:sleep 1)
+
+  (setq tm (ros::time))
+  (setq ret (send l :wait-for-transform "/MANDALAY" "/TOKYO" tm 1))
+  (warning-message 2 "wait-for-transform at ~A returns ~A~%" tm ret)
+
+  (setq j 0)
+  (while (< j 20)
+    (incf j)
+    (let ((i 0))
+    (while (< i 100000)
+      (progn
+        (incf i)
+        (send l :lookup-transform "MANDALAY" "JUPITER" (ros::time)))))
+    (warning-message 2 "switch target to /TOKYO~%")
+    (let ((i 0))
+    (while (< i 100000)
+      (progn
+        (incf i)
+        (send l :lookup-transform "MANDALAY" "TOKYO" (ros::time)))))
+    (warning-message 2 "switch target to /JUPITER~%")
+    ))
+
 (run-all-tests)
 
 (exit)
