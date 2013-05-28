@@ -1042,6 +1042,7 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
     ROS_ERROR("attempted to call service  %s, but failed ",
               ros::names::resolve(service).c_str());
   }
+  delete srv;
 
   return (response._message);
 }
