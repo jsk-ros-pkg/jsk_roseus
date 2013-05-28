@@ -1033,16 +1033,14 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   vpush(response._message);     // to avoid GC, its important
   ServiceClientOptions sco(ros::names::resolve(service), request.__getMD5Sum(), persist, M_string());
   ServiceClient client = s_node->serviceClient(sco);
-  ServiceClient* srv = new ServiceClient(client);
   // NEED FIX
-  bool bSuccess =  srv->call(request, response, request.__getMD5Sum());
+  bool bSuccess =  client.call(request, response, request.__getMD5Sum());
   vpop();                       // pop response._message
   vpop();                       // pop request._message
   if ( ! bSuccess ) {
     ROS_ERROR("attempted to call service  %s, but failed ",
               ros::names::resolve(service).c_str());
   }
-  delete srv;
 
   return (response._message);
 }
