@@ -38,6 +38,8 @@
     (assert (= (send tm :to-sec) ti))
     )
 
+  (setq c1 (make-coords :pos #f(1000 0 0) :rpy #f(0 0 0)))
+
   (setq l (instance ros::transform-listener :init))
   (unix:sleep 1)
   (setq tm (ros::time-now))
@@ -46,7 +48,15 @@
   (make-list 1000000)
   (assert (send l :can-transform "/MANDALAY" "/JUPITER" tm))
   (assert (send l :get-latest-common-time "MANDALAY" "JUPITER"))
-  (assert (send l :lookup-transform "MANDALAY" "JUPITER" tm))
+  (setq c (send l :lookup-transform "MANDALAY" "JUPITER" tm))
+  (assert c)
+  (assert (eps= (norm (send c :difference-position c1)) 0))
+  (assert (eps= (norm (send c :difference-rotation c1)) 0))
+
+  ;;
+  (setq vmrss (elt (unix::getrusage 0) 2))
+  (format *error-output* "gc:~A, vmrss:~A~%" (sys::gc) vmrss)
+  (assert (< vmrss 300000) "check memory leak")
   )
 
 (deftest test-tf-many ()
@@ -57,22 +67,29 @@
   (setq ret (send l :wait-for-transform "/MANDALAY" "/TOKYO" tm 1))
   (warning-message 2 "wait-for-transform at ~A returns ~A~%" tm ret)
 
-  (setq j 0)
-  (while (< j 20)
-    (incf j)
-    (let ((i 0))
-    (while (< i 100000)
-      (progn
-        (incf i)
-        (send l :lookup-transform "MANDALAY" "JUPITER" (ros::time)))))
+  (setq c1 (make-coords :pos #f(1000 0 0) :rpy #f(0 0 0)))
+  (setq c2 (make-coords :pos #f(2000 2000 3000) :rpy #f(0.1 0.2 0.3)))
+
+  (dotimes (j 10)
     (warning-message 2 "switch target to /TOKYO~%")
-    (let ((i 0))
-    (while (< i 100000)
-      (progn
-        (incf i)
-        (send l :lookup-transform "MANDALAY" "TOKYO" (ros::time)))))
+    (dotimes (i 100000)
+      (setq c (send l :lookup-transform "MANDALAY" "JUPITER" (ros::time)))
+      (unless (and (eps= (norm (send c :difference-position c1)) 0)
+                   (eps= (norm (send c :difference-rotation c1)) 0))
+        (error "lookup-transform failed ~A ~A" c c1)
+        ))
     (warning-message 2 "switch target to /JUPITER~%")
-    ))
+    (dotimes (i 100000)
+      (setq c (send l :lookup-transform "MANDALAY" "TOKYO" (ros::time)))
+      (unless (and (eps= (norm (send c :difference-position c2)) 0)
+                   (eps= (norm (send c :difference-rotation c2)) 0))
+        (error "lookup-transform failed ~A ~A" c c2)
+        ))
+    ;;
+    (setq vmrss (elt (unix::getrusage 0) 2))
+    (format *error-output* "~A gc:~A, vmrss:~A~%" j (sys::gc) vmrss)
+    (assert (< vmrss 300000) "check memory leak"))
+  )
 
 (run-all-tests)
 
