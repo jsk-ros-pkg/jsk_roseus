@@ -4,8 +4,7 @@
 
 (init-unit-test)
 
-(setq i-max 1000000)  ;; fail
-(setq i-max 200000)
+(setq i-max 1000000)
 
 (deftest test-makecoords-rpy
   (dotimes (j 20)
