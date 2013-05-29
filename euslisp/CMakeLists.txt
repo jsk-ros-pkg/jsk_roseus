@@ -45,6 +45,7 @@ rosbuild_add_rostest(test/test-euslisp.launch)
 rosbuild_check_for_display(disp)
 if(disp)
   rosbuild_add_rostest(test/test-irtrobot.launch)
+  rosbuild_add_rostest(test/test-irtviewer.launch)
 endif(disp)
 
 
