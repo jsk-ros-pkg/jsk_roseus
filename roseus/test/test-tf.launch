@@ -1,5 +1,6 @@
 <launch>
-  <node name="tf_publisher" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 /MANDALAY /JUPITER 10" />
-  <node name="tf_publisher2" pkg="tf" type="static_transform_publisher" args="1 2 3 0.1 0.2 0.3 /JUPITER /TOKYO 10" />
-  <test test-name="eustf" pkg="roseus" type="roseus" args="$(find roseus)/test/test-tf.l" />
+  <node name="tf_publisher_1" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 /MANDALAY /JUPITER 10" />
+  <node name="tf_publisher_2" pkg="tf" type="static_transform_publisher" args="1 2 3 0.1 0.2 0.3 /JUPITER /TOKYO 10" />
+  <test test-name="eustf" pkg="roseus" type="roseus" args="$(find roseus)/test/test-tf.l"
+	time-limit="300" />
 </launch>
