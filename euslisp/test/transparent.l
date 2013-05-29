@@ -23,7 +23,7 @@
     (send *irtview1* :objects *cubes*)
     (print "start")
     (dotimes (i 30)
-      (mapcar #'(lambda (a) (gl::transparent a 0.3)) *cubes*)
+      (mapcar #'(lambda (a) (gl::transparent a (/ i 30.0))) *cubes*)
       (send *irtview0* :draw-objects)
       (send *irtview1* :draw-objects)
       ;;(print (get (car *cubes*) :GL-DISPLAYLIST-ID))
