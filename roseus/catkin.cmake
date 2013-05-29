@@ -37,7 +37,7 @@ add_library(roseus roseus.cpp)
 add_library(eustf eustf.cpp)
 add_library(roseus_c_util roseus_c_util.c)
 target_link_libraries(roseus ${rospack_LIBRARIES} ${roscpp_LIBRARIES})
-target_link_libraries(eustf  ${roscpp_LIBRARIES})
+target_link_libraries(eustf  ${roscpp_LIBRARIES} ${tf_LIBRARIES})
 
 # compile flags
 add_definitions(-O2 -Wno-write-strings -Wno-comment)
