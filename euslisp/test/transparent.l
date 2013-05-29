@@ -28,7 +28,7 @@
       (send *irtview1* :draw-objects)
       ;;(print (get (car *cubes*) :GL-DISPLAYLIST-ID))
       (setq vmrss (elt (unix::getrusage 0) 2))
-      (format t "~A gc:~A, vmrss:~A~%" i (sys::gc) vmrss)
+      (format *error-output* "~A gc:~A, vmrss:~A~%" i (sys::gc) vmrss)
       (assert (< vmrss 300000) "check memory leak")
       )))
 
