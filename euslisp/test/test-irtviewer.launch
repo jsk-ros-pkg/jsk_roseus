@@ -1,0 +1,10 @@
+<launch>
+
+  <sphinxdoc><![CDATA[
+  ]]></sphinxdoc>
+
+  <test test-name="test_leak_transparent" pkg="euslisp"
+	type="irteusgl" args="$(find euslisp)/test/transparent.l"
+	time-limit="600" >
+  </test>
+</launch>
