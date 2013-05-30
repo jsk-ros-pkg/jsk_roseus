@@ -3,6 +3,8 @@
   <sphinxdoc><![CDATA[
   ]]></sphinxdoc>
 
+  <test test-name="test_object" pkg="euslisp"
+	type="irteusgl" args="$(find euslisp)/test/object.l" />
   <test test-name="test_sortgc" pkg="euslisp"
 	type="irteusgl" args="$(find euslisp)/test/sort.l" />
   <test test-name="test_bignum" pkg="euslisp"
