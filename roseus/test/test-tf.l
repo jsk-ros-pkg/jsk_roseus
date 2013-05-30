@@ -155,7 +155,7 @@
     (assert (< vmrss 300000) "check memory leak cobject + rostime + makecoords(dummy ret)"))
   )
 
-(deftest test-tf-lookup-cobject-time-makecoords-dummy-ret ()
+(deftest test-tf-lookup-cobject-time-makecoords-ret ()
   (setq l (instance ros::transform-listener :init))
   (unix:sleep 1)
 
@@ -167,11 +167,10 @@
   (setq c2 (make-coords :pos #f(2000 2000 3000) :rpy #f(0.1 0.2 0.3)))
 
   ;; debug
-  (dotimes (j 10)
+  (dotimes (j 5)
     (warning-message 2 "switch target to /TOKYO~%")
     (dotimes (i 100000)
       (setq ret (ros::eustf-lookup-transform (l . ros::cobject)  "MANDALAY" "JUPITER" (send (ros::time) :sec-nsec)))
-      (setq ret #f(0 0 0 1 0 0 0))
       (make-cascoords :pos (float-vector
                             (* 1000.0 (elt ret 0))
                             (* 1000.0 (elt ret 1))
@@ -186,7 +185,6 @@
 
     (dotimes (i 100000)
       (setq ret (ros::eustf-lookup-transform (l . ros::cobject)  "MANDALAY" "TOKYO" (send (ros::time) :sec-nsec)))
-      (setq ret #f(0 0 0 1 0 0 0))
       (make-cascoords :pos (float-vector
                             (* 1000.0 (elt ret 0))
                             (* 1000.0 (elt ret 1))
@@ -201,7 +199,7 @@
     ;;
     (setq vmrss (elt (unix::getrusage 0) 2))
     (format *error-output* "~A gc:~A, vmrss:~A~%" j (sys::gc) vmrss)
-    (assert (< vmrss 300000) "check memory leak cobject + rostime + makecoords(dummy ret)"))
+    (assert (< vmrss 300000) "check memory leak cobject + rostime + makecoords(ret)"))
   )
 
 (deftest test-tf-lookup-cobject-time-makecoords ()
@@ -216,7 +214,7 @@
   (setq c2 (make-coords :pos #f(2000 2000 3000) :rpy #f(0.1 0.2 0.3)))
 
   ;; debug
-  (dotimes (j 10)
+  (dotimes (j 5)
     (warning-message 2 "switch target to /TOKYO~%")
     (dotimes (i 100000)
       (setq ret (ros::eustf-lookup-transform (l . ros::cobject)  "MANDALAY" "JUPITER" (send (ros::time) :sec-nsec)))
