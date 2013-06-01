@@ -748,6 +748,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
       groupname.assign((char *)get_string(argv[n-1]));
       map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
       if( it != s_mapHandle.end() ) {
+        ROS_DEBUG("subscribe with groupname=%s", groupname.c_str());
         lnode = (it->second).get();
       } else {
         ROS_WARN("groupname %s is missing", groupname.c_str());
@@ -759,6 +760,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   if (isint(argv[n-1])) {queuesize = ckintval(argv[n-1]);n--;}
   if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
+  ROS_DEBUG("subscribe %s queuesize=%d", topicname.c_str(), queuesize);
   // TODO:need error checking
   message = argv[1];
   fncallback = argv[2];
@@ -865,9 +867,9 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   if ( n > 3 ) {
     latch = (argv[3]!=NIL ? true : false);
   }
-
+  ROS_DEBUG("advertise %s %d %d", topicname.c_str(), queuesize, latch);
   if( s_mapAdvertised.find(topicname) != s_mapAdvertised.end() ) {
-    ROS_INFO("topic %s already advertised", topicname.c_str());
+    ROS_WARN("topic %s already advertised", topicname.c_str());
     return (NIL);
   }
 
