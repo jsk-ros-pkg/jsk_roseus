@@ -1,6 +1,9 @@
 <launch>
   <node name="tf_publisher_1" pkg="tf" type="static_transform_publisher" args="1 0 0 0 0 0 /MANDALAY /JUPITER 10" />
   <node name="tf_publisher_2" pkg="tf" type="static_transform_publisher" args="1 2 3 0.1 0.2 0.3 /JUPITER /TOKYO 10" />
+  <node pkg="tf2_ros" type="buffer_server" name="tf2_buffer_server" output="log">
+    <param name="buffer_size" value="1200.0"/>
+  </node>
   <test test-name="eustf" pkg="roseus" type="roseus" args="$(find roseus)/test/test-tf.l"
 	time-limit="300" />
 </launch>

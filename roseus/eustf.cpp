@@ -68,6 +68,8 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
 
+#include <tf2_ros/buffer_client.h>
+
 // for eus.h
 #define class   eus_class
 #define throw   eus_throw
@@ -614,6 +616,7 @@ pointer EUSTF_GETPARENT(register context *ctx,int n,pointer *argv)
     ROS_ERROR("%s",e.what()); return(NIL);
   }
 }
+
 /* */
 pointer EUSTF_TRANSFORM_BROADCASTER(register context *ctx,int n,pointer *argv)
 {
@@ -662,6 +665,152 @@ pointer EUSTF_SEND_TRANSFORM(register context *ctx,int n,pointer *argv){
   return (T);
 }
 
+/* tf2 */
+pointer EUSTF_BUFFER_CLIENT(register context *ctx,int n,pointer *argv)
+{
+  if(!ros::ok()) { error(E_USER, "You must call (ros::roseus \"nodename\") before creating the first NodeHandle"); }
+  /* &optional (ns "tf2_buffer_server") (check_frequency 10.0) (timeout_padding 2.0) */
+  numunion nu;
+  std::string ns_str ("tf2_buffer_server");
+  double check_frequency = 10.0;
+  ros::Duration timeout_padding(2.0);
+
+  ckarg2(0, 3);
+  if (n > 0) {
+    if (isstring (argv[0])) {
+      ns_str.assign ((char *)(argv[0]->c.str.chars));
+    } else {
+      error(E_NOSTRING);
+    }
+  }
+  if (n > 1) {
+    check_frequency = ckfltval(argv[1]);
+  }
+  if (n > 2) {
+    eusfloat_t pd = ckfltval(argv[2]);
+    timeout_padding = ros::Duration(pd);
+  }
+
+  return(makeint((eusinteger_t)(new tf2::BufferClient (ns_str, check_frequency, timeout_padding))));
+}
+
+pointer EUSTF_BUFFER_CLIENT_DISPOSE(register context *ctx,int n,pointer *argv)
+{
+  ckarg(1);
+  tf2::BufferClient *tfbc = (tf2::BufferClient *)(intval(argv[0]));
+  delete(tfbc);
+  return(T);
+}
+
+pointer EUSTF_TFBC_WAITFORSERVER(register context *ctx,int n,pointer *argv)
+{
+  ckarg2(1, 2);
+  tf2::BufferClient *tfbc = (tf2::BufferClient *)(intval(argv[0]));
+  numunion nu;
+  bool ret;
+  if (n > 1) {
+    ros::Duration tm(ckfltval(argv[1]));
+    ret = tfbc->waitForServer(tm);
+  } else {
+    ret = tfbc->waitForServer();
+  }
+  return((ret==true)?(T):(NIL));
+}
+
+pointer EUSTF_TFBC_CANTRANSFORM(register context *ctx,int n,pointer *argv)
+{
+  ckarg2(4, 5);
+  tf2::BufferClient *tfbc = (tf2::BufferClient *)(intval(argv[0]));
+  numunion nu;
+  std::string target_frame, source_frame;
+  ros::Time time;
+  ros::Duration timeout(0.0);
+  bool ret;
+
+  if (isstring(argv[1])) {
+    char *cstr = (char*)(argv[1]->c.str.chars);
+    if (cstr[0] == '/') {
+      target_frame.assign((char *)(cstr+1));
+    } else {
+      target_frame.assign(cstr);
+    }
+  } else error(E_NOSTRING);
+
+  if (isstring(argv[2])) {
+    char *cstr = (char*)(argv[2]->c.str.chars);
+    if (cstr[0] == '/') {
+      source_frame.assign((char *)(cstr+1));
+    } else {
+      source_frame.assign(cstr);
+    }
+  } else error(E_NOSTRING);
+
+  set_ros_time(time, argv[3]);
+
+  if (n > 4) {
+    timeout = ros::Duration(ckfltval(argv[4]));
+  }
+  //target_frame.
+  std::string err_str = std::string();
+  ret = tfbc->canTransform(target_frame, source_frame, time, timeout, &err_str);
+  if(!ret) {
+    ROS_WARN_STREAM("BufferClient::waitForTransform failed! : " << err_str);
+  }
+  ROS_DEBUG_STREAM("BufferClient::waitForTransform : "
+                   << "target_frame : " << target_frame
+                   << "source_frame : " << source_frame
+                   << "time : " << time
+                   << "timeout : " << timeout
+                   << "return : " << ret);
+
+  return((ret==true)?(T):(NIL));
+}
+
+pointer EUSTF_TFBC_LOOKUPTRANSFORM(register context *ctx,int n,pointer *argv)
+{
+  ckarg2(4, 5);
+  tf2::BufferClient *tfbc = (tf2::BufferClient *)(intval(argv[0]));
+  numunion nu;
+  std::string target_frame, source_frame;
+  ros::Time time;
+  ros::Duration timeout(0.0);
+
+  if (!isstring(argv[1])) error(E_NOSTRING);
+  target_frame = std::string((char*)(argv[1]->c.str.chars));
+
+  if (!isstring(argv[2])) error(E_NOSTRING);
+  source_frame = std::string((char*)(argv[2]->c.str.chars));
+
+  set_ros_time(time, argv[3]);
+
+  if (n > 4) {
+    timeout = ros::Duration(ckfltval(argv[4]));
+  }
+
+  geometry_msgs::TransformStamped trans;
+  try {
+    trans = tfbc->lookupTransform(target_frame, source_frame, time, timeout);
+  } catch (std::runtime_error e) {
+    ROS_ERROR("%s", e.what()); return(NIL);
+  }
+
+  pointer vs = makefvector(7);  //pos[3] + rot[4](angle-axis quaternion)
+  vpush(vs);
+  //trans.header.frame_id
+  //trans.child_frame_id
+  //trans.header.stamp --> ??
+  vs->c.fvec.fv[0] = trans.transform.translation.x;
+  vs->c.fvec.fv[1] = trans.transform.translation.y;
+  vs->c.fvec.fv[2] = trans.transform.translation.z;
+  vs->c.fvec.fv[3] = trans.transform.rotation.w;
+  vs->c.fvec.fv[4] = trans.transform.rotation.x;
+  vs->c.fvec.fv[5] = trans.transform.rotation.y;
+  vs->c.fvec.fv[6] = trans.transform.rotation.z;
+  vpop();
+
+  return(vs);
+}
+
 pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
 {
   pointer rospkg,p=Spevalof(PACKAGE);
@@ -701,6 +850,13 @@ pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
   /* */
   defun(ctx,"EUSTF-TRANSFORM-BROADCASTER",argv[0],(pointer (*)())EUSTF_TRANSFORM_BROADCASTER);
   defun(ctx,"EUSTF-SEND-TRANSFORM",argv[0],(pointer (*)())EUSTF_SEND_TRANSFORM);
+
+  /* tf2 */
+  defun(ctx,"EUSTF-BUFFER-CLIENT",argv[0],(pointer (*)())EUSTF_BUFFER_CLIENT);
+  defun(ctx,"EUSTF-BUFFER-CLIENT-DISPOSE",argv[0],(pointer (*)())EUSTF_BUFFER_CLIENT_DISPOSE);
+  defun(ctx,"EUSTF-TF2-WAIT-FOR-SERVER",argv[0],(pointer (*)())EUSTF_TFBC_WAITFORSERVER);
+  defun(ctx,"EUSTF-TF2-CAN-TRANSFORM",argv[0],(pointer (*)())EUSTF_TFBC_CANTRANSFORM);
+  defun(ctx,"EUSTF-TF2-LOOKUP-TRANSFORM",argv[0],(pointer (*)())EUSTF_TFBC_LOOKUPTRANSFORM);
 
   pointer_update(Spevalof(PACKAGE),p);
   return 0;

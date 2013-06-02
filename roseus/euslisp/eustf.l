@@ -294,4 +294,47 @@
      ))
   )
 
+(defclass ros::buffer-client
+  :super ros::object
+  :slots (cobject)
+  )
+(defmethod ros::buffer-client
+  (:init (&key (namespace "tf2_buffer_server") (check-frequency 10.0)
+               (timeout-padding 2.0))
+   (setq cobject (ros::eustf-buffer-client))
+   self)
+  (:wait-for-server (&optional (timeout 5.0))
+   (if timeout (eustf-tf2-wait-for-server cobject timeout)
+     (eustf-tf2-wait-for-server cobject)))
+  (:wait-for-transform ;; this method does not exist in c++
+   (target-frame source-frame rostime timeout &optional (duration 0.05))
+   (let ((tm-ed (ros::time+ (ros::time-now) (ros::time timeout)))
+         (tm-out (ros::time duration))
+         ret)
+     (while
+         (and (null
+               (setq ret (send self :can-transform target-frame source-frame rostime duration)))
+              (> (send (ros::time- tm-ed (ros::time-now)) :to-sec) 0)))
+     ret))
+  (:can-transform (target-frame source-frame rostime &optional (timeout 0.0))
+   (ros::eustf-tf2-can-transform
+    cobject target-frame source-frame (send rostime :sec-nsec) timeout))
+  (:lookup-transform (target-frame source-frame rostime &optional (timeout 0.0))
+   (let (ret)
+     (setq ret (ros::eustf-tf2-lookup-transform
+                cobject target-frame source-frame
+                (send rostime :sec-nsec) timeout))
+     (when ret
+       (make-cascoords :pos (float-vector
+                             (* 1000.0 (elt ret 0))
+                             (* 1000.0 (elt ret 1))
+                             (* 1000.0 (elt ret 2)))
+                       :rot
+                       (user::quaternion2matrix
+                        (float-vector (elt ret 3)
+                                      (elt ret 4)
+                                      (elt ret 5)
+                                      (elt ret 6)))
+                       :name target-frame))))
+  )
 (provide :eustf "eustf.l")

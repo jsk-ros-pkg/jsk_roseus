@@ -12,6 +12,7 @@
   <depend package="visualization_msgs"/>
   <depend package="bullet"/>
   <depend package="tf"/>
+  <depend package="tf2_ros"/>
   <depend package="geometry_msgs" />
   <depend package="std_msgs" />
   <depend package="std_srvs" />
