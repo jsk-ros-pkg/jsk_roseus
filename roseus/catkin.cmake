@@ -4,7 +4,7 @@ project(roseus)
 
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs)
+find_package(catkin REQUIRED COMPONENTS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros)
 
 add_definitions(-Wall)
 
@@ -37,7 +37,7 @@ add_library(roseus roseus.cpp)
 add_library(eustf eustf.cpp)
 add_library(roseus_c_util roseus_c_util.c)
 target_link_libraries(roseus ${rospack_LIBRARIES} ${roscpp_LIBRARIES})
-target_link_libraries(eustf  ${roscpp_LIBRARIES} ${tf_LIBRARIES})
+target_link_libraries(eustf  ${roscpp_LIBRARIES} ${tf_LIBRARIES} ${tf2_ros_LIBRARIES})
 
 # compile flags
 add_definitions(-O2 -Wno-write-strings -Wno-comment)
