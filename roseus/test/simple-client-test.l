@@ -25,7 +25,8 @@
     (send c :send-goal goal)
     (warning-message 1 "wait-for-result~%")
     (unless (send c :wait-for-result)
-      (warning-message 1 "Goal didn't finish~%"))
+      (warning-message 1 "Goal didn't finish (1: successed)~%")
+      (assert nil "The ref server did not returns result"))
     (assert (equal (send c :get-state) actionlib_msgs::GoalStatus::*succeeded*))
     (assert (string= (send c :get-goal-status-text)
                           "The ref server has succeeded"))
@@ -34,7 +35,7 @@
     (send c :send-goal goal)
     (warning-message 1 "wait-for-result~%")
     (unless (send c :wait-for-result)
-      (warning-message 1 "Goal didn't finish~%"))
+      (warning-message 3 "Goal didn't finish (2: aborted) This is expected result~%"))
     (assert (equal (send c :get-state) actionlib_msgs::GoalStatus::*aborted*))
     (assert (string= (send c :get-goal-status-text)
                           "The ref server has aborted"))
@@ -43,7 +44,7 @@
     (send c :send-goal goal)
     (warning-message 1 "wait-for-result~%")
     (unless (send c :wait-for-result)
-      (warning-message 1 "Goal didn't finish~%"))
+      (warning-message 3 "Goal didn't finish (3: aborted) This is expected result~%"))
     ;; The simple server can't reject goals
     (assert (equal (send c :get-state) actionlib_msgs::GoalStatus::*aborted*))
 
@@ -53,7 +54,8 @@
                                              (push x saved-feedback)
                                              (ros::ros-info "Got Feedback")))
     (unless (send c :wait-for-result)
-      (warning-message 1 "Goal didn't finish~%"))
+      (warning-message 1 "Goal didn't finish (9: feedback)~%")
+      (assert nil "The ref server did not returns result"))
     (assert (equal (send c :get-state) actionlib_msgs::GoalStatus::*succeeded*))
     (assert (equal (send (elt saved-feedback 0) :feedback :feedback) 9))
 
