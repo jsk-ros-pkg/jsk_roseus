@@ -153,10 +153,10 @@
    (unless (and action-goal
                 (string= (send msg :status :goal_id :id)
                          (send action-goal :goal_id :id)))
-     (ros::ros-warn "invalid goal id: ~A ~A~%"
+     (ros::ros-warn "invalid goal id: ~A ~A~%           msg :~A~%    action-goal:~A"
                     (send msg :status :goal_id :id)
-                    (send action-goal :goal_id :id))
-     (return-from :update-result))
+                    (if action-goal (send action-goal :goal_id :id)) msg)
+     (return-from :update-result nil))
 
    (setq latest-goal-status (send msg :status))
    (setq latest-result msg)
