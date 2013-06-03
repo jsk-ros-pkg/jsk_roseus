@@ -38,7 +38,7 @@
 
 ;;;
 
-(setq i-max 2000000)
+(setq i-max 200000)
 
 (deftest test-copy-object-integer
   (setq vmrss-orig (elt (unix::getrusage 0) 2))
@@ -87,7 +87,8 @@
   (dotimes (j 5)
     (dotimes (i i-max)
       (setq a (unit-matrix 10))
-      (setq b (copy-object a))
+      ;;(setq b (copy-object a))
+      (setq b (copy-matrix a))
       (unless (equal a b)
         (assert nil (format nil "(equal ~A ~A)" a b))))
     (print (sys::gc) *error-output*)
