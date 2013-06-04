@@ -153,7 +153,7 @@
    (unless (and action-goal
                 (string= (send msg :status :goal_id :id)
                          (send action-goal :goal_id :id)))
-     (ros::ros-warn "invalid goal id: ~A ~A~%           msg :~A~%    action-goal:~A"
+     (ros::ros-debug "invalid goal id: ~A ~A~%           msg :~A~%    action-goal:~A"
                     (send msg :status :goal_id :id)
                     (if action-goal (send action-goal :goal_id :id))
                     msg action-goal)
