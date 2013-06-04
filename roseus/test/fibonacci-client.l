@@ -4,16 +4,19 @@
 ;;;
 (ros::load-ros-manifest "roseus")
 (ros::load-ros-manifest "actionlib_tutorials")
-;;;
+
+(ros::roseus "fibonacci_client")
+(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
+
 (when (member "--gtest_output=xml:" lisp::*eustop-argument* :test #'substringp)  ;; for test-fibonacci.launch
   (require :unittest "lib/llib/unittest.l")
   (init-unit-test))
 
+(ros::service-call "~set_logger_level"
+                   (instance roscpp::SetLoggerLevelRequest
+                             :init :logger "ros" :level "DEBUG"))
 ;;;
 ;;;
-(ros::roseus "fibonacci_client")
-(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
-
 (defun fibonacci (n)
   (if (< n 2)
       n
@@ -47,6 +50,16 @@
      (assert (= (elt fib (1- (length fib))) ans) "(fib 10) -> ~A" fib))
     (exit 0)
     ))
+
+(deftest fibonacci-client-10
+  (let (ans fib)
+    (dotimes (count 10)
+      (setq order (+ 16 (random 24)))
+      (setq ans (fibonacci order))
+      (warning-message 2 "test-fibonacci ~A ~A/~A~%" order count 10)
+      (setq fib (fibonacci-client order))
+      (assert (= (elt fib (1- (length fib))) ans) "(fib ~A) -> ~A/~A" order ans fib)
+    )))
 
 (deftest fibonacci-client-300
   (let (ans fib)
