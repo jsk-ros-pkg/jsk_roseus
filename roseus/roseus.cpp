@@ -596,7 +596,7 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
   }
 
   if( s_mapHandle.find(groupname) != s_mapHandle.end() ) {
-    ROS_WARN("groupname %s is already used", groupname.c_str());
+    ROS_DEBUG("groupname %s is already used", groupname.c_str());
     return (NIL);
   }
 
@@ -638,7 +638,7 @@ pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
 
     map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
     if( it == s_mapHandle.end() ) {
-      ROS_WARN("groupname %s is missing", groupname.c_str());
+      ROS_ERROR("Groupname %s is missing", groupname.c_str());
       return (T);
     }
     boost::shared_ptr<NodeHandle > hdl = (it->second);
@@ -741,6 +741,8 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
 
   // ;; arguments ;;
   // topicname message_type callbackfunc args0 ... argsN [ queuesize ] [ :groupname groupname ]
+  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
 
   if (n > 1 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
     if (argv[n-2] == K_ROSEUS_GROUPNAME) {
@@ -751,15 +753,14 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
         ROS_DEBUG("subscribe with groupname=%s", groupname.c_str());
         lnode = (it->second).get();
       } else {
-        ROS_WARN("groupname %s is missing", groupname.c_str());
+        ROS_ERROR("Groupname %s is missing. Topic %s is not subscribed. Call (ros::create-nodehandle \"%s\") first.",
+                  groupname.c_str(), topicname.c_str(), groupname.c_str());
         return (NIL);
       }
       n -= 2;
     }
   }
   if (isint(argv[n-1])) {queuesize = ckintval(argv[n-1]);n--;}
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
   ROS_DEBUG("subscribe %s queuesize=%d", topicname.c_str(), queuesize);
   // TODO:need error checking
   message = argv[1];
