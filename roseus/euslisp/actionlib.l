@@ -72,6 +72,7 @@
    (send self :name ns)
    (setq name-space ns)
    (setq groupname gp)
+   (if groupname (ros::create-nodehandle groupname))
    (setq action-spec (instance spec :init))
    (setq comm-state (instance actionlib-comm-state :init))
    (setq action-goal-class     (class (send action-spec :action_goal))
@@ -330,6 +331,7 @@
    (setq status actionlib_msgs::GoalStatus::*pending*)
    ;;
    (setq groupname gp)
+   (if groupname (ros::create-nodehandle groupname))
    ;;
    (setq action-goal-class     (class (send action-spec :action_goal))
          action-result-class   (class (send action-spec :action_result))
