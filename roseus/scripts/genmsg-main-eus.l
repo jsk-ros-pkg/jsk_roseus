@@ -6,8 +6,8 @@
 	 (format nil "~A/scripts/gendeps" *roslib-dir*))
 	((probe-file (format nil "~A/bin/gendeps" *roslib-dir*))
 	 (format nil "~A/bin/gendeps" *roslib-dir*))
-	((probe-file (format nil "~A/lib/roslib/gendeps" (unix::getenv "CMAKE_PREFIX_PATH")))
-         (format nil "~A/lib/roslib/gendeps" (unix::getenv "CMAKE_PREFIX_PATH")))
+	((probe-file (format nil "~A/../../lib/roslib/gendeps" (unix::getenv "ROS_ROOT")))
+         (format nil "~A/../../lib/roslib/gendeps" (unix::getenv "ROS_ROOT")))
 	(t
 	 nil)))
 
