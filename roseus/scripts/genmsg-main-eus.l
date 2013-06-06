@@ -471,10 +471,15 @@
   (let ((key fname) val)
     (setq val (cdr (assoc key *md5table* :test #'string=)))
     (when (not val)
-      (setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname)) nil nil)) ;; workaround for fuerte https://code.ros.org/trac/ros/ticket/3956
-      (when (null val)
-	(setq val (read-line (piped-fork (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)))))
-      (push (cons key val) *md5table*))
+      (setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname)) nil nil))) ;; workaround for fuerte https://code.ros.org/trac/ros/ticket/3956
+    (when (null val)
+      (setq val (read-line (piped-fork (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil)))
+    (when (null val) ;; some groovy/rosbuild environemnt needs this line?
+      (setq val (read-line (piped-fork (format nil "PYTHONPATH=`rospack find ~A`/build/devel/lib/python2.7/dist-packages:$PYTHONPATH ~A md5 ~A/~A" pkg (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil)))
+    (when (null val)
+      (warning-message 1 "[ERROR] Could not get md5sum for ~A ~A ~A~%" pkg name fname)
+      (exit -1))
+    (push (cons key val) *md5table*)
     val))
 (defun generate-msg-md5sum (strm pkg name fname)
   (let ()
