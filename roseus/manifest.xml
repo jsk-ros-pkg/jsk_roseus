@@ -10,7 +10,6 @@
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>
   <depend package="visualization_msgs"/>
-  <depend package="bullet"/>
   <depend package="tf"/>
   <depend package="tf2_ros"/>
   <depend package="geometry_msgs" />
