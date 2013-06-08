@@ -17,8 +17,11 @@
       (print (sys::gc) *error-output*)
 
       (setq vmrss (elt (unix::getrusage 0) 2))
-      (format *error-output* "~A gc:~A, vmrss:~A -> ~A~%" j (sys::gc) vmrss-orig vmrss))
-    (assert (< vmrss (* 5 vmrss-orig)) "copy-object body")))
+      (format *error-output* "~A gc:~A, vmrss:~A -> ~A~%" j (sys::gc) vmrss-orig vmrss)
+      (if (>= vmrss (* 2 vmrss-orig))
+          (warning-message 1 "~A copy-object body ~A -> ~A~%" (sys::thread-self) vmrss-orig vmrss))
+      )
+    (assert (< vmrss (* 10 vmrss-orig)) "copy-object body")))
 
 (deftest test-copy-object-thread
   (let (vmrss vmrss-orig a b)
@@ -33,7 +36,7 @@
     (print (sys::gc) *error-output*)
     (setq vmrss (elt (unix::getrusage 0) 2))
     (format *error-output* "gc:~A, vmrss:~A -> ~A~%" (sys::gc) vmrss-orig vmrss)
-    (assert (< vmrss (* 5 vmrss-orig)) "copy-object body thread")
+    (assert (< vmrss (* 10 vmrss-orig)) "copy-object body thread")
     ))
 
 ;;;
