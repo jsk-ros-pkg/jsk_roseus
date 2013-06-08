@@ -6,6 +6,8 @@
 (setq ros::*simple-goal-state-pending* 0
       ros::*simple-goal-state-active*  1
       ros::*simple-goal-state-done*    2)
+(defun simple-goal-states-to-string (i)
+  (elt '(ros::*simple-goal-state-pending* ros::*simple-goal-state-active* ros::*simple-goal-state-done*) i))
 
 (load "actionlib-commstate.l")
 
@@ -150,9 +152,10 @@
 	 (return-if-server-down) (maximum-status-interval 5))
    (let ((start (ros::time-now))
 	 (result-topic (format nil "~A/result" name-space)))
-     (ros::ros-debug ";; [~A] wait-for-result ~A" name-space (send goal_id :id))
+     (ros::ros-debug ";; [~A] wait-for-result ~A" name-space (if goal_id (send goal_id :id)))
      (ros::rate 10)
      (while (ros::ok)
+       (ros::ros-debug ";; [~A] wait-for-result ~A" name-space (simple-goal-states-to-string simple-state))
        (if (= simple-state ros::*simple-goal-state-done*)
 	   (return))
        (if (> timeout 0)
