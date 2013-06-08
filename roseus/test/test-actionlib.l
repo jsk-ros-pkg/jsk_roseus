@@ -16,6 +16,42 @@
                              :init :logger "ros" :level "DEBUG"))
 ;;;
 ;;;
+
+(deftest wait-for-result-twice
+  (let (goal result)
+    (if (not (boundp '*c*))
+        (setq *c* (instance ros::simple-action-client :init
+                            "fibonacci" actionlib_tutorials::FibonacciAction)))
+    (warning-message 1 ";; ~A wait-for-server~%" (unix::getpid))
+    (send *c* :wait-for-server)
+    (setq goal (instance actionlib_tutorials::FibonacciActionGoal :init))
+    (send goal :goal :order 10)
+    (send *c* :send-goal goal)
+    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
+    (assert (setq result (send *c* :wait-for-result)) "wait-for-result -> ~A" result)
+    (setq result (send (send *c* :get-result) :sequence))
+    (warning-message 1 ";; ~A result -> ~A~%" (unix::getpid) result)
+    (assert (= (elt result (1- (length result))) 55) "(fib 10) -> ~A" result)
+
+    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
+    (assert (setq result (send *c* :wait-for-result)) "wait-for-result -> ~A" result) ;; note that wait-for-result returns t
+    (setq result (send (send *c* :get-result) :sequence))
+    (warning-message 1 ";; ~A result -> ~A~%" (unix::getpid) result)
+    (assert (= (elt result (1- (length result))) 55) "(fib 10) -> ~A" result)
+    ))
+
+
+(deftest wait-for-result-without-send-goal
+  (let ()
+    (if (not (boundp '*c*))
+        (setq *c* (instance ros::simple-action-client :init
+                            "fibonacci" actionlib_tutorials::FibonacciAction)))
+    (warning-message 1 ";; ~A wait-for-server~%" (unix::getpid))
+    (send *c* :wait-for-server)
+    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
+    (assert (send *c* :wait-for-result)) ;; note that :wait-for-results returns t even if no goal has need sent
+    ))
+
 (defun fibonacci (n)
   (if (< n 2)
       n
@@ -37,15 +73,6 @@
     (warning-message 1 ";; ~A result -> ~A~%" (unix::getpid) (send (send *c* :get-result) :sequence))
     (send (send *c* :get-result) :sequence)))
 
-(deftest wait-for-result-without-send-goal
-    (if (not (boundp '*c*))
-        (setq *c* (instance ros::simple-action-client :init
-                            "fibonacci" actionlib_tutorials::FibonacciAction)))
-    (warning-message 1 ";; ~A wait-for-server~%" (unix::getpid))
-    (send *c* :wait-for-server)
-    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
-    (send *c* :wait-for-result)
-    )
 
 (deftest fibonacci-client-10
   (let (ans fib)
