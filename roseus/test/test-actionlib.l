@@ -5,8 +5,11 @@
 (ros::load-ros-manifest "roseus")
 (ros::load-ros-manifest "actionlib_tutorials")
 
-(ros::roseus "fibonacci_client")
+(ros::roseus "test_actionlib")
 (setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
+
+(require :unittest "lib/llib/unittest.l")
+(init-unit-test)
 
 (ros::service-call "~set_logger_level"
                    (instance roscpp::SetLoggerLevelRequest
@@ -34,16 +37,36 @@
     (warning-message 1 ";; ~A result -> ~A~%" (unix::getpid) (send (send *c* :get-result) :sequence))
     (send (send *c* :get-result) :sequence)))
 
-(let ((count 0) ans fib)  ;; for test-fibonaci.launch
-  (setq ans (fibonacci 10))
-  (do-until-key
-   (warning-message 2 "test-fibonacci ~A/~A~%" count 1000)
-   (incf count)
-   (when (> count 1000)
-     (exit 0))
-   (setq fib (fibonacci-client 10))
-   (assert (= (elt fib (1- (length fib))) ans) "(fib 10) -> ~A" fib))
-  (exit 0)
-  )
+(deftest wait-for-result-without-send-goal
+    (if (not (boundp '*c*))
+        (setq *c* (instance ros::simple-action-client :init
+                            "fibonacci" actionlib_tutorials::FibonacciAction)))
+    (warning-message 1 ";; ~A wait-for-server~%" (unix::getpid))
+    (send *c* :wait-for-server)
+    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
+    (send *c* :wait-for-result)
+    )
 
+(deftest fibonacci-client-10
+  (let (ans fib)
+    (dotimes (count 10)
+      (setq order (+ 16 (random 24)))
+      (setq ans (fibonacci order))
+      (warning-message 2 "test-fibonacci ~A ~A/~A~%" order count 10)
+      (setq fib (fibonacci-client order))
+      (assert (= (elt fib (1- (length fib))) ans) "(fib ~A) -> ~A/~A" order ans fib)
+    )))
+
+(deftest fibonacci-client-300
+  (let (ans fib)
+    (dotimes (count 300)
+      (setq order (+ 16 (random 16)))
+      (setq ans (fibonacci order))
+      (warning-message 2 "test-fibonacci ~A ~A/~A~%" order count 300)
+      (setq fib (fibonacci-client order))
+      (assert (= (elt fib (1- (length fib))) ans) "(fib ~A) -> ~A/~A" order ans fib)
+    )))
+
+(run-all-tests)
+(exit)
 

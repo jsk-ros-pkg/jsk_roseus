@@ -1,7 +1,7 @@
 <launch>
   <node name="fibonacci_server" pkg="roseus" type="fibonacci-server.l" output="screen" />
   <node name="fibonacci_client" pkg="roseus" type="fibonacci-client.l" output="screen" />
-  <test test-name="fibonacci_client_300" pkg="roseus" type="fibonacci-client.l"
+  <test test-name="test_actinlib_client" pkg="roseus" type="test-actinlib.l"
 	time-limit="600" />
 </launch>
 
