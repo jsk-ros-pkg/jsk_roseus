@@ -348,14 +348,14 @@
    (cond
     (groupname
      (ros::subscribe (format nil "~A/goal" name-space)
-                     action-goal-class #'send self :goal-callback :groupname groupname)
+                     action-goal-class #'send self :goal-callback 0 :groupname groupname)
      (ros::subscribe (format nil "~A/cancel" name-space)
-                     actionlib_msgs::GoalID #'send self :cancel-callback :groupname groupname))
+                     actionlib_msgs::GoalID #'send self :cancel-callback 0 :groupname groupname))
     (t
      (ros::subscribe (format nil "~A/goal" name-space)
-                     action-goal-class #'send self :goal-callback)
+                     action-goal-class #'send self :goal-callback 0)
      (ros::subscribe (format nil "~A/cancel" name-space)
-                     actionlib_msgs::GoalID #'send self :cancel-callback)))
+                     actionlib_msgs::GoalID #'send self :cancel-callback 0)))
    ;; need getparam for status_frequence, status_list_timeout
    )
   ;;
