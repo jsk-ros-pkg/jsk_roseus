@@ -122,9 +122,11 @@
   (:find-status-by-goal-id
    (msg)
    (let (ret)
+     (ros::ros-debug "find-status-by-goal-id action-goal:~A" (if action-goal (send action-goal :goal_id :id)))
      (if action-goal
          (setq ret
                (find-if #'(lambda (m)
+                            (ros::ros-debug "find-status-by-goal-id goal_id:~A == ~A ~A" (send m :goal_id :id) (send action-goal :goal_id :id) (string= (send m :goal_id :id) (send action-goal :goal_id :id)))
                             (string= (send m :goal_id :id)
                                      (send action-goal :goal_id :id)))
                         (send msg :status_list))))
@@ -161,6 +163,7 @@
 
    (setq latest-goal-status (send msg :status))
    (setq latest-result msg)
+   (ros::ros-debug "update-result goal id: ~A ~A" (send msg :status :goal_id :id) state)
    (cond ((member state
                   (list 'ros::*comm-state-waiting-for-ack*
                         'ros::*comm-state-waiting-for-cancel-ack*
@@ -175,6 +178,7 @@
           (ros::ros-error "Get a result when we ware already in the DONE state"))
          (t
           (ros::ros-error (format nil "In a funny state ~A" state))))
+   (ros::ros-debug "update-result state: ~A ~A" (send msg :status :goal_id :id) state)
    )
   )
 

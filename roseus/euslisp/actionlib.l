@@ -21,13 +21,14 @@
 (defmethod ros::simple-action-client
   (:goal-status-cb
    (msg)
-   (ros::ros-debug ";; [~A] status-cb (seq:~A ~A)" name-space (send msg :header :seq) (mapcar #'(lambda (s) (format nil "id:~A, status:~A" (send s :goal_id :id) (send s :status))) (send msg :status_list)))
+   (ros::ros-debug "[~A] status-cb (seq:~A ~A)" name-space (send msg :header :seq) (mapcar #'(lambda (s) (format nil "id:~A, status:~A" (send s :goal_id :id) (send s :status))) (send msg :status_list)))
    (let ((m (send comm-state :find-status-by-goal-id msg)))
      (when m
        (let ((com-state (send comm-state :update-status msg))
              (error-msg
               (format nil "Received comm state ~A when in simple state ~A"
                       comm-state simple-state)))
+         (ros::ros-debug "[~A] status-cb  (seq:~A ~A)" name-space (send msg :header :seq) (mapcar #'(lambda (s) (format nil "id:~A, status:~A" (send s :goal_id :id) (send s :status))) (send msg :status_list)))
 	 (setq status-stamp (ros::time-now))
          (case
              com-state
@@ -54,12 +55,13 @@
   (:action-result-cb
    (msg)
    (let ()
-     (ros::ros-debug ";; [~A] reuslt ~A" name-space msg)
+     (ros::ros-debug "[~A] reuslt-cb ~A" name-space (send msg :status :goal_id :id))
      (send comm-state :update-result msg)
+     (ros::ros-debug "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send comm-state :state))
      ))
   (:action-feedback-cb
    (msg)
-   (ros::ros-debug ";; [~A] feedback ~A" name-space msg)
+   (ros::ros-debug "[~A] feedback-cb ~A" name-space msg)
    (if action-feedback-cb (funcall action-feedback-cb msg)))
   ;;
   (:make-goal-instance
@@ -106,20 +108,20 @@
          (feedback-topic (format nil "~A/feedback" name-space))
          (result-topic (format nil "~A/result" name-space))
 	 (count 0))
-     (ros::ros-debug ";; [~A] wait-for-server" name-space)
+     (ros::ros-debug "[~A] wait-for-server" name-space)
      (ros::rate 10)
      (while (or (= (ros::get-num-subscribers goal-topic) 0)
                 (= (ros::get-num-subscribers cancel-topic) 0)
                 (= (ros::get-num-publishers feedback-topic) 0)
                 (= (ros::get-num-publishers result-topic) 0))
-       (ros::ros-debug ";; num subscribers ~A ~d, ~A ~d"
+       (ros::ros-debug "[~A] num subscribers ~A ~d, ~A ~d" name-space
 		       goal-topic (ros::get-num-subscribers goal-topic)
 		       cancel-topic (ros::get-num-subscribers cancel-topic))
        (send self :spin-once)
        (ros::sleep)
        (when (and timeout (>= count (* timeout 10)))
-         (ros::ros-warn "action server(~A) is not found" name-space)
-         (ros::ros-warn " goal=~d, cancel=~d, feedback=~d, result=~d"
+         (ros::ros-warn "[~A] action server is not found" name-space)
+         (ros::ros-warn "     goal=~d, cancel=~d, feedback=~d, result=~d"
                         (ros::get-num-subscribers goal-topic)
                         (ros::get-num-subscribers cancel-topic)
                         (ros::get-num-publishers feedback-topic)
@@ -139,6 +141,7 @@
      (if done-cb (setq action-done-cb done-cb))
      (if active-cb (setq action-active-cb active-cb))
      (if feedback-cb (setq action-feedback-cb feedback-cb))
+     (ros::ros-debug "[~A] send-goal ~A" name-space (send goal_id :id))
      (ros::publish (format nil "~A/goal" name-space) goal)))
   (:send-goal-and-wait
    (goal &key (timeout 0))
@@ -152,10 +155,10 @@
 	 (return-if-server-down) (maximum-status-interval 5))
    (let ((start (ros::time-now))
 	 (result-topic (format nil "~A/result" name-space)))
-     (ros::ros-debug "[~A] wait-for-result ~A, timeout=~A" name-space (if goal_id (send goal_id :id)) timeout)
+     (ros::ros-debug "[~A] :wait-for-result ~A, timeout=~A" name-space (if goal_id (send goal_id :id)) timeout)
      (ros::rate 10)
      (while (ros::ok)
-       (ros::ros-debug ";; [~A] wait-for-result ~A" name-space (simple-goal-states-to-string simple-state))
+       (ros::ros-debug "[~A] :wait-for-result ~A ~A" name-space (simple-goal-states-to-string simple-state) (send comm-state :state))
        (if (= simple-state ros::*simple-goal-state-done*)
 	   (return))
        (if (> timeout 0)
@@ -232,7 +235,7 @@
      ))
   (:goal-callback ;; goal is always accepted, not rejected
    (msg)
-   (ros::ros-info ";; Recieved Goal ~A" (send msg :goal_id :id))
+   (ros::ros-info ";; Received Goal ~A" (send msg :goal_id :id))
    (cond (pending-goal ;; recall this
 	  (let ((recall-msg (send self :result)))
 	    (send recall-msg :status :goal_id (send pending-goal :goal_id))
