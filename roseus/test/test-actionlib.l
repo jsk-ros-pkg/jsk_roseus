@@ -77,7 +77,7 @@
 (deftest fibonacci-client-10
   (let (ans fib)
     (dotimes (count 10)
-      (setq order (+ 16 (random 24)))
+      (setq order (+ 16 (random 20)))
       (setq ans (fibonacci order))
       (warning-message 3 ";; test-fibonacci ~A ~A/~A~%" order count 10)
       (setq fib (fibonacci-client order))
