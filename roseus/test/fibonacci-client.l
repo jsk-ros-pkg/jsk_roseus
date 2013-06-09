@@ -23,21 +23,21 @@
     (if (not (boundp '*c*))
         (setq *c* (instance ros::simple-action-client :init
                             "fibonacci" actionlib_tutorials::FibonacciAction)))
-    (warning-message 1 ";; ~A wait-for-server~%" (unix::getpid))
+    (warning-message 2 ";; ~A wait-for-server~%" (unix::getpid))
     (send *c* :wait-for-server)
     (setq goal (instance actionlib_tutorials::FibonacciActionGoal :init))
     (send goal :goal :order order)
     (send *c* :send-goal goal)
 
-    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
+    (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
     (send *c* :wait-for-result)
-    (warning-message 1 ";; ~A result -> ~A~%" (unix::getpid) (send (send *c* :get-result) :sequence))
+    (warning-message 2 ";; ~A result -> ~A~%" (unix::getpid) (send (send *c* :get-result) :sequence))
     (send (send *c* :get-result) :sequence)))
 
 (let ((count 0) ans fib)  ;; for test-fibonaci.launch
   (setq ans (fibonacci 10))
   (do-until-key
-   (warning-message 2 "test-fibonacci ~A/~A~%" count 1000)
+   (warning-message 4 ";; test-fibonacci ~A/~A~%" count 1000)
    (incf count)
    (when (> count 1000)
      (exit 0))

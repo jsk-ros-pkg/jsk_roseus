@@ -22,21 +22,21 @@
     (if (not (boundp '*c*))
         (setq *c* (instance ros::simple-action-client :init
                             "fibonacci" actionlib_tutorials::FibonacciAction)))
-    (warning-message 1 ";; ~A wait-for-server~%" (unix::getpid))
+    (warning-message 2 ";; ~A wait-for-server~%" (unix::getpid))
     (send *c* :wait-for-server)
     (setq goal (instance actionlib_tutorials::FibonacciActionGoal :init))
     (send goal :goal :order 10)
     (send *c* :send-goal goal)
-    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
+    (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
     (assert (setq result (send *c* :wait-for-result)) "wait-for-result -> ~A" result)
     (setq result (send (send *c* :get-result) :sequence))
-    (warning-message 1 ";; ~A result -> ~A~%" (unix::getpid) result)
+    (warning-message 2 ";; ~A result -> ~A~%" (unix::getpid) result)
     (assert (= (elt result (1- (length result))) 55) "(fib 10) -> ~A" result)
 
-    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
+    (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
     (assert (setq result (send *c* :wait-for-result)) "wait-for-result -> ~A" result) ;; note that wait-for-result returns t
     (setq result (send (send *c* :get-result) :sequence))
-    (warning-message 1 ";; ~A result -> ~A~%" (unix::getpid) result)
+    (warning-message 2 ";; ~A result -> ~A~%" (unix::getpid) result)
     (assert (= (elt result (1- (length result))) 55) "(fib 10) -> ~A" result)
     ))
 
@@ -46,9 +46,9 @@
     (if (not (boundp '*c*))
         (setq *c* (instance ros::simple-action-client :init
                             "fibonacci" actionlib_tutorials::FibonacciAction)))
-    (warning-message 1 ";; ~A wait-for-server~%" (unix::getpid))
+    (warning-message 2 ";; ~A wait-for-server~%" (unix::getpid))
     (send *c* :wait-for-server)
-    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
+    (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
     (assert (send *c* :wait-for-result)) ;; note that :wait-for-results returns t even if no goal has need sent
     ))
 
@@ -62,15 +62,15 @@
     (if (not (boundp '*c*))
         (setq *c* (instance ros::simple-action-client :init
                             "fibonacci" actionlib_tutorials::FibonacciAction)))
-    (warning-message 1 ";; ~A wait-for-server~%" (unix::getpid))
+    (warning-message 2 ";; ~A wait-for-server~%" (unix::getpid))
     (send *c* :wait-for-server)
     (setq goal (instance actionlib_tutorials::FibonacciActionGoal :init))
     (send goal :goal :order order)
     (send *c* :send-goal goal)
 
-    (warning-message 1 ";; ~A wait-for-result~%" (unix::getpid))
+    (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
     (send *c* :wait-for-result)
-    (warning-message 1 ";; ~A result -> ~A~%" (unix::getpid) (send (send *c* :get-result) :sequence))
+    (warning-message 2 ";; ~A result -> ~A~%" (unix::getpid) (send (send *c* :get-result) :sequence))
     (send (send *c* :get-result) :sequence)))
 
 
@@ -79,7 +79,7 @@
     (dotimes (count 10)
       (setq order (+ 16 (random 24)))
       (setq ans (fibonacci order))
-      (warning-message 2 "test-fibonacci ~A ~A/~A~%" order count 10)
+      (warning-message 3 ";; test-fibonacci ~A ~A/~A~%" order count 10)
       (setq fib (fibonacci-client order))
       (assert (= (elt fib (1- (length fib))) ans) "(fib ~A) -> ~A/~A" order ans fib)
     )))
@@ -89,7 +89,7 @@
     (dotimes (count 300)
       (setq order (+ 16 (random 16)))
       (setq ans (fibonacci order))
-      (warning-message 2 "test-fibonacci ~A ~A/~A~%" order count 300)
+      (warning-message 3 ";; test-fibonacci ~A ~A/~A~%" order count 300)
       (setq fib (fibonacci-client order))
       (assert (= (elt fib (1- (length fib))) ans) "(fib ~A) -> ~A/~A" order ans fib)
     )))
