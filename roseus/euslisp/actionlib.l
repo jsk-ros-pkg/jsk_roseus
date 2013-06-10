@@ -21,7 +21,7 @@
 (defmethod ros::simple-action-client
   (:goal-status-cb
    (msg)
-   (ros::ros-debug "[~A] status-cb (seq:~A ~A)" name-space (send msg :header :seq) (mapcar #'(lambda (s) (format nil "id:~A, status:~A" (send s :goal_id :id) (goal-status-to-string (send s :status)))) (send msg :status_list)))
+   ;;(ros::ros-debug "[~A] status-cb (seq:~A ~A)" name-space (send msg :header :seq) (mapcar #'(lambda (s) (format nil "id:~A, status:~A" (send s :goal_id :id) (goal-status-to-string (send s :status)))) (send msg :status_list)))
    (let ((m (send comm-state :find-status-by-goal-id msg)))
      (when m
        (let ((com-state (send comm-state :update-status msg))
