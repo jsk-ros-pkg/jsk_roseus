@@ -81,7 +81,8 @@
       (setq ans (fibonacci order))
       (warning-message 3 ";; test-fibonacci ~A ~A/~A~%" order count 10)
       (setq fib (fibonacci-client order))
-      (assert (= (elt fib (1- (length fib))) ans) "(fib ~A) -> ~A/~A" order ans fib)
+      (if (> (length fib) 0)
+          (assert (= (elt fib (1- (length fib))) ans) "(fib ~A) -> ~A/~A" order ans fib))
     )))
 
 (deftest fibonacci-client-300
@@ -91,7 +92,8 @@
       (setq ans (fibonacci order))
       (warning-message 3 ";; test-fibonacci ~A ~A/~A~%" order count 300)
       (setq fib (fibonacci-client order))
-      (assert (= (elt fib (1- (length fib))) ans) "(fib ~A) -> ~A/~A" order ans fib)
+      (if (> (length fib) 0)
+          (assert (= (elt fib (1- (length fib))) ans) "(fib ~A) -> ~A/~A" order ans fib))
     )))
 
 (run-all-tests)
