@@ -60,7 +60,6 @@
      (ros::ros-debug "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send comm-state :state))
      ;; transition to goal state
      (setq dummy-msg (instance actionlib_msgs::GoalStatusArray :init))
-     (describe (send msg :result))
      (send dummy-msg :status_list (list (send msg :status)))
      (send dummy-msg :header (send msg :header))
      (send self :goal-status-cb dummy-msg)
