@@ -311,7 +311,11 @@
                    (eps= (norm (send c :difference-rotation c2)) 0))
         (error "tf2: lookup-transform failed ~A ~A" c c2)
         ))
-    )
+
+    ;;
+    (setq vmrss (elt (unix::getrusage 0) 2))
+    (format *error-output* "~A gc:~A, vmrss:~A~%" j (sys::gc) vmrss)
+    (assert (< vmrss 300000) "check memory leak"))
   )
 
 (run-all-tests)
