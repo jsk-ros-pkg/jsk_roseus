@@ -304,7 +304,7 @@
       (error "tf2: lookup-transform failed ~A ~A" c c1)
       ))
   (warning-message 2 "switch target to /JUPITER~%")
-  (dotimes (j 10)
+  (dotimes (j 100000)
     (setq c (send l :lookup-transform "MANDALAY" "TOKYO" (ros::time)))
     (unless (and (eps= (norm (send c :difference-position c2)) 0)
                  (eps= (norm (send c :difference-rotation c2)) 0))
