@@ -111,7 +111,8 @@
   :slots (state action-goal latest-goal-status latest-result))
 (defmethod actionlib-comm-state
   (:init
-   (&key ((:action-goal ac)) ((:action-result ar)))
+   (&key ((:action-goal ac)) ((:action-result ar)) (name))
+   (send self :name name)
    (setq state 'ros::*comm-state-waiting-for-ack*)
    (setq action-goal ac)
    (setq latest-goal-status (instance actionlib_msgs::GoalStatus :init :status actionlib_msgs::GoalStatus::*pending*))
@@ -122,11 +123,11 @@
   (:find-status-by-goal-id
    (msg)
    (let (ret)
-     (ros::ros-debug "find-status-by-goal-id action-goal:~A" (if action-goal (send action-goal :goal_id :id)))
+     (ros::ros-debug "[~A] find-status-by-goal-id action-goal:~A" (send self :name) (if action-goal (send action-goal :goal_id :id)))
      (if action-goal
          (setq ret
                (find-if #'(lambda (m)
-                            (ros::ros-debug "find-status-by-goal-id goal_id:~A == ~A ~A" (send m :goal_id :id) (send action-goal :goal_id :id) (string= (send m :goal_id :id) (send action-goal :goal_id :id)))
+                            (ros::ros-debug "[~A] find-status-by-goal-id goal_id:~A == ~A ~A" (send self :name) (send m :goal_id :id) (send action-goal :goal_id :id) (string= (send m :goal_id :id) (send action-goal :goal_id :id)))
                             (string= (send m :goal_id :id)
                                      (send action-goal :goal_id :id)))
                         (send msg :status_list))))
@@ -141,12 +142,12 @@
      (setq new-state
            (cdr (assoc (send comm-status :status)
                        (cdr (assoc state ros::*comm-state-machine*)))))
-     (ros::ros-debug "COMM-STATE ~A~%    (~A -> ~A)~%    by status:~A goal_id:~A" comm-status state new-state (goal-status-to-string (send comm-status :status)) (send comm-status :goal_id :id))
+     (ros::ros-debug "[~A] COMM-STATE ~A~%    (~A -> ~A)~%    by status:~A goal_id:~A" (send self :name) comm-status state new-state (goal-status-to-string (send comm-status :status)) (send comm-status :goal_id :id))
      (setq latest-goal-status comm-status)
      (case new-state
            ('ros::*comm-state-no-transition*  t)
            ('ros::*comm-state-invalid-transition*
-            (ros::ros-error (format nil "invalid goal status transition from ~A to ~A" (send comm-status :status) state)))
+            (ros::ros-error (format nil "[~A] invalid goal status transition from ~A to ~A" (send self :name) (send comm-status :status) state)))
            (t
             (setq state new-state)))
      state))
@@ -155,15 +156,15 @@
    (unless (and action-goal
                 (string= (send msg :status :goal_id :id)
                          (send action-goal :goal_id :id)))
-     (ros::ros-debug "invalid goal id: ~A ~A~%           msg :~A~%    action-goal:~A"
-                    (send msg :status :goal_id :id)
+     (ros::ros-debug "[~A] invalid goal id: ~A ~A~%           msg :~A~%    action-goal:~A"
+                    (send self :name) (send msg :status :goal_id :id)
                     (if action-goal (send action-goal :goal_id :id))
                     msg action-goal)
      (return-from :update-result nil))
 
    (setq latest-goal-status (send msg :status))
    (setq latest-result msg)
-   (ros::ros-debug "update-result goal id: ~A ~A" (send msg :status :goal_id :id) state)
+   (ros::ros-debug "[~A] update-result goal id: ~A ~A" (send self :name) (send msg :status :goal_id :id) state)
    (cond ((member state
                   (list 'ros::*comm-state-waiting-for-ack*
                         'ros::*comm-state-waiting-for-cancel-ack*
@@ -175,10 +176,10 @@
                 (instance actionlib_msgs::GoalStatusArray :init :status_list (list (send msg :status))))
           (setq state 'ros::*comm-state-done*))
          ((eq state 'ros::*comm-state-done*)
-          (ros::ros-error "Get a result when we ware already in the DONE state"))
+          (ros::ros-error "[~A] Get a result when we ware already in the DONE state" name))
          (t
-          (ros::ros-error (format nil "In a funny state ~A" state))))
-   (ros::ros-debug "update-result state: ~A ~A" (send msg :status :goal_id :id) state)
+          (ros::ros-error "[~A] In a funny state ~A" (send self :name) state)))
+   (ros::ros-debug "[~A] update-result state: ~A ~A" (send self :name) (send msg :status :goal_id :id) state)
    )
   )
 
