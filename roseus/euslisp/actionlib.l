@@ -16,7 +16,7 @@
   :slots (name-space action-spec simple-state comm-state status-stamp
                      action-goal-class action-result-class action-feedback-class
                      action-done-cb action-active-cb action-feedback-cb
-                     goal_id groupname))
+                     goal_id groupname seq-count))
 
 (defmethod ros::simple-action-client
   (:goal-status-cb
@@ -81,6 +81,7 @@
    (send self :name ns)
    (setq name-space ns)
    (setq groupname gp)
+   (setq seq-count 0)
    (if groupname (ros::create-nodehandle groupname))
    (setq action-spec (instance spec :init))
    (setq comm-state (instance actionlib-comm-state :init :name name-space))
@@ -138,7 +139,8 @@
    (goal &key done-cb active-cb feedback-cb)
    (let ((now (ros::time-now)))
      (setq goal_id (instance actionlib_msgs::GoalID :init
-                             :id (format nil "~a" (send now :sec-nsec))))
+                             :id (format nil "~A_~A_~A_~A" (ros::get-name) (unix::getpid) name-space seq-count)))
+     (incf seq-count)
      (send goal :goal_id goal_id)
      (setq simple-state ros::*simple-goal-state-pending*)
      (setq status-stamp nil)
