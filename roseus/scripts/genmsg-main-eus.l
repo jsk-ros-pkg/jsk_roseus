@@ -470,10 +470,8 @@
 (defun get-md5sum (pkg name fname)
   (let ((key fname) val)
     (setq val (cdr (assoc key *md5table* :test #'string=)))
-    (when (not val)
-      (setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname)) nil nil))) ;; workaround for fuerte https://code.ros.org/trac/ros/ticket/3956
     (when (null val)
-      (setq val (read-line (piped-fork (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil)))
+      (setq val (read-line (piped-fork (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil))) ;;use rosmsg or rossrv instead of gendeps https://github.com/ros/ros/issues/18
     (when (null val) ;; some groovy/rosbuild environemnt needs this line?
       (setq val (read-line (piped-fork (format nil "PYTHONPATH=`rospack find ~A`/build/devel/lib/python2.7/dist-packages:$PYTHONPATH ~A md5 ~A/~A" pkg (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil)))
     (when (null val)
