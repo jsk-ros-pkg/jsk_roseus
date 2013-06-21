@@ -472,6 +472,8 @@
     (setq val (cdr (assoc key *md5table* :test #'string=)))
     (when (null val)
       (setq val (read-line (piped-fork (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil))) ;;use rosmsg or rossrv instead of gendeps https://github.com/ros/ros/issues/18
+    (when (not val)
+      (setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname)) nil nil))) ;;workaround for packages installed from source
     (when (null val) ;; some groovy/rosbuild environemnt needs this line?
       (setq val (read-line (piped-fork (format nil "PYTHONPATH=`rospack find ~A`/build/devel/lib/python2.7/dist-packages:$PYTHONPATH ~A md5 ~A/~A" pkg (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil)))
     (when (null val)
