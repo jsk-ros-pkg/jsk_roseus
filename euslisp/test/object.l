@@ -23,6 +23,7 @@
       )
     (assert (< vmrss (* 10 vmrss-orig)) "copy-object body")))
 
+#|
 (deftest test-copy-object-thread
   (let (vmrss vmrss-orig a b)
     (need-thread 2)
@@ -38,6 +39,7 @@
     (format *error-output* "gc:~A, vmrss:~A -> ~A~%" (sys::gc) vmrss-orig vmrss)
     (assert (< vmrss (* 10 vmrss-orig)) "copy-object body thread")
     ))
+|#
 
 ;;;
 
