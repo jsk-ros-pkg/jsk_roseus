@@ -20,6 +20,13 @@ endif("" STREQUAL "${roshomedir}")
 
 # for euslisp ros API. like roslib.load_mafest
 macro(genmanifest_eus)
+  execute_process(COMMAND rosrun euslisp eus2 "(exit)"
+    RESULT_VARIABLE _eus2_failed)
+  if(_eus2_failed)
+    message("[roseus.cmake] eus2 is not ready yet, so skip generating ${PROJECT_NAME}/manifeste.l")
+    return()
+  endif(_eus2_failed)
+
   set(genmanifest_eus_exe ${roseus_PACKAGE_PATH}/scripts/genmanifest_eus)
   set(manifest_eus_target_dir ${roshomedir}/roseus/${PROJECT_NAME})
   set(manifest_eus_target ${manifest_eus_target_dir}/manifest.l)
