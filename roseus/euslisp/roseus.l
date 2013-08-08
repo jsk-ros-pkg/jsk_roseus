@@ -323,8 +323,9 @@ always the rank of list is 2"
       (send obj :type "so")
       (when (not (equal obj obj-dst))
 	(unix::unlink (send obj-dst :namestring))
-	(unix::link (send obj :namestring)
-		    (send obj-dst :namestring)))
+        (unix::system (format nil "cp ~A ~A"
+                              (send obj :namestring)
+                              (send obj-dst :namestring))))
       (when clear-files
 	(send src :type "c")
 	(unix::unlink (send src :namestring))
