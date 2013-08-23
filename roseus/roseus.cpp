@@ -1127,6 +1127,12 @@ pointer ROSEUS_SET_PARAM(register context *ctx,int n,pointer *argv)
   } else if (isflt(argv[1])) {
     d = fltval(argv[1]);
     ros::param::set(key,d);
+  } else if (argv[1] == T) {
+    bool b = true;
+    ros::param::set(key, b);
+  } else if (argv[1] == NIL) {
+    bool b = false;
+    ros::param::set(key, b);
   } else {
     error(E_MISMATCHARG);
   }
