@@ -4,6 +4,25 @@
 ;; load c-binding library
 (load-library "roseus_c_util.so" '("roseus_c_util"))
 
+(defun print-ros-msg (msg &optional (rp (find-package "ROS"))
+                          (ro ros::object) (nest 0))
+  (dolist (s (send msg :slots))
+    (let ((sm (car s)))
+      (when (and (symbolp sm) (eq (symbol-package sm) rp))
+        (if (derivedp (cdr s) ro)
+            (progn
+              (dotimes (i nest) (format t "  "))
+              (format t ":~A (~A)~%"
+                      (string-downcase (string-left-trim "_" (symbol-string sm)))
+                      (send (class (cdr s)) :name))
+              (print-ros-msg (cdr s) rp ro (1+ nest)))
+          (progn
+            (dotimes (i nest) (format t "  "))
+            (format t ":~A~%" (string-downcase (string-left-trim "_" (symbol-string sm))))
+            (dotimes (i nest) (format t "  "))
+            (print (cdr s)))
+          )))))
+
 ;; Sensors
 (ros::roseus-add-msgs "sensor_msgs")
 
