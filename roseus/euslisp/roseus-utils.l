@@ -430,13 +430,13 @@
   (let ((type (send msg :type)))
     (print type)
     (print (numberp type))
-    (case type
-      (visualization_msgs::Marker::*CUBE*     (marker-msg->shape/cube msg))
-      (visualization_msgs::Marker::*CYLINDER* (marker-msg->shape/cylinder msg))
-      (visualization_msgs::Marker::*SPHERE*   (marker-msg->shape/sphere msg))
-      (visualization_msgs::Marker::*CUBE_LIST*
-       (apply #'marker-msg->shape/cube_list msg args))
-      )))
+    (cond
+     ((eq type visualization_msgs::Marker::*CUBE*)     (marker-msg->shape/cube msg))
+     ((eq type visualization_msgs::Marker::*CYLINDER*) (marker-msg->shape/cylinder msg))
+     ((eq type visualization_msgs::Marker::*SPHERE*)   (marker-msg->shape/sphere msg))
+     ((eq type visualization_msgs::Marker::*CUBE_LIST*)
+      (apply #'marker-msg->shape/cube_list msg args))
+     )))
 
 (defun marker-msg->shape/cube (msg)
   (let* ((scale (ros::tf-point->pos (send msg :scale)))
