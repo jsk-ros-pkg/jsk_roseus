@@ -3,6 +3,7 @@
 ;;
 ;; Author: Manabu Saito <saito@jsk.t.u-tokyo.ac.jp>
 ;;
+(require :state-machine "package://roseus_smach/src/state-machine.l")
 
 ;; TODO
 ;; start, goal state
@@ -13,39 +14,77 @@
   (map string #'(lambda(c)(if (= c #\\) #\_ c)) str))
 ;  str)
 
-(defun convert-smach (gr)
-  (let ((sm (instance state-machine :init)) act name sym goals
-	(ns (send gr :name)))
+(defun convert-smach (gr &key (readable t))
+  (let ((sm (instance state-machine :init))
+        goals (nametbl (make-hash-table :test #'string=))
+        (ns (send gr :name)))
+
     ;; add nodes
     (dolist (n (send gr :nodes))
-      (setq act (send n :neighbor-action-alist)
-	    name (rmnl (send n :name)))
-      (cond ((null act) ;; no more action
-	     (push name goals))
-	    (t ;; last arc is correct action
-	     (setq sym (read-from-string (caar (last act))))
-	     (when (find-package (string-upcase ns))
-	       (setf (elt sym 0)
-		     (intern (string-upcase (car sym)) (find-package ns))))
-	     (setq sym
-		   `(lambda-closure nil 0 0 (x) (apply ',(car sym) ',(cdr sym))))
-	     (send sm :add-node (instance state :init name sym)))
-	    ))
+      (let* ((act (send n :neighbor-action-alist))
+             (name (rmnl (send n :name)))
+             (func-name (caar (last act))))
+
+        (when (and readable func-name)  ;; check uniq func-name
+          (while (gethash func-name nametbl)
+            (setq func-name (format nil "~Aa" func-name)))
+          (setf (gethash func-name nametbl) n)
+          (setf (get n :func-name) func-name))
+
+        (cond ((null act) ;; no more action
+               ;; goal
+               (when readable
+                 (setq name (format nil "goal~A" (length goals)))
+                 (while (gethash name nametbl)
+                   (setq name (format nil "~Aa" name)))
+                 (setf (gethash name nametbl) n)
+                 (setf (get n :func-name) name)
+                 )
+               (push name goals))
+              (t ;; last arc is correct action, (first action is failure action)
+               (let* ((sym (read-from-string func-name))
+                      func)
+                 (when (find-package (string-upcase ns))
+                   (setf (elt sym 0)
+                         (intern (string-upcase (car sym)) (find-package ns))))
+                 (setq func
+                       `(lambda-closure nil 0 0 (x) (apply ',(car sym) ',(cdr sym))))
+                 (cond
+                  (readable
+                   (send sm :add-node (instance state :init func-name func)))
+                  (t (send sm :add-node (instance state :init name func))))
+                 ))
+              )))
     (send sm :goal-state goals)
+
     ;; add arcs
     (dolist (n (send gr :nodes))
-      (setq act (send n :neighbor-action-alist)
-	    name (rmnl (send n :name)))
-      (cond ((null act))
-	    (t
-	     (send sm :add-transition name (rmnl (send (cdar (last act)) :name)) t)
-	     (when (< 1 (length act))
-	       (send sm :add-transition name (rmnl (send (cdar act) :name)) nil)))))
+      (let ((act (send n :neighbor-action-alist))
+            (name (rmnl (send n :name))))
+        (cond
+         (readable
+          (cond ((null act))
+                (t
+                 (send sm :add-transition (get n :func-name) (get (cdar (last act)) :func-name)
+                       :success)
+                 (when (< 1 (length act))
+                   (send sm :add-transition (get n :func-name) (get (cdar act) :func-name)
+                         :fail)))))
+         (t
+          (cond ((null act))
+                (t
+                 (send sm :add-transition name (rmnl (send (cdar (last act)) :name)) :success)
+                 (when (< 1 (length act))
+                   (send sm :add-transition name (rmnl (send (cdar act) :name)) :fail))))))
+        ))
 
     ;; select a node as start-node
     ;; now this is not always true
     ;; (send sm :start-state (send (send gr :start-state) :name))
-    (send sm :start-state (rmnl (send (car (last (send gr :nodes))) :name)))
+    (send sm :start-state
+          (if readable
+              (get (car (last (send gr :nodes))) :func-name)
+            (rmnl (send (car (last (send gr :nodes))) :name))))
     (send sm :reset-state)
     sm ))
 

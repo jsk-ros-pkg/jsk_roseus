@@ -153,3 +153,4 @@
    (arg)
    (funcall testfunc arg value)))
 
+(provide :state-machine)
