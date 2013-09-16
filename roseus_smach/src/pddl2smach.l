@@ -14,7 +14,10 @@
   (map string #'(lambda(c)(if (= c #\\) #\_ c)) str))
 ;  str)
 
-(defun convert-smach (gr &key (readable t))
+(defun convert-smach (gr &key (readable t)
+                         (return-success t)
+                         (return-fail nil)
+                         (add-self-return-failure-path t))
   (let ((sm (instance state-machine :init))
         goals (nametbl (make-hash-table :test #'string=))
         (ns (send gr :name)))
@@ -27,7 +30,7 @@
 
         (when (and readable func-name)  ;; check uniq func-name
           (while (gethash func-name nametbl)
-            (setq func-name (format nil "~Aa" func-name)))
+            (setq func-name (format nil "~A " func-name)))
           (setf (gethash func-name nametbl) n)
           (setf (get n :func-name) func-name))
 
@@ -36,7 +39,7 @@
                (when readable
                  (setq name (format nil "goal~A" (length goals)))
                  (while (gethash name nametbl)
-                   (setq name (format nil "~Aa" name)))
+                   (setq name (format nil "~A " name)))
                  (setf (gethash name nametbl) n)
                  (setf (get n :func-name) name)
                  )
@@ -66,16 +69,27 @@
           (cond ((null act))
                 (t
                  (send sm :add-transition (get n :func-name) (get (cdar (last act)) :func-name)
-                       :success)
+                       return-success)
                  (when (< 1 (length act))
                    (send sm :add-transition (get n :func-name) (get (cdar act) :func-name)
-                         :fail)))))
+                         return-fail)))))
          (t
           (cond ((null act))
                 (t
-                 (send sm :add-transition name (rmnl (send (cdar (last act)) :name)) :success)
+                 (send sm :add-transition name (rmnl (send (cdar (last act)) :name)) return-success)
                  (when (< 1 (length act))
-                   (send sm :add-transition name (rmnl (send (cdar act) :name)) :fail))))))
+                   (send sm :add-transition name (rmnl (send (cdar act) :name)) return-fail))))))
+        ))
+
+    ;; add self-return fail for nodes which have no failure path.
+    (when add-self-return-failure-path
+      (let ((nodes (send sm :nodes)))
+        (setq nodes (set-difference nodes (send sm :goal-state)))
+        (setq nodes
+              (remove-if #'(lambda (n) (find-if #'(lambda (a) (equal return-fail (send a :name)))
+                                                (send n :arc-list))) nodes))
+        (dolist (n nodes)
+          (send sm :add-transition (send n :name) (send n :name) return-fail))
         ))
 
     ;; select a node as start-node
