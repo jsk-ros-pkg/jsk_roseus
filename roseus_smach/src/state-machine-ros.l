@@ -27,6 +27,8 @@
 		   #'send self :set-initial-state-cb)
    self)
   ;;
+  (:state-machine (&rest args) (forward-message-to sm args))
+  ;;
   (:publish-status
    (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStatus :init))
@@ -103,5 +105,19 @@
      ;; TODO apply userdata
      (setq init-tm (ros::time-now))
      ))
+  ;;
+  ;; utility for users
+  ;;
+  (:reset-state (&key (user-data))
+   (send sm :reset-state)
+   (send self :publish-structure)
+   (send self :publish-status user-data))
+  (:exec-state-machine (&key (user-data) (reset))
+   (if reset (send self :reset-state :user-data user-data))
+   (while (not (send sm :goal-reached))
+     (ros::spin-once)
+     (send self :publish-status user-data)
+     (send self :state-machine :execute user-data :step -1))
+   (send sm :active-state))
   )
 
