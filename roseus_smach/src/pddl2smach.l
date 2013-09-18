@@ -15,6 +15,7 @@
 ;  str)
 
 (defun convert-smach (gr &key (readable t)
+                         (use-userdata nil)
                          (return-success t)
                          (return-fail nil)
                          (add-self-return-failure-path t))
@@ -50,8 +51,12 @@
                  (when (find-package (string-upcase ns))
                    (setf (elt sym 0)
                          (intern (string-upcase (car sym)) (find-package ns))))
-                 (setq func
-                       `(lambda-closure nil 0 0 (x) (apply ',(car sym) ',(cdr sym))))
+                 (if use-userdata
+                     (setq func
+                           `(lambda-closure nil 0 0 (userdata)
+                                            (apply ',(car sym) userdata ',(cdr sym))))
+                   (setq func
+                         `(lambda-closure nil 0 0 (x) (apply ',(car sym) ',(cdr sym)))))
                  (cond
                   (readable
                    (send sm :add-node (instance state :init func-name func)))
