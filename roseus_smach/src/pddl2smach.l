@@ -18,7 +18,7 @@
                          (use-userdata nil)
                          (return-success t)
                          (return-fail nil)
-                         (add-self-return-failure-path t))
+                         (add-self-return-failure-path nil))
   (let ((sm (instance state-machine :init))
         goals (nametbl (make-hash-table :test #'string=))
         (ns (send gr :name)))
