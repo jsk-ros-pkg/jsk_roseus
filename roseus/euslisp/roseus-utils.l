@@ -196,7 +196,7 @@
 (defun faces->marker-msg (faces header &key
                                 ((:color col) (float-vector 1 0 0))
                                 ((:id idx) 0) ns lifetime)
-  (send-all faces :worldcoords) ;; make sure to update vertices
+  ;;(send-all faces :worldcoords) ;; make sure to update vertices
   (let* ((tri-faces
           (mapcan #'(lambda (f) (geo::face-to-triangle f))
                   faces))
@@ -214,7 +214,7 @@
     (send msg :pose (ros::coords->tf-pose (make-coords)))
     (send msg :scale (ros::pos->tf-translation
                       (float-vector 1000 1000 1000)))
-    (send msg :color (vector->rgba (float-vector 1 0 0) 1.0))
+    (send msg :color (vector->rgba col 1.0))
 
     (send msg :points points)
     (if ns (send msg :ns ns))
