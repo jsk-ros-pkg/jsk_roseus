@@ -134,3 +134,28 @@
   ;;
   (format fd "~%;; END OF THE FILE~%")
     ))
+
+(defun pddl-graph-to-smach (agraph)
+  (let* ((sm
+          (convert-smach agraph
+                         :return-success :success :return-fail :fail
+                         ;; :use-userdata t
+                         :add-self-return-failure-path nil
+                         ))
+         (sm-inspect (instance state-machine-inspector :init sm)))
+    sm-inspect))
+
+;;; debug functions
+(defun defun-debug-functions (agraph &key (sleep 0.5) (return-success-value :success))
+  (let (func-sym)
+    (dolist (arc (flatten (send-all (send agraph :nodes) :arc-list)))
+      (when arc
+        (let ((sym (car (read-from-string (send arc :name)))))
+          (push sym func-sym))))
+    (setq func-sym (remove-duplicates func-sym))
+    (dolist (fs func-sym)
+      (eval `(defun ,fs (&rest args)
+               (pprint (list ,(intern (symbol-string fs) *keyword-package*) args))
+               (unix::usleep ,(round (* sleep 1000 1000)))
+               ,return-success-value)))
+    ))

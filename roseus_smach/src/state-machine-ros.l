@@ -121,3 +121,4 @@
    (send sm :active-state))
   )
 
+(provide :state-machine-ros)
