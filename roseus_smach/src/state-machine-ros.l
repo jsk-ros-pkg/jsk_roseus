@@ -108,16 +108,30 @@
   ;;
   ;; utility for users
   ;;
-  (:reset-state (&key (user-data))
-   (send sm :reset-state)
+  (:reset-state (&key (user-data) (on-state t))
+   (cond
+    ((and on-state
+          (stringp on-state))
+     (let ((st (send sm :node on-state)))
+       (if st (send sm :active-state st)
+         (progn
+           (warn ";; node ~A not found" on-state)
+           (send sm :reset-state)))))
+    ((and on-state
+          (derivedp on-state node))
+     (send sm :active-state on-state))
+    (on-state
+     (send sm :reset-state)))
    (send self :publish-structure)
    (send self :publish-status user-data))
-  (:exec-state-machine (&key (user-data) (reset))
-   (if reset (send self :reset-state :user-data user-data))
+  (:exec-state-machine (&key (user-data) (reset-state))
+   (send self :reset-state :user-data user-data :on-state reset-state)
    (while (not (send sm :goal-reached))
      (ros::spin-once)
      (send self :publish-status user-data)
      (send self :state-machine :execute user-data :step -1))
+   (warn ";; goal reached at ~A~%" (send sm :active-state))
+   (send self :publish-status user-data)
    (send sm :active-state))
   )
 
