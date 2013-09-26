@@ -135,12 +135,14 @@
   (format fd "~%;; END OF THE FILE~%")
     ))
 
-(defun pddl-graph-to-smach (agraph)
+(defun pddl-graph-to-smach (agraph &rest args &key (return-success :success)
+                                   (return-fail :fail) (add-self-return-failure-path t)
+                                   &allow-other-keys)
   (let* ((sm
-          (convert-smach agraph
-                         :return-success :success :return-fail :fail
-                         ;; :use-userdata t
-                         :add-self-return-failure-path nil
+          (apply #'convert-smach agraph
+                         :return-success return-success :return-fail return-fail
+                         :add-self-return-failure-path add-self-return-failure-path
+                         args
                          ))
          (sm-inspect (instance state-machine-inspector :init sm)))
     sm-inspect))
