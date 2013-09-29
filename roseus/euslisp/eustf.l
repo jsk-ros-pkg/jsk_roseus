@@ -130,6 +130,21 @@
          (qx (elt q 1)) (qy (elt q 2)) (qz (elt q 3)) (qw (elt q 0)))
     (instance geometry_msgs::quaternion :init :x qx :y qy :z qz :w qw)))
 
+(defun ros::identity-quaternion () (instance geometry_msgs::quaternion :init :w 1))
+(defun ros::identity-pose () (instance geometry_msgs::Pose :init
+                                       :orientation (ros::identity-quaternion)))
+(defun ros::identity-pose-stamped (&optional (header (instance std_msgs::header :init)))
+  (instance geometry_msgs::PoseStamped :init
+            :header header
+            :pose (ros::identity-pose)))
+(defun ros::identity-transform ()
+  (instance geometry_msgs::transform :init
+            :rotation (ros::identity-quaternion)))
+(defun ros::identity-transform-stamped (&optional (header (instance std_msgs::header :init)))
+  (instance geometry_msgs::TransformStamped :init
+            :header header
+            :pose (ros::identity-transform)))
+
 ;;
 ;; transfromer interface
 ;; http://www.ros.org/doc/api/tf/html/python/tf_python.html#transformer
