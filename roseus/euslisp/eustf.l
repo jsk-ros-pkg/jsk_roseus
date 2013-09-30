@@ -143,7 +143,7 @@
 (defun ros::identity-transform-stamped (&optional (header (instance std_msgs::header :init)))
   (instance geometry_msgs::TransformStamped :init
             :header header
-            :pose (ros::identity-transform)))
+            :transform (ros::identity-transform)))
 
 ;;
 ;; transfromer interface
