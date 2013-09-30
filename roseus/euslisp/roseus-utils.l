@@ -5,23 +5,34 @@
 (load-library "roseus_c_util.so" '("roseus_c_util"))
 
 (defun print-ros-msg (msg &optional (rp (find-package "ROS"))
-                          (ro ros::object) (nest 0))
+                          (ro ros::object) (nest 0) (padding "  "))
   (dolist (s (send msg :slots))
     (let ((sm (car s)))
       (when (and (symbolp sm) (eq (symbol-package sm) rp))
-        (if (derivedp (cdr s) ro)
-            (progn
-              (dotimes (i nest) (format t "  "))
-              (format t ":~A (~A)~%"
-                      (string-downcase (string-left-trim "_" (symbol-string sm)))
-                      (send (class (cdr s)) :name))
-              (print-ros-msg (cdr s) rp ro (1+ nest)))
-          (progn
-            (dotimes (i nest) (format t "  "))
-            (format t ":~A~%" (string-downcase (string-left-trim "_" (symbol-string sm))))
-            (dotimes (i nest) (format t "  "))
-            (print (cdr s)))
-          )))))
+        (cond
+         ((derivedp (cdr s) ro)
+          (dotimes (i nest) (format t padding))
+          (format t ":~A -- ~A~%"
+                  (string-downcase (string-left-trim "_" (symbol-string sm)))
+                  (send (class (cdr s)) :name))
+          (print-ros-msg (cdr s) rp ro (1+ nest) padding))
+         ((and (listp (cdr s))
+               (derivedp (cadr s) ro))
+          (dotimes (i nest) (format t padding))
+          (format t ":~A [ ~A ]~%"
+                  (string-downcase (string-left-trim "_" (symbol-string sm)))
+                  (send (class (cadr s)) :name))
+          (dotimes (i (1+ nest)) (format t padding)) (format t "[~%")
+          (dolist (ss (cdr s))
+            (print-ros-msg ss rp ro (+ nest 2) padding))
+          (dotimes (i (1+ nest)) (format t padding)) (format t "]~%")
+          )
+         (t
+          (dotimes (i nest) (format t padding))
+          (format t ":~A~%" (string-downcase (string-left-trim "_" (symbol-string sm))))
+          (dotimes (i nest) (format t padding))
+          (print (cdr s)))
+         )))))
 
 ;; Sensors
 (ros::roseus-add-msgs "sensor_msgs")
