@@ -11,20 +11,21 @@
 
 (defclass state-machine-inspector
   :super propertied-object
-  :slots (sm root-name srv-name init-tm))
+  :slots (sm root-name srv-name init-tm state-counter structure-counter))
 (defmethod state-machine-inspector
   (:init
    (sm-obj &key ((:root-name rn) "SM_ROOT") ((:srv-name sn) "/server_name"))
    (setq sm sm-obj root-name rn srv-name sn)
+   (setq state-counter 0 structure-counter 0)
    (ros::advertise
     (concatenate string srv-name "/smach/container_status")
-    smach_msgs::SmachContainerStatus 10)
+    smach_msgs::SmachContainerStatus 100)
    (ros::advertise
     (concatenate string srv-name "/smach/container_structure")
-    smach_msgs::SmachContainerStructure 10 t) ;; latch type
+    smach_msgs::SmachContainerStructure 100 t) ;; latch type
    (ros::subscribe (concatenate string srv-name "/smach/container_init")
-		   smach_msgs::SmachContainerInitialStatusCmd
-		   #'send self :set-initial-state-cb)
+                   smach_msgs::SmachContainerInitialStatusCmd
+                   #'send self :set-initial-state-cb)
    self)
   ;;
   (:state-machine (&rest args) (forward-message-to sm args))
@@ -32,9 +33,10 @@
   (:publish-status
    (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStatus :init))
-	 (initial (send (send machine :start-state) :name))
-	 (active (send (send machine :active-state) :name)))
+         (initial (send (send machine :start-state) :name))
+         (active (send (send machine :active-state) :name)))
      (if (send machine :goal-reached) (setq active "None"))
+     (send msg :header :seq (incf state-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
      (send msg :initial_states (list (string initial)))
@@ -44,26 +46,50 @@
      ;; recursive call for publish active sub-machines
      (when (send (send machine :active-state) :submachine)
        (send self :publish-status userdata
-	     (send (send machine :active-state) :submachine)
-	     (format nil "~A/~A" path
-		     (string (send (send machine :active-state) :name)))))
+             (send (send machine :active-state) :submachine)
+             (format nil "~A/~A" path
+                     (string (send (send machine :active-state) :name)))))
+     ))
+  (:publish-all-status
+   (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
+   (let ((msg (instance smach_msgs::SmachContainerStatus :init))
+         (initial (send (send machine :start-state) :name))
+         active)
+     (cond
+      ((send machine :goal-reached) (setq active "None"))
+      ((null (send machine :active-state)) (setq active "None"))
+      (t (setq active (send (send machine :active-state) :name))))
+     (send msg :header :seq (incf state-counter))
+     (send msg :header :stamp (ros::time-now))
+     (send msg :path path)
+     (send msg :initial_states (list (string initial)))
+     (send msg :active_states (list (string active)))
+     (send msg :local_data (pickle::dump userdata))
+     (ros::publish (concatenate string srv-name "/smach/container_status") msg)
+     ;; recursive call for publish active sub-machines
+     (dolist (nd (send machine :nodes))
+       (let ((subsm (send nd :submachine)))
+         (when subsm
+           (send self :publish-all-status userdata subsm
+                 (format nil "~A/~A" path
+                         (string (send nd :name)))))))
      ))
   (:publish-structure
    (&optional (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStructure :init))
-	 transitions from-nodes to-nodes exec-nodes)
+         transitions from-nodes to-nodes exec-nodes)
+     (send msg :header :seq (incf structure-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
      (setq exec-nodes (remove-if #'(lambda(n)(send machine :goal-test n)) (send machine :nodes)))
-     (send msg :children
-	   (mapcar #'string (send-all exec-nodes :name)))
+     (send msg :children (mapcar #'string (send-all exec-nodes :name)))
      (send msg :container_outcomes
-	   (mapcar #'string (send-all (send machine :goal-state) :name)))
+           (mapcar #'string (send-all (send machine :goal-state) :name)))
      (dolist (from (send machine :nodes))
        (dolist (tra (send from :arc-list))
-	 (push (string (send tra :name)) transitions)
-	 (push (string (send from :name)) from-nodes)
-	 (push (string (send (send tra :to) :name)) to-nodes)))
+         (push (string (send tra :name)) transitions)
+         (push (string (send from :name)) from-nodes)
+         (push (string (send (send tra :to) :name)) to-nodes)))
      (send msg :internal_outcomes transitions)
      (send msg :outcomes_from from-nodes)
      (send msg :outcomes_to to-nodes)
@@ -71,7 +97,7 @@
      ;; recursive call for publish sub-machines
      (dolist (sub (send machine :sub-sm-node))
        (send self :publish-structure (send sub :submachine)
-	     (format nil "~A/~A" path (string (send sub :name)))))
+             (format nil "~A/~A" path (string (send sub :name)))))
      )
   (:set-initial-state-cb
    (msg)
@@ -123,7 +149,7 @@
     (on-state
      (send sm :reset-state)))
    (send self :publish-structure)
-   (send self :publish-status user-data))
+   (send self :publish-all-status user-data))
   (:exec-state-machine (&key (user-data) (reset-state))
    (send self :reset-state :user-data user-data :on-state reset-state)
    (while (not (send sm :goal-reached))
@@ -131,7 +157,7 @@
      (send self :publish-status user-data)
      (send self :state-machine :execute user-data :step -1))
    (warn ";; goal reached at ~A~%" (send sm :active-state))
-   (send self :publish-status user-data)
+   (send self :publish-all-status user-data)
    (send sm :active-state))
   )
 
