@@ -18,7 +18,9 @@
                          (use-userdata nil)
                          (return-success t)
                          (return-fail nil)
-                         (add-self-return-failure-path nil))
+                         (add-self-return-failure-path nil)
+                         (add-start-node)
+                         (use-sub-machine nil))
   (let ((sm (instance state-machine :init))
         goals (nametbl (make-hash-table :test #'string=))
         (ns (send gr :name)))
@@ -59,8 +61,14 @@
                          `(lambda-closure nil 0 0 (x) (apply ',(car sym) ',(cdr sym)))))
                  (cond
                   (readable
-                   (send sm :add-node (instance state :init func-name func)))
-                  (t (send sm :add-node (instance state :init name func))))
+                   (if use-sub-machine
+                       (let ((sub-sm (instance state-machine :init)))
+                         (send sm :add-node (instance state :init func-name sub-sm)))
+                     (send sm :add-node (instance state :init func-name func))))
+                  (t (if use-sub-machine
+                         (let ((sub-sm (instance state-machine :init)))
+                           (send sm :add-node (instance state :init name sub-sm)))
+                       (send sm :add-node (instance state :init name func)))))
                  ))
               )))
     (send sm :goal-state goals)
@@ -97,6 +105,20 @@
           (send sm :add-transition (send n :name) (send n :name) return-fail))
         ))
 
+    (when use-sub-machine
+      (let ((nds (send sm :nodes)))
+        (dolist (nd nds)
+          (let ((subm (send nd :submachine)))
+            (when subm
+              ;;
+              (send subm :add-node (instance state :init "start" 'func-start))
+              (send subm :goal-state (list return-success return-fail))
+              (send subm :start-state "start")
+              (send subm :add-transition "start" return-success return-success)
+              (send subm :add-transition "start" return-fail return-fail)
+              ;;
+              ))
+          )))
     ;; select a node as start-node
     ;; now this is not always true
     ;; (send sm :start-state (send (send gr :start-state) :name))
@@ -105,6 +127,7 @@
               (get (car (last (send gr :nodes))) :func-name)
             (rmnl (send (car (last (send gr :nodes))) :name))))
     (send sm :reset-state)
+
     sm ))
 
 ;;
