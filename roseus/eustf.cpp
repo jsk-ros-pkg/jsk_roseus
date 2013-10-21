@@ -69,6 +69,9 @@
 #include <tf/transform_broadcaster.h>
 
 #include <tf2_ros/buffer_client.h>
+#if ROS_VERSION <= ROS_VERSION_COMBINED(1,9,49)  // if this is groovy
+#define tf2_ros tf2
+#endif
 
 // for eus.h
 #define class   eus_class
@@ -691,13 +694,13 @@ pointer EUSTF_BUFFER_CLIENT(register context *ctx,int n,pointer *argv)
     timeout_padding = ros::Duration(pd);
   }
 
-  return(makeint((eusinteger_t)(new tf2::BufferClient (ns_str, check_frequency, timeout_padding))));
+  return(makeint((eusinteger_t)(new tf2_ros::BufferClient (ns_str, check_frequency, timeout_padding))));
 }
 
 pointer EUSTF_BUFFER_CLIENT_DISPOSE(register context *ctx,int n,pointer *argv)
 {
   ckarg(1);
-  tf2::BufferClient *tfbc = (tf2::BufferClient *)(intval(argv[0]));
+  tf2_ros::BufferClient *tfbc = (tf2_ros::BufferClient *)(intval(argv[0]));
   delete(tfbc);
   return(T);
 }
@@ -705,7 +708,7 @@ pointer EUSTF_BUFFER_CLIENT_DISPOSE(register context *ctx,int n,pointer *argv)
 pointer EUSTF_TFBC_WAITFORSERVER(register context *ctx,int n,pointer *argv)
 {
   ckarg2(1, 2);
-  tf2::BufferClient *tfbc = (tf2::BufferClient *)(intval(argv[0]));
+  tf2_ros::BufferClient *tfbc = (tf2_ros::BufferClient *)(intval(argv[0]));
   numunion nu;
   bool ret;
   if (n > 1) {
@@ -720,7 +723,7 @@ pointer EUSTF_TFBC_WAITFORSERVER(register context *ctx,int n,pointer *argv)
 pointer EUSTF_TFBC_CANTRANSFORM(register context *ctx,int n,pointer *argv)
 {
   ckarg2(4, 5);
-  tf2::BufferClient *tfbc = (tf2::BufferClient *)(intval(argv[0]));
+  tf2_ros::BufferClient *tfbc = (tf2_ros::BufferClient *)(intval(argv[0]));
   numunion nu;
   std::string target_frame, source_frame;
   ros::Time time;
@@ -769,7 +772,7 @@ pointer EUSTF_TFBC_CANTRANSFORM(register context *ctx,int n,pointer *argv)
 pointer EUSTF_TFBC_LOOKUPTRANSFORM(register context *ctx,int n,pointer *argv)
 {
   ckarg2(4, 5);
-  tf2::BufferClient *tfbc = (tf2::BufferClient *)(intval(argv[0]));
+  tf2_ros::BufferClient *tfbc = (tf2_ros::BufferClient *)(intval(argv[0]));
   numunion nu;
   std::string target_frame, source_frame;
   ros::Time time;
