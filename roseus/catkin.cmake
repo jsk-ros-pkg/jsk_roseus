@@ -95,7 +95,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-    DEPENDS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs actionlib_tutorials coreutils
+    DEPENDS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs actionlib_tutorials coreutils tf2_ros
     CATKIN-DEPENDS # euslisp TODO
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
@@ -130,6 +130,3 @@ install(DIRECTORY test/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
   FILES_MATCHING PATTERN "*.l" PATTERN "*.launch" PATTERN ".svn" EXCLUDE)
 
-# dummy test target
-add_custom_target(test COMMAND echo "DUMMY test target")
-add_custom_target(test-results COMMAND echo "DUMMY test-results target")
