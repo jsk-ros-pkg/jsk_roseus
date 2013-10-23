@@ -69,7 +69,7 @@
 #include <tf/transform_broadcaster.h>
 
 #include <tf2_ros/buffer_client.h>
-#if ROS_VERSION <= ROS_VERSION_COMBINED(1,9,49)  // if this is groovy
+#ifdef TF2_ROS_VERSION_3 // if this is groovy
 #define tf2_ros tf2
 #endif
 
