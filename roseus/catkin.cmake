@@ -7,6 +7,13 @@ project(roseus)
 find_package(catkin REQUIRED COMPONENTS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros)
 
 add_definitions(-Wall)
+#
+execute_process(COMMAND rosversion tf2_ros OUTPUT_VARIABLE TF2_ROS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "tf2_ros version: ${TF2_ROS_VERSION}")
+if(${TF2_ROS_VERSION} VERSION_LESS  0.4.0)
+  add_definitions(-DTF2_ROS_VERSION_3)
+  message(STATUS "compile with -DTF2_ROS_VERSION_3")
+endif()
 
 #set( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE )
 #if(UNIX AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
