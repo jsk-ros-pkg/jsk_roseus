@@ -1,11 +1,11 @@
-Ball: ros-euslisp-all
+Ball: installed
 
 include jskeus/Makefile
 EUSC_PATCH=eus.c_CUSTUM_EUSDIR.patch
 
 export EUSDIR=$(shell pwd)/jskeus/eus
 
-ros-euslisp-all: wiped $(EUSC_PATCH)
+installed: wiped $(EUSC_PATCH)
 	## set default environment variables to  eus.c
 	## EUSDIR=$(EUSDIR)
 	## ARCHDIR=$(ARCHDIR)
