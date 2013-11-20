@@ -45,6 +45,9 @@ add_library(eustf eustf.cpp)
 add_library(roseus_c_util roseus_c_util.c)
 target_link_libraries(roseus ${rospack_LIBRARIES} ${roscpp_LIBRARIES})
 target_link_libraries(eustf  ${roscpp_LIBRARIES} ${tf_LIBRARIES} ${tf2_ros_LIBRARIES})
+set_target_properties(roseus PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/euslisp)
+set_target_properties(eustf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/euslisp)
+set_target_properties(roseus_c_util PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/euslisp)
 
 # compile flags
 add_definitions(-O2 -Wno-write-strings -Wno-comment)
@@ -68,8 +71,6 @@ target_link_libraries(roseus ${Boost_LIBRARIES})
 set_target_properties(roseus PROPERTIES PREFIX "" SUFFIX ".so")
 set_target_properties(eustf PROPERTIES PREFIX "" SUFFIX ".so")
 set_target_properties(roseus_c_util PROPERTIES PREFIX "" SUFFIX ".so")
-
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/euslisp)
 
 add_service_files(
   FILES AddTwoInts.srv StringString.srv
