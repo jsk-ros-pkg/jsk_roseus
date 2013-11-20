@@ -3,6 +3,10 @@
                  :key #'lisp::load-module-file-name
                  :test #'equal))
   (make-package "ROS")
+  (unless (some #'(lambda (p) (probe-file (concatenate-pathnames  p "roseus.so")))
+                (union *loader-current-directory* *load-path* :test #'string=))
+    (warning-message 1 ";; could not find roseus.so, try rosmake roseus")
+    (exit -1))
   (load-library "roseus.so" '("roseus")))
 
 (unless (member :ros *features*) (push :ros *features*))
