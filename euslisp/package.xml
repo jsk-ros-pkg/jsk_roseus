@@ -19,6 +19,9 @@
   <build_depend>libx11-dev</build_depend>
   <build_depend>libxext</build_depend>
   <build_depend>libpng12-dev</build_depend>
+  <build_depend>xfonts-100dpi</build_depend>
+  <build_depend>xfonts-75dpi</build_depend>
+  <build_depend>xfont-server</build_depend>
 
   <run_depend>rostest</run_depend>
   <run_depend>opengl</run_depend>
@@ -26,6 +29,9 @@
   <run_depend>libx11-dev</run_depend>
   <run_depend>libxext</run_depend>
   <run_depend>libpng12-dev</run_depend>
+  <run_depend>xfonts-100dpi</run_depend>
+  <run_depend>xfonts-75dpi</run_depend>
+  <run_depend>xfont-server</run_depend>
 
   <export>
     <cpp cflags="-I${prefix}/eus/include"/>
