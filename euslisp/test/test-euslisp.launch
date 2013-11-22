@@ -24,5 +24,6 @@
   <test test-name="test_graph" pkg="euslisp"
 	type="irteusgl" args="$(find euslisp)/test/graph.l"
 	time-limit="600" />
-
+  <test test-name="test_joint" pkg="euslisp"
+	type="irteusgl" args="$(find euslisp)/test/joint.l" />
 </launch>
