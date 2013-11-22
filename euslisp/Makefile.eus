@@ -32,3 +32,6 @@ wipe: clean
 wiped: Makefile.eus
 	make -f Makefile.eus wipe
 	touch wiped
+
+.PHONY: installed
+        
