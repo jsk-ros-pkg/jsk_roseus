@@ -46,16 +46,16 @@
 (deftest test-min-max
   (let ((j1 (send *robot* :j1))
         (j2 (send *robot* :j2)))
-  (do ((x (send j1 :min-angle) (+ x 10)))
-      ((> x (send j1 :max-angle)))
-    (do ((y (send j2 :min-angle) (+ y 10)))
-        ((> y (send j2 :max-angle)))
-      (send *robot* :angle-vector (float-vector x y))
-      (assert (= (send j1 :joint-angle) x) (format nil "check joint value for ~A match (= ~A ~A)" (send j1 :name) (send j1 :joint-angle) x))
-      (assert (= (send j2 :joint-angle) y) (format nil "check joint value for ~A match (= ~A ~A)" (send j2 :name) (send j2 :joint-angle) y))
-      (send *irtviewer* :draw-objects)
-      ))
-  )
+    (do ((x (send j1 :min-angle) (+ x 10)))
+        ((> x (send j1 :max-angle)))
+      (do ((y (send j2 :min-angle) (+ y 10)))
+          ((> y (send j2 :max-angle)))
+        (send *robot* :angle-vector (float-vector x y))
+        (assert (= (send j1 :joint-angle) x) (format nil "check joint value for ~A match (= ~A ~A)" (send j1 :name) (send j1 :joint-angle) x))
+        (assert (= (send j2 :joint-angle) y) (format nil "check joint value for ~A match (= ~A ~A)" (send j2 :name) (send j2 :joint-angle) y))
+        (send *irtviewer* :draw-objects)
+        ))
+    ))
 
 (deftest test-min-max-exceed
   (let ((j1 (send *robot* :j1))
@@ -93,12 +93,13 @@
     ))
 
 ;; min-max-table
-(defun test-min-max-table nil
+(deftest test-min-max-table
   (let ((j1 (send *robot* :j1))
         (j2 (send *robot* :j2))
         (j1-min-max-table (make-hash-table))
         (j2-min-max-table (make-hash-table))
-        min-max-table-view)
+        min-max-table-view
+        x y)
 
     ;; set min-max-table
     ;; j1-hash
@@ -131,10 +132,13 @@
                  (j2-max (cdr j2-min-max)))
             (cond ((and (<= j1-min x j1-max)
                         (<= j2-min y j2-max)) ;; ok
+                   (send min-max-table-view :color #xffffff)
+                   (send min-max-table-view :draw-line (float-vector (+ x 90) (+ y 90)) (float-vector (+ x 90) (+ y 90)))
                    ;;
                    )
                   ((and (or (< x j1-min) (< j1-max x))
                         (or (< y j2-min) (< j2-max y))) ;; vaiolated ok
+                   (send min-max-table-view :color #x000000)
                    (send min-max-table-view :draw-line (float-vector (+ x 90) (+ y 90)) (float-vector (+ x 90) (+ y 90)))
                    )
                   (t
@@ -144,7 +148,7 @@
       (send min-max-table-view :flush)
       );; display
     ;; do test
-    (dotimes (i (* 180 180 0.01))
+    (dotimes (i (* 180 180))
       (setq x (- (random 180) 90)
             y (- (random 180) 90))
       ;;
@@ -156,15 +160,14 @@
               (format nil "Is (~A ~A) safe posture? ~A ~A~%" x y (and (= x (send j1 :joint-angle)) (= y (send j2 :joint-angle))) (<= (abs y) (- 90 (abs x)))))
       (when min-max-table-view
         ;; check in view
-        (print (list 'x x 'y y (send j1 :joint-angle) (send j2 :joint-angle)))
         (cond ((and (= x (send j1 :joint-angle)) (= y (send j2 :joint-angle))) ;; with i nlimit
-               (send min-max-table-view :color #x00ff00)
+               (send min-max-table-view :color #x0000ff)
                )
               (t ;; out of limit
-               (print "out")
                (send min-max-table-view :color #xff0000)
-               (print (list (float-vector (+ (round x) 90) (+ (round y) 90))
-                            (v+ (send *robot* :angle-vector (float-vector x y)) #f(90 90))))
+               (format t "out of limit ~A -> ~A~%"
+                       (float-vector (+ (round x) 90) (+ (round y) 90))
+                       (v+ (send *robot* :angle-vector (float-vector x y)) #f(90 90)))
                (send min-max-table-view :draw-line (float-vector (+ (round x) 90) (+ (round y) 90))
                      (v+ (send *robot* :angle-vector (float-vector x y)) #f(90 90)))))
         (send min-max-table-view :draw-line (float-vector (+ (round x) 90) (+ (round y) 90)) (float-vector (+ (round x) 90) (+ (round y) 90)))
@@ -178,6 +181,5 @@
     (setq (j2 . joint-min-max-target) nil)
     ))
 
-(test-min-max-table)
 (run-all-tests)
 (exit)
