@@ -1,10 +1,12 @@
 <launch>
+  <arg name="INPUT" default="/openni/depth_registered/points"/>
+  <arg name="COLOR_NAME" default="red"/>
   <node pkg="nodelet" type="nodelet" name="pcl_manager"
         args="manager" output="screen"/>
 
   <node pkg="nodelet" type="nodelet" name="passthrough"
         args="load pcl/PassThrough pcl_manager" output="screen">
-    <remap from="~input" to="/openni/depth_registered/points" />
+    <remap from="~input" to="$(arg INPUT)" />
     <remap from="~output" to="/hsv_input" />
     <rosparam>
       filter_field_name: z
@@ -14,11 +16,11 @@
     </rosparam>
   </node>
 
-  <node pkg="nodelet" type="nodelet" name="red_filter"
+  <node pkg="nodelet" type="nodelet" name="$(arg COLOR_NAME)_filter"
         args="load jsk_pcl/HSVColorFilter pcl_manager" output="screen"
         clear_params="true">
     <remap from="~input" to="/hsv_input" />
-    <remap from="~output" to="/filtered_red" />
+    <remap from="~output" to="/filtered_$(arg COLOR_NAME)" />
     <rosparam>
       use_indices: false
       h_limit_max: 13
@@ -30,10 +32,10 @@
     </rosparam>
   </node>
 
-  <node pkg="roseus" type="roseus" name="publish_red_centroid"
+  <node pkg="roseus" type="roseus" name="publish_$(arg COLOR_NAME)_centroid"
         args="$(find roseus_tutorials)/src/subscribe-pointcloud.l"
         output="screen" >
-    <param name="centroid_frame" value="/red_centroid" />
-    <remap from="/camera/depth_registered/points" to="/filtered_red" />
+    <param name="centroid_frame" value="/$(arg COLOR_NAME)_centroid" />
+    <remap from="/camera/depth_registered/points" to="/filtered_$(arg COLOR_NAME)" />
   </node>
 </launch>
