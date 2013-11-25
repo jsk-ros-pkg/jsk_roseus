@@ -22,7 +22,7 @@
 
 (setq *tfb* (instance ros::transform-broadcaster :init))
 
-(ros::subscribe "/openni/depth_registered/points"
+(ros::subscribe "/camera/depth_registered/points"
                 sensor_msgs::PointCloud2
                 #'callback)
 
