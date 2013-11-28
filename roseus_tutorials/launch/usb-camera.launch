@@ -1,5 +1,6 @@
 <launch>
   <arg name="device" default="/dev/video0" />
+  <arg name="frame_id" default="camera"/>
   <arg name="camera_info_url" default="file://$(find roseus_tutorials)/launch/usb-camera.yaml"/>
   <node name="uvc_camera" pkg="uvc_camera" type="camera_node" output="screen" >
     <param name="device" value="$(arg device)" />
@@ -7,7 +8,7 @@
     <param name="width" value="640" />
     <param name="height" value="480" />
     <param name="fps" value="30"/>
-    <param name="frame_id" value="camera" />
+    <param name="frame_id" value="$(arg frame_id)" />
   </node>
 
   <include file="$(find roseus_tutorials)/launch/jsk_image_proc.launch" />
