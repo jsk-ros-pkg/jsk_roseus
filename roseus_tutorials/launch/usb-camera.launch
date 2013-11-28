@@ -9,7 +9,8 @@
     <param name="fps" value="30"/>
     <param name="frame_id" value="camera" />
   </node>
-  <node name="image_proc" pkg="image_proc" type="image_proc" output="screen" />
+
+  <include file="$(find roseus_tutorials)/launch/jsk_image_proc.launch" />
 
   <sphinxdoc><![CDATA[
 this script launch uvc camera driver and image proc, with launch/usb-camera.yaml calibration file.

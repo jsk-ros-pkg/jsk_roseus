@@ -1,0 +1,27 @@
+<launch>
+  <arg name="CREATE_MANAGER" default="true" />
+  <arg name="MANAGER_NAME" default="image_proc_manager" />
+  <arg name="USE_DECIMATE" default="false" />
+
+  <node if="$(arg CREATE_MANAGER)"
+        pkg="nodelet" type="nodelet" name="$(arg MANAGER_NAME)"
+        args="manager" output="screen"/>
+
+  <include file="$(find image_proc)/launch/image_proc.launch" >
+    <arg name="manager" value="$(arg MANAGER_NAME)" />
+  </include>
+
+  <group if="$(arg USE_DECIMATE)">
+  <arg name="DECIMATE_CAMERA" default="/" />
+  <arg name="DECIMATE_IMAGE" default="image_rect_color" />
+  <arg name="DECIMATE_OUTPUT_CAMERA" default="dcamera_output" />
+  <!--arg name="DECIMATE_OUTPUT_IMAGE" default="image_raw" /-->
+  <node pkg="nodelet" type="nodelet" name="crop_decimate"
+        args="load image_proc/crop_decimate $(arg MANAGER_NAME)" >
+    <remap from="camera" to="$(arg DECIMATE_CAMERA)" />
+    <remap from="camera_out" to="$(arg DECIMATE_OUTPUT_CAMERA)" />
+    <remap from="image_raw" to="$(arg DECIMATE_IMAGE)" />
+  </node>
+  </group>
+</launch>
+
