@@ -5,7 +5,8 @@
 (ros::roseus "roi_reconfigure_call")
 
 (defun call-roi (width height x_off y_off &key (decimate_x 0) (decimate_y 0)
-                       (service-name "/roi_crop_decimate/set_parameters"))
+                       (service-name "roi_crop_decimate/set_parameters"))
+  ;;(ros::ros-info "ROI: ~D ~D ~D ~D" width height x_off y_off)
   (let ((req (instance dynamic_reconfigure::ReconfigureRequest :init)))
     (send req :config
           :ints
@@ -30,9 +31,9 @@
           (y_st (cadr (car lst)))
           (x_ed (car (cadr lst)))
           (y_ed (cadr (cadr lst))))
+      ;;(ros::ros-info "rect: ~D ~D ~D ~D" x_st y_st x_ed y_ed)
       (if (> x_st x_ed) (let ((tmp x_st)) (setq x_st x_ed x_ed tmp)))
       (if (> y_st y_ed) (let ((tmp y_st)) (setq y_st y_ed y_ed tmp)))
-      ;;(pprint (list x_st y_st (- x_ed x_st) (- y_ed y_st)))
       (call-roi (- x_ed x_st) (- y_ed y_st) x_st y_st)
       )
     ))
