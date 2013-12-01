@@ -1,10 +1,11 @@
 #!/usr/bin/env roseus
 (ros::load-ros-manifest "dynamic_reconfigure")
 (ros::load-ros-manifest "geometry_msgs")
+(ros::load-ros-manifest "jsk_topic_tools")
 
 (ros::roseus "roi_reconfigure_call")
 
-(defun call-roi (width height x_off y_off &key (decimate_x 0) (decimate_y 0)
+(defun call-roi (width height x_off y_off &key (decimate_x 2) (decimate_y 2)
                        (service-name "roi_crop_decimate/set_parameters"))
   ;;(ros::ros-info "ROI: ~D ~D ~D ~D" width height x_off y_off)
   (let ((req (instance dynamic_reconfigure::ReconfigureRequest :init)))
@@ -20,6 +21,7 @@
            )
           )
     (ros::service-call service-name req)
+    (setq *update* (ros::time-now))
     ))
 
 (defun callback-angle (msg)
@@ -59,6 +61,18 @@
 (ros::subscribe "/image_rect_color/screenpoint" geometry_msgs::PointStamped
                 #'callback-point)
 
+(setq *update* nil)
+(ros::rate 20)
 (do-until-key
  (ros::spin-once)
+ (ros::sleep)
+ (when (and *update*
+	    (> (- (send (ros::time-now) :to-sec) 
+		  (send *update* :to-sec)) 0.4))
+   (let ((req (instance jsk_topic_tools::UpdateRequest
+			:init :topic "/roi_camera_output/image_raw")))
+     (ros::service-call
+      "/roi_topic_buffer_server/update" req)
+     (setq *update* nil)
+     ))
  )
