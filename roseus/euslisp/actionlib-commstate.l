@@ -176,7 +176,7 @@
                 (instance actionlib_msgs::GoalStatusArray :init :status_list (list (send msg :status))))
           (setq state 'ros::*comm-state-done*))
          ((eq state 'ros::*comm-state-done*)
-          (ros::ros-error "[~A] Get a result when we ware already in the DONE state" name))
+          (ros::ros-error "[~A] Get a result when we ware already in the DONE state" (send self :name)))
          (t
           (ros::ros-error "[~A] In a funny state ~A" (send self :name) state)))
    (ros::ros-debug "[~A] update-result state: ~A ~A" (send self :name) (send msg :status :goal_id :id) state)
