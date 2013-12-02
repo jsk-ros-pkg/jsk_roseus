@@ -93,6 +93,8 @@
         ;;(pprint clst)
         ;; bounding box list
         ;;(setq blst (mapcar #'(lambda (p) (send p :box)) plst))
+        ;; bounding boxの表示
+        ;;(pprint blst)
 
         ;; /ObjectDetectionをpublish
         (let ((res (instance posedetection_msgs::ObjectDetection :init))
