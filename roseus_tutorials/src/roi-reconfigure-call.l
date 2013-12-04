@@ -7,7 +7,7 @@
 
 (defun call-roi (width height x_off y_off &key (decimate_x 2) (decimate_y 2)
                        (service-name "roi_crop_decimate/set_parameters"))
-  ;;(ros::ros-info "ROI: ~D ~D ~D ~D" width height x_off y_off)
+  (ros::ros-info "ROI: ~D ~D ~D ~D" width height x_off y_off)
   (let ((req (instance dynamic_reconfigure::ReconfigureRequest :init)))
     (send req :config
           :ints
@@ -33,7 +33,7 @@
           (y_st (cadr (car lst)))
           (x_ed (car (cadr lst)))
           (y_ed (cadr (cadr lst))))
-      ;;(ros::ros-info "rect: ~D ~D ~D ~D" x_st y_st x_ed y_ed)
+      (ros::ros-info "rect: ~D ~D ~D ~D" x_st y_st x_ed y_ed)
       (if (> x_st x_ed) (let ((tmp x_st)) (setq x_st x_ed x_ed tmp)))
       (if (> y_st y_ed) (let ((tmp y_st)) (setq y_st y_ed y_ed tmp)))
       (call-roi (- x_ed x_st) (- y_ed y_st) x_st y_st)
@@ -67,10 +67,10 @@
  (ros::spin-once)
  (ros::sleep)
  (when (and *update*
-	    (> (- (send (ros::time-now) :to-sec) 
-		  (send *update* :to-sec)) 0.4))
+            (> (- (send (ros::time-now) :to-sec)
+                  (send *update* :to-sec)) 0.4))
    (let ((req (instance jsk_topic_tools::UpdateRequest
-			:init :topic "/roi_camera_output/image_raw")))
+                        :init :topic_name "/roi_camera_output/image_raw")))
      (ros::service-call
       "/roi_topic_buffer_server/update" req)
      (setq *update* nil)
