@@ -38,6 +38,7 @@
       (if (> y_st y_ed) (let ((tmp y_st)) (setq y_st y_ed y_ed tmp)))
       (call-roi (- x_ed x_st) (- y_ed y_st) x_st y_st)
       )
+    (setq *update* (ros::time-now))
     ))
 
 (setq *default-roi-width* 320)
@@ -74,5 +75,13 @@
      (ros::service-call
       "/roi_topic_buffer_server/update" req)
      (setq *update* nil)
-     ))
+     )
+   #|
+   (let ((msg (instance std_msgs::String :init
+                        :data "/roi_camera_output/image_raw")))
+     (ros::publish "/roi_topic_buffer_server/update" msg)
+     (setq *update* nil)
+     )
+   |#
+   )
  )
