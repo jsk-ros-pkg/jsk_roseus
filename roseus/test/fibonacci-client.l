@@ -43,7 +43,7 @@
      (exit 0))
    (setq fib (fibonacci-client 10))
    (if (> (length fib) 0)
-       (assert  (= (elt fib (1- (length fib))) ans)) "(fib 10) -> ~A" fib))
+       (assert  (= (elt fib (1- (length fib))) ans) "(fib 10) -> ~A" fib))
   (exit 0)
   )
 
