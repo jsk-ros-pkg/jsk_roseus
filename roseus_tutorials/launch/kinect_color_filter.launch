@@ -4,7 +4,7 @@
   <node pkg="nodelet" type="nodelet" name="pcl_manager_$(arg COLOR_NAME)"
         args="manager" output="screen"/>
 
-  <node pkg="nodelet" type="nodelet" name="passthrough"
+  <node pkg="nodelet" type="nodelet" name="passthrough_for_$(arg COLOR_NAME)"
         args="load pcl/PassThrough pcl_manager_$(arg COLOR_NAME)" output="screen">
     <remap from="~input" to="$(arg INPUT)" />
     <remap from="~output" to="/hsv_input_$(arg COLOR_NAME)" />
