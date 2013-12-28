@@ -3,7 +3,7 @@
   <sphinxdoc><![CDATA[
   ]]></sphinxdoc>
 
-  <test test-name="test_object" pkg="euslisp"
+  <test test-name="test_unittest" pkg="euslisp"
 	type="irteusgl" args="$(find euslisp)/test/unittest.l" />
   <test test-name="test_object" pkg="euslisp"
 	type="irteusgl" args="$(find euslisp)/test/object.l" />
