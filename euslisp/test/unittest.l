@@ -13,14 +13,14 @@
 
 (deftest test3
   (dotimes (i 10)
-    (assert nil "false"))
+    (assert (null nil) "false"))
   )
 
-(deftest test3
+(deftest test4
   (dotimes (i 10)
     (assert t "ok"))
   (dotimes (i 10)
-    (assert nil "false"))
+    (assert (null nil) "false"))
   (dotimes (i 10)
     (assert t "ok"))
   )
