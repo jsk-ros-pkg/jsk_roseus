@@ -60,7 +60,6 @@
     )
   )
 
-
 (defun dump-eus-pointcloud()
   (dump-structure *filename_a* *pc*)
   (dump-loadable-structure *filename_b* *pc*)
@@ -104,19 +103,12 @@
 (send *pc2_point_transformed_msg* :header :frame_id "/point_base")
 (send *pc3_transformed_msg* :header :frame_id "/point_base")
 
-
-
 (ros::ros-info "(dump-eus-pointcloud)")
 (ros::ros-info "   this will dump eus-pointcloud (this time *pc*)")
 (ros::ros-info "(load-eus-pointcloud)")
 (ros::ros-info "   this will load eus-pointcloud which was dumped by (dump-eus-pointcloud) ")
 (ros::ros-info "(main)")
 (ros::ros-info "   this will start ros publish loop. Open rviz and subscribe PointCloud2")
-
-
-(send *pc1_transformed_msg* :header :frame_id "/point_base")
-(send *pc2_point_transformed_msg* :header :frame_id "/point_base")
-(send *pc3_transformed_msg* :header :frame_id "/point_base")
 
 (defun publish-pointcloud()
   (ros::publish "pointcloud_not_transformed" *pc1_transformed_msg*)
