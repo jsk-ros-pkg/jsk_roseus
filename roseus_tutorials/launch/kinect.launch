@@ -4,6 +4,10 @@
     <arg name="respawn" value="true"/>
     <arg name="publish_tf" value="true"/>
     <arg name="camera" value="openni"/>
+    <arg name="depth_registration" value="false" />
+    <!--param name="/camera/driver/data_skip" value="1" /--> <!-- subsample 1/(N+1) -->
+    <!--param name="/camera/driver/depth_mode" value="5" /--> <!-- 320x240/30Hz --> <!-- see rqt_reconfigure -->
+    <!--param name="/camera/driver/image_mode" value="5" /--> <!-- 320x240/30Hz -->
   </include>
 
   <node name="kinect_points_throttle" pkg="topic_tools" type="throttle"
