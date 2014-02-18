@@ -87,6 +87,12 @@ install(DIRECTORY jskeus/eus/${ARCHDIR}/lib/
   DESTINATION ${EUSDIR}/${ARCHDIR}/lib
 )
 
+# objs
+install(DIRECTORY jskeus/eus/${ARCHDIR}/obj/
+  DESTINATION ${EUSDIR}/${ARCHDIR}/obj
+  FILES_MATCHING PATTERN "*.l" PATTERN "*.so"  PATTERN ".svn" EXCLUDE
+)
+
 # includes
 install(CODE "
   message(\"-- CreateLink: \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include -> \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/lisp/c\")
@@ -108,6 +114,12 @@ install(DIRECTORY jskeus/eus/lisp/
 # models
 install(DIRECTORY jskeus/eus/models/
   DESTINATION ${EUSDIR}/models
+  FILES_MATCHING PATTERN "*.l" PATTERN "*.jpg" PATTERN "*.png" PATTERN "*.ppm" PATTERN ".svn" EXCLUDE
+)
+
+# img
+install(DIRECTORY jskeus/eus/img/
+  DESTINATION ${EUSDIR}/img
   FILES_MATCHING PATTERN "*.l" PATTERN "*.jpg" PATTERN "*.png" PATTERN "*.ppm" PATTERN ".svn" EXCLUDE
 )
 
