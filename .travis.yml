@@ -48,6 +48,7 @@ before_script: # Use this to prepare your build for testing e.g. copy database c
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - if [ $BUILDER != catkin_make ]; then source src/setup.bash; fi 
 script: # All commands must exit with code 0 on success. Anything else is considered failure.
+  - echo $ROS_PACKAGE_PATH
   - $BUILDER
   - $BUILDER_TEST
   - $BUILDER_INSTALL
