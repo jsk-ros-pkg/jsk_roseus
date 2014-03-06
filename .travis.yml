@@ -8,6 +8,7 @@ compiler:
   - gcc
 env:
   - ROS_DISTRO=groovy ROSWS=rosws BUILDER="rosmake -a" BUILDER_TEST="echo rosmake includes test already" BUILDER_INSTALL="echo no install for rosmake"
+  - ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin_make BUILDER_TEST="catkin_make test" BUILDER_INSTALL="catkin_make install"
   - ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin_make BUILDER_TEST="catkin_make test" BUILDER_INSTALL="catkin_make install"
 #notifications:
 #  email:
@@ -52,7 +53,7 @@ before_script: # Use this to prepare your build for testing e.g. copy database c
 script: # All commands must exit with code 0 on success. Anything else is considered failure.
   - rospack profile
   - if [ $ROS_DISTRO = groovy ]; then sudo apt-get install ros-groovy-executive-smach-visualization; fi # smach_viewer is required but it's not listed on rosdep
-  - if [ $ROS_DISTRO = groovy ]; then sudo apt-get installr ros-$ROS_DISTRO-resource-retriever; fi # this is required by ar_pose
+  - if [ $ROS_DISTRO = groovy ]; then sudo apt-get install ros-$ROS_DISTRO-resource-retriever; fi # this is required by ar_pose
   - $BUILDER
   - $BUILDER_TEST
   - $BUILDER_INSTALL
