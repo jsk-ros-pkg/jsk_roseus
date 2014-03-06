@@ -48,6 +48,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   # Install dependencies for source repos
   - rosdep install -r -n --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
   - sudo apt-get install ros-$ROS_DISTRO-opencv2 ros-$ROS_DISTRO-cv-bridge # will be required by saliency_tracking
+  - if [ $ROS_DISTRO = groovy ]; then sudo apt-get install ros-groovy-pr2-controllers; fi
 before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - if [ $ROSWS != wstool ]; then source src/setup.bash; fi
