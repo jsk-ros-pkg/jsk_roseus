@@ -39,6 +39,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   - cd ~/ros/ws_$REPOSITORY_NAME/src
   - $ROSWS init .
   - $ROSWS merge http://raw.github.com/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/.rosinstall
+  - if [ $ROSWS != wstool ]; then source setup.bash; fi
   - $ROSWS update
   - ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
   - cd ../
@@ -46,7 +47,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   - rosdep install -r -n --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
 before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
   - source /opt/ros/$ROS_DISTRO/setup.bash
-  - if [ $BUILDER != catkin_make ]; then source src/setup.bash; fi 
+  - if [ $ROSWS != wstool ]; then source src/setup.bash; fi 
 script: # All commands must exit with code 0 on success. Anything else is considered failure.
   - echo $ROS_PACKAGE_PATH
   - $BUILDER
