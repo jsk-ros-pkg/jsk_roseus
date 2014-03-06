@@ -2,3 +2,6 @@
     local-name: uvc_camera
     uri: https://github.com/ktossell/camera_umd.git
     version: master
+- svn:
+    local-name: ua_vision
+    uri: http://ua-ros-pkg.googlecode.com/svn/trunk/arrg/ua_vision
