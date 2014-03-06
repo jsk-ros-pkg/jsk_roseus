@@ -55,8 +55,8 @@ script: # All commands must exit with code 0 on success. Anything else is consid
   - $BUILDER_TEST
   - $BUILDER_INSTALL
   - rm -fr devel src build
-  - if [ $BUILDER = catkin_make ]; then source install/setup.bash; fi
-  - if [ $BUILDER = catkin_make ]; then find install -iname "*.test" -print0 | xargs -0 -n1 rostest; fi
+  - if [ "$BUILDER" = catkin_make ]; then source install/setup.bash; fi
+  - if [ "$BUILDER" = catkin_make ]; then find install -iname "*.test" -print0 | xargs -0 -n1 rostest; fi
 after_failure:
   - if [ -e ./build/Testing/Temporary/LastTest.log ]; then cat ./build/Testing/Temporary/LastTest.log; fi
   - find ${HOME}/.ros/test_results -type f -exec echo "== {} ==" \; -exec cat {} \;
