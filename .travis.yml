@@ -51,6 +51,7 @@ before_script: # Use this to prepare your build for testing e.g. copy database c
   - if [ $ROSWS != wstool ]; then source src/setup.bash; fi
 script: # All commands must exit with code 0 on success. Anything else is considered failure.
   - rospack profile
+  - if [ $ROS_DISTRO = groovy ]; then sudo apt-get install ros-groovy-executive-smach-visualization; fi
   - $BUILDER
   - $BUILDER_TEST
   - $BUILDER_INSTALL
