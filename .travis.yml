@@ -7,7 +7,7 @@ python:
 compiler:
   - gcc
 env:
-  - ROS_DISTRO=groovy ROSWS=rosws BUILDER="rosmake -a" BUILDER_TEST="echo rosmake includes test already" BUILDER_INSTALL="echo no install for rosmake"
+  - ROS_DISTRO=groovy ROSWS=rosws BUILDER="rosmake roseus  roseus_smach  roseus_tutorials euslisp" BUILDER_TEST="echo rosmake includes test already" BUILDER_INSTALL="echo no install for rosmake"
   - ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin_make BUILDER_TEST="catkin_make test" BUILDER_INSTALL="catkin_make install"
   - ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin_make BUILDER_TEST="catkin_make test" BUILDER_INSTALL="catkin_make install"
 #notifications:
