@@ -39,8 +39,8 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   - cd ~/ros/ws_$REPOSITORY_NAME/src
   - $ROSWS init .
   - $ROSWS merge http://raw.github.com/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/.rosinstall
+  - if [ $ROSWS != wstool ]; $ROSWS merge /opt/ros/$ROS_DISTRO/.rosinstall; fi
   - $ROSWS update
-  - ls
   - if [ $ROSWS != wstool ]; then $ROSWS set --git jsk_roseus https://dummy.com/dummy -y ; fi
   - ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
   - cd ../
@@ -50,7 +50,7 @@ before_script: # Use this to prepare your build for testing e.g. copy database c
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - if [ $ROSWS != wstool ]; then source src/setup.bash; fi
 script: # All commands must exit with code 0 on success. Anything else is considered failure.
-  - echo $ROS_PACKAGE_PATH
+  - rospack profile
   - $BUILDER
   - $BUILDER_TEST
   - $BUILDER_INSTALL
