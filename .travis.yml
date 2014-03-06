@@ -34,6 +34,7 @@ before_install: # Use this to prepare the system to install prerequisites or dep
   - rosdep update
 install: # Use this to install any prerequisites or dependencies necessary to run your build
   # Create workspace
+  - source /opt/ros/$ROS_DISTRO/setup.bash
   - mkdir -p ~/ros/ws_$REPOSITORY_NAME/src
   - cd ~/ros/ws_$REPOSITORY_NAME/src
   - $ROSWS init .
