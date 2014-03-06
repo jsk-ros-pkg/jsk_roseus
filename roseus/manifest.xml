@@ -5,6 +5,8 @@
   <review status="experimental" notes=""/>
 
   <depend package="euslisp"/>
+  <depend package="rospack"/>
+  <depend package="actionlib"/>
 
   <rosdep name="roslang"/>
   <rosdep name="roscpp" />
