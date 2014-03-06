@@ -48,6 +48,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   # Install dependencies for source repos
   - rosdep install -r -n --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y > /dev/null
   - if [ $ROS_DISTRO = groovy ]; then sudo apt-get install ros-groovy-executive-smach-visualization  > /dev/null; fi # smach_viewer is required but it's not listed on rosdep
+  - sudo apt-get install ros-$ROS_DISTRO-common-tutorials # for actionlib_tutorials
 before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - if [ $ROSWS != wstool ]; then source src/setup.bash; fi
