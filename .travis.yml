@@ -39,7 +39,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   - cd ~/ros/ws_$REPOSITORY_NAME/src
   - $ROSWS init .
   - $ROSWS merge http://raw.github.com/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/.rosinstall
-  - if [ $ROSWS != wstool ]; $ROSWS merge /opt/ros/$ROS_DISTRO/.rosinstall; fi
+  - if [ $ROSWS != wstool ]; then $ROSWS merge /opt/ros/$ROS_DISTRO/.rosinstall; fi
   - $ROSWS update
   - if [ $ROSWS != wstool ]; then $ROSWS set --git jsk_roseus https://dummy.com/dummy -y ; fi
   - ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
