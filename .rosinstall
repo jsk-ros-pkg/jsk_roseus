@@ -2,3 +2,7 @@
     local-name: uvc_camera
     uri: https://github.com/ktossell/camera_umd.git
     version: master
+- git:
+    local-name: ar_pose
+    uri: https://github.com/LucidOne/ar_tools.git
+    version: master
