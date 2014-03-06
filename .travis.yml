@@ -36,9 +36,9 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   # Create workspace
   - mkdir -p ~/ros/ws_$REPOSITORY_NAME/src
   - cd ~/ros/ws_$REPOSITORY_NAME/src
-  - ${ROSWS} init .
-  - ${ROSWS} merge http://raw.github.com/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/.rosinstall
-  - ${ROSWS} update
+  - $ROSWS init .
+  - $ROSWS merge http://raw.github.com/$TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/.rosinstall
+  - $ROSWS update
   - ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
   - cd ../
   # Install dependencies for source repos
@@ -46,12 +46,12 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
 before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
   - source /opt/ros/$ROS_DISTRO/setup.bash
 script: # All commands must exit with code 0 on success. Anything else is considered failure.
-  - ${BUILDER}
-  - ${BUILDER_TEST}
-  - ${BUILDER_INSTALL}
+  - $BUILDER
+  - $BUILDER_TEST
+  - $BUILDER_INSTALL
   - rm -fr devel src build
   - source install/setup.bash
-  - if [ ${ROS_DISTRO} = hydro ]; then find install -iname "*.test" -print0 | xargs -0 -n1 rostest; fi
+  - if [ $ROS_DISTRO = hydro ]; then find install -iname "*.test" -print0 | xargs -0 -n1 rostest; fi
 after_failure:
   - if [ -e ./build/Testing/Temporary/LastTest.log ]; then cat ./build/Testing/Temporary/LastTest.log; fi
   - find ${HOME}/.ros/test_results -type f -exec echo "== {} ==" \; -exec cat {} \;
