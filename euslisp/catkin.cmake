@@ -11,10 +11,11 @@ if (_make_failed)
   message(FATAL_ERROR "Build of euslisp failed")
 endif(_make_failed)
 
-add_rostest(test/test-euslisp.launch)
+add_rostest(test/test-euslisp.test)
 #check_for_display(disp)
 #if(disp)
-#  add_rostest(test/test-irtrobot.launch)
+#  add_rostest(test/test-irtrobot.test)
+#  add_rostest(test/test-irtviewer.test)
 #endif(disp)
 
 # build euslisp before catkin_package, since catkin_pakcage/INCLUDE_DIRS needs to be exists
@@ -150,3 +151,9 @@ install(CODE "
    execute_process(COMMAND sed -i s@\${CMAKE_INSTALL_PREFIX}/include@\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include@ \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/${PROJECT_NAME}Config.cmake)
    ")
 
+
+
+install(DIRECTORY test
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  USE_SOURCE_PERMISSIONS
+  )

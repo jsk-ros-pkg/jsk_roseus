@@ -5,6 +5,8 @@
 (setq euslisp-dir (read-from-string (read-line (piped-fork "rospack" "find" "euslisp"))))
 
 (load "models/irt-all-robots.l")
+(unless x::*root* (defun make-all-robots ())) ;; do not create viwer
+
 (setq robot-viewers (make-all-robots))
 (deftest make-all-robots
   (let (fname (fname-list ""))
@@ -19,6 +21,8 @@
     ))
 
 (load "models/irt-all-objects.l")
+(unless x::*root* (defun make-all-objects ())) ;; do not create viwer
+
 (setq object-viewers (make-all-objects))
 (deftest make-all-objects
   (let (fname (fname-list ""))

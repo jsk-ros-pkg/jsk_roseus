@@ -155,9 +155,9 @@
       (send *robot* :angle-vector (float-vector x y))
       ;;
       ;; check if x-y with in the limit
-      (assert (eq (and (= x (send j1 :joint-angle)) (= y (send j2 :joint-angle))) ;; check if :anlge-vector did not modify value
+      (unless (eq (and (= x (send j1 :joint-angle)) (= y (send j2 :joint-angle))) ;; check if :anlge-vector did not modify value
                    (<= (abs y) (- 90 (abs x)))) ;; ground truth
-              (format nil "Is (~A ~A) safe posture? ~A ~A~%" x y (and (= x (send j1 :joint-angle)) (= y (send j2 :joint-angle))) (<= (abs y) (- 90 (abs x)))))
+        (format t "Is (~A ~A) safe posture? ~A ~A~%" x y (and (= x (send j1 :joint-angle)) (= y (send j2 :joint-angle))) (<= (abs y) (- 90 (abs x)))))
       (when min-max-table-view
         ;; check in view
         (cond ((and (= x (send j1 :joint-angle)) (= y (send j2 :joint-angle))) ;; with i nlimit
