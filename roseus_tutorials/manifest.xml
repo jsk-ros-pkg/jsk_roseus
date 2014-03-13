@@ -19,7 +19,7 @@
   <!-- <depend package="cmvision" /> -->
   <depend package="checkerboard_pose" />
   <depend package="face_detector_mono" />
-  <depend package="aques_talk" />
+  <!-- <depend package="aques_talk" /> -->
   <depend package="checkerboard_detector" />
   <depend package="image_proc" />
   <depend package="image_view2" />
