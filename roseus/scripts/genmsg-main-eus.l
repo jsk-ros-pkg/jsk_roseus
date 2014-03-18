@@ -660,7 +660,7 @@
 	(dir (format nil "~A/roseus/~A/~A" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg)))
     (setq strm (piped-fork (format nil "rospack depends -q ~A" pkg)))
     (while (setq l (read-line strm nil))
-     o (push l depend-pkgs))
+      (push l depend-pkgs))
     (close strm)
     (push pkg depend-pkgs)
     (setq depend-pkgs (nreverse depend-pkgs))
