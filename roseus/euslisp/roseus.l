@@ -115,14 +115,18 @@
   (equal (a . sec-nsec) (b . sec-nsec)))
 
 (defun ros::ros-home-dir ()
-  (let ((ros-home (unix::getenv "ROS_HOME")))
+  (let ((ros-home (unix::getenv "ROS_HOME"))
+        (ros-distro (unix::getenv "ROS_DISTRO")))
     (unless ros-home (setq ros-home (format nil "~A/.ros" (unix::getenv "HOME"))))
     (unless (probe-file (format nil "~A/roseus" ros-home))
       (unix::system (format nil "mkdir ~A/roseus" ros-home)))
-    (pushnew (format nil "~A/roseus/" ros-home) *load-path* :test #'equal)
+    (unless (probe-file (format nil "~A/roseus/~A" ros-home ros-distro))
+      (unix::system (format nil "mkdir ~A/roseus/~A" ros-home ros-distro)))
+    (pushnew (format nil "~A/roseus/~A/" ros-home ros-distro) *load-path* :test #'equal)
     ros-home))
 (defun ros::roseus-add-files (pkg type)
-  (let ((dir (format nil "~A/roseus/~A/~A/" (ros::ros-home-dir) pkg type)))
+  (let ((dir (format nil "~A/roseus/~A/~A/~A/" (ros::ros-home-dir)
+                     (unix:getenv "ROS_DISTRO") pkg type)))
     (unless (probe-file dir)
       (warning-message
        1 (format nil ";; can not find ~A directory for [~A] packages~%" dir pkg))
@@ -146,7 +150,7 @@
                 (let ((ros-home (ros::ros-home-dir)))
                   (comp::compile-file-if-src-newer-so dirfile
                                                       :out-prefix (format nil "~A_" pkg)
-                                                      :output-dir (format nil "~A/roseus/" ros-home)
+                                                      :output-dir (format nil "~A/roseus/~A/" ros-home (unix:getenv "ROS_DISTRO"))
                                                       :clear-files t)
                   (load (format nil "~A_~A.so" pkg fname)
                         :entry (format nil "___~A" fname))
@@ -174,7 +178,7 @@
           (let ((ros-home (ros::ros-home-dir)))
             (comp::compile-file-if-src-newer-so (format nil "~A/~A" package-path path-name)
                                                 :out-prefix (format nil "~A_" package-name)
-                                                :output-dir (format nil "~A/roseus/" ros-home)
+                                                :output-dir (format nil "~A/roseus/~A/" ros-home (unix:getenv "ROS_DISTRO"))
                                                 :clear-files t)))
         (load-org-for-ros (format nil "~A_~A.so" package-name fname) :entry (format nil "___~A" fname))
         (return-from ros::resolve-ros-path nil)))
@@ -288,8 +292,8 @@ always the rank of list is 2"
 ;; load functions
 ;;
 (defun ros::load-ros-manifest (pkg)
-  (let ((manifest (format nil "~A/roseus/~A/manifest.l"
-			  (ros::ros-home-dir) pkg)))
+  (let ((manifest (format nil "~A/roseus/~A/~A/manifest.l"
+                          (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg)))
     (if (probe-file manifest)
 	(load-org-for-ros manifest)
       (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg))))
@@ -297,9 +301,9 @@ always the rank of list is 2"
 (defun ros::load-ros-package (pkg)
   (unless (find-package (string-upcase pkg))
     (make-package (string-upcase pkg)))
-  (when (probe-file (format nil "~A/roseus/~A/msg" (ros::ros-home-dir) pkg))
+  (when (probe-file (format nil "~A/roseus/~A/~A/msg" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg))
     (ros::roseus-add-msgs pkg))
-  (when (probe-file (format nil "~A/roseus/~A/srv" (ros::ros-home-dir) pkg))
+  (when (probe-file (format nil "~A/roseus/~A/~A/srv" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg))
     (ros::roseus-add-srvs pkg)))
 
 (setq sys::*exit-hook* 'ros::exit)
