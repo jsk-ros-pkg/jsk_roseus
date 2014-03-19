@@ -67,7 +67,7 @@ else
     roshomedir="$HOME/.ros";
 fi
 
-mkdir -p $roshomedir/roseus
+mkdir -p $roshomedir/roseus/$ROS_DISTRO
 # listap all packages
 
 if [ "${ALL}" = "Yes" ]; then
@@ -75,7 +75,7 @@ if [ "${ALL}" = "Yes" ]; then
 elif [ "${SHARED}" = "Yes" ] ;  then
     package_list_names=${@:-`for pkg in \`rospack list | cut -d\\  -f 2\`; do if [ -e $pkg/ROS_NOBUILD ]; then echo \`basename $pkg\`; fi; done`}
 else
-    package_list_names=${@:-`cd $roshomedir/roseus; find ./ -maxdepth 1 -type d -print | sed s%^./%%g`}
+    package_list_names=${@:-`cd $roshomedir/roseus/$ROS_DISTRO; find ./ -maxdepth 1 -type d -print | sed s%^./%%g`}
 fi
 for pkg in $package_list_names; do
     fullpath_pkg=`rospack find $pkg`;

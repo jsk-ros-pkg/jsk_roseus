@@ -3,7 +3,7 @@ rosbuild_find_ros_package(roseus)
 
 ## rule
 ##  1) generate msg/srv/manifest file, depending on manifest.xml, msg/ srv/.
-##     this does not generate generated file under .ros/roseus/<package>
+##     this does not generate generated file under .ros/roseus/<distro>/<package>
 ##  2) check if depends packages need genmsg/gensrv...
 ##     use rospack depends to get list of depend packages
 ##      for each package...
@@ -28,7 +28,7 @@ macro(genmanifest_eus)
   endif(_eus2_failed)
 
   set(genmanifest_eus_exe ${roseus_PACKAGE_PATH}/scripts/genmanifest_eus)
-  set(manifest_eus_target_dir ${roshomedir}/roseus/${PROJECT_NAME})
+  set(manifest_eus_target_dir ${roshomedir}/roseus/$ENV{ROS_DISTRO}/${PROJECT_NAME})
   set(manifest_eus_target ${manifest_eus_target_dir}/manifest.l)
   if(EXISTS ${PROJECT_SOURCE_DIR}/package.xml)
     set(manifest_xml ${PROJECT_SOURCE_DIR}/package.xml)
@@ -54,11 +54,11 @@ macro(genmsg_eus)
     rosbuild_gendeps(${PROJECT_NAME} ${_msg})
     set(genmsg_eus_exe ${roseus_PACKAGE_PATH}/scripts/genmsg_eus)
 
-    set(_output_eus ${roshomedir}/roseus/${PROJECT_NAME}/msg/${_msg})
+    set(_output_eus ${roshomedir}/roseus/$ENV{ROS_DISTRO}/${PROJECT_NAME}/msg/${_msg})
     string(REPLACE ".msg" ".l" _output_eus ${_output_eus})
 
     # Add the rule to build the .l the .msg
-    add_custom_command(OUTPUT ${_output_eus} ${roshomedir}/roseus/${PROJECT_NAME}/msg
+    add_custom_command(OUTPUT ${_output_eus} ${roshomedir}/roseus/$ENV{ROS_DISTRO}/${PROJECT_NAME}/msg
                        COMMAND ${genmsg_eus_exe} ${_input}
                        DEPENDS ${_input} ${gendeps_exe} ${${PROJECT_NAME}_${_msg}_GENDEPS} ${ROS_MANIFEST_LIST} ${msggenerated})
     list(APPEND _autogen ${_output_eus})
@@ -86,11 +86,11 @@ macro(gensrv_eus)
     rosbuild_gendeps(${PROJECT_NAME} ${_srv})
     set(gensrv_eus_exe ${roseus_PACKAGE_PATH}/scripts/gensrv_eus)
 
-    set(_output_eus ${roshomedir}/roseus/${PROJECT_NAME}/srv/${_srv})
+    set(_output_eus ${roshomedir}/roseus/$ENV{ROS_DISTRO}/${PROJECT_NAME}/srv/${_srv})
     string(REPLACE ".srv" ".l" _output_eus ${_output_eus})
 
     # Add the rule to build the .l from the .srv
-    add_custom_command(OUTPUT ${_output_eus} ${roshomedir}/roseus/${PROJECT_NAME}/srv
+    add_custom_command(OUTPUT ${_output_eus} ${roshomedir}/roseus/$ENV{ROS_DISTRO}/${PROJECT_NAME}/srv
                        COMMAND ${gensrv_eus_exe} ${_input}
                        DEPENDS ${_input} ${gendeps_exe} ${${PROJECT_NAME}_${_srv}_GENDEPS} ${ROS_MANIFEST_LIST} ${msggenerated})
     list(APPEND _autogen ${_output_eus})
@@ -137,22 +137,22 @@ macro(generate_ros_nobuild_eus)
     ### https://github.com/willowgarage/catkin/issues/122
     if(EXISTS ${${_package}_PACKAGE_PATH}/action AND
 	(NOT EXISTS ${${_package}_PACKAGE_PATH}/msg) AND
-        (NOT EXISTS ${roshomedir}/roseus/${_package}/action_msg/generated))
+        (NOT EXISTS ${roshomedir}/roseus/$ENV{ROS_DISTRO}/${_package}/action_msg/generated))
       message("[roseus.cmake] generate msg from action")
       file(GLOB _actions RELATIVE "${${_package}_PACKAGE_PATH}/action/" "${${_package}_PACKAGE_PATH}/action/*.action")
       foreach(_action ${_actions})
-	message("[roseus.cmake] genaction.py ${_action} -o ${roshomedir}/roseus/${_package}/action_msg/")
-	execute_process(COMMAND rosrun actionlib_msgs genaction.py ${${_package}_PACKAGE_PATH}/action/${_action} -o ${roshomedir}/roseus/${_package}/action_msg)
+	message("[roseus.cmake] genaction.py ${_action} -o ${roshomedir}/roseus/$ENV{ROS_DISTRO}/${_package}/action_msg/")
+	execute_process(COMMAND rosrun actionlib_msgs genaction.py ${${_package}_PACKAGE_PATH}/action/${_action} -o ${roshomedir}/roseus/$ENV{ROS_DISTRO}/${_package}/action_msg)
       endforeach()
-      file(GLOB _action_msgs "${roshomedir}/roseus/${_package}/action_msg/*.msg")
+      file(GLOB _action_msgs "${roshomedir}/roseus/$ENV{ROS_DISTRO}/${_package}/action_msg/*.msg")
       foreach(_action_msg ${_action_msgs})
 	message("[roseus.cmake] rosrun roseus genmsg_eus ${_action_msg}")
 	execute_process(COMMAND rosrun roseus genmsg_eus ${_action_msg})
       endforeach()
-      file(WRITE ${roshomedir}/roseus/${_package}/action_msg/generated "generated")
+      file(WRITE ${roshomedir}/roseus/$ENV{ROS_DISTRO}/${_package}/action_msg/generated "generated")
     endif()
     ###
-    set(msggenerated "${roshomedir}/roseus/${_package}/generated")
+    set(msggenerated "${roshomedir}/roseus/$ENV{ROS_DISTRO}/${_package}/generated")
     set(md5sum_file "")
     if(EXISTS ${msggenerated})
       execute_process(COMMAND cat ${msggenerated} OUTPUT_VARIABLE md5sum_file)
