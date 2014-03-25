@@ -4,7 +4,7 @@ project(roseus)
 
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros)
+find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros)
 
 add_definitions(-Wall)
 #
@@ -95,18 +95,27 @@ set_target_properties(simple_execute_ref_server PROPERTIES RUNTIME_OUTPUT_DIRECT
 # rosbuild_add_rostest(test/test-multi-queue.launch)
 
 ## Generate added messages and services with any dependencies listed here
+string(RANDOM _random_string)
+set(roseus_DIR "/tmp/${_random_string}")
+file(WRITE ${roseus_DIR}/roseusConfig.cmake "
+if(NOT roshomedir)
+  include(${PROJECT_SOURCE_DIR}/cmake/roseus.cmake)
+endif()
+")
 generate_messages(
   DEPENDENCIES geometry_msgs std_msgs
 )
+set(roseus_DIR)
 
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     DEPENDS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs actionlib_tutorials coreutils tf2_ros
-    CATKIN-DEPENDS # euslisp TODO
+    CATKIN_DEPENDS message_runtime # euslisp TODO
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
+    CFG_EXTRAS roseus.cmake
 )
 
 install(PROGRAMS bin/roseus  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
