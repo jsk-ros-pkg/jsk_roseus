@@ -63,7 +63,7 @@
     (setq l (read-line (piped-fork (format nil "rospack find ~A" pkg)) nil))
     (unless l
       (warning-message 1 ";; ERROR could not find ~A package~%" pkg)(exit 1))
-    (setq oname (format nil "~A/roseus/~A/~A/" (ros::ros-home-dir) pkg dir))
+    (setq oname (format nil "~A/roseus/~A/~A/~A/" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg dir))
     (unless (lisp::directory-p oname)
       (warning-message 6 ";; mkdir ~A~%" oname)
       (unix::system (format nil "mkdir -p ~A" oname)))
@@ -571,7 +571,7 @@
     (multiple-value-setq (pkg name) (genfile-header fname))
     ;;; https://github.com/willowgarage/catkin/issues/122
     (unless (or (check-msg-file pkg name)
-		(string= (format nil "~A/roseus/~A/action_msg/~A.msg" (ros::ros-home-dir) pkg name) fname))
+		(string= (format nil "~A/roseus/~A/~A/action_msg/~A.msg" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg name) fname))
       (warning-message 1 ";; error occured when parsing ~A/msg/~A~%" pkg name)
       (return-from genmsg-eus nil))
     (with-open-file
@@ -657,7 +657,7 @@
 
 (defun genmanifest-eus (pkg &optional (target-file "manifest.l"))
   (let (depend-pkgs strm l
-	(dir (format nil "~A/roseus/~A" (ros::ros-home-dir) pkg)))
+	(dir (format nil "~A/roseus/~A/~A" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg)))
     (setq strm (piped-fork (format nil "rospack depends -q ~A" pkg)))
     (while (setq l (read-line strm nil))
       (push l depend-pkgs))
