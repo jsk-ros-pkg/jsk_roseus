@@ -13,12 +13,14 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>rostest</build_depend>
+  <build_depend>rosbuild</build_depend>
   <build_depend>opengl</build_depend>
   <build_depend>libjpeg</build_depend>
   <build_depend>libx11-dev</build_depend>
   <build_depend>libxext</build_depend>
   <build_depend>libpng12-dev</build_depend>
+  <build_depend>cmake_modules</build_depend>
+  <build_depend>mk</build_depend>
   <build_depend>xfonts-100dpi</build_depend>
   <build_depend>xfonts-75dpi</build_depend>
   <build_depend>xfont-server</build_depend>
