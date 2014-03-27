@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="roseus" type="simple_execute_ref_server" name="ref_server" output="screen" />
+  <test test-name="simple_client_wait_test" pkg="roseus" type="roseus" args="$(find roseus)/test/simple-client-wait-test.l" />
+</launch>
+

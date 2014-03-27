@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="roseus" type="ref_simple_server.py" name="ref_simple_server" output="screen" />
+  <test test-name="simple_client_test" pkg="roseus" type="roseus" args="$(find roseus)/test/simple-client-test.l" />
+</launch>
+
