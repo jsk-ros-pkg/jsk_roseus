@@ -476,6 +476,8 @@
       (setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname)) nil nil))) ;;workaround for packages installed from source
     (when (null val) ;; some groovy/rosbuild environemnt needs this line?
       (setq val (read-line (piped-fork (format nil "PYTHONPATH=`rospack find ~A`/build/devel/lib/python2.7/dist-packages:$PYTHONPATH ~A md5 ~A/~A" pkg (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil)))
+    (when (null val) ;;
+      (setq val (read-line (piped-fork (format nil "python -c 'from ~A.msg import *; print ~A._md5sum'" pkg name)) nil nil)))
     (when (null val)
       (warning-message 1 "[ERROR] Could not get md5sum for ~A ~A ~A~%" pkg name fname)
       (exit -1))
@@ -565,12 +567,20 @@
   (read-line (piped-fork (format nil "rossrv show ~A/~A" pkg name)) nil))
 (defun check-msg-file (pkg name)
   (read-line (piped-fork (format nil "rosmsg show ~A/~A" pkg name)) nil))
+(defun check-action-file (pkg fname)
+  (if (or (substringp "Action.msg" fname)
+          (substringp "Feedback.msg" fname)
+          (substringp "Goal.msg" fname)
+          (substringp "Result.msg" fname)
+          (substringp "Feedback.msg" fname))
+      (probe-file (format nil "~A/action" (read-line (piped-fork (format nil "rospack find ~A" pkg)))))))
 
 (defun genmsg-eus (fname)
   (let (msgs consts def pkg name oname)
     (multiple-value-setq (pkg name) (genfile-header fname))
     ;;; https://github.com/willowgarage/catkin/issues/122
-    (unless (or (check-msg-file pkg name)
+    (unless (or (check-action-file pkg fname)
+                (check-msg-file pkg name)
 		(string= (format nil "~A/roseus/~A/~A/action_msg/~A.msg" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg name) fname))
       (warning-message 1 ";; error occured when parsing ~A/msg/~A~%" pkg name)
       (return-from genmsg-eus nil))

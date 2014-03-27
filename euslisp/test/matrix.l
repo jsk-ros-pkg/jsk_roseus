@@ -22,7 +22,7 @@
     (assert (eps= (car rot-angle) angle) "check angle of rotation-angle")
     (assert (eps-v= (cadr rot-angle) axis) "check axis rotatoin-angle"))
 
-    (dotimes (i 10000)
+    (dotimes (i 1000)
       (setq axis (normalize-vector (random-vector 1.0)))
       (setq angle (- (random 2pi) pi))
       (setq rot (make-coords :axis axis :angle angle))
