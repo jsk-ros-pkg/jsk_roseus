@@ -37,7 +37,7 @@
 
 (deftest test-add-two-ints-many
   (ros::wait-for-service "add_two_ints")
-  (dotimes (i 2000)
+  (dotimes (i 1000)
     (let ((a i) (b (random 100000000)))
       (warning-message 2 "Requesting ~A(~A) + ~A(~A) -> ~A(~A)~%" a (class a) b (class b) (+ a b) (class (+ a b)))
       (setq req (instance roseus::AddTwoIntsRequest :init :a a :b b))
