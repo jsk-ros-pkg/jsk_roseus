@@ -1,5 +1,5 @@
 <package>
-  <description brief="roseus_roseus">
+  <description brief="roseus_smach">
 
      roseus_smach
 
@@ -15,8 +15,8 @@
   <url>http://ros.org/wiki/roseus_smach</url>
   <depend package="euslisp"/>
   <depend package="roseus"/>
-  <depend package="smach_viewer"/>
-  <depend package="smach_msgs"/>
-  <depend package="actionlib_tutorials"/>
+  <!-- depend package="smach_viewer"/ -->
+  <!-- depend package="smach_msgs"/ -->
+  <!-- depend package="actionlib_tutorials"/ -->
 
 </package>
