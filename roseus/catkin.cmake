@@ -85,14 +85,15 @@ add_message_files(
 add_executable(simple_execute_ref_server test/simple_execute_ref_server.cpp)
 target_link_libraries(simple_execute_ref_server ${roscpp_LIBRARIES} ${actionlib_LIBRARIES})
 set_target_properties(simple_execute_ref_server PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
-# rosbuild_add_rostest(test/test-talker-listener.launch)
-# rosbuild_add_rostest(test/test-add-two-ints.launch)
-# rosbuild_add_rostest(test/test-simple-client.launch)
-# rosbuild_add_rostest(test/test-simple-client-wait.launch)
-# rosbuild_add_rostest(test/test-fibonacci.launch)
-# rosbuild_add_rostest(test/test-tf.launch)
-# rosbuild_add_rostest(test/test-disconnect.launch)
-# rosbuild_add_rostest(test/test-multi-queue.launch)
+add_rostest(test/test-talker-listener.test)
+add_rostest(test/test-add-two-ints.test)
+add_rostest(test/test-simple-client.test)
+add_rostest(test/test-simple-client-wait.test)
+add_rostest(test/test-actionlib.test)
+add_rostest(test/test-roseus.test)
+add_rostest(test/test-tf.test)
+add_rostest(test/test-disconnect.test)
+add_rostest(test/test-multi-queue.test)
 
 ## Generate added messages and services with any dependencies listed here
 string(RANDOM _random_string)
@@ -118,35 +119,13 @@ catkin_package(
     CFG_EXTRAS roseus.cmake
 )
 
-install(PROGRAMS bin/roseus  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-# set symlink from /opt/groovy/bin to /opt/groovy/share/roseus/roseus
-install(CODE "
-  file(MAKE_DIRECTORY \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin\")
-  message(\"-- CreateLink: \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin/roseus -> ../${CATKIN_PACKAGE_BIN_DESTINATION}/roseus\")
-  execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink ../${CATKIN_PACKAGE_BIN_DESTINATION}/roseus \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/bin/roseus)
-")
+# install
+install(PROGRAMS bin/roseus
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(DIRECTORY euslisp test scripts cmake
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  USE_SOURCE_PERMISSIONS)
 
-install(TARGETS roseus  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/euslisp)
-install(TARGETS eustf   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/euslisp)
-install(TARGETS roseus_c_util  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/euslisp)
-install(DIRECTORY euslisp/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/euslisp
-  FILES_MATCHING PATTERN "*.l" PATTERN ".svn" EXCLUDE)
 
-# scripts
-install(DIRECTORY cmake/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake
-  FILES_MATCHING PATTERN "*.cmake" PATTERN ".svn" EXCLUDE)
-file(GLOB scripts "${PROJECT_SOURCE_DIR}/scripts/*")
-list(REMOVE_ITEM scripts "${PROJECT_SOURCE_DIR}/scripts/.svn")
-install(PROGRAMS ${scripts} DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts)
 
-# test codes
-install(TARGETS simple_execute_ref_server  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test)
-install(DIRECTORY test
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
-  FILES_MATCHING PATTERN "*.l" PATTERN "*.launch" PATTERN ".svn" EXCLUDE)
-install(DIRECTORY scripts
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
-  PATTERN ".svn" EXCLUDE)
 

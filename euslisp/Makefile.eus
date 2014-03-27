@@ -39,7 +39,7 @@ jskeus.installed: jskeus
 	touch jskeus.installed
 
 
-installed: wiped jskeus.installed $(EUSC_PATCH)
+installed: jskeus.installed $(EUSC_PATCH)
 	## set default environment variables to  eus.c
 	## EUSDIR=$(EUSDIR)
 	## ARCHDIR=$(ARCHDIR)
