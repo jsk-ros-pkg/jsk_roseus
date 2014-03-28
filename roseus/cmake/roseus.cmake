@@ -190,7 +190,6 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
       # gen messages
       foreach(_msg_file ${${pkg_name}_MESSAGE_FILES})
         set(_msg_file ${_${pkg_name}_PACKAGE_PATH}/${_msg_file})
-        message("2) --> ${_msg_file}")
         get_filename_component(_msg_name ${_msg_file} NAME_WE)
         list(FIND _ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${pkg_name}/msg/${_msg_name}.l _ret)
         if(${_ret} EQUAL -1)
