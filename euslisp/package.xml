@@ -13,6 +13,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>git</build_depend>
   <build_depend>rosbuild</build_depend>
   <build_depend>opengl</build_depend>
   <build_depend>libjpeg</build_depend>
