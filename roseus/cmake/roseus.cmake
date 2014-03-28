@@ -61,7 +61,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
       list(FIND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${pkg_name}/msg/${msg_name}.l _ret)
       if(${_ret} EQUAL -1)
         add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${pkg_name}/msg/${msg_name}.l
-          DEPENDS genmsg_eus ${msg_full_path}
+          DEPENDS genmsg_eus ${msg_full_path} ${pkg_name}_genpy
           COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS}  ${msg_full_path}
           COMMENT "Generating EusLisp code from ${pkg_name}/${msg_name}")
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${pkg_name}/msg/${msg_name}.l)
