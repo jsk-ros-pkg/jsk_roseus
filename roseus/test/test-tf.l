@@ -284,14 +284,15 @@
 
 (deftest test-tf2-lookup ()
   (setq l (instance ros::buffer-client :init :namespace "tf2_buffer_server"))
+
   (let ((ret (send l :wait-for-server)))
     (unless ret
       (error "tf2 :wait-for-server failed~%")))
-  (unix:sleep 1)
 
+  (unix:sleep 1)
   (setq tm (ros::time))
-  (setq ret (send l :wait-for-transform "/MANDALAY" "/TOKYO" tm 1))
-  (warning-message 2 "wait-for-transform at ~A returns ~A~%" tm ret)
+  (setq ret (send l :wait-for-transform "/MANDALAY" "/TOKYO" tm 10))
+  (warning-message 2 "wait-for-transform at ~A returns ~A~%" (ros::time-now) ret)
 
   (setq c1 (make-coords :pos #f(1000 0 0) :rpy #f(0 0 0)))
   (setq c2 (make-coords :pos #f(2000 2000 3000) :rpy #f(0.1 0.2 0.3)))
@@ -299,6 +300,9 @@
   (dotimes (j 10)
     (warning-message 2 "switch target to /TOKYO~%")
     (dotimes (i 10)
+      (setq tm (ros::time))
+      (setq ret (send l :wait-for-transform "MANDALAY" "JUPITER" tm 10))
+      (warning-message 2 "wait-for-transform at ~A returns ~A~%" (ros::time-now) ret)
       (setq c (send l :lookup-transform "MANDALAY" "JUPITER" (ros::time)))
       (unless (and c (eps= (norm (send c :difference-position c1)) 0)
                      (eps= (norm (send c :difference-rotation c1)) 0))
@@ -306,6 +310,9 @@
         ))
     (warning-message 2 "switch target to /JUPITER~%")
     (dotimes (i 10)
+      (setq tm (ros::time))
+      (setq ret (send l :wait-for-transform "MANDALAY" "TOKYO" tm 10))
+      (warning-message 2 "wait-for-transform at ~A returns ~A~%" (ros::time-now) ret)
       (setq c (send l :lookup-transform "MANDALAY" "TOKYO" (ros::time)))
       (unless (and c (eps= (norm (send c :difference-position c2)) 0)
                      (eps= (norm (send c :difference-rotation c2)) 0))
