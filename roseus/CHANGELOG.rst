@@ -2,6 +2,11 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.3 (2014-03-29)
+------------------
+* roseus/test/test-tf.test: tf2_buffer_server output to screen
+* Contributors: Kei Okada
+
 1.0.2 (2014-03-28)
 ------------------
 * roseus.cmake: remove debug code
