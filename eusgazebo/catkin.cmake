@@ -11,4 +11,4 @@ install(DIRECTORY euslisp test scripts samples
   USE_SOURCE_PERMISSIONS)
 
 ## Testing ##
-#add_rostest(test/test-fall-arrow-object-simulation.test)
+add_rostest(test/test-fall-arrow-object-simulation.test)

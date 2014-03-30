@@ -7,7 +7,8 @@
 (init-unit-test)
 
 (deftest test-fall-arrow-object-simulation
-  (fall-arrow-object-simulation))
+  (fall-arrow-object-simulation)
+  (unix:system "pkill gzserver"))
 
 (run-all-tests)
 (exit)

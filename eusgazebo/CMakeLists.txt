@@ -7,4 +7,4 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 rosbuild_init()
 
-#rosbuild_add_rostest(test/test-fall-arrow-object-simulation.test)
+rosbuild_add_rostest(test/test-fall-arrow-object-simulation.test)

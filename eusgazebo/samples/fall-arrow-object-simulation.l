@@ -12,6 +12,7 @@
   ;; generate eusgazebo instance
   (setq *eusgazebo-server* (instance eusgazebo :init))
   (send *eusgazebo-server* :add-model *arrow*)
+  (unix::usleep (* 1000 1000))
 
   ;; start simulation
   (progn
