@@ -4,7 +4,7 @@ project(roseus)
 
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack rostest actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros)
+find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack rostest actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros euslisp)
 
 add_definitions(-Wall)
 #
@@ -32,13 +32,13 @@ message (STATUS "Build repo revision: ${REPOVERSION}")
 # CATKIN_MIGRATION: removed during catkin migration
 # rosbuild_add_boost_directories()
 
-#find_package(euslisp)
-find_package(catkin COMPONENTS euslisp)
-if(NOT euslisp_FOUND)
-  message("-- could not found euslisp (catkin) package, use rospack to find euslisp dir")
-  execute_process(COMMAND rospack find euslisp OUTPUT_VARIABLE euslisp_PACKAGE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(euslisp_INCLUDE_DIRS ${euslisp_PACKAGE_PATH}/jskeus/eus/include)
+if(EXISTS ${euslisp_SOURCE_DIR}/jskeus)
+  set(euslisp_PACKAGE_PATH ${euslisp_SOURCE_DIR})
+else()
+  set(euslisp_PACKAGE_PATH ${euslisp_PREFIX}/share/euslisp)
 endif()
+message("-- Set euslisp_PACKAGE_PATH to ${euslisp_PACKAGE_PATH}")
+set(euslisp_INCLUDE_DIRS ${euslisp_PACKAGE_PATH}/jskeus/eus/include)
 message("-- Set euslisp_INCLUDE_DIRS to ${euslisp_INCLUDE_DIRS}")
 include_directories(/usr/include /usr/X11R6/include ${euslisp_INCLUDE_DIRS})
 add_library(roseus roseus.cpp)
