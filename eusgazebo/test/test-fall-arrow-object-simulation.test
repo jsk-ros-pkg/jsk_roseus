@@ -1,0 +1,5 @@
+<launch>
+  <node name="talker" pkg="roseus" type="roseus" args="$(find roseus)/test/talker.l" />
+  <test test_name="test_fall_arrow_object_simulation" pkg="roseus"
+	type="roseus" args="$(find eusgazebo)/test/test-fall-arrow-object-simulation.l" />
+</launch>

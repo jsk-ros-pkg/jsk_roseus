@@ -6,9 +6,9 @@ catkin_package()
 find_package(catkin REQUIRED COMPONENTS rostest)
 
 ## Install ##
-install(DIRECTORY euslisp test scripts
+install(DIRECTORY euslisp test scripts samples
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
 
 ## Testing ##
-#add_rostest(test/fall-arrow-object-simulation.test)
+#add_rostest(test/test-fall-arrow-object-simulation.test)

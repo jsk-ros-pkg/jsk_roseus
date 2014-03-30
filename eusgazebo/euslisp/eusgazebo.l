@@ -183,28 +183,3 @@
    model-list)
   )
 
-
-(defun test
-  ()
-
-  ;; make and view eus model
-  (load "models/arrow-object.l")
-  (setq *arrow* (arrow))
-  (objects (list *arrow*))
-
-  ;; generate eusgazebo instance
-  (setq *eg* (instance eusgazebo :init))
-  (send *eg* :add-model *arrow*)
-
-  ;; start simulation
-  (progn
-    ;; pause simulation
-    (send *eg* :pause-sim)
-    ;; set eus model pose
-    (send *arrow* :newcoords (make-coords :pos #f(0 0 1000) :rpy (list 0 1 0)))
-    ;; apply eus pose to gazebo
-    (send *eg* :eus2gzb)
-    ;; unpause simulation
-    (send *eg* :unpause-sim)
-    ;; view
-    (send *eg* :gzb2eus-loop)))
