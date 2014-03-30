@@ -2,7 +2,7 @@
 
 (require :unittest "lib/llib/unittest.l")
 
-(load "package://eusgazebo/euslisp/samples/fall-arrow-object-simulation.l")
+(load "package://eusgazebo/samples/fall-arrow-object-simulation.l")
 
 (init-unit-test)
 

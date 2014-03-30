@@ -11,5 +11,5 @@
 
   <depend package="gazebo_ros"/>
   <depend package="roseus"/>
-  <depend package="jsk_model_tools"/>
+  <depend package="collada_tools"/>
 </package>
