@@ -32,7 +32,7 @@ ifeq ($(OS),Darwin)
 endif
 
 jskeus:
-	git clone --depth 10 http://github.com/euslisp/jskeus
+	COUNT=10; while [ $$COUNT -gt 0 -a ! -e jskeus ] ; do echo $$COUNT; sleep 1; GIT_SSL_NO_VERIFY=true git clone --depth 10 http://github.com/euslisp/jskeus; COUNT=`expr $$COUNT - 1`; done; #
 
 jskeus.installed: jskeus
 	(cd jskeus; git checkout; make eus)
