@@ -9,11 +9,20 @@
 
   <!-- <url type="website">http://wiki.ros.org/eusgazebo</url> -->
 
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
   <author email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>roseus</build_depend>
+  <build_depend>collada_tools</build_depend>
+
   <run_depend>gazebo_ros</run_depend>
   <run_depend>roseus</run_depend>
   <run_depend>collada_tools</run_depend>
+
+  <export>
+    <message_generator>euslisp</message_generator>
+  </export>
 </package>
