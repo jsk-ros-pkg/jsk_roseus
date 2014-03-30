@@ -9,7 +9,10 @@
   <review status="unreviewed" notes=""/>
   <!-- <url>http://wiki.ros.org/eusgazebo</url> -->
 
+  <rosdep name="gazebo_ros"/>
+
   <depend package="gazebo_ros"/>
   <depend package="roseus"/>
   <depend package="collada_tools"/>
+
 </package>
