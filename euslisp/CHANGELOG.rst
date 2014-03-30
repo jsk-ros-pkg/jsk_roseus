@@ -2,6 +2,12 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.4 (2014-03-31)
+------------------
+* try to download jskeus for 10 times
+* do not set INCLUDE_DIRS to jskeus/eus/include, which cause error in roseus as "Project 'euslisp' specifies 'include' as an include dir, which is not found"
+* Contributors: Kei Okada
+
 1.0.3 (2014-03-29)
 ------------------
 * euslisp: unittest.l, uses numnber of test, not number of assert

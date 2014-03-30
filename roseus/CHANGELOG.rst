@@ -2,6 +2,14 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.4 (2014-03-31)
+------------------
+* fix for catkin environment
+* set euslisp_PACKAGE_PATH for both devel and installed
+* switch from svnversion to git rev-parse --short HEAD
+* removed debug messages
+* Contributors: Kei Okada, Ryohei Ueda
+
 1.0.3 (2014-03-29)
 ------------------
 * catkin.cmake add rostest to find_package
