@@ -1,7 +1,8 @@
 <package>
   <name>eusgazebo</name>
-  <version>0.0.0</version>
+  <version>0.1.0</version>
   <description>The eusgazebo package</description>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
   <maintainer email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</maintainer>
 
   <license>BSD</license>

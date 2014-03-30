@@ -1,0 +1,15 @@
+<package>
+  <description brief="eusgazebo">
+
+     The eusgazebo package
+
+  </description>
+  <author>Masaki Murooka (murooka@jsk.t.u-tokyo.ac.jp)</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <!-- <url>http://wiki.ros.org/eusgazebo</url> -->
+
+  <depend package="gazebo_ros"/>
+  <depend package="roseus"/>
+  <depend package="jsk_model_tools"/>
+</package>
