@@ -129,7 +129,6 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   endmacro()
 
   macro(_generate_module_eus ARG_PKG ARG_GEN_OUTPUT_DIR ARG_GENERATED_FILES)
-    message("catkin_LIBRARIES(_generate_module_eus) =====> ${catkin_LIBRARIES}")
     # message("_generate_module_eus ${ARG_PKG} ${ARG_GEN_OUTPUT_DIR} ${ARG_GENERATED_FILES}")
 
     set(GEN_OUTPUT_FILE ${roseus_INSTALL_DIR}/${ARG_PKG}/manifest.l)

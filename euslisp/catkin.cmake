@@ -22,7 +22,7 @@ add_rostest(test/test-euslisp.test)
 catkin_package(
     DEPENDS opengl libjpeg libx11-dev libxext libpng12-dev
     CATKIN-DEPENDS # TODO
-    INCLUDE_DIRS jskeus/eus/include
+    INCLUDE_DIRS # jskeus/eus/include
     LIBRARIES # TODO
 )
 

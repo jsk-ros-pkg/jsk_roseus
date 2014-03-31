@@ -4,7 +4,7 @@ project(roseus)
 
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack rostest actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros)
+find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack rostest actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros euslisp)
 
 add_definitions(-Wall)
 #
@@ -21,23 +21,24 @@ endif()
 #endif()
 
 
-find_program (SVNVERSION_CMD svnversion)
-execute_process (COMMAND "${SVNVERSION_CMD}" ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE SVNVERSION
+set(ENV{LANG} "C")
+execute_process (COMMAND git rev-parse --short HEAD
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  OUTPUT_VARIABLE REPOVERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE)
-message (STATUS "Build svn revision: ${SVNVERSION}")
+message (STATUS "Build repo revision: ${REPOVERSION}")
 
 #
 # CATKIN_MIGRATION: removed during catkin migration
 # rosbuild_add_boost_directories()
 
-#find_package(euslisp)
-find_package(catkin COMPONENTS euslisp)
-if(NOT euslisp_FOUND)
-  message("-- could not found euslisp (catkin) package, use rospack to find euslisp dir")
-  execute_process(COMMAND rospack find euslisp OUTPUT_VARIABLE euslisp_PACKAGE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(euslisp_INCLUDE_DIRS ${euslisp_PACKAGE_PATH}/jskeus/eus/include)
+if(EXISTS ${euslisp_SOURCE_DIR}/jskeus)
+  set(euslisp_PACKAGE_PATH ${euslisp_SOURCE_DIR})
+else()
+  set(euslisp_PACKAGE_PATH ${euslisp_PREFIX}/share/euslisp)
 endif()
+message("-- Set euslisp_PACKAGE_PATH to ${euslisp_PACKAGE_PATH}")
+set(euslisp_INCLUDE_DIRS ${euslisp_PACKAGE_PATH}/jskeus/eus/include)
 message("-- Set euslisp_INCLUDE_DIRS to ${euslisp_INCLUDE_DIRS}")
 include_directories(/usr/include /usr/X11R6/include ${euslisp_INCLUDE_DIRS})
 add_library(roseus roseus.cpp)
@@ -51,8 +52,8 @@ set_target_properties(roseus_c_util PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJEC
 
 # compile flags
 add_definitions(-O2 -Wno-write-strings -Wno-comment)
-add_definitions(-Di486 -DLinux -D_REENTRANT -DVERSION='\"${8.26}\"' -DTHREADED -DPTHREAD -DX11R6_1)
-add_definitions('-DSVNVERSION="\\"r${SVNVERSION}\\""')
+add_definitions(-Di486 -DLinux -D_REENTRANT -DVERSION='\"9.00\"' -DTHREADED -DPTHREAD -DX11R6_1)
+add_definitions('-DREPOVERSION="\\"${REPOVERSION}\\""')
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
    ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
  add_definitions(-Dx86_64)
