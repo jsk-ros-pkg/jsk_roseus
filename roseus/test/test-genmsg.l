@@ -11,7 +11,6 @@
 
   (assert (eval (read-from-string "(instance roseus_test_genmsg::String :init)"))
           "instantiating msg message")
-
   )
 
 (run-all-tests)
