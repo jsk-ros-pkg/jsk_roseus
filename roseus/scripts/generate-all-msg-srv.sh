@@ -95,20 +95,20 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     if [ -e $pkg/msg/ ] ; then
 	for file in `find $pkg/msg -type f -name "*.msg"`; do
 	    echo -e "\e[1;32mgenerating msg... ${file}\e[m"
-	    `rospack find roseus`/scripts/genmsg_eus $file;
+	    `rospack find geneus`/scripts/genmsg_eus $file;
 	    check-error
 	done
     fi
     if [ -e $pkg/srv/ ] ; then
 	for file in `find $pkg/srv -type f -name "*.srv"`; do
 	    echo -e "\e[1;32mgenerating srv... ${file}\e[m"
-	    `rospack find roseus`/scripts/gensrv_eus $file;
+	    `rospack find geneus`/scripts/gensrv_eus $file;
 	    check-error
 	done
     fi
     rospack depends $pkg_name > /dev/null || (check-warn) ; ## just for check depends error
     echo -e "\e[1;32mgenerating manifest... ${pkg_name}\e[m"
-    `rospack find roseus`/scripts/genmanifest_eus $pkg_name
+    `rospack find geneus`/scripts/genmanifest_eus $pkg_name
     check-error
     if [ "${COMPILE}" = "Yes" ]; then
         rosrun roseus roseus "(progn (setq lisp::*error-handler* #'(lambda (&rest args) (print args *error-output*)(exit 1))) (setq ros::*compile-message* t) (ros::load-ros-manifest \"$pkg_name\") (exit 0))"
