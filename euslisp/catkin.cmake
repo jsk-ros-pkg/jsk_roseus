@@ -60,10 +60,9 @@ foreach(executable ${executables})
   get_filename_component(rpath ${rpath} PATH)      # get parent  .. eus/Linux64
   set(rpath "${rpath}/lib")                        # move to lib .. eus/Linux64/lib
   install(CODE "
-    file(RPATH_CHECK FILE \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\" RPATH ${rpath}) ## this removes target file, so we need recopy them
-    if(NOT EXISTS \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\")
-      file(COPY ${executable} DESTINATION  \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin\")
-    else()
+    set(_rpath)
+    file(STRINGS \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\" _rpath REGEX ${rpath} LIMIT_COUNT 1)
+    if(_rpath)
       file(RPATH_CHANGE
            FILE      \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\"
            OLD_RPATH ${rpath}
