@@ -34,7 +34,8 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-CATKIN_DIR=/tmp/test_genmsg_$$
+#CATKIN_DIR=/tmp/test_genmsg_$$
+CATKIN_DIR=/tmp/test_genmsg
 GENEUS_DEP1=${CATKIN_DIR}/src/geneus_dep1
 GENEUS_DEP2=${CATKIN_DIR}/src/geneus_dep2
 ROSEUS_DEP1=${CATKIN_DIR}/src/roseus_dep1
@@ -340,8 +341,10 @@ fi
 
 
 # # try to run roseus sample program
-# ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/${PACKAGE_NAME}/${PACKAGE_NAME}.l $@
-# ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/${PACKAGE2_NAME}/${PACKAGE2_NAME}.l $@
+ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $@
+ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $@
+ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $@
+ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $@
 
 #rm -rf ${CATKIN_DIR}
 

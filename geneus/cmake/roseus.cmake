@@ -39,7 +39,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   message("[roseus.camke] euslisp_PACKAGE_PATH = ${euslisp_PACKAGE_PATH}")
   message("[roseus.camke]  euseus_PACKAGE_PATH = ${geneus_PACKAGE_PATH}")
   set(roseus_INSTALL_DIR ${roshomedir}/roseus/$ENV{ROS_DISTRO})
-  set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${PROJECT_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
+  set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${CMAKE_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
 
   macro(_generate_eus_dep_msgs arg_msg_deps)
     foreach(arg_msg_dep ${arg_msg_deps})
@@ -55,7 +55,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
         add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${pkg_name}/manifest.l
           DEPENDS genmanifest_eus ${msg_full_path}
           COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENMANIFEST_EUS}  ${pkg_name}
-          COMMENT "Generating EusLisp code from ${pkg_name}")
+          COMMENT "Generating EusLisp code from ${pkg_name} ++++")
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${pkg_name}/manifest.l)
       endif()
       # compile msg
@@ -63,8 +63,8 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
       if(${_ret} EQUAL -1)
         add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${pkg_name}/msg/${msg_name}.l
           DEPENDS genmsg_eus ${msg_full_path}
-          COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS}  ${msg_full_path}
-          COMMENT "Generating EusLisp code from ${pkg_name}/${msg_name}")
+          COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS}  ${msg_full_path}
+          COMMENT "Generating EusLisp code from ${pkg_name}/${msg_name} +++;")
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${pkg_name}/msg/${msg_name}.l)
       endif()
     endforeach()
@@ -76,16 +76,15 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     get_filename_component(MSG_SHORT_NAME ${ARG_MSG} NAME_WE)
 
     set(_depend_packages "")
-    set(_depend_targets "")
     foreach(_msg ${ARG_MSG_DEPS})
       get_filename_component(_msg ${_msg} ABSOLUTE)
       string(REGEX REPLACE ".*/([^/]*)/msg/[^/]*$" "\\1" _pkg ${_msg})
-      find_package(${_pkg})
+      if (NOT ${${_pkg}_FOUND})
+        find_package(${_pkg} QUIET)
+      endif()
       if(${_pkg}_SOURCE_PREFIX)
         set(_depend_packages "${_depend_packages}:${${_pkg}_SOURCE_PREFIX}")
       endif()
-      get_filename_component(_path ${_msg} PATH)
-      get_filename_component(_path ${_path} PATH)
     endforeach()
 
     set(MSG_GENERATED_NAME ${MSG_SHORT_NAME})
@@ -94,13 +93,18 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     list(FIND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE} _ret)
     if(${_ret} EQUAL -1)
 
-      set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${_depend_packages}:${PROJECT_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
+      message("---> ORDERED ${CATKIN_ORDERED_SPACES}")
+      set(ROS_PACKAGE_PATH $ENV{ROS_PACKAGE_PATH})
+      foreach(_space ${CATKIN_ORDERED_SPACES})
+        set(ROS_PACKAGE_PATH ${_space}:${ROS_PACKAGE_PATH})
+      endforeach()
+      set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${ROS_PACKAGE_PATH})
 
       # compile msg
       add_custom_command(OUTPUT ${GEN_OUTPUT_FILE}
-        DEPENDS genmsg_eus ${ARG_MSG} ${ARG_MSG_DEPS} ${ARG_PKG}_generate_messages_py ${_depend_targets}
+        DEPENDS genmsg_eus ${ARG_MSG} ${ARG_MSG_DEPS} ${ARG_PKG}_generate_messages_py
         COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS}  ${ARG_MSG}
-        COMMENT "Generating EusLisp code from ${ARG_PKG}/${MSG_NAME}")
+        COMMENT "Generating EusLisp message code from ${ARG_PKG}/${MSG_NAME}")
 
       list(APPEND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE})
 
@@ -109,15 +113,21 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   endmacro()
 
   macro(_generate_srv_eus ARG_PKG ARG_SRV ARG_IFLAGS ARG_MSG_DEPS ARG_GEN_OUTPUT_DIR)
-    # message("_generate_srv_eus\n ARG_PKG:${ARG_PKG}\n ARG_SRV:${ARG_SRV}\n ARG_IFLAGS:${ARG_IFLAGS}\n ARG_SRV_DEPS:${ARG_MSG_DEPS}\n ARG_GEN_OUTPUT_DIR:${ARG_GEN_OUTPUT_DIR}/srv")
+    message("_generate_srv_eus\n ARG_PKG:${ARG_PKG}\n ARG_SRV:${ARG_SRV}\n ARG_IFLAGS:${ARG_IFLAGS}\n ARG_SRV_DEPS:${ARG_MSG_DEPS}\n ARG_GEN_OUTPUT_DIR:${ARG_GEN_OUTPUT_DIR}/srv")
     get_filename_component(SRV_NAME ${ARG_SRV} NAME)
     get_filename_component(SRV_SHORT_NAME ${ARG_SRV} NAME_WE)
 
     set(_depend_package "")
+    message("---> ${ARG_PKG}")
     foreach(_msg ${ARG_MSG_DEPS})
+      message("---> ${_msg}")
       get_filename_component(_msg ${_msg} ABSOLUTE)
       string(REGEX REPLACE ".*/([^/]*)/msg/[^/]*$" "\\1" _path ${_msg})
-      set(_depend_packages "${_depend_packages}:${_path}")
+      find_package(${_pkg} QUIET)
+      message("---> ${${_pkg}_SOURCE_PREFIX} ...")
+      if(${_pkg}_SOURCE_PREFIX)
+        set(_depend_packages "${_depend_packages}:${${_pkg}_SOURCE_PREFIX}")
+      endif()
     endforeach()
 
     set(SRV_GENERATED_NAME ${SRV_SHORT_NAME})
@@ -129,7 +139,14 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
       set(_depend_packages "")
       list(APPEND _depend_packages ${ARG_PKG}_generate_messages_py)
 
-      set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${_depend_packages}:${PROJECT_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
+      set(ROS_PACKAGE_PATH $ENV{ROS_PACKAGE_PATH})
+      message("---> ORDERED ${CATKIN_ORDERED_SPACES}")
+      foreach(_space ${CATKIN_ORDERED_SPACES})
+        set(ROS_PACKAGE_PATH ${_space}:${ROS_PACKAGE_PATH})
+      endforeach()
+      message("-> ${ROS_PACKAGE_PATH}")
+      set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${ROS_PACKAGE_PATH})
+
       # find depends and set ROS_PACKAGE_PATH
      # _generate_eus_dep_msgs("${ARG_MSG_DEPS}")
 
@@ -137,7 +154,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
       add_custom_command(OUTPUT ${GEN_OUTPUT_FILE}
         DEPENDS gensrv_eus ${ARG_SRV} ${ARG_MSG_DEPS} ${_depend_packages}
         COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENSRV_EUS}  ${ARG_SRV}
-        COMMENT "Generating EusLisp code from ${ARG_PKG}/${SRV_NAME}")
+        COMMENT "Generating EusLisp service code from ${ARG_PKG}/${SRV_NAME}")
 
       list(APPEND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE})
 
@@ -157,7 +174,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
       add_custom_command(OUTPUT ${GEN_OUTPUT_FILE}
         DEPENDS genmanifest_eus ${ARG_GENERATED_FILES} ${ARG_PKG}_generate_messages_py
         COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENMANIFEST_EUS}  ${ARG_PKG}
-        COMMENT "Generating EusLisp code from ${ARG_PKG}")
+        COMMENT "Generating EusLisp module code from ${ARG_PKG}")
 
       list(APPEND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE})
 
@@ -176,18 +193,27 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     if(_variableName MATCHES ".*_DIR$")
       string(REGEX REPLACE "^(.*)_DIR$" "\\1" pkg_name ${_variableName})
 
-      if ( EXISTS ${${pkg_name}_DIR}/../package.xml OR EXISTS ${${pkg_name}_SOURCE_DIR} ) ## not in source
-        message("[roseus.cmake] compile upstream package ${pkg_name} (${_variableName})")
+      message("[roseus.cmake] compile upstream package ${pkg_name} (${_variableName})")
+      if ( EXISTS ${${pkg_name}_DIR}/../package.xml AND NOT EXISTS ${${pkg_name}_SOURCE_DIR} ) ## not in source
+        message("---> ${${pkg_name}_DIR} : ${${pkg_name}_SOURCE_DIR}")
         if (EXISTS ${${pkg_name}_DIR} ) ## not in source
           get_filename_component(_${pkg_name}_PACKAGE_PATH ${${pkg_name}_DIR}/.. ABSOLUTE)
           file(GLOB ${pkg_name}_MESSAGE_FILES RELATIVE ${_${pkg_name}_PACKAGE_PATH} "${_${pkg_name}_PACKAGE_PATH}/msg/*.msg")
           file(GLOB ${pkg_name}_SERVICE_FILES RELATIVE ${_${pkg_name}_PACKAGE_PATH} "${_${pkg_name}_PACKAGE_PATH}/srv/*.srv")
-          set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${_${pkg_name}_PACKAGE_PATH}:$ENV{ROS_PACKAGE_PATH})
+          #set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${_${pkg_name}_PACKAGE_PATH}:$ENV{ROS_PACKAGE_PATH})
         elseif(EXISTS ${${pkg_name}_SOURCE_DIR} )
           ## set(${pkg_name}_PACKAGE_PATH  ${${pkg_name}_SOURCE_DIR}) ## ${${pkg_name}_MESSAGE_FILES} uses full path when source
           set(_${pkg_name}_PACKAGE_PATH  "")
-          set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${${pkg_name}_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
+          #set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${${pkg_name}_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
         endif()
+
+        set(ROS_PACKAGE_PATH $ENV{ROS_PACKAGE_PATH})
+        message("---> ORDERED ${CATKIN_ORDERED_SPACES}")
+        foreach(_space ${CATKIN_ORDERED_SPACES})
+          set(ROS_PACKAGE_PATH ${_space}:${ROS_PACKAGE_PATH})
+        endforeach()
+        message("-> ${ROS_PACKAGE_PATH}")
+        set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${ROS_PACKAGE_PATH})
 
         # gen manifest
         list(FIND _ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${pkg_name}/manifest.l _ret)
@@ -195,7 +221,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
           add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${pkg_name}/manifest.l
             DEPENDS genmanifest_eus #${${pkg_name}_MESSAGE_FILES} ${${pkg_name}_SERVICE_FILES}
             COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENMANIFEST_EUS} ${pkg_name}
-            COMMENT "Generating EusLisp code from ${pkg_name}")
+            COMMENT "Generating EusLisp code for ${pkg_name}")
           list(APPEND _ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${pkg_name}/manifest.l)
         endif()
 
@@ -207,8 +233,8 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
           if(${_ret} EQUAL -1)
             add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${pkg_name}/msg/${_msg_name}.l
               DEPENDS genmsg_eus ${_msg_file}
-              COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS} ${_msg_file}
-              COMMENT "Generating EusLisp code from ${pkg_name}/srv/${_msg_name}")
+              COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS} ${_msg_file}
+              COMMENT "Generating EusLisp code for ${pkg_name}/msg/${_msg_name}")
             list(APPEND _ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${pkg_name}/msg/${_msg_name}.l)
           endif()
         endforeach()
@@ -222,13 +248,14 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
             add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${pkg_name}/srv/${_srv_name}.l
               DEPENDS gensrv_eus ${_srv_file}
               COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENSRV_EUS} ${_srv_file}
-              COMMENT "Generating EusLisp code from ${pkg_name}/srv/${_srv_name}")
+              COMMENT "Generating EusLisp code for ${pkg_name}/srv/${_srv_name}")
             list(APPEND _ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${pkg_name}/srv/${_srv_name}.l)
           endif()
         endforeach()
-      endif( EXISTS ${${pkg_name}_DIR}/../package.xml OR EXISTS ${${pkg_name}_SOURCE_DIR})
+      endif( EXISTS ${${pkg_name}_DIR}/../package.xml AND NOT EXISTS ${${pkg_name}_SOURCE_DIR})
     endif(_variableName MATCHES ".*_DIR$")
   endforeach(_variableName ${_variableNames}) # _variableName
+
   set(ALL_GEN_OUTPUT_FILES_eus ${_ALL_GEN_OUTPUT_FILES_eus})
 
   # #

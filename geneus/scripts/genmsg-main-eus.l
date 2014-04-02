@@ -479,7 +479,7 @@
     (when (null val) ;;
       (setq val (read-line (piped-fork (format nil "python -c 'from ~A.msg import *; print ~A._md5sum'" pkg name)) nil nil)))
     (when (null val)
-      (warning-message 1 "[ERROR] Could not get md5sum for ~A ~A ~A~%" pkg name fname)
+      (warning-message 1 "[ERROR] Could not get md5sum for ~A ~A ~A~% PYTHONPATH=~A~% ROS_PACKAGE_PATH=~A~%" pkg name fname (unix:getenv "PYTHONPATH") (unix:getenv "ROS_PACKAGE_PATH"))
       (exit -1))
     (push (cons key val) *md5table*)
     val))
@@ -582,7 +582,7 @@
     (unless (or (check-action-file pkg fname)
                 (check-msg-file pkg name)
 		(string= (format nil "~A/roseus/~A/~A/action_msg/~A.msg" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg name) fname))
-      (warning-message 1 ";; error occured when parsing ~A/msg/~A~%" pkg name)
+      (warning-message 1 ";; error occured when parsing ~A/msg/~A~% PYTHONPATH=~A~% ROS_PACKAGE_PATH=~A~%" pkg name (unix:getenv "PYTHONPATH") (unix:getenv "ROS_PACKAGE_PATH"))
       (return-from genmsg-eus nil))
     (with-open-file
      (strm fname :direction :input)
@@ -630,7 +630,7 @@
     (setq req-name (format nil "~ARequest"  name)
           res-name (format nil "~AResponse" name))
     (unless (check-srv-file pkg name)
-      (warning-message 1 ";; error occured when parsing ~A/srv/~A~%" pkg name)
+      (warning-message 1 ";; error occured when parsing ~A/srv/~A~% PYTHONPATH=~A~% ROS_PACKAGE_PATH=~A~%" pkg name (unix:getenv "PYTHONPATH") (unix:getenv "ROS_PACKAGE_PATH"))
       (return-from gensrv-eus nil))
     (with-open-file
      (strm fname :direction :input)
