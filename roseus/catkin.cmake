@@ -96,6 +96,8 @@ add_rostest(test/test-tf.test)
 add_rostest(test/test-disconnect.test)
 add_rostest(test/test-multi-queue.test)
 add_rostest(test/test-genmsg.catkin.test)
+add_rostest(test/test-genmsg-oneworkspace.catkin.launch) # use launch not to run on travis/catkin
+
 
 ## Generate added messages and services with any dependencies listed here
 string(RANDOM _random_string)
