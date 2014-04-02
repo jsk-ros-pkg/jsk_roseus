@@ -29,10 +29,13 @@ cp `rospack find roseus`/test/test-genmsg.mak    ${CATKIN_DIR}/src/${PACKAGE2_NA
 cp `rospack find roseus`/test/test-genmsg2.cmake ${CATKIN_DIR}/src/${PACKAGE2_NAME}/CMakeLists.txt
 cp `rospack find roseus`/test/test-genmsg2.${MANIFEST}    ${CATKIN_DIR}/src/${PACKAGE2_NAME}/${MANIFEST}
 mkdir -p ${CATKIN_DIR}/src/${PACKAGE2_NAME}/msg/
-cp `rospack find roseus`/test/test-genmsg2.l     ${CATKIN_DIR}/src/${PACKAGE_NAME2}/${PACKAGE_NAME2}.l
+cp `rospack find roseus`/test/test-genmsg2.l     ${CATKIN_DIR}/src/${PACKAGE2_NAME}/${PACKAGE2_NAME}.l
 cp `rospack find roseus`/test/test-genmsg2.child.msg   ${CATKIN_DIR}/src/${PACKAGE2_NAME}/msg/Child.msg
 
 # add roseus
+
+ln -sf `rospack find roseus`/.. ${CATKIN_DIR}/src/jsk_roseus
+
 
 cd ${CATKIN_DIR}
 if [ ${ROSBUILD} ] ; then
@@ -40,6 +43,7 @@ if [ ${ROSBUILD} ] ; then
     rospack profile
     rosmake  -V ${PACKAGE2_NAME}
 else
+    source /opt/ros/${ROS_DISTRO}/setup.bash
     rm -rf ~/.ros/roseus/${ROS_DISTRO} # force to clear roseus cache
     catkin_make
     source ${CATKIN_DIR}/devel/setup.bash
@@ -48,6 +52,6 @@ fi
 
 # try to run roseus sample program
 ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/${PACKAGE_NAME}/${PACKAGE_NAME}.l $@
-ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/${PACKAGE_NAME2}/${PACKAGE_NAME2}.l $@
+ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/${PACKAGE2_NAME}/${PACKAGE2_NAME}.l $@
 
 exit 0

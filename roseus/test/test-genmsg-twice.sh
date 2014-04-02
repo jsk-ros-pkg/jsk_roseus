@@ -42,6 +42,7 @@ if [ ${ROSBUILD} ] ; then
 else
     rm -rf ~/.ros/roseus/${ROS_DISTRO} # force to clear roseus cache
     catkin_make
+    catkin_make --force-cmake
     source ${CATKIN_DIR}/devel/setup.bash
 fi
 
