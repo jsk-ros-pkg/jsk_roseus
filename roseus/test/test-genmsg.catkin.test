@@ -1,4 +1,10 @@
 <launch>
-  <test test-name="roseus_test_sh" pkg="roseus" type="test-genmsg.sh" name="test_genmsg_sh"
+  <!-- <test test-name="roseus_test_sh" pkg="roseus" type="test-genmsg.sh" name="test_genmsg_sh" -->
+  <!--       time-limit="300" /> -->
+  <test test-name="roseus_test_onews_sh" pkg="roseus" type="test-genmsg-onews.sh" name="test_genmsg_onews_sh"
         time-limit="300" />
+  <!-- <test test-name="roseus_test_twice_sh" pkg="roseus" type="test-genmsg-twice.sh" name="test_genmsg_twice_sh" -->
+  <!--       time-limit="300" /> -->
+  <!-- <test test-name="roseus_test_onews_twice_sh" pkg="roseus" type="test-genmsg-onews-twice.sh" name="test_genmsg_onews_twice_sh" -->
+  <!--       time-limit="300" /> -->
 </launch>
