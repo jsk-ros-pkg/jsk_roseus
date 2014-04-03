@@ -34,8 +34,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-#CATKIN_DIR=/tmp/test_genmsg_$$
-CATKIN_DIR=/tmp/test_genmsg
+CATKIN_DIR=/tmp/test_genmsg_$$
 GENEUS_DEP1=${CATKIN_DIR}/src/geneus_dep1
 GENEUS_DEP2=${CATKIN_DIR}/src/geneus_dep2
 ROSEUS_DEP1=${CATKIN_DIR}/src/roseus_dep1
