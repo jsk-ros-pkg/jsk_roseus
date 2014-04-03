@@ -122,7 +122,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     foreach(_msg ${ARG_MSG_DEPS})
       message("---> ${_msg}")
       get_filename_component(_msg ${_msg} ABSOLUTE)
-      string(REGEX REPLACE ".*/([^/]*)/msg/[^/]*$" "\\1" _path ${_msg})
+      string(REGEX REPLACE ".*/([^/]*)/msg/[^/]*$" "\\1" _pkg ${_msg})
       find_package(${_pkg} QUIET)
       message("---> ${${_pkg}_SOURCE_PREFIX} ...")
       if(${_pkg}_SOURCE_PREFIX)
