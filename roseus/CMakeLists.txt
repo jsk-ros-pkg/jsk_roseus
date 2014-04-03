@@ -81,7 +81,8 @@ rosbuild_add_rostest(test/test-roseus.test)
 rosbuild_add_rostest(test/test-tf.test)
 rosbuild_add_rostest(test/test-disconnect.test)
 rosbuild_add_rostest(test/test-multi-queue.test)
-rosbuild_add_rostest(test/test-genmsg.rosbuild.test)
-rosbuild_add_rostest(test/test-genmsg-oneworkspace.rosbuild.test)
+## these launch files are intentionally uses .launch suffix for not to invoke on travis/catkin test
+rosbuild_add_rostest(test/test-genmsg.rosbuild.launch)
+rosbuild_add_rostest(test/test-genmsg-oneworkspace.rosbuild.launch)
 
 #add_subdirectory(test EXCLUDE_FROM_ALL)
