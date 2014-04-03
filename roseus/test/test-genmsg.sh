@@ -344,6 +344,9 @@ fi
 # # try to run roseus sample program
 ROSEUS_DIR=`rospack find roseus`
 ROSEUS_EXE=`find $ROSEUS_DIR -type f -name roseus`
+if [ ! "$ROSEUS_EXE" ]; then
+    ROSEUS_EXE="rosrun roseus roseus"
+fi
 
 ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $ARGV
 ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
