@@ -21,6 +21,7 @@ set -e                          # exit on error
 # parse arguments
 MANIFEST=package.xml
 WORKSPACE_TYPE=MULTI
+ARGV=$@
 while [ $# -gt 0 ]; do
     case "$1" in 
         "--rosbuild")
@@ -35,6 +36,7 @@ while [ $# -gt 0 ]; do
 done
 
 CATKIN_DIR=/tmp/test_genmsg_$$
+CATKIN_DIR=/tmp/test_genmsg
 GENEUS_DEP1=${CATKIN_DIR}/src/geneus_dep1
 GENEUS_DEP2=${CATKIN_DIR}/src/geneus_dep2
 ROSEUS_DEP1=${CATKIN_DIR}/src/roseus_dep1
@@ -314,23 +316,23 @@ add_srv ${ROSEUS_DEP1} geneus_dep2
 add_srv ${ROSEUS_DEP2} roseus_dep1
 
 
-if [ $WORKSPACE_TYPE = ONE ]; then
+if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
     ln -sf `rospack find roseus`/.. ${CATKIN_DIR}/src/jsk_roseus
 fi
 
+if [ $WORKSPACE_TYPE = ONE ]; then
+    # reset environmental variables by sousing
+    source /opt/ros/${ROS_DISTRO}/setup.bash
+fi
 
 cd ${CATKIN_DIR}
 if [ ${ROSBUILD} ] ; then
     export ROS_PACKAGE_PATH=${CATKIN_DIR}/src/:${ROS_PACKAGE_PATH}
     rospack profile
-    rosmake  -V ${PACKAGE2_NAME}
+    rosmake  -V roseus_dep2
 else
-    if [ $WORKSPACE_TYPE = ONE ]; then
-        # reset environmental variables by sousing
-        source /opt/ros/${ROS_DISTRO}/setup.bash
-    fi
     # force to clear roseus cache
-    rm -rf ~/.ros/roseus/${ROS_DISTRO}
+    # rm -rf ~/.ros/roseus/${ROS_DISTRO}
     # always call twice catkin_make
     catkin_make
     catkin_make --force-cmake
@@ -340,10 +342,13 @@ fi
 
 
 # # try to run roseus sample program
-ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $@
-ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $@
-ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $@
-ROS_MASTER_URI=http://localhost:22422 rosrun roseus roseus ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $@
+ROSEUS_DIR=`rospack find roseus`
+ROSEUS_EXE=`find $ROSEUS_DIR -type f -name roseus`
+
+ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $ARGV
+ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
+ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
+ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
 
 #rm -rf ${CATKIN_DIR}
 

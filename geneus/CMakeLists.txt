@@ -1,3 +1,7 @@
+if(USE_ROSBUILD)
+  return()
+endif()
+
 cmake_minimum_required(VERSION 2.8.3)
 project(geneus)
 

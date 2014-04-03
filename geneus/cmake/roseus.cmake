@@ -278,7 +278,8 @@ rosbuild_find_ros_package(geneus)
 
 # for euslisp ros API. like roslib.load_mafest
 macro(genmanifest_eus)
-  execute_process(COMMAND rosrun euslisp eus2 "(exit)"
+  execute_process(COMMAND find ${euslisp_PACKAGE_PATH} -name eus2
+    OUTPUT_VARIABLE _eus2_output
     RESULT_VARIABLE _eus2_failed)
   if(_eus2_failed)
     message("[roseus.cmake] eus2 is not ready yet, so skip generating ${PROJECT_NAME}/manifeste.l")
@@ -368,7 +369,8 @@ gensrv_eus()
 # generate msg for package contains ROS_NOBUILD
 macro(generate_ros_nobuild_eus)
   # if euslisp is not compiled, return from
-  execute_process(COMMAND rosrun euslisp eus2 "(exit)"
+  execute_process(COMMAND find ${euslisp_PACKAGE_PATH} -name eus2
+    OUTPUT_VARIABLE _eus2_output
     RESULT_VARIABLE _eus2_failed)
   if(_eus2_failed)
     message("[roseus.cmake] eus2 is not ready yet, try rosmake euslisp")
