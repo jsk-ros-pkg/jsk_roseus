@@ -471,7 +471,7 @@
   (let ((key fname) val)
     (setq val (cdr (assoc key *md5table* :test #'string=)))
     (when (null val)
-      (setq val (read-line (piped-fork (format nil "~A md5 ~A/~A" (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil))) ;;use rosmsg or rossrv instead of gendeps https://github.com/ros/ros/issues/18
+      (setq val (read-line (piped-fork (format nil "PYTHONPATH=~A ~A md5 ~A/~A" (unix:getenv "PYTHONPATH") (if (string= (pathname-type fname) "msg") "rosmsg" "rossrv") pkg name)) nil nil))) ;;use rosmsg or rossrv instead of gendeps https://github.com/ros/ros/issues/18
     (when (not val)
       (setq val (read-line (piped-fork (format nil "~A --md5 ~A" *gendeps-bin* fname)) nil nil))) ;;workaround for packages installed from source
     (when (null val) ;; some groovy/rosbuild environemnt needs this line?
@@ -479,7 +479,7 @@
     (when (null val) ;;
       (setq val (read-line (piped-fork (format nil "python -c 'from ~A.msg import *; print ~A._md5sum'" pkg name)) nil nil)))
     (when (null val)
-      (warning-message 1 "[ERROR] Could not get md5sum for ~A ~A ~A~%" pkg name fname)
+      (warning-message 1 "[ERROR] Could not get md5sum for ~A ~A ~A~% PYTHONPATH=~A~% ROS_PACKAGE_PATH=~A~%" pkg name fname (unix:getenv "PYTHONPATH") (unix:getenv "ROS_PACKAGE_PATH"))
       (exit -1))
     (push (cons key val) *md5table*)
     val))
@@ -502,7 +502,7 @@
 (defun generate-msg-definition (strm pkg name fname)
   (let (p def)
     (format strm "(setf (get ~A::~A :definition-)~%      \"" pkg name)
-    (setq p (piped-fork (format nil "~A --cat ~A" *gendeps-bin* fname)))
+    (setq p (piped-fork (format nil "PYTHONPATH=~A ~A --cat ~A" (unix:getenv "PYTHONPATH") *gendeps-bin* fname)))
     (while (setq def (read-line p nil nil))
       (format strm "~A~%" (escape-double-quote def)))
     (format strm "\")~%")
@@ -582,7 +582,7 @@
     (unless (or (check-action-file pkg fname)
                 (check-msg-file pkg name)
 		(string= (format nil "~A/roseus/~A/~A/action_msg/~A.msg" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg name) fname))
-      (warning-message 1 ";; error occured when parsing ~A/msg/~A~%" pkg name)
+      (warning-message 1 ";; error occured when parsing ~A/msg/~A~% PYTHONPATH=~A~% ROS_PACKAGE_PATH=~A~%" pkg name (unix:getenv "PYTHONPATH") (unix:getenv "ROS_PACKAGE_PATH"))
       (return-from genmsg-eus nil))
     (with-open-file
      (strm fname :direction :input)
@@ -630,7 +630,7 @@
     (setq req-name (format nil "~ARequest"  name)
           res-name (format nil "~AResponse" name))
     (unless (check-srv-file pkg name)
-      (warning-message 1 ";; error occured when parsing ~A/srv/~A~%" pkg name)
+      (warning-message 1 ";; error occured when parsing ~A/srv/~A~% PYTHONPATH=~A~% ROS_PACKAGE_PATH=~A~%" pkg name (unix:getenv "PYTHONPATH") (unix:getenv "ROS_PACKAGE_PATH"))
       (return-from gensrv-eus nil))
     (with-open-file
      (strm fname :direction :input)
