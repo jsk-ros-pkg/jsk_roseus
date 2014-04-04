@@ -36,7 +36,7 @@ while [ $# -gt 0 ]; do
 done
 
 CATKIN_DIR=/tmp/test_genmsg_$$
-CATKIN_DIR=/tmp/test_genmsg
+#CATKIN_DIR=/tmp/test_genmsg
 GENEUS_DEP1=${CATKIN_DIR}/src/geneus_dep1
 GENEUS_DEP2=${CATKIN_DIR}/src/geneus_dep2
 ROSEUS_DEP1=${CATKIN_DIR}/src/roseus_dep1
@@ -317,6 +317,10 @@ add_srv ${ROSEUS_DEP2} roseus_dep1
 
 
 if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
+    if [ ! -e `rospack find roseus`/CMakeLists.txt ]; then
+        echo "$0: Could not found roseus source directory so quitting..."
+        exit 0
+    fi
     ln -sf `rospack find roseus`/.. ${CATKIN_DIR}/src/jsk_roseus
 fi
 

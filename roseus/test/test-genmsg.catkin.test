@@ -1,4 +1,4 @@
 <launch>
-  <test test-name="roseus_test_sh" pkg="roseus" type="test-genmsg.sh" name="test_genmsg_sh"
+  <test test-name="test_genmsg" pkg="roseus" type="test-genmsg.sh"
         time-limit="600" />
 </launch>
