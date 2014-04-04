@@ -320,7 +320,12 @@ if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
         echo "$0: Could not found roseus source directory so quitting..."
         exit 0
     fi
-    ln -sf `rospack find roseus`/.. ${CATKIN_DIR}/src/jsk_roseus
+    cp -r `rospack find roseus`/.. ${CATKIN_DIR}/src/jsk_roseus
+    if [ ${ROSBUILD} ] ; then
+        rm -fr ${CATKIN_DIR}/src/jsk_roseus/euslisp/build # rm if alredy rosmaked
+        rm -fr ${CATKIN_DIR}/src/jsk_roseus/geneus/build # rm if alredy rosmaked
+        rm -fr ${CATKIN_DIR}/src/jsk_roseus/roseus/build # rm if alredy rosmaked
+    fi
 fi
 
 if [ $WORKSPACE_TYPE = ONE ]; then
