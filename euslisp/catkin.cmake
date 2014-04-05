@@ -85,11 +85,13 @@ endforeach()
 # libraries
 install(DIRECTORY jskeus/eus/${ARCHDIR}/lib/
   DESTINATION ${EUSDIR}/${ARCHDIR}/lib
+  USE_SOURCE_PERMISSIONS
 )
 
 # objs
 install(DIRECTORY jskeus/eus/${ARCHDIR}/obj/
   DESTINATION ${EUSDIR}/${ARCHDIR}/obj
+  USE_SOURCE_PERMISSIONS
   FILES_MATCHING PATTERN "*.l" PATTERN "*.so"  PATTERN ".svn" EXCLUDE
 )
 
@@ -136,6 +138,7 @@ install(FILES jskeus/eus/doc/jlatex/jmanual.pdf DESTINATION ${EUSDIR}/doc/jlatex
 # irteus
 install(DIRECTORY jskeus/irteus/
   DESTINATION ${EUSDIR}/../irteus
+  USE_SOURCE_PERMISSIONS
   FILES_MATCHING PATTERN "*" PATTERN ".svn" EXCLUDE
 )
 # includes
