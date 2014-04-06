@@ -2,6 +2,17 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2014-04-07)
+------------------
+* Merge pull request `#49 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/49>`_ from cottsay/master
+  Fix permissions on installed libraries
+* (`#41 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/41>`_) check if installed binary inlcude old rpath with file(STRING,
+* check gcc -dumpmachine for deb build
+* Contributors: Kei Okada
+* Fix permissions on installed libraries
+  All shared-object libraries should have execute permissions.
+* Contributors: Scott K Logan
+
 1.0.4 (2014-03-31)
 ------------------
 * try to download jskeus for 10 times

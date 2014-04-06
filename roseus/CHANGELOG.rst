@@ -2,6 +2,21 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2014-04-07)
+------------------
+* add geneus package that generate ros message for euslisp
+* (`#32 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/32>`_) copy jsk_roseus for one workspace and remove build on rosbuild
+* (`#32 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/32>`_) add rich test for euslisp message generation, remove scripts and generate them from one shell script.
+  * one workspace/separated workspace
+  * add several dependency
+  * action messages generation
+* (`#32 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/32>`_) add scripts to test geneus more
+* (`#32 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/32>`_) check if test the message has created or not by simple roseus program, add euslisp test rather than cpp test code
+* (`#32 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/32>`_) add test-genmsg, test message generation on catkin and rosbuild
+* add check delay of lookuptransform
+* add checking delay of tf return
+* Contributors: Kei Okada, Ryohei Ueda, YoheiKakiuchi
+
 1.0.4 (2014-03-31)
 ------------------
 * fix for catkin environment
