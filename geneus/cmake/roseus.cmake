@@ -93,7 +93,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   endforeach()
 
   # generate message/services for installed packages
-  message("[roseus.cmake] compile installed package for ${arg_pkg}")
+  message("[roseus.cmake] compile installed package for ${PROJECT_NAME}")
   get_cmake_property(_variableNames VARIABLES)
   foreach (_variableName ${_variableNames})
     if(_variableName MATCHES ".*_DIR$" AND NOT "${${_variableName}}" STREQUAL "")
@@ -110,9 +110,8 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   endforeach()
 
   # define macros
-
-  macro(_generate_msg_eus ARG_PKG ARG_MSG ARG_IFLAGS ARG_MSG_DEPS ARG_GEN_OUTPUT_DIR)
-    # message("_generate_msg_eus\n ARG_PKG:${ARG_PKG}\n ARG_MSG:${ARG_MSG}\n ARG_IFLAGS:${ARG_IFLAGS}\n ARG_MSG_DEPS:${ARG_MSG_DEPS}\n ARG_GEN_OUTPUT_DIR:${ARG_GEN_OUTPUT_DIR}/msg")
+  macro(_generate_msg_srv_eus MSG_OR_SRV ARG_PKG ARG_MSG ARG_IFLAGS ARG_MSG_DEPS ARG_GEN_OUTPUT_DIR)
+    # message("_generate_${MSG_OR_SRV}_eus\n ARG_PKG:${ARG_PKG}\n ARG_MSG:${ARG_MSG}\n ARG_IFLAGS:${ARG_IFLAGS}\n ARG_MSG_DEPS:${ARG_MSG_DEPS}\n ARG_GEN_OUTPUT_DIR:${ARG_GEN_OUTPUT_DIR}/msg")
 
     get_filename_component(MSG_NAME ${ARG_MSG} NAME)
     get_filename_component(MSG_SHORT_NAME ${ARG_MSG} NAME_WE)
@@ -120,7 +119,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     set(_depend_packages "")
     foreach(_msg ${ARG_MSG_DEPS})
       get_filename_component(_msg ${_msg} ABSOLUTE)
-      string(REGEX REPLACE ".*/([^/]*)/msg/[^/]*$" "\\1" _pkg ${_msg})
+      string(REGEX REPLACE ".*/([^/]*)/${MSG_OR_SRV}/[^/]*$" "\\1" _pkg ${_msg})
       if (NOT ${${_pkg}_FOUND})
         find_package(${_pkg} QUIET)
       endif()
@@ -132,7 +131,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     endforeach()
 
     set(MSG_GENERATED_NAME ${MSG_SHORT_NAME})
-    set(GEN_OUTPUT_FILE ${roseus_INSTALL_DIR}/${ARG_PKG}/msg/${MSG_GENERATED_NAME}.l)
+    set(GEN_OUTPUT_FILE ${roseus_INSTALL_DIR}/${ARG_PKG}/${MSG_OR_SRV}/${MSG_GENERATED_NAME}.l)
 
     list(FIND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE} _ret)
     if(${_ret} EQUAL -1)
@@ -144,9 +143,10 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
       set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${ROS_PACKAGE_PATH})
 
       # compile msg
+      string(TOUPPER GEN${MSG_OR_SRV}_EUS gen_msg_srv_eus)
       add_custom_command(OUTPUT ${GEN_OUTPUT_FILE}
-        DEPENDS genmsg_eus ${ARG_MSG} ${ARG_MSG_DEPS} ${ARG_PKG}_generate_messages_py
-        COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS}  ${ARG_MSG}
+        DEPENDS gen${MSG_OR_SRV}_eus ${ARG_MSG} ${ARG_MSG_DEPS} ${ARG_PKG}_generate_messages_py
+        COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${${gen_msg_srv_eus}} ${ARG_MSG}
         COMMENT "Generating EusLisp message code from ${ARG_PKG}/${MSG_NAME}")
 
       list(APPEND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE})
@@ -156,30 +156,14 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
 
   endmacro()
 
+  macro(_generate_msg_eus ARG_PKG ARG_MSG ARG_IFLAGS ARG_MSG_DEPS ARG_GEN_OUTPUT_DIR)
+    #_generate_msg_srv_eus("msg" "${ARG_PKG}" "${ARG_MSG}" "${ARG_IFLAGS}" "${ARG_MSG_DEPS}" "${ARG_GEN_OUTPUT_DIR}")
+    _generate_msg_srv_eus("msg" "${ARG_PKG}" "${ARG_MSG}" NONE "${ARG_MSG_DEPS}" "${ARG_GEN_OUTPUT_DIR}")
+  endmacro()
+
   macro(_generate_srv_eus ARG_PKG ARG_SRV ARG_IFLAGS ARG_MSG_DEPS ARG_GEN_OUTPUT_DIR)
-    # message("_generate_srv_eus\n ARG_PKG:${ARG_PKG}\n ARG_SRV:${ARG_SRV}\n ARG_IFLAGS:${ARG_IFLAGS}\n ARG_SRV_DEPS:${ARG_MSG_DEPS}\n ARG_GEN_OUTPUT_DIR:${ARG_GEN_OUTPUT_DIR}/srv")
-
-    get_filename_component(SRV_NAME ${ARG_SRV} NAME)
-    get_filename_component(SRV_SHORT_NAME ${ARG_SRV} NAME_WE)
-
-    set(SRV_GENERATED_NAME ${SRV_SHORT_NAME})
-    set(GEN_OUTPUT_FILE ${roseus_INSTALL_DIR}/${ARG_PKG}/srv/${SRV_GENERATED_NAME}.l)
-
-    list(FIND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE} _ret)
-    if(${_ret} EQUAL -1)
-
-      set(_depend_packages "")
-
-      # compile srv
-      add_custom_command(OUTPUT ${GEN_OUTPUT_FILE}
-        DEPENDS gensrv_eus ${ARG_SRV} ${ARG_MSG_DEPS} ${_depend_packages}
-        COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENSRV_EUS}  ${ARG_SRV}
-        COMMENT "Generating EusLisp service code from ${ARG_PKG}/${SRV_NAME}")
-
-      list(APPEND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE})
-
-    endif()
-
+    #_generate_msg_srv_eus("srv" "${ARG_PKG}" "${ARG_SRV}" "${ARG_IFLAGS}" "${ARG_MSG_DEPS}" "${ARG_GEN_OUTPUT_DIR}")
+    _generate_msg_srv_eus("srv" "${ARG_PKG}" "${ARG_SRV}" NONE "${ARG_MSG_DEPS}" "${ARG_GEN_OUTPUT_DIR}")
   endmacro()
 
   macro(_generate_module_eus ARG_PKG ARG_GEN_OUTPUT_DIR ARG_GENERATED_FILES)
