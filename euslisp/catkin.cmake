@@ -29,7 +29,12 @@ catkin_package(
 # install under EUSDIR/ARCHDIR ...
 set(EUSDIR ${CATKIN_PACKAGE_SHARE_DESTINATION}/jskeus/eus)
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
-  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
+  execute_process(COMMAND shell gcc -dumpmachine OUTPUT_VARIABLE GCC_MACHINE)
+  if(${GCC_MACHINE} MATCHES x86_64-linux-gnu)
+    set(ARCHDIR Linux64)
+  elseif(${GCC_MACHINE} MATCHES i686-linux-gnu)
+    set(ARCHDIR Linux)
+  elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
       ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
     set(ARCHDIR Linux64)
   else()
