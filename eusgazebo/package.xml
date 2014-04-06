@@ -22,7 +22,4 @@
   <run_depend>roseus</run_depend>
   <run_depend>collada_tools</run_depend>
 
-  <export>
-    <message_generator>euslisp</message_generator>
-  </export>
 </package>
