@@ -1,6 +1,7 @@
 ;; eusgazebo-core.l
 
 (load "package://eusgazebo/euslisp/eusgazebo-util.l")
+(load "package://eusgazebo/euslisp/mass-property-util.l")
 
 (ros::load-ros-manifest "gazebo_msgs")
 
@@ -38,18 +39,36 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; add eus model to gazebo world
   (:add-model
-   (model)
+   (model
+    &key (urdf-dir "/tmp/gazebo_model"))
 
    ;; check if already added
    (when (member model model-list)
      (return-from :add-model nil))
    
-   ;; set model name
-   (send model :put :gazebo-model-name (send model :name)) ;; [ToDo] if the urdf model with same name is already exists, set other new name.
+   ;; check mass property
+   (overwirte-mass-property-if-too-small model)
+
+   ;; overwrite model name
+   (cond
+    ;; deal with the objects with no name (objects with no name cause an error in converting)
+    ((null (send model :name)) (send model :name "no-name"))
+    ;; deal with the objects with symbol name
+    ((symbolp (send model :name)) (send model :name (string-downcase (send model :name)))))
+
+   ;; set gazebo model name
+   (send model :put :gazebo-model-name (send model :name))
+   (let* ((obj-cnt 0))
+     (while t
+       (let* ((model-file-path
+	       (format nil "~a/~a" urdf-dir (send model :get :gazebo-model-name))))
+	 (unless (probe-file model-file-path) (return)))
+       (send model :put :gazebo-model-name (format nil "~a-~a" (send model :name) obj-cnt))
+       (incf obj-cnt)))
 
    ;; convert urdf
    (let* (urdf-model-path)
-     (setq urdf-model-path (irteus2urdf-for-gazebo model :name (send model :get :gazebo-model-name) :urdf-dir "/tmp/gazebo_model"))
+     (setq urdf-model-path (irteus2urdf-for-gazebo model :name (send model :get :gazebo-model-name) :urdf-dir urdf-dir))
      (send model :put :urdf-model-path urdf-model-path))
 
    ;; spawn model

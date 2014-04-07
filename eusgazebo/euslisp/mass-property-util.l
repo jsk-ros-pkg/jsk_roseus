@@ -10,7 +10,7 @@
 (defun overwirte-mass-property-if-too-small
   (obj)
 
-  (let* ((link-weight-min 1e6) ;; [g]
+  (let* ((link-weight-min 1) ;; [g]
 	 (link-inertia-diag-min (list 1e6 1e6 1e6)) ;; [gmm^2]
 	 )
     (dolist (link (send obj :links))
@@ -19,13 +19,13 @@
 	     (link-inertia-diag (mapcar #'(lambda (i) (elt (matrix-row link-inertia i) i)) (list 0 1 2))))
 	;; overwirte mass if too small
 	(when (< link-weight link-weight-min)
-	  (warning-message 1 "overwrite mass because original value is too small: ~a [g] -> ~a [g]~%" link-weight link-weight-min)
+	  (warning-message 3 "overwrite mass because original value is too small: ~a [g] -> ~a [g]~%" link-weight link-weight-min)
 	  (overwrite-link-mass link link-weight-min))
 	;; overwrite inertia if too small
 	(let* ((link-inertia-diag-overwirte
 		(mapcar #'max link-inertia-diag link-inertia-diag-min)))
 	  (unless (equal link-inertia-diag link-inertia-diag-overwirte)
-	    (warning-message 1 "overwrite inertia because original value is too small: ~a [gmm^2] -> ~a [gmm^2]~%"
+	    (warning-message 3 "overwrite inertia because original value is too small: ~a [gmm^2] -> ~a [gmm^2]~%"
 			     link-inertia-diag link-inertia-diag-overwirte)
 	    (overwrite-link-inertia link link-inertia-diag-overwirte)))
 	))))
@@ -65,6 +65,7 @@
 
 
 ;; caluculate valid mass property automatically ;;;;;;;;;;;;;;;
+;; [ToDo] estimate mass and inertia from shape and density
 (defun get-obj-bounding-box-min-max-point
   (obj)
 

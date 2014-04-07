@@ -5,7 +5,7 @@
 (defun irteus2urdf-for-gazebo
   (model
    &key
-   name
+   (name (send model :name))
    (collada-dir "/tmp")
    (urdf-dir nil))
 
@@ -14,23 +14,19 @@
     (format t "invalid class, not childclass of cascaded-link~%"))
    ((null (send model :links)) (format t "please setq links~%"))
    (t
-    (setq name (send model :name))
-    (if (or (not (stringp (send model :name)))
-	    (zerop (length (send model :name))))
-	(send model :name
-	      (remove #\: (format nil "~A" (send model :name)))))
     ;; convert to collada
     (collada::eus2collada model collada-dir)
-    ;; convert to  urdf
-    (cond
-     ((probe-file (format nil "~A/~A.dae" collada-dir (send model :name)))
-      (format t "generate ~A.dae~%convert to urdf~%" (send model :name))
-      (unix:system
-       (format nil
-	       "rosrun eusgazebo eus2urdf_for_gazebo.py ~a ~a/~a.dae ~a"
-	       (send model :name) collada-dir (send model :name) (if urdf-dir urdf-dir ""))))
-     (t (format nil "dae error~%")))
-    (format nil "~a/~a/~a" urdf-dir (send model :name name) "model.urdf")
+    ;; convert to urdf
+    (let* ((collada-path (format nil "~a/~a.dae" collada-dir (send model :name))))
+      (cond
+       ((probe-file collada-path)
+	(format t "generate ~A.dae~%convert to urdf~%" name)
+	(unix:system
+	 (format nil
+		 "rosrun eusgazebo eus2urdf_for_gazebo.py ~a ~a ~a"
+		 name collada-path (if urdf-dir urdf-dir ""))))
+       (t (format nil "dae error~%"))))
+    (format nil "~a/~a/~a" urdf-dir name "model.urdf")
     )))
 
 

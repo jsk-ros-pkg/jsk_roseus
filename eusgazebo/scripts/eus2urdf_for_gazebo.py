@@ -20,10 +20,10 @@ def eus2urdf_for_gazebo (name, collada_path, urdf_path = (os.getenv("HOME") + "/
     os.mkdir(urdf_dir_path)
 
     add_line_string = '\<uri\>file://%s\</uri\>' % name
-    manifest_path = '%s/../manifest.xml' % urdf_dir_path
-    if len(commands.getoutput("grep %s %s" % (add_line_string, manifest_path))) == 0:
-        print "[eus2urdf] add file path to manifest.xml"
-        os.system('sed -i -e \"s@  </models>@    %s\\n  </models>@g\" %s' % (add_line_string, manifest_path))
+    model_config_path = '%s/../model.config' % urdf_dir_path
+    if len(commands.getoutput("grep %s %s" % (add_line_string, model_config_path))) == 0:
+        print "[eus2urdf] add file path to model.config"
+        os.system('sed -i -e \"s@  </models>@    %s\\n  </models>@g\" %s' % (add_line_string, model_config_path))
 
     print "[eus2urdf] make model.config in urdf directory"
     config_path = '%s/model.config' % urdf_dir_path
@@ -39,8 +39,7 @@ def eus2urdf_for_gazebo (name, collada_path, urdf_path = (os.getenv("HOME") + "/
     os.system('sed -i -e \"1,/  <link /s/  <link /  <gazebo>\\n    <static>false<\/static>\\n  <\/gazebo>\\n  <link /\" %s' % urdf_path)
 
     # print "[eus2urdf] add inertia property to urdf   # Inertia value is not correct. Inertia should be added at eus2collada."
-    os.system('sed -i -e \"s@<inertia ixx=.*/>@<inertia ixx=\\\"1e-03\\\" ixy=\\\"0\\\" ixz=\\\"0\\\" iyy=\\\"1e-03\\\" iyz=\\\"0\\\" izz=\\\"1e-03\\\"/>@g\" %s' % urdf_path)
-    # os.system('sed -i -e \"s@      <inertia ixx=\\\"1e-09\\\" ixy=\\\"0\\\" ixz=\\\"0\\\" iyy=\\\"1e-09\\\" iyz=\\\"0\\\" izz=\\\"1e-09\\\"/>@      <inertia ixx=\\\"1e-03\\\" ixy=\\\"0\\\" ixz=\\\"0\\\" iyy=\\\"1e-03\\\" iyz=\\\"0\\\" izz=\\\"1e-03\\\"/>@g\" %s' % urdf_path)
+    #os.system('sed -i -e \"s@<inertia ixx=.*/>@<inertia ixx=\\\"1e-03\\\" ixy=\\\"0\\\" ixz=\\\"0\\\" iyy=\\\"1e-03\\\" iyz=\\\"0\\\" izz=\\\"1e-03\\\"/>@g\" %s' % urdf_path)
 
 
 if __name__ == '__main__':
