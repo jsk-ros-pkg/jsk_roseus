@@ -2,8 +2,8 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2014-04-07)
+------------------
 * use gcc dumpmachine to check archtecture
 * Contributors: Kei Okada
 
