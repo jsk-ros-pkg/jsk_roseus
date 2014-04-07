@@ -7,7 +7,8 @@
    &key
    (name (send model :name))
    (collada-dir "/tmp")
-   (urdf-dir nil))
+   (urdf-dir nil)
+   (static nil))
 
   (cond
    ((not (subclassp (class model) cascaded-link))
@@ -21,12 +22,19 @@
       (cond
        ((probe-file collada-path)
 	(format t "generate ~A.dae~%convert to urdf~%" name)
+	;; convert to urdf model
 	(unix:system
 	 (format nil
 		 "rosrun eusgazebo eus2urdf_for_gazebo.py ~a ~a ~a"
-		 name collada-path (if urdf-dir urdf-dir ""))))
+		 name collada-path (if urdf-dir urdf-dir "")))
+	;; make static model
+	(unix:system
+	 (format nil
+		 "rosrun eusgazebo make_urdf_static_model_for_gazebo.py ~a ~a"
+		 name (if urdf-dir urdf-dir "")))
+	)
        (t (format nil "dae error~%"))))
-    (format nil "~a/~a/~a" urdf-dir name "model.urdf")
+    (format nil "~a/~a~a/~a" urdf-dir name (if static "_static" "") "model.urdf")
     )))
 
 

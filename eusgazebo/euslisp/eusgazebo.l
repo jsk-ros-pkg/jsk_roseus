@@ -40,14 +40,14 @@
   ;; add eus model to gazebo world
   (:add-model
    (model
-    &key (urdf-dir "/tmp/gazebo_model"))
+    &key (static nil) (urdf-dir "/tmp/gazebo_model"))
 
    ;; check if already added
    (when (member model model-list)
      (return-from :add-model nil))
    
    ;; check mass property
-   (overwirte-mass-property-if-too-small model)
+   (overwrite-mass-property-if-too-small model)
 
    ;; overwrite model name
    (cond
@@ -68,7 +68,7 @@
 
    ;; convert urdf
    (let* (urdf-model-path)
-     (setq urdf-model-path (irteus2urdf-for-gazebo model :name (send model :get :gazebo-model-name) :urdf-dir urdf-dir))
+     (setq urdf-model-path (irteus2urdf-for-gazebo model :name (send model :get :gazebo-model-name) :urdf-dir urdf-dir :static static))
      (send model :put :urdf-model-path urdf-model-path))
 
    ;; spawn model

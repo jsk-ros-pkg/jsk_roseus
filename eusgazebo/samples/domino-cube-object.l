@@ -29,7 +29,7 @@
        ))
        ))
      (dolist (b (cdr bc)) (send (car bc) :assoc b))
-     (send (elt bc 0) :set-color :gray40)
+     (send (elt bc 0) :set-color :gray20)
      (setq blink0 (instance bodyset-link :init (make-cascoords) :bodies bc :name :domino-cube-bodyset2 :weight 2000 :centroid (float-vector 0.0 0.0 0.0) :inertia-tensor #2f((1.0 0.0 0.0) (0.0 1.0 0.0) (0.0 0.0 1.0))))
 
      ;; definition of assoc

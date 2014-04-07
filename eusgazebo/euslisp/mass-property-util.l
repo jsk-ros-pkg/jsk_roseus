@@ -1,13 +1,14 @@
 ;; overwrite mass property ;;;;;;;;;;;;;;;
-(defun overwirte-mass-property
-  (obj link-mass link-inertia-diag-elem)
+(defun overwrite-mass-property
+  (obj cog link-mass link-inertia-diag-elem)
 
   (dolist (link (send obj :links))  
+    (overwrite-link-cog link cog)
     (overwrite-link-mass link link-mass)
     (overwrite-link-inertia link link-inertia-diag-elem))
   )
 
-(defun overwirte-mass-property-if-too-small
+(defun overwrite-mass-property-if-too-small
   (obj)
 
   (let* ((link-weight-min 1) ;; [g]
@@ -17,18 +18,23 @@
       (let* ((link-weight (slot link bodyset-link 'weight))
 	     (link-inertia (slot (car (send obj :links)) bodyset-link 'inertia-tensor))
 	     (link-inertia-diag (mapcar #'(lambda (i) (elt (matrix-row link-inertia i) i)) (list 0 1 2))))
-	;; overwirte mass if too small
+	;; overwrite mass if too small
 	(when (< link-weight link-weight-min)
 	  (warning-message 3 "overwrite mass because original value is too small: ~a [g] -> ~a [g]~%" link-weight link-weight-min)
 	  (overwrite-link-mass link link-weight-min))
 	;; overwrite inertia if too small
-	(let* ((link-inertia-diag-overwirte
+	(let* ((link-inertia-diag-overwrite
 		(mapcar #'max link-inertia-diag link-inertia-diag-min)))
-	  (unless (equal link-inertia-diag link-inertia-diag-overwirte)
+	  (unless (equal link-inertia-diag link-inertia-diag-overwrite)
 	    (warning-message 3 "overwrite inertia because original value is too small: ~a [gmm^2] -> ~a [gmm^2]~%"
-			     link-inertia-diag link-inertia-diag-overwirte)
-	    (overwrite-link-inertia link link-inertia-diag-overwirte)))
+			     link-inertia-diag link-inertia-diag-overwrite)
+	    (overwrite-link-inertia link link-inertia-diag-overwrite)))
 	))))
+
+(defun overwrite-link-cog
+  (link cog)
+
+  (setf (slot link bodyset-link 'acentroid) cog))
 
 (defun overwrite-link-mass
   (link link-mass)
@@ -47,6 +53,11 @@
 
 
 ;; get mass property ;;;;;;;;;;;;;;;
+(defun get-link-cog
+  (link)
+
+  (slot link bodyset-link 'acentroid))
+
 (defun get-link-mass
   (link)
 
@@ -60,8 +71,10 @@
 (defun print-obj-mass-property
   (obj)
 
-  (warning-message 2 "whole mass: ~a [g]~%first link inertia: ~a [gmm^2]~%"
-		   (send obj :weight) (get-link-inertia (car (send obj :links)))))
+  (warning-message 2 "whole mass: ~a [g]~%first link cog: ~a[mm]~%first link inertia: ~a [gmm^2]~%"
+		   (send obj :weight)
+		   (get-link-cog (car (send obj :links)))
+		   (get-link-inertia (car (send obj :links)))))
 
 
 ;; caluculate valid mass property automatically ;;;;;;;;;;;;;;;
