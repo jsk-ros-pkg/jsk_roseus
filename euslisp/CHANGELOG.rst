@@ -2,6 +2,11 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use gcc dumpmachine to check archtecture
+* Contributors: Kei Okada
+
 1.1.0 (2014-04-07)
 ------------------
 * Merge pull request `#49 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/49>`_ from cottsay/master
