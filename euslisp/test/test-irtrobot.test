@@ -49,6 +49,41 @@ irteus robot model examples
 
 .. code-block:: bash
 
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(walk-motion-for-sample-robot)"
+
+.. video:: build/walk_motion_for_sample_robot
+  :width: 400
+
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(trot-walk-motion-for-sample-robot)"
+
+.. video:: build/trot_walk_motion_for_sample_robot_go_backward_over
+  :width: 400
+
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(trot-walk-motion-for-sample-robot :go-backward-over nil)"
+
+.. video:: build/trot_walk_motion_for_sample_robot
+  :width: 400
+
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(crawl-walk-motion-for-sample-robot)"
+
+.. video:: build/crawl_walk_motion_for_sample_robot_go_backward_over
+  :width: 400
+
+.. code-block:: bash
+
+  $ rosrun euslisp irteusgl irteus/demo/demo.l "(crawl-walk-motion-for-sample-robot :go-backward-over nil)"
+
+.. video:: build/crawl_walk_motion_for_sample_robot
+  :width: 400
+
+.. code-block:: bash
+
   $ rosrun euslisp irteusgl irteus/demo/demo.l "(hand-grasp)"
 
 .. video:: build/hand_grasp
@@ -105,6 +140,21 @@ robots and object models
 	time-limit="600" />
   <test test-name="test_crank_motion_demo" pkg="euslisp"
 	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'crank-motion) $(find euslisp)/test/irteus-demo.l"
+	time-limit="600" />
+  <test test-name="test_walk_motion_for_sample_robot_demo" pkg="euslisp"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'walk-motion-for-sample-robot) $(find euslisp)/test/irteus-demo.l"
+	time-limit="600" />
+  <test test-name="test_trot_walk_motion_for_sample_robot_go_backward_over_demo" pkg="euslisp"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'trot-walk-motion-for-sample-robot) $(find euslisp)/test/irteus-demo.l"
+	time-limit="600" />
+  <test test-name="test_trot_walk_motion_for_sample_robot_demo" pkg="euslisp"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'(lambda\ ()\ (trot-walk-motion-for-sample-robot\ :go-backward-over\ nil)) $(find euslisp)/test/irteus-demo.l"
+	time-limit="600" />
+  <test test-name="test_crawl_walk_motion_for_sample_robot_go_backward_over_demo" pkg="euslisp"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'crawl-walk-motion-for-sample-robot) $(find euslisp)/test/irteus-demo.l"
+	time-limit="600" />
+  <test test-name="test_crawl_walk_motion_for_sample_robot_demo" pkg="euslisp"
+	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'(lambda\ ()\ (crawl-walk-motion-for-sample-robot\ :go-backward-over\ nil)) $(find euslisp)/test/irteus-demo.l"
 	time-limit="600" />
   <test test-name="test_hand_grasp_demo" pkg="euslisp"
 	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'hand-grasp) $(find euslisp)/test/irteus-demo.l"

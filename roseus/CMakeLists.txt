@@ -16,10 +16,11 @@ endif()
 
 find_program (SVNVERSION_CMD svnversion)
 set(ENV{LANG} "C")
-execute_process (COMMAND "${SVNVERSION_CMD}" ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE SVNVERSION
+execute_process (COMMAND git rev-parse --short HEAD
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  OUTPUT_VARIABLE REPOVERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE)
-message (STATUS "Build svn revision: ${SVNVERSION}")
+message (STATUS "Build repo revision: ${REPOVERSION}")
 
 #rosbuild_add_boost_directories()
 
@@ -33,8 +34,8 @@ rosbuild_add_library(roseus_c_util roseus_c_util.c)
 
 # compile flags
 set(COMPILE_FLAGS "-O2 -Wno-write-strings -Wno-comment")
-add_definitions(-Di486 -DLinux -D_REENTRANT -DVERSION='\"${8.26}\"' -DTHREADED -DPTHREAD -DX11R6_1)
-add_definitions(-DSVNVERSION="\\"r${SVNVERSION}\\"")
+add_definitions(-Di486 -DLinux -D_REENTRANT -DVERSION='\"9.00\"' -DTHREADED -DPTHREAD -DX11R6_1)
+add_definitions(-DREPOVERSION="\\"${REPOVERSION}\\"")
 execute_process(COMMAND rosversion tf2_ros OUTPUT_VARIABLE TF2_ROS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 message(STATUS "tf2_ros version: ${TF2_ROS_VERSION}")
 if(${TF2_ROS_VERSION} VERSION_LESS  0.4.0)
@@ -80,5 +81,8 @@ rosbuild_add_rostest(test/test-roseus.test)
 rosbuild_add_rostest(test/test-tf.test)
 rosbuild_add_rostest(test/test-disconnect.test)
 rosbuild_add_rostest(test/test-multi-queue.test)
+## these launch files are intentionally uses .launch suffix for not to invoke on travis/catkin test
+rosbuild_add_rostest(test/test-genmsg.rosbuild.launch)
+rosbuild_add_rostest(test/test-genmsg-oneworkspace.rosbuild.launch)
 
 #add_subdirectory(test EXCLUDE_FROM_ALL)

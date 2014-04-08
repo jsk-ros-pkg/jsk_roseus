@@ -130,7 +130,7 @@ static bool s_bInstalled = false;
 #define s_mapServiced s_staticdata.mapServiced
 #define s_mapHandle s_staticdata.mapHandle
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,QANON,QNOOUT,QSVNVERSION;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,QANON,QNOOUT,QREPOVERSION;
 extern pointer LAMCLOSURE;
 
 /***********************************************************
@@ -1382,10 +1382,10 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   pointer_update(Spevalof(PACKAGE),p);
 
   pointer l;
-  l=makestring(SVNVERSION,strlen(SVNVERSION));
+  l=makestring(REPOVERSION,strlen(REPOVERSION));
   vpush(l);
   l=stacknlist(ctx,1);
-  QSVNVERSION=defvar(ctx, "ROSEUS-SVNVERSION", l, rospkg);
+  QREPOVERSION=defvar(ctx, "ROSEUS-REPO-VERSION", l, rospkg);
 
   M_string remappings;
   pointer argp = speval(intern(ctx,"*EUSTOP-ARGUMENT*", strlen("*EUSTOP-ARGUMENT*"),lisppkg));

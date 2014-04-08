@@ -22,14 +22,20 @@ add_rostest(test/test-euslisp.test)
 catkin_package(
     DEPENDS opengl libjpeg libx11-dev libxext libpng12-dev
     CATKIN-DEPENDS # TODO
-    INCLUDE_DIRS jskeus/eus/include
+    INCLUDE_DIRS # jskeus/eus/include
     LIBRARIES # TODO
 )
 
 # install under EUSDIR/ARCHDIR ...
 set(EUSDIR ${CATKIN_PACKAGE_SHARE_DESTINATION}/jskeus/eus)
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
-  if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
+  execute_process(COMMAND gcc -dumpmachine OUTPUT_VARIABLE GCC_MACHINE OUTPUT_STRIP_TRAILING_WHITESPACE)
+  message("-- Set GCC_MACHINE to ${GCC_MACHINE}")
+  if(${GCC_MACHINE} MATCHES x86_64-linux-gnu)
+    set(ARCHDIR Linux64)
+  elseif(${GCC_MACHINE} MATCHES i686-linux-gnu)
+    set(ARCHDIR Linux)
+  elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
       ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
     set(ARCHDIR Linux64)
   else()
@@ -60,10 +66,9 @@ foreach(executable ${executables})
   get_filename_component(rpath ${rpath} PATH)      # get parent  .. eus/Linux64
   set(rpath "${rpath}/lib")                        # move to lib .. eus/Linux64/lib
   install(CODE "
-    file(RPATH_CHECK FILE \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\" RPATH ${rpath}) ## this removes target file, so we need recopy them
-    if(NOT EXISTS \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\")
-      file(COPY ${executable} DESTINATION  \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin\")
-    else()
+    set(_rpath)
+    file(STRINGS \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\" _rpath REGEX ${rpath} LIMIT_COUNT 1)
+    if(_rpath)
       file(RPATH_CHANGE
            FILE      \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\"
            OLD_RPATH ${rpath}
@@ -86,11 +91,13 @@ endforeach()
 # libraries
 install(DIRECTORY jskeus/eus/${ARCHDIR}/lib/
   DESTINATION ${EUSDIR}/${ARCHDIR}/lib
+  USE_SOURCE_PERMISSIONS
 )
 
 # objs
 install(DIRECTORY jskeus/eus/${ARCHDIR}/obj/
   DESTINATION ${EUSDIR}/${ARCHDIR}/obj
+  USE_SOURCE_PERMISSIONS
   FILES_MATCHING PATTERN "*.l" PATTERN "*.so"  PATTERN ".svn" EXCLUDE
 )
 
@@ -137,6 +144,7 @@ install(FILES jskeus/eus/doc/jlatex/jmanual.pdf DESTINATION ${EUSDIR}/doc/jlatex
 # irteus
 install(DIRECTORY jskeus/irteus/
   DESTINATION ${EUSDIR}/../irteus
+  USE_SOURCE_PERMISSIONS
   FILES_MATCHING PATTERN "*" PATTERN ".svn" EXCLUDE
 )
 # includes
