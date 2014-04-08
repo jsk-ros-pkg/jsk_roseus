@@ -1,11 +1,13 @@
 #!/bin/bash
 set -e
 
+EUSLISP_DIR=`rospack find euslisp`
+EUSLISP_EXE=`find $EUSLISP_DIR -type f -name irteusgl`
 ROSEUS_DIR=`rospack find roseus`
 ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
         roseus.l eustf.l actionlib.l roseus-utils.l)
 # echo "rosrun euslisp irteusgl ${ARG_STR[@]} $@"
-exec rosrun euslisp irteusgl "${ARG_STR[@]}" "$@"
+exec ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
 
 # if you want to run in gdb, please use lines below
 # CMD_NAME=/tmp/roseus_$$
