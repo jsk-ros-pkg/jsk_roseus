@@ -47,7 +47,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     file(GLOB ${arg_pkg}_MESSAGE_FILES "${pkg_full_path}/msg/*.msg")
     file(GLOB ${arg_pkg}_SERVICE_FILES "${pkg_full_path}/srv/*.srv")
 
-     if(${arg_pkg}_MESSAGE_FILES OR ${arg_pkg}_SERVICE_FILES) # check if we need to compile python message. generating eusmessage depends on python message to get to  know md5sum
+     if(${arg_pkg}_SOURCE_DIR AND (${arg_pkg}_MESSAGE_FILES OR ${arg_pkg}_SERVICE_FILES) )# check if we need to compile python message. generating eusmessage depends on python message to get to  know md5sum
       set(_depend_generate_py ${arg_pkg}_generate_messages_py)
     else()
       set(_depend_generate_py )
