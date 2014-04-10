@@ -210,7 +210,7 @@ rosbuild_find_ros_package(geneus)
 
 # for euslisp ros API. like roslib.load_mafest
 macro(genmanifest_eus)
-  execute_process(COMMAND find ${euslisp_PACKAGE_PATH} -name eus2
+  execute_process(COMMAND find ${euslisp_PACKAGE_PATH} -name eus2 -executable
     OUTPUT_VARIABLE _eus2_output
     RESULT_VARIABLE _eus2_failed)
   if(_eus2_failed)
