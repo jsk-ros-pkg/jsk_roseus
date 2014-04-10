@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="test_genmsg" pkg="roseus" type="test-genmsg.sh" args="--rosbuild"
+        time-limit="600" />
+</launch>
