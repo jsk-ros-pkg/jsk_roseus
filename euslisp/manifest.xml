@@ -14,12 +14,15 @@
     <rosdoc config="rosdoc.yaml" />
   </export>
 
+  <rosdep name="git" />
+  <rosdep name="rosbuild" />
   <rosdep name="opengl" />
   <rosdep name="libjpeg" />
   <rosdep name="libx11-dev" />
   <rosdep name="libxext" />
   <rosdep name="libpng12-dev" />
   <rosdep name="libpq-dev" />
+  <rosdep name="mk" />
   <rosdep name="xfonts-100dpi" />
   <rosdep name="xfonts-75dpi" />
   <rosdep name="xfont-server" />

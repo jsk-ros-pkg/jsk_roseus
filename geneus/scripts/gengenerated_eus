@@ -9,7 +9,9 @@ ROSEUS_DIR=`rospack find roseus`
 if [ "$OUTFILE" != "" ] ; then
     echo "[generated_eus] Writing md5sum generated file to $OUTFILE" 1>&2
     mkdir -p `dirname $OUTFILE`
-    (cd $ROSEUS_DIR/scripts; md5sum *) > $OUTFILE
+    if [ -e `dirname $OUTFILE`/manifest.l ]; then
+        (cd $ROSEUS_DIR/scripts; md5sum *) > $OUTFILE
+    fi
 else
     (cd $ROSEUS_DIR/scripts; md5sum *)
 fi

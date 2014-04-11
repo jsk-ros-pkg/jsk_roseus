@@ -13,17 +13,17 @@
   </export>
   <depend package="roseus"/>
 
-  <depend package="uvc_camera" />
+  <!-- depend package="uvc_camera" / -->
 <!-- <depend package="ar_pose" /> -->
-  <depend package="saliency_tracking" />
+  <!-- depend package="saliency_tracking" / -->
   <!-- <depend package="cmvision" /> -->
-  <depend package="checkerboard_pose" />
-  <depend package="face_detector_mono" />
+  <!-- depend package="checkerboard_pose" / -->
+  <!-- depend package="face_detector_mono" / -->
   <!-- <depend package="aques_talk" /> -->
-  <depend package="checkerboard_detector" />
-  <depend package="image_proc" />
-  <depend package="image_view2" />
-  <depend package="jsk_perception" />
-  <depend package="visualization_msgs" />
-  <depend package="tabletop_object_detector" />
+  <!-- depend package="checkerboard_detector" / -->
+  <!-- depend package="image_proc" / -->
+  <!-- depend package="image_view2" / -->
+  <!-- depend package="jsk_perception" / -->
+  <!-- depend package="visualization_msgs" / -->
+  <!-- depend package="tabletop_object_detector" / -->
 </package>

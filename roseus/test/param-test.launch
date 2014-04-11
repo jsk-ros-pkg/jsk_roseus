@@ -6,7 +6,8 @@
          value="test_ns" />
   <node name="$(anon param_test)"
         pkg="roseus"
-        type="param-test.l"
+        type="roseus"
+        args="$(find roseus)/test/param-test.l"
         clear_params="true"
 	output="screen">
     <param name="test"

@@ -1,0 +1,49 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package euslisp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1.1.2 (2014-04-07)
+------------------
+* catkin.make : fix: use gcc dumpmachine to check archtecture
+* test : add test code to test launch, test codes are already included in irteus/demo
+* Contributors: Kei Okada, Shunnichi Nozawa
+
+1.1.1 (2014-04-07)
+------------------
+* use gcc dumpmachine to check archtecture
+* Contributors: Kei Okada
+
+1.1.0 (2014-04-07)
+------------------
+* Merge pull request `#49 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/49>`_ from cottsay/master
+  Fix permissions on installed libraries
+* (`#41 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/41>`_) check if installed binary inlcude old rpath with file(STRING,
+* check gcc -dumpmachine for deb build
+* Contributors: Kei Okada
+* Fix permissions on installed libraries
+  All shared-object libraries should have execute permissions.
+* Contributors: Scott K Logan
+
+1.0.4 (2014-03-31)
+------------------
+* try to download jskeus for 10 times
+* do not set INCLUDE_DIRS to jskeus/eus/include, which cause error in roseus as "Project 'euslisp' specifies 'include' as an include dir, which is not found"
+* Contributors: Kei Okada
+
+1.0.3 (2014-03-29)
+------------------
+* euslisp: unittest.l, uses numnber of test, not number of assert
+* euslisp: unittest.l, force error if signal or error
+* euslisp: add build_depend to libpq-dev, see issue `#8 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/8>`_
+* Contributors: Kei Okada
+
+1.0.2 (2014-03-28)
+------------------
+* euslisp: add git to depends
+* test/unittest.l: check test/results/failures numbers, return -1 if it fail to execute, force remove test results
+* Contributors: Kei Okada
+
+1.0.1 (2014-03-27)
+------------------
+* euslisp/roseus: add version numeber to 1.0.0
+* Contributors: Kei Okada, Manabu saito, Masaki Murooka, Shunnichi Nozawa, Youhei Kakiuchi

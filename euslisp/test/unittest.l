@@ -19,11 +19,25 @@
 (deftest test4
   (dotimes (i 10)
     (assert t "ok"))
+  (warning-message 1 "*** This test  fails intentinally ****~%")
   (dotimes (i 10)
-    (assert (null nil) "false"))
+    (assert nil "false")
+    ;; force remove trace from expected errored test
+    (setq ((car (*unit-test* . result)) . failures) nil)
+    )
   (dotimes (i 10)
     (assert t "ok"))
   )
 
 (run-all-tests)
-(exit)
+
+(setq ret -1)
+(format t "functions = ~A~%" (length (send *unit-test* :functions)))
+(send *unit-test* :result)
+(if (and (= (length (send *unit-test* :functions)) 4)
+         (= (apply #'+ (send-all (send *unit-test* :result) :num-tests)) 4)
+         (= (apply #'+ (send-all (send *unit-test* :result) :num-failures)) 1)
+         (= (apply #'+ (send-all (send *unit-test* :result) :num-successes)) 3))
+    (setq ret 0))
+(exit ret)
+
