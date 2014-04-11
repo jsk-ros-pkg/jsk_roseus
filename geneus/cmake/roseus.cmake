@@ -237,6 +237,14 @@ genmanifest_eus()
 
 # Message-generation support.
 macro(genmsg_eus)
+  execute_process(COMMAND find ${euslisp_PACKAGE_PATH} -name eus2 -executable
+    OUTPUT_VARIABLE _eus2_output
+    RESULT_VARIABLE _eus2_failed)
+  if(_eus2_failed)
+    message("[roseus.cmake] eus2 is not ready yet, try rosmake euslisp")
+    return()
+  endif(_eus2_failed)
+
   rosbuild_get_msgs(_msglist)
   set(_autogen "")
   foreach(_msg ${_msglist})
@@ -268,6 +276,14 @@ genmsg_eus()
 
 # Service-generation support.
 macro(gensrv_eus)
+  execute_process(COMMAND find ${euslisp_PACKAGE_PATH} -name eus2 -executable
+    OUTPUT_VARIABLE _eus2_output
+    RESULT_VARIABLE _eus2_failed)
+  if(_eus2_failed)
+    message("[roseus.cmake] eus2 is not ready yet, try rosmake euslisp")
+    return()
+  endif(_eus2_failed)
+
   rosbuild_get_srvs(_srvlist)
   set(_autogen "")
   foreach(_srv ${_srvlist})
