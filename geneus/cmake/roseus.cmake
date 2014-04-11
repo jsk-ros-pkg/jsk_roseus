@@ -301,7 +301,7 @@ gensrv_eus()
 # generate msg for package contains ROS_NOBUILD
 macro(generate_ros_nobuild_eus)
   # if euslisp is not compiled, return from
-  execute_process(COMMAND find ${euslisp_PACKAGE_PATH} -name eus2
+  execute_process(COMMAND find ${euslisp_PACKAGE_PATH} -name eus2 -executable
     OUTPUT_VARIABLE _eus2_output
     RESULT_VARIABLE _eus2_failed)
   if(_eus2_failed)
