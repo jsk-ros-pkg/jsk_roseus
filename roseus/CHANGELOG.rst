@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.3 (2014-04-14)
+------------------
 * add rosdnoe to depends(#64)
 * Contributors: Kei Okada
 

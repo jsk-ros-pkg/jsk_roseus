@@ -2,8 +2,8 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.3 (2014-04-14)
+------------------
 * fix for roseus message generation (`#51 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/51>`_)
  * set _ROSBUILD_GENERATED_MSG_FILES null before rosbuild_get_msgs
  * check eus2 has executable permission in msg/srv generation on rosbuild
