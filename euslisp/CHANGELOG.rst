@@ -2,11 +2,15 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.2 (2014-04-07)
 ------------------
 * catkin.make : fix: use gcc dumpmachine to check archtecture
+* Contributors: Kei Okada
 * test : add test code to test launch, test codes are already included in irteus/demo
-* Contributors: Kei Okada, Shunnichi Nozawa
+* Contributors: Shunnichi Nozawa
 
 1.1.1 (2014-04-07)
 ------------------
