@@ -11,6 +11,7 @@
   <depend package="roscpp" />
   <depend package="rospack" />
   <depend package="rosmsg" />
+  <depend package="rosnode" />
   <depend package="rostopic" />
   <depend package="euslisp"/>
   <depend package="angles"/>
