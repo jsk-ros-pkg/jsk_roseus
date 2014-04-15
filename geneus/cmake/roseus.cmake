@@ -245,8 +245,10 @@ macro(genmsg_eus)
     return()
   endif(_eus2_failed)
 
+  set(_ROSBUILD_GENERATED_MSG_FILES_BAK ${_ROSBUILD_GENERATED_MSG_FILES})
   set(_ROSBUILD_GENERATED_MSG_FILES "")
   rosbuild_get_msgs(_msglist)
+  set(_ROSBUILD_GENERATED_MSG_FILES ${_ROSBUILD_GENERATED_MSG_FILES_BAK})
   set(_autogen "")
   foreach(_msg ${_msglist})
     # Construct the path to the .msg file
