@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="test_play_domino_simulation" pkg="roseus"
+	type="roseus" args="$(find eusgazebo)/test/test-play-domino-simulation.l" />
+</launch>
