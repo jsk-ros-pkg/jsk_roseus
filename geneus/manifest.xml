@@ -5,8 +5,8 @@
 
   <author>Kei Okada</author>
 
-  <package depend="genmsg" />
-  <package depend="euslisp" />
-  <package depend="rospy" />
+  <depend package="genmsg" />
+  <depend package="euslisp" />
+  <depend package="rospy" />
 
 </package>

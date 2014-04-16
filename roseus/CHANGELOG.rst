@@ -2,6 +2,11 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.3 (2014-04-14)
+------------------
+* add rosdnoe to depends(#64)
+* Contributors: Kei Okada
+
 1.1.0 (2014-04-07)
 ------------------
 * add geneus package that generate ros message for euslisp
