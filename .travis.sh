@@ -23,8 +23,8 @@ sudo apt-get install -qq -y python-catkin-pkg python-rosdep python-wstool ros-$R
 if [ $ROSWS == rosws ]; then sudo apt-get install -qq -y python-rosinstall     ; fi
 if [ $BUILDER == rosbuild ]; then sudo apt-get install -qq -y ros-$ROS_DISTRO-rosmake ; fi
 # MongoDB hack - I don't fully understand this but its for moveit_warehouse
-sudo apt-get remove -y mongodb mongodb-10gen
-sudo apt-get install -y mongodb-clients mongodb-server -o Dpkg::Options::="--force-confdef" # default actions
+sudo apt-get remove -y mongodb mongodb-10gen || echo "ok"
+sudo apt-get install -y mongodb-clients mongodb-server -o Dpkg::Options::="--force-confdef" || ecoh "ok" # default actions
 # Setup rosdep
 sudo rosdep init
 rosdep update; while [ $? != 0 ]; do sleep 1; rosdep update; done
