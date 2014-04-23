@@ -2,14 +2,20 @@
 
 set -x
 
-env
-
 if [ $ROS_DISTRO == "indigo" -a "$TRAVIS_JOB_ID" ]; then
     sudo apt-get install -qq -y python-jenkins
     ls -al
     ./.travis_jenkins.py
     exit $?
 fi
+
+function error {
+    if [ $BUILDER == rosbuild ]; then find ${HOME}/.ros/rosmake/ -type f -exec echo "=== {} ===" \; -exec cat {} \; ; fi
+    find ${HOME}/.ros/test_results -type f -exec echo "=== {} ===" \; -exec cat {} \;
+    for file in ${HOME}/.ros/log/rostest-*; do echo "=== $file ==="; cat $file; done
+}
+
+trap error ERR
 
 ### before_install: # Use this to prepare the system to install prerequisites or dependencies
 # Define some config vars
