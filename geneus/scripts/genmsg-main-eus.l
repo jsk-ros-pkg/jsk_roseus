@@ -575,8 +575,8 @@
           (substringp "Feedback.msg" fname))
       (probe-file (format nil "~A/action" (read-line (piped-fork (format nil "rospack find ~A" pkg)))))))
 
-(defun genmsg-eus (fname)
-  (let (msgs consts def pkg name oname)
+(defun genmsg-eus (fname &optional oname)
+  (let (msgs consts def pkg name)
     (multiple-value-setq (pkg name) (genfile-header fname))
     ;;; https://github.com/willowgarage/catkin/issues/122
     (unless (or (check-action-file pkg fname)
@@ -587,7 +587,12 @@
     (with-open-file
      (strm fname :direction :input)
      (multiple-value-setq (msgs consts) (generate-msg-datatype-name-list strm)))
-    (setq oname (generate-msg-output-file-name fname pkg name "msg"))
+    (if oname
+        (let ((dir (subseq oname 0 (position #\/ oname :count (count #\/ oname)))))
+          (unless (lisp::directory-p dir)
+            (warning-message 6 ";; mkdir ~A~%" dir)
+            (unix::system (format nil "mkdir -p ~A" dir))))
+      (setq oname (generate-msg-output-file-name fname pkg name "msg")))
     (warning-message 6 ";; writing to ~A~%" oname)
 
     (with-open-file
@@ -624,8 +629,8 @@
 |#
     ))
 
-(defun gensrv-eus (fname)
-  (let (req-msgs res-msgs consts1 consts2 doc pkg name req-name res-name oname)
+(defun gensrv-eus (fname &optional oname)
+  (let (req-msgs res-msgs consts1 consts2 doc pkg name req-name res-name)
     (multiple-value-setq (pkg name) (genfile-header fname))
     (setq req-name (format nil "~ARequest"  name)
           res-name (format nil "~AResponse" name))
@@ -637,7 +642,12 @@
      (multiple-value-setq (req-msgs consts1) (generate-msg-datatype-name-list strm))
      (multiple-value-setq (res-msgs consts2) (generate-msg-datatype-name-list strm)))
 
-    (setq oname (generate-msg-output-file-name fname pkg name "srv"))
+    (if oname
+        (let ((dir (subseq oname 0 (position #\/ oname :count (count #\/ oname)))))
+          (unless (lisp::directory-p dir)
+            (warning-message 6 ";; mkdir ~A~%" dir)
+            (unix::system (format nil "mkdir -p ~A" dir))))
+      (setq oname (generate-msg-output-file-name fname pkg name "srv")))
     (warning-message 6 ";; writing to ~A~%" oname)
 
     (with-open-file
@@ -666,8 +676,11 @@
 
 
 (defun genmanifest-eus (pkg &optional (target-file "manifest.l"))
-  (let (depend-pkgs strm l
-	(dir (format nil "~A/roseus/~A/~A" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg)))
+  (let (depend-pkgs strm l dir)
+    (if (pathname-directory target-file)
+        (setq dir (string-right-trim "manifest.l" target-file)
+              target-file "manifest.l")
+      (setq dir (format nil "~A/roseus/~A/~A" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg)))
     (setq strm (piped-fork (format nil "rospack depends -q ~A" pkg)))
     (while (setq l (read-line strm nil))
       (push l depend-pkgs))
