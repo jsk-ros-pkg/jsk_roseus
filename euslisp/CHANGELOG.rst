@@ -2,6 +2,11 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add test code for using robot-model class
+* Contributors: Shunnichi Nozawa
+
 1.1.3 (2014-04-14)
 ------------------
 

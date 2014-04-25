@@ -2,6 +2,12 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* check msg file udder CMAKE_PREFIX_PATH (#68)
+* (#31) use 120 as wait-for-transform
+* Contributors: Kei Okada
+
 1.1.3 (2014-04-14)
 ------------------
 * add rosdnoe to depends(#64)

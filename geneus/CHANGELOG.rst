@@ -2,6 +2,12 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use roseus_INSTALL_DIR variables so that we can put message file in different locate #68
+* #63 seems introduce new bugs, reporeted on https://github.com/jsk-ros-pkg/jsk_visualization/pull/19
+* Contributors: Kei Okada
+
 1.1.3 (2014-04-14)
 ------------------
 * fix for roseus message generation (`#51 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/51>`_)
