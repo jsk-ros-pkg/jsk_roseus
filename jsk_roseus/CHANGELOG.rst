@@ -2,8 +2,8 @@
 Changelog for package jsk_roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.4 (2014-04-25)
+------------------
 * jsk_roseus: add metapackage
 * Contributors: Kei Okada
 

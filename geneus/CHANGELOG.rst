@@ -2,8 +2,8 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.4 (2014-04-25)
+------------------
 * use roseus_INSTALL_DIR variables so that we can put message file in different locate #68
 * #63 seems introduce new bugs, reporeted on https://github.com/jsk-ros-pkg/jsk_visualization/pull/19
 * Contributors: Kei Okada

@@ -2,8 +2,8 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.4 (2014-04-25)
+------------------
 * add roseus_msgs that generates files under share/roseus/ros (#68)
 * Contributors: Kei Okada
 
