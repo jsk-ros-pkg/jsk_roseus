@@ -93,30 +93,6 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     endforeach()
   endmacro()
 
-  # generate upsteram message/services
-  foreach(pkg ${catkin_FIND_COMPONENTS})
-    message("[roseus.cmake] compile upstream package ${pkg}")
-    _generate_eus_dep_msgs(${pkg})
-  endforeach()
-
-  # generate message/services for installed packages
-  message("[roseus.cmake] compile installed package for ${PROJECT_NAME}")
-  get_cmake_property(_variableNames VARIABLES)
-  foreach (_variableName ${_variableNames})
-    if(_variableName MATCHES ".*_DIR$" AND NOT "${${_variableName}}" STREQUAL "")
-      get_filename_component(_variableLastName "${${_variableName}}" NAME)
-      if(${_variableLastName} MATCHES "cmake")
-        string(REGEX REPLACE "^(.*)_DIR$" "\\1" pkg_name ${_variableName})
-        get_filename_component(pkg_full_path "${${pkg_name}_DIR}/.." ABSOLUTE)
-        get_filename_component(pkg_full_name "${pkg_full_path}" NAME)
-        if ( ${pkg_name} STREQUAL ${pkg_full_name} )
-          message("[roseus.cmake] compile installed package ${pkg_name}")
-          _generate_eus_dep_msgs(${pkg_name})
-        endif()
-      endif()
-    endif()
-  endforeach()
-
   # define macros
   macro(_generate_msg_srv_eus MSG_OR_SRV ARG_PKG ARG_MSG ARG_IFLAGS ARG_MSG_DEPS ARG_GEN_OUTPUT_DIR)
     # message("_generate_${MSG_OR_SRV}_eus\n ARG_PKG:${ARG_PKG}\n ARG_MSG:${ARG_MSG}\n ARG_IFLAGS:${ARG_IFLAGS}\n ARG_MSG_DEPS:${ARG_MSG_DEPS}\n ARG_GEN_OUTPUT_DIR:${ARG_GEN_OUTPUT_DIR}/msg")
@@ -193,6 +169,37 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     endif()
 
   endmacro()
+
+  # generate upsteram message/services
+  foreach(pkg ${catkin_FIND_COMPONENTS})
+    if(${pkg}_SOURCE_DIR OR ${pkg}_SOURCE_PREFIX)
+      message("[roseus.cmake] compile upstream package ${pkg}")
+      _generate_eus_dep_msgs(${pkg})
+    endif()
+  endforeach()
+
+  # generate current package message/services
+  _generate_eus_dep_msgs(${PROJECT_NAME})
+
+  # generate message/services for installed packages
+  message("[roseus.cmake] compile installed package for ${PROJECT_NMAE}")
+  set(_ROS_PACKAGE_PATH $ENV{ROS_PACKAGE_PATH})
+  set(ENV{ROS_PACKAGE_PATH} ${CMAKE_SOURCE_DIR}:${_ROS_PACKAGE_PATH})
+  #set(_rospack_depends "import rospkg; rp = rospkg.RosPack(); print ';'.join(rp.get_depends('${PROJECT_NAME}'))")
+  execute_process(COMMAND rospack depends ${PROJECT_NAME}#python -c "${_rospack_depends}"
+    OUTPUT_VARIABLE _depend_output
+    RESULT_VARIABLE _depend_failed
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(ENV{ROS_PACKAGE_PATH} ${_ROS_PACKAGE_PATH})
+  if(_depend_failed)
+    message("[roseus.cmake] find rospack dpends fails for ${PROJECT_NAME}")
+    return()
+  endif(_depend_failed)
+  string(REGEX REPLACE "\n" ";" _depend_output ${_depend_output})
+  foreach(_pkg ${_depend_output})
+    message("[roseus.cmake] compile installed package ${_pkg}")
+    _generate_eus_dep_msgs(${_pkg})
+  endforeach()
 
   add_custom_target(${PROJECT_NAME}_ALL_GEN_OUTPUT_FILES_eus ALL DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}) # generate all
 
