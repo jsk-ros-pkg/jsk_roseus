@@ -110,6 +110,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
         get_filename_component(pkg_full_path "${${pkg_name}_DIR}/.." ABSOLUTE)
         get_filename_component(pkg_full_name "${pkg_full_path}" NAME)
         if ( ${pkg_name} STREQUAL ${pkg_full_name} )
+          message("[roseus.cmake] compile installed package ${pkg_name}")
           _generate_eus_dep_msgs(${pkg_name})
         endif()
       endif()
@@ -192,6 +193,8 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     endif()
 
   endmacro()
+
+  add_custom_target(${PROJECT_NAME}_ALL_GEN_OUTPUT_FILES_eus ALL DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}) # generate all
 
   return()
 endif()
