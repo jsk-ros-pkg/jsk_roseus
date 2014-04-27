@@ -2,8 +2,8 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.5 (2014-04-27)
+------------------
 * compile all dependent packages
 * add target ALL to invoke compile
 * Contributors: Kei Okada

@@ -2,8 +2,8 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.5 (2014-04-27)
+------------------
 * comment out build_depend, to speed up travis, these build_depends only needs at ros build firm
 * if CATKIN_DEVEL_PREFIX is not set, use CMAKE_INSTALL_PREFIX
 * compile all installed package useing CMAKE_PREFIX_PATH
