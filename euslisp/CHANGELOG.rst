@@ -2,6 +2,9 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.4 (2014-04-25)
 ------------------
 * add test code for using robot-model class

@@ -2,6 +2,9 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.4 (2014-04-25)
 ------------------
 * check msg file udder CMAKE_PREFIX_PATH (#68)

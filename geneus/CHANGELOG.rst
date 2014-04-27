@@ -2,6 +2,12 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* compile all dependent packages
+* add target ALL to invoke compile
+* Contributors: Kei Okada
+
 1.1.4 (2014-04-25)
 ------------------
 * use roseus_INSTALL_DIR variables so that we can put message file in different locate #68

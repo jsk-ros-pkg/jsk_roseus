@@ -2,6 +2,13 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* comment out build_depend, to speed up travis, these build_depends only needs at ros build firm
+* if CATKIN_DEVEL_PREFIX is not set, use CMAKE_INSTALL_PREFIX
+* compile all installed package useing CMAKE_PREFIX_PATH
+* Contributors: Kei Okada
+
 1.1.4 (2014-04-25)
 ------------------
 * add roseus_msgs that generates files under share/roseus/ros (#68)
