@@ -2,6 +2,11 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* build process does not know CATKIN_GLOBAL_SHARE_DESTINATION
+* Contributors: Kei Okada
+
 1.1.5 (2014-04-27)
 ------------------
 * comment out build_depend, to speed up travis, these build_depends only needs at ros build firm
