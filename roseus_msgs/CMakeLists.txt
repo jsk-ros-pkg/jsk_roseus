@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_msgs)
 
-set(_roseus_INSTALL_DIR ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_SHARE_DESTINATION}/roseus/ros)
+if(CATKIN_DEVEL_PREFIX)
+  set(_roseus_INSTALL_DIR ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_SHARE_DESTINATION}/roseus/ros)
+else()
+  set(_roseus_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${CATKIN_GLOBAL_SHARE_DESTINATION}/roseus/ros)
+endif()
 if(NOT euslisp_SOURCE_DIR)
   message("[roseus_msgs] generate messages for install")
   set(roseus_msgs_generate TRUE)
