@@ -2,8 +2,8 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.7 (2014-04-28)
+------------------
 * use catkin to install genrated messages
 * Contributors: Kei Okada
 
