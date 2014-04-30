@@ -96,16 +96,16 @@
 (deftest test-min-max-table
   (let ((j1 (send *robot* :j1))
         (j2 (send *robot* :j2))
-        (j1-min-max-table (make-hash-table))
-        (j2-min-max-table (make-hash-table))
+        j1-min-max-table
+        j2-min-max-table
         min-max-table-view
         x y)
 
     ;; set min-max-table
     ;; j1-hash
     (do ((i -90 (+ i 1))) ((> i 90))
-      (setf (gethash (round i) j1-min-max-table) (cons (- (abs i) 90) (- 90 (abs i))))
-      (setf (gethash (round i) j2-min-max-table) (cons (- (abs i) 90) (- 90 (abs i))))
+      (push (list (round i) (cons (- (abs i) 90) (- 90 (abs i)))) j1-min-max-table)
+      (push (list (round i) (cons (- (abs i) 90) (- 90 (abs i)))) j2-min-max-table)
       )
     (setq (j1 . joint-min-max-table) j1-min-max-table)
     (setq (j1 . joint-min-max-target) j2)
@@ -124,8 +124,8 @@
           ((> x 90))
         (do ((y -90 (+ y 1)))
             ((> y 90))
-          (let* ((j1-min-max (gethash (round y) j1-min-max-table)) ;; j1-min-max-table is functoin of j2
-                 (j2-min-max (gethash (round x) j2-min-max-table))
+          (let* ((j1-min-max (cadr (assoc (round y) j1-min-max-table))) ;; j1-min-max-table is functoin of j2
+                 (j2-min-max (cadr (assoc (round x) j2-min-max-table)))
                  (j1-min (car j1-min-max))
                  (j1-max (cdr j1-min-max))
                  (j2-min (car j2-min-max))
