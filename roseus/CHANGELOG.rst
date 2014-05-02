@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.8 (2014-05-02)
+------------------
 * create symlink in global/bin/roseus
 * Contributors: Kei Okada
 

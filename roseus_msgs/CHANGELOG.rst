@@ -2,8 +2,8 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.8 (2014-05-02)
+------------------
 * run rosdep init and rosdep update before create messages
 * add more package to depends
 * Contributors: Kei Okada
