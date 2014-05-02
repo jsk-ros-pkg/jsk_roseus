@@ -7,6 +7,13 @@ catkin_package() # share
 set(_roseus_INSTALL_DIR ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_SHARE_DESTINATION}/roseus/ros)
 if(NOT euslisp_SOURCE_DIR)
   message("[roseus_msgs] generate messages for install")
+  message("$ rosdep init ...")
+  execute_process(COMMAND rosdep init   OUTPUT_VARIABLE _o RESULT_VARIABLE _r)
+  message("OUTPUT: ${_o} RESULT: ${_r}")
+  message("$ rosdep update ...")
+  execute_process(COMMAND rosdep update OUTPUT_VARIABLE _o RESULT_VARIABLE _r)
+  message("OUTPUT: ${_o} RESULT: ${_r}")
+
   set(roseus_msgs_generate TRUE)
 endif()
 
