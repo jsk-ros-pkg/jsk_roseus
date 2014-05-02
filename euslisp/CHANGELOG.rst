@@ -2,6 +2,11 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add test codes using irteus motion codes copied from euslib/demo/ik/ik-test.l
+* Contributors: nozawa
+
 1.1.7 (2014-04-28)
 ------------------
 
