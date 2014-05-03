@@ -2,6 +2,9 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.9 (2014-05-03)
 ------------------
 * add debug message when install roseus

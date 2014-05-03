@@ -2,6 +2,11 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* roseus_msgs depends on roseus, since pr2eus depends on roseus_msgs
+* Contributors: Kei Okada
+
 1.1.9 (2014-05-03)
 ------------------
 
