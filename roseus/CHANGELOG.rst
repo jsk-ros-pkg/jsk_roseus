@@ -2,6 +2,11 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add debug message when install roseus
+* Contributors: Kei Okada
+
 1.1.8 (2014-05-02)
 ------------------
 * create symlink in global/bin/roseus
