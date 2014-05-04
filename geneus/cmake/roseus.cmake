@@ -206,6 +206,12 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   return()
 endif()
 
+# for rosbuild
+if(NOT ROSBUILD_init_called) # wait until rosbuild init called
+  message("[roseus.camke] return since ROSBUILD_init_called is not set")
+  return()
+endif()
+
 rosbuild_find_ros_package(genmsg_cpp)
 rosbuild_find_ros_package(geneus)
 
