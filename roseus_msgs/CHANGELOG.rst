@@ -2,6 +2,12 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add mode packages to depends
+* use sudo for rosdep init
+* Contributors: Kei Okada
+
 1.1.11 (2014-05-04)
 -------------------
 
