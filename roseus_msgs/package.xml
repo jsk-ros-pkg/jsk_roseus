@@ -13,7 +13,10 @@
   <build_depend>geneus</build_depend>
 
   <!-- this build depends is commented in at jsk_roseus-release -->
-<!--
+<!-- comment in this line: keep 3 space line so that we do not have to re-work when we add new depend packages
+
+
+
   <build_depend>rviz</build_depend>
   <build_depend>moveit_full_pr2</build_depend>
   <build_depend>control_msgs</build_depend>
@@ -22,12 +25,26 @@
   <build_depend>roseus</build_depend>
   <build_depend>jsk_common</build_depend>
   <build_depend>jsk_recognition</build_depend>
-  -->
-<!-- not supported in groovy 
+  <build_depend>jsk_planning</build_depend>
+
+
+
+  --> <!-- keep 3 space line so that we do not have to re-work when we add new depend packages -->
+
+
+
+<!-- not supported in groovy : keep 3 space line so that we do not have to re-work when we add new depend packages
+
+
+
   <build_depend>pr2_msgs</build_depend>
   <build_depend>pr2_controllers_msgs</build_depend>
+  <build_depend>pr2_description</build_depend>
   <build_depend>move_base_msgs</build_depend>
   <build_depend>audio_common</build_depend>
+
+
+
   not supported in groovy -->
 
   <run_depend>geneus</run_depend>
