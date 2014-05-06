@@ -2,6 +2,9 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.12 (2014-05-06)
 -------------------
 * add mode packages to depends
