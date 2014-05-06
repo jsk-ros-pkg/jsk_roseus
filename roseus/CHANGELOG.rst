@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.13 (2014-05-06)
+-------------------
 * add more message when install roseus
 * Contributors: Kei Okada
 
