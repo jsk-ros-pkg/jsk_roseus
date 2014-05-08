@@ -2,8 +2,8 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.14 (2014-05-09)
+-------------------
 * geneus: add rospack_depends to find dependencies
 * Contributors: Kei Okada
 
