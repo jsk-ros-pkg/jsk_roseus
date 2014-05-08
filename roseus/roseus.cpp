@@ -372,6 +372,9 @@ public:
   virtual bool isConst(){
     return true;
   }
+  virtual bool hasHeader(){
+    return true;
+  }
 };
 
 /************************************************************
