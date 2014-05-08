@@ -675,13 +675,15 @@
      )))
 
 
+(defvar *geneus-dir* (read-line (piped-fork "rospack find geneus")))
+
 (defun genmanifest-eus (pkg &optional (target-file "manifest.l"))
   (let (depend-pkgs strm l dir)
     (if (pathname-directory target-file)
         (setq dir (string-right-trim "manifest.l" target-file)
               target-file "manifest.l")
       (setq dir (format nil "~A/roseus/~A/~A" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg)))
-    (setq strm (piped-fork (format nil "rospack depends -q ~A" pkg)))
+    (setq strm (piped-fork (format nil "~A/scripts/rospack_depends ~A" *geneus-dir* pkg)))
     (while (setq l (read-line strm nil))
       (push l depend-pkgs))
     (close strm)
