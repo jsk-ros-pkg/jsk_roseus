@@ -727,6 +727,9 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
     s_mapHandle.clear();
     ros::shutdown();
   }
+  pointer exithook=speval(QEXITHOOK);
+  if (exithook != NIL) {
+    ufuncall(ctx,exithook,exithook,(pointer)(ctx->vsp-n),0,n);}
   if (n==0) _exit(0);
   else _exit(ckintval(argv[0]));
 }
