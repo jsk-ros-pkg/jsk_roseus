@@ -2,6 +2,11 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* compile message even if not catkinized
+* Contributors: Kei Okada
+
 1.1.14 (2014-05-09)
 -------------------
 * geneus: add rospack_depends to find dependencies

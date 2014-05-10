@@ -2,6 +2,9 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.14 (2014-05-09)
 -------------------
 * Fix long first name of k-okada with traditional japanese person style

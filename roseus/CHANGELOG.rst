@@ -2,6 +2,9 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.14 (2014-05-09)
 -------------------
 * add hasHeader for roscpp >= 1.11.1
