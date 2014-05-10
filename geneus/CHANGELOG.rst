@@ -2,8 +2,8 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.15 (2014-05-10)
+-------------------
 * compile message even if not catkinized
 * Contributors: Kei Okada
 
