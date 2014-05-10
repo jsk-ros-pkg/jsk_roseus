@@ -2,8 +2,8 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.16 (2014-05-11)
+-------------------
 * use find_package() to set environment variables
 
 1.1.15 (2014-05-10)
