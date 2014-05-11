@@ -2,6 +2,12 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request #104 from k-okada/add_more_packages
+  add more package to generate messages
+* add more package to generate messages
+
 1.1.16 (2014-05-11)
 -------------------
 * use find_package() to set environment variables
