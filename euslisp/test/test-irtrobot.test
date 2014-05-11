@@ -123,47 +123,8 @@ robots and object models
   ]]></sphinxdoc>
 
 
-  <test test-name="test_full_body_ik_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'full-body-ik) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_full_body_ik_no_torso_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (defun\ full-body-ik-no-torso\ nil\ (full-body-ik\ :use-torso\ nil)) (setq\ demo-func\ #\'full-body-ik-no-torso) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_full_body_ik_use_leg_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (defun\ full-body-ik-use-leg\ nil\ (full-body-ik\ :use-leg\ t)) (setq\ demo-func\ #\'full-body-ik-use-leg) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_dual_arm_ik_demo" pkg="euslisp"
-  	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'dual-arm-ik) irteus/test/irteus-demo.l"
-  	time-limit="600" />
-  <test test-name="test_dual_manip_ik_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'dual-manip-ik) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_crank_motion_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'crank-motion) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_walk_motion_for_sample_robot_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'walk-motion-for-sample-robot) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_trot_walk_motion_for_sample_robot_go_backward_over_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'trot-walk-motion-for-sample-robot) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_trot_walk_motion_for_sample_robot_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'(lambda\ ()\ (trot-walk-motion-for-sample-robot\ :go-backward-over\ nil)) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_crawl_walk_motion_for_sample_robot_go_backward_over_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'crawl-walk-motion-for-sample-robot) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_crawl_walk_motion_for_sample_robot_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'(lambda\ ()\ (crawl-walk-motion-for-sample-robot\ :go-backward-over\ nil)) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_hand_grasp_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'hand-grasp) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_hanoi_arm_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'hanoi-arm) irteus/test/irteus-demo.l"
-	time-limit="600" />
-  <test test-name="test_particle_demo" pkg="euslisp"
-	type="irteusgl" args="irteus/demo/demo.l  (setq\ demo-func\ #\'particle) irteus/test/irteus-demo.l"
+  <test test-name="test_irteus_demo" pkg="euslisp"
+	type="irteusgl" args="irteus/test/irteus-demo.l"
 	time-limit="600" />
 
   <test test-name="zz_test_all_robots_objects" pkg="euslisp"
