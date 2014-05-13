@@ -125,8 +125,7 @@
     (pushnew (format nil "~A/roseus/~A/" ros-home ros-distro) *load-path* :test #'equal)
     ros-home))
 (defun ros::roseus-add-files (pkg type)
-  (let ((dir (format nil "~A/roseus/~A/~A/~A/" (ros::ros-home-dir)
-                     (unix:getenv "ROS_DISTRO") pkg type)))
+  (let ((dir (format nil "~A/~A/" (ros::find-load-msg-path pkg) type)))
     (unless (probe-file dir)
       (warning-message
        1 (format nil ";; can not find ~A directory for [~A] packages~%" dir pkg))
@@ -291,9 +290,24 @@ always the rank of list is 2"
 ;;
 ;; load functions
 ;;
+;; first look under "~A/roseus/${ROS_DISTRO}/${PKG}" and if not check CMAKE_PREFIX_PATH/share/roseus/ros/${PKG}
+(defun ros::find-load-msg-path (pkg)
+  (let ((dirs (list (format nil "~A/roseus/~A" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO"))))
+        (ppath (unix::getenv "CMAKE_PREFIX_PATH"))
+        (s 0))
+    (while (setq i (position #\: ppath :start s))
+      (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s i))))
+      (setq s (1+ i)))
+    (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s))))
+    ;;
+    (dolist (dir dirs)
+      (if (probe-file (format nil "~A/~A/" dir pkg))
+          (return-from ros::find-load-msg-path (format nil "~A/~A" dir pkg))))
+    (ros::ros-error "Could not find roseus messages under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" dirs pkg)
+    nil))
+
 (defun ros::load-ros-manifest (pkg)
-  (let ((manifest (format nil "~A/roseus/~A/~A/manifest.l"
-                          (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg)))
+  (let ((manifest (format nil "~A/manifest.l" (ros::find-load-msg-path pkg))))
     (if (probe-file manifest)
 	(load-org-for-ros manifest)
       (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg))))
@@ -301,9 +315,9 @@ always the rank of list is 2"
 (defun ros::load-ros-package (pkg)
   (unless (find-package (string-upcase pkg))
     (make-package (string-upcase pkg)))
-  (when (probe-file (format nil "~A/roseus/~A/~A/msg" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg))
+  (when (probe-file (format nil "~A/msg" (ros::find-load-msg-path pkg)))
     (ros::roseus-add-msgs pkg))
-  (when (probe-file (format nil "~A/roseus/~A/~A/srv" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg))
+  (when (probe-file (format nil "~A/srv" (ros::find-load-msg-path pkg)))
     (ros::roseus-add-srvs pkg)))
 
 (setq sys::*exit-hook* 'ros::exit)

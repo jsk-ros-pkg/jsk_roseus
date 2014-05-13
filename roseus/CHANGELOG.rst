@@ -2,6 +2,60 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.17 (2014-05-11)
+-------------------
+
+1.1.16 (2014-05-11)
+-------------------
+
+1.1.15 (2014-05-10)
+-------------------
+
+1.1.14 (2014-05-09)
+-------------------
+* add hasHeader for roscpp >= 1.11.1
+* fix typo in install roseus
+* Contributors: Kei Okada
+
+1.1.13 (2014-05-06)
+-------------------
+* add more message when install roseus
+* Contributors: Kei Okada
+
+1.1.12 (2014-05-06)
+-------------------
+
+1.1.11 (2014-05-04)
+-------------------
+
+1.1.10 (2014-05-03)
+-------------------
+
+1.1.9 (2014-05-03)
+------------------
+* add debug message when install roseus
+* Contributors: Kei Okada
+
+1.1.8 (2014-05-02)
+------------------
+* create symlink in global/bin/roseus
+* Contributors: Kei Okada
+
+1.1.7 (2014-04-28)
+------------------
+
+1.1.6 (2014-04-28)
+------------------
+
+1.1.5 (2014-04-27)
+------------------
+
+1.1.4 (2014-04-25)
+------------------
+* check msg file udder CMAKE_PREFIX_PATH (#68)
+* (#31) use 120 as wait-for-transform
+* Contributors: Kei Okada
+
 1.1.3 (2014-04-14)
 ------------------
 * add rosdnoe to depends(#64)

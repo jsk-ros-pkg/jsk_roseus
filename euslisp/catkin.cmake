@@ -11,11 +11,9 @@ if (_make_failed)
   message(FATAL_ERROR "Build of euslisp failed")
 endif(_make_failed)
 
-add_rostest(test/test-euslisp.test)
 #check_for_display(disp)
 #if(disp)
 #  add_rostest(test/test-irtrobot.test)
-#  add_rostest(test/test-irtviewer.test)
 #endif(disp)
 
 # build euslisp before catkin_package, since catkin_pakcage/INCLUDE_DIRS needs to be exists
