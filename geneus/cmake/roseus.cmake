@@ -48,9 +48,10 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     get_filename_component(pkg_full_path ${${arg_pkg}_DIR}/.. ABSOLUTE)
 
     set(need_compile TRUE)
-    foreach(path $ENV{CMAKE_PREFIX_PATH})
-      if(EXISTS ${path}/share/roseus/ros/${arg_pkg})
-	message("[roseus.cmake] is already install via (roseus-msgs) in ${path}/share/roseus/ros/${arg_pkg}")
+    string(REPLACE ":" ";" _cmake_prefix_path $ENV{CMAKE_PREFIX_PATH})
+    foreach(_path ${_cmake_prefix_path})
+      if(EXISTS ${_path}/share/roseus/ros/${arg_pkg})
+	message("[roseus.cmake] is already install via (roseus-msgs) in ${_path}/share/roseus/ros/${arg_pkg}")
 	set(need_compile FALSE)
       endif()
     endforeach()
