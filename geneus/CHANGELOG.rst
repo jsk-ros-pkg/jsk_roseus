@@ -2,8 +2,8 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.18 (2014-05-16)
+-------------------
 * previous commit does not work with multiple CMAKE_PREFIX_PATH
 * do not compile if users already installed with roseus-msgs package
 * Contributors: Kei Okada

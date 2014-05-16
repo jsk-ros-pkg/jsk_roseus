@@ -2,8 +2,8 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.18 (2014-05-16)
+-------------------
 * omit euslisp test codes which are arleady tested in jskeus/irteus/test
 * fix test-irtrobot.test ;; we do not need to set demo-function for irteus-demo.l after https://github.com/euslisp/jskeus/pull/87
 * Contributors: nozawa
