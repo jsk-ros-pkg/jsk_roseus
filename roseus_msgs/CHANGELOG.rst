@@ -2,6 +2,9 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.18 (2014-05-16)
+-------------------
+
 1.1.17 (2014-05-11)
 -------------------
 * Merge pull request #104 from k-okada/add_more_packages

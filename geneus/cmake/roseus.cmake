@@ -46,6 +46,18 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
 
   macro(_generate_eus_dep_msgs arg_pkg)
     get_filename_component(pkg_full_path ${${arg_pkg}_DIR}/.. ABSOLUTE)
+
+    set(need_compile TRUE)
+    string(REPLACE ":" ";" _cmake_prefix_path $ENV{CMAKE_PREFIX_PATH})
+    foreach(_path ${_cmake_prefix_path})
+      if(EXISTS ${_path}/share/roseus/ros/${arg_pkg})
+	message("[roseus.cmake] is already install via (roseus-msgs) in ${_path}/share/roseus/ros/${arg_pkg}")
+	set(need_compile FALSE)
+      endif()
+    endforeach()
+
+    if(need_compile)
+
     file(GLOB ${arg_pkg}_MESSAGE_FILES "${pkg_full_path}/msg/*.msg")
     file(GLOB ${arg_pkg}_SERVICE_FILES "${pkg_full_path}/srv/*.srv")
 
@@ -91,6 +103,8 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l)
       endif()
     endforeach()
+
+    endif(need_compile)
   endmacro()
 
   # define macros

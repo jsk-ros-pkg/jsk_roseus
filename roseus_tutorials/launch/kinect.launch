@@ -1,27 +1,31 @@
 <launch>
   <include file="$(find openni_launch)/launch/openni.launch">
-    <!--arg name="camera" value="openni"/-->
     <arg name="respawn" value="true"/>
     <arg name="publish_tf" value="true"/>
     <arg name="camera" value="openni"/>
-    <arg name="depth_registration" value="false" />
-    <!--param name="/camera/driver/data_skip" value="1" /--> <!-- subsample 1/(N+1) -->
-    <!--param name="/camera/driver/depth_mode" value="5" /--> <!-- 320x240/30Hz --> <!-- see rqt_reconfigure -->
-    <!--param name="/camera/driver/image_mode" value="5" /--> <!-- 320x240/30Hz -->
+    <arg name="depth_registration" value="true" />
+    <!-- subsample 1/(N+1) -->
+    <!--param name="/camera/driver/data_skip" value="1" /-->
+    <!-- 320x240/30Hz --> <!-- see rqt_reconfigure -->
+    <!--param name="/camera/driver/depth_mode" value="5" /-->
+    <!-- 320x240/30Hz -->
+    <!--param name="/camera/driver/image_mode" value="5" /-->
   </include>
 
   <node name="kinect_points_throttle" pkg="topic_tools" type="throttle"
         args="messages /openni/depth_registered/points 3.0" />
-  <nnode name="kinect_image_throttle" pkg="topic_tools" type="throttle"
-         args="messages /openni/rgb/image_rect_color/compressed 5.0" />
+  <node name="kinect_image_throttle" pkg="topic_tools" type="throttle"
+        args="messages /openni/rgb/image_rect_color/compressed 5.0" />
 
   <!-- add to launch openni_node2 for PS sensors, since node1 usually die -->
-  <!-- node pkg="openni_camera" type="openni_node" name="openni_node2" output="screen" respawn="true" / -->
-  <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" output="screen" respawn="true" >
+  <!-- node pkg="openni_camera" type="openni_node" name="openni_node2"
+       output="screen" respawn="true" / -->
+  <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker"
+        output="screen" respawn="true" >
     <param name="camera_frame_id" value="openni_depth_frame"/>
   </node>
   <node name="openni_dispairty_view" pkg="image_view" type="disparity_view">
-    <remap from="image" to="/openni/depth/disparity" />
+    <remap from="image" to="/openni/depth_registered/disparity" />
   </node>
   <node name="map_openni_camera" pkg="tf" type="static_transform_publisher"
         args="0 0 1.5 0 0 0 /map /openni_link 100" />
