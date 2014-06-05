@@ -41,11 +41,9 @@ endif(_make_failed)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-rosbuild_add_rostest(test/test-euslisp.test)
 rosbuild_check_for_display(disp)
 if(disp)
   rosbuild_add_rostest(test/test-irtrobot.test)
-  rosbuild_add_rostest(test/test-irtviewer.test)
 endif(disp)
 
 

@@ -2,11 +2,70 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.18 (2014-05-16)
+-------------------
+* omit euslisp test codes which are arleady tested in jskeus/irteus/test
+* fix test-irtrobot.test ;; we do not need to set demo-function for irteus-demo.l after https://github.com/euslisp/jskeus/pull/87
+* Contributors: nozawa
+
+1.1.17 (2014-05-11)
+-------------------
+
+1.1.16 (2014-05-11)
+-------------------
+
+1.1.15 (2014-05-10)
+-------------------
+
+1.1.14 (2014-05-09)
+-------------------
+* Fix long first name of k-okada with traditional japanese person style
+* remove euslisp codes which are arleady migrated to irteus/test and include them in test launch
+* Contributors: Yuto Inagaki, Shunnichi Nozawa
+
+1.1.13 (2014-05-06)
+-------------------
+
+1.1.12 (2014-05-06)
+-------------------
+
+1.1.11 (2014-05-04)
+-------------------
+
+1.1.10 (2014-05-03)
+-------------------
+
+1.1.9 (2014-05-03)
+------------------
+
+1.1.8 (2014-05-02)
+------------------
+* add test codes using irteus motion codes copied from euslib/demo/ik/ik-test.l
+* Contributors: nozawa
+
+1.1.7 (2014-04-28)
+------------------
+
+1.1.6 (2014-04-28)
+------------------
+
+1.1.5 (2014-04-27)
+------------------
+
+1.1.4 (2014-04-25)
+------------------
+* add test code for using robot-model class
+* Contributors: Shunnichi Nozawa
+
+1.1.3 (2014-04-14)
+------------------
+
 1.1.2 (2014-04-07)
 ------------------
 * catkin.make : fix: use gcc dumpmachine to check archtecture
+* Contributors: Kei Okada
 * test : add test code to test launch, test codes are already included in irteus/demo
-* Contributors: Kei Okada, Shunnichi Nozawa
+* Contributors: Shunnichi Nozawa
 
 1.1.1 (2014-04-07)
 ------------------

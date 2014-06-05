@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_roseus</name>
+  <version>1.1.18</version>
+  <description>
+   <p>Metapackage that contains roseus package for jsk-ros-pkg</p>
+  </description>
+
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+  <author email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</author>
+  <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
+  <author email="youhei@jsk.imi.i.u-tokyo.ac.jp">Youhei Kakiuchi</author>
+
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/jsk_roseus</url>
+  <url type="repository">https://github.com/jsk-ros-pkg/jsk_roseus</url>
+  <url type="bugtracker">https://github.com/jsk-ros-pkg/jsk_roseus/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>euslisp</run_depend>
+  <run_depend>geneus</run_depend>
+  <run_depend>roseus</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>

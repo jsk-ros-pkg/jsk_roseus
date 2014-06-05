@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(defvar *result-topic* "/ObjectDetection")
+(defvar *result-topic* "/tabletop/ObjectDetection")
 (defvar *visualize-topic* "tabletop_detection_marker_array")
 
 (ros::load-ros-manifest "tabletop_object_detector")
@@ -81,8 +81,11 @@
 (while (ros::ok)
   (ros::spin-once)
   (if x::*display* (x::window-main-one))
+  ;;; *result-topic*
+  (when (> (ros::get-num-subscribers *result-topic*) 0)
   (let ((plst (tabletop-detect)))
     (when plst
+      (sort plst #'(lambda (a b) (<= (elt (send a :centroid) 0) (elt (send b :centroid) 0))))
       (let ((msg-array (instance visualization_msgs::MarkerArray :init))
             clst blst hdr (cntr 0))
         ;; PointCloudの表示
@@ -125,5 +128,6 @@
                             (wireframe->marker-msg cb (get p :header) :id (incf cntr) :lifetime 5))) plst))
 
         (ros::publish *visualize-topic* msg-array))))
+  ) ;; / when
   (ros::sleep)
   )

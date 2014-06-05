@@ -1,6 +1,6 @@
 <package>
   <name>roseus</name>
-  <version>1.1.2</version>
+  <version>1.1.18</version>
   <description>EusLisp client for ROs Robot Operating System.</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
 
@@ -17,6 +17,7 @@
   <build_depend>rosbash</build_depend>
   <build_depend>roslang</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>rosnode</build_depend>
   <build_depend>rospack</build_depend>
   <build_depend>rostest</build_depend>
   <build_depend>rosmsg</build_depend>
@@ -42,6 +43,7 @@
   <run_depend>rosbash</run_depend>
   <run_depend>roslang</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>rosnode</run_depend>
   <run_depend>rospack</run_depend>
   <run_depend>rostest</run_depend>
   <run_depend>rosmsg</run_depend>
