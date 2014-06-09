@@ -1026,20 +1026,37 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   isInstalledCheck;
   string service;
   pointer emessage;
-  bool persist = false;
-
-  ckarg(2);
+  //bool persist = false;
+  pointer persistp;
+  ckarg(3);
   if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
   else error(E_NOSTRING);
   emessage = argv[1];
-
+  persistp = argv[2];
+  
+  ServiceClient client;
   EuslispMessage request(emessage);
   vpush(request._message);      // to avoid GC, it may not be required...
   EuslispMessage response(csend(ctx,emessage,K_ROSEUS_RESPONSE,0));
   vpush(response._message);     // to avoid GC, its important
-  ServiceClientOptions sco(ros::names::resolve(service), request.__getMD5Sum(), persist, M_string());
-  ServiceClient client = s_node->serviceClient(sco);
-  // NEED FIX
+  if (persistp == NIL) {
+    ServiceClientOptions sco(ros::names::resolve(service), request.__getMD5Sum(), false, M_string());
+    client = s_node->serviceClient(sco);
+  }
+  else {
+    // check the instance of client
+    static std::map<std::string, ros::ServiceClient> service_cache;
+    std::string service_name = ros::names::resolve(service);
+    if (service_cache.find(service_name) != service_cache.end()) {
+      client = service_cache[service_name];
+    }
+    else {
+      ServiceClientOptions sco(service_name, request.__getMD5Sum(), true, M_string());
+      client = s_node->serviceClient(sco);
+      service_cache[service_name] = client;
+    }
+  }
+    // NEED FIX
   bool bSuccess =  client.call(request, response, request.__getMD5Sum());
   vpop();                       // pop response._message
   vpop();                       // pop request._message
@@ -1365,7 +1382,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   defun(ctx,"WAIT-FOR-SERVICE",argv[0],(pointer (*)())ROSEUS_WAIT_FOR_SERVICE);
   defun(ctx,"SERVICE-EXISTS", argv[0], (pointer (*)())ROSEUS_SERVICE_EXISTS);
-  defun(ctx,"SERVICE-CALL",argv[0],(pointer (*)())ROSEUS_SERVICE_CALL);
+  defun(ctx,"SERVICE-CALL-RAW",argv[0],(pointer (*)())ROSEUS_SERVICE_CALL);
   defun(ctx,"ADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_ADVERTISE_SERVICE);
   defun(ctx,"UNADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE_SERVICE);
 
