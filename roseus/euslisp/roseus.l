@@ -51,6 +51,9 @@
                       (elt lisp::*eustop-argument* i)))))
     ))
 
+(defun ros::service-call (name val &key (persist nil))
+  (ros::service-call-raw name val persist))
+
 (setq ros::*compile-message* nil)
 
 (shadow 'object *package*)
