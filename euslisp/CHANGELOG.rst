@@ -2,8 +2,8 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.19 (2014-06-11)
+-------------------
 * c274553 (Euslisp : models/*-robot.l, models/*-object.l) : Update  sensor access ; do not overwrite :cameras method in each robot file,  remove unused :cameras method from object files discussed in euslisp/jskeus/pull/92
 * 3378b05 (Euslisp : load-irt-all-objects.l) Add dewalt-drill and unknown-side-table to conversion list at euslib's r62547 commit
 * 5e77f0e (Euslisp : models/hitachi-fiesta-refrigerator-object.l, models/patra-robot.l, models/room73b2-hitachi-fiesta-refrigerator-object.l) Update rbrain converted models

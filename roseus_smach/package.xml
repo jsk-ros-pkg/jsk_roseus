@@ -1,6 +1,6 @@
 <package>
   <name>roseus_smach</name>
-  <version>1.1.18</version>
+  <version>1.1.19</version>
   <description>roseus_smach
 
      * Euslisp state machine class. it will be moved.
