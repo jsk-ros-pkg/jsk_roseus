@@ -2,6 +2,9 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.19 (2014-06-11)
+-------------------
+
 1.1.18 (2014-05-16)
 -------------------
 * previous commit does not work with multiple CMAKE_PREFIX_PATH

@@ -12,8 +12,13 @@
   (setq req (instance roseus::AddTwoIntsRequest :init))
   (send req :a (random 10))
   (send req :b (random 20))
-  (setq res (ros::service-call "add_two_ints" req))
-  (format t "~d + ~d = ~d~%" (send req :a) (send req :b) (send res :sum))
+  (setq before (ros::time-now))
+  (case (mod i 3)
+    (0 (setq res (ros::service-call "add_two_ints" req t)))
+    (1 (setq res (ros::service-call "add_two_ints" req nil)))
+    (2 (setq res (ros::service-call "add_two_ints" req))))
+  (setq after (ros::time-now))
+  (format t "~d + ~d = ~d~ (~A sec)~%" (send req :a) (send req :b) (send res :sum) (send (ros::time- after before) :to-sec))
   (unix:sleep 1))
 
 
