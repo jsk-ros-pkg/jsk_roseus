@@ -2,6 +2,16 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.19 (2014-06-10)
+-------------------
+* c274553 (Euslisp : models/*-robot.l, models/*-object.l) : Update sensor access ; do not overwrite :cameras method in each robot file ;; remove unused :cameras method from object files discussed in euslisp/jskeus/pull/92
+* 3378b05 (Euslisp : load-irt-all-objects.l) Add dewalt-drill and unknown-side-table to conversion list at euslib's r62547 commit
+* 5e77f0e (Euslisp : models/hitachi-fiesta-refrigerator-object.l, models/patra-robot.l, models/room73b2-hitachi-fiesta-refrigerator-object.l) Update rbrain converted models
+* 1564d0a (jskeus : irtrobot.l, robot-model-usage.l, sample-robot-model.l) Add sensor accessosr and test codes discussed in euslisp/jskeus/pull/72 and jsk-ros-pkg/jsk_model_tools/issues/18
+* 9996bf0 (Euslisp : primt.l) Henry Baker's contribution of 2013 July
+* aca5c68 (jskeus : README.md) Update README.md
+* Contributors: Shunichi Nozawa
+
 1.1.18 (2014-05-16)
 -------------------
 * omit euslisp test codes which are arleady tested in jskeus/irteus/test
