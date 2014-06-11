@@ -1026,20 +1026,21 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   isInstalledCheck;
   string service;
   pointer emessage;
-  //bool persist = false;
-  pointer persistp;
-  ckarg(3);
+  bool persist = false;
+  ckarg2(2,3);
   if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
   else error(E_NOSTRING);
   emessage = argv[1];
-  persistp = argv[2];
+  if ( n > 2 ) {
+      persist = (argv[2] != NIL ? true : false);
+  }
   
   ServiceClient client;
   EuslispMessage request(emessage);
   vpush(request._message);      // to avoid GC, it may not be required...
   EuslispMessage response(csend(ctx,emessage,K_ROSEUS_RESPONSE,0));
   vpush(response._message);     // to avoid GC, its important
-  if (persistp == NIL) {
+  if (persist == false) {
     ServiceClientOptions sco(ros::names::resolve(service), request.__getMD5Sum(), false, M_string());
     client = s_node->serviceClient(sco);
   }
@@ -1382,7 +1383,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   defun(ctx,"WAIT-FOR-SERVICE",argv[0],(pointer (*)())ROSEUS_WAIT_FOR_SERVICE);
   defun(ctx,"SERVICE-EXISTS", argv[0], (pointer (*)())ROSEUS_SERVICE_EXISTS);
-  defun(ctx,"SERVICE-CALL-RAW",argv[0],(pointer (*)())ROSEUS_SERVICE_CALL);
+  defun(ctx,"SERVICE-CALL",argv[0],(pointer (*)())ROSEUS_SERVICE_CALL);
   defun(ctx,"ADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_ADVERTISE_SERVICE);
   defun(ctx,"UNADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE_SERVICE);
 
