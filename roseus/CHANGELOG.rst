@@ -2,6 +2,12 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* (#112,#113) fix service persist without keyward
+  ros::service-call (name value &optional (persist nil))
+* Contributors: Kei Okada, Ryohei Ueda
+
 1.1.18 (2014-05-16)
 -------------------
 
