@@ -1034,20 +1034,20 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   if ( n > 2 ) {
       persist = (argv[2] != NIL ? true : false);
   }
-  
+  static std::map<std::string, ros::ServiceClient> service_cache;
+  std::string service_name = ros::names::resolve(service);
   ServiceClient client;
   EuslispMessage request(emessage);
   vpush(request._message);      // to avoid GC, it may not be required...
   EuslispMessage response(csend(ctx,emessage,K_ROSEUS_RESPONSE,0));
   vpush(response._message);     // to avoid GC, its important
   if (persist == false) {
-    ServiceClientOptions sco(ros::names::resolve(service), request.__getMD5Sum(), false, M_string());
+    ServiceClientOptions sco(service_name, request.__getMD5Sum(), false, M_string());
     client = s_node->serviceClient(sco);
   }
   else {
     // check the instance of client
-    static std::map<std::string, ros::ServiceClient> service_cache;
-    std::string service_name = ros::names::resolve(service);
+    
     if (service_cache.find(service_name) != service_cache.end()) {
       client = service_cache[service_name];
     }
@@ -1064,6 +1064,10 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   if ( ! bSuccess ) {
     ROS_ERROR("attempted to call service  %s, but failed ",
               ros::names::resolve(service).c_str());
+    if (persist) {
+      // cleanup service_cache
+      service_cache.erase(service_cache.find(service_name));
+    }
   }
 
   return (response._message);
