@@ -45,6 +45,9 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${CMAKE_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
 
   macro(_generate_eus_dep_msgs arg_pkg)
+    if (NOT ${${_pkg}_FOUND})
+      find_package(${_pkg} QUIET)
+    endif()
     get_filename_component(pkg_full_path ${${arg_pkg}_DIR}/.. ABSOLUTE)
 
     set(need_compile TRUE)
