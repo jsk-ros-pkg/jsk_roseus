@@ -355,10 +355,10 @@ else
     rm -rf ~/.ros/roseus/${ROS_DISTRO}
     # always call twice catkin_make
     if [ $PACKAGE = ALL ]; then
-        catkin_make
-        catkin_make --force-cmake
+        catkin_make --make-args VERBOSE=1
+        catkin_make --force-cmake --make-args VERBOSE=1
     else
-        catkin_make --only-pkg-with-deps $PACKAGE
+        catkin_make --only-pkg-with-deps $PACKAGE --make-args VERBOSE=1
     fi
     source ${CATKIN_DIR}/devel/setup.bash
 fi
