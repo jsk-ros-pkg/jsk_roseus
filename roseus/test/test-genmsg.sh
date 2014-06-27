@@ -154,7 +154,7 @@ do
 done)
 )
 catkin_package(
-    CATKIN_DEPENDS message_runtime sensor_msgs std_msgs actionlib_msgs
+    CATKIN_DEPENDS message_runtime roscpp sensor_msgs std_msgs actionlib_msgs
 $(for pkg in $2
 do
   echo $pkg
