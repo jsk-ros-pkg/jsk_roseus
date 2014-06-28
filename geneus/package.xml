@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>geneus</name>
-  <version>1.1.19</version>
+  <version>1.1.20</version>
   <description>EusLisp ROS message and service generators</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
   <license>BSD</license>

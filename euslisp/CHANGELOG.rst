@@ -2,8 +2,8 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.20 (2014-06-29)
+-------------------
 * 2da6078 (lisp/geo/primp.l, lisp/l/common.l) revert Henry Baker's contribution of 2013 July, this breaks test code  https://github.com/euslisp/jskeus/pull/100
 * c9a76d5 (-objects.l) : Assoc handles and attentions with adequate parent link ;; This bug is reported in https://github.com/euslisp/EusLisp/pull/31
 * b21eda6 (.travis.yaml) : Update travis test to use irteus-demo.l and add test for eus/models

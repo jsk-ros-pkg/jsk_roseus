@@ -1,6 +1,6 @@
 <package>
   <name>euslisp</name>
-  <version>1.1.19</version>
+  <version>1.1.20</version>
   <description>This packages contains humanoid robot modeling software based on EusLisp language developed by researchers and students at JSK Robotics Laboratory at the University of Tokyo, Japan.</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
 

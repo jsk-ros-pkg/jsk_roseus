@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.20 (2014-06-29)
+-------------------
 * roseus_c_util.c : remove compile_warnings
 * test-genmsg.sh: add roscpp to CATKIN_DEPENDS
 * test-genmsg.sh: catkin_make with --make-args VERBOSE=1
