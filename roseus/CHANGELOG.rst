@@ -2,6 +2,15 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* roseus_c_util.c : remove compile_warnings
+* test-genmsg.sh: add roscpp to CATKIN_DEPENDS
+* test-genmsg.sh: catkin_make with --make-args VERBOSE=1
+* test-genmsg.sh/test-genmsg.catkin.test : check #120 situation
+* roseus.cpp : support reconnection of service when persist is set true
+* Contributors: Kei Okada, Ryohei Ueda
+
 1.1.19 (2014-06-11)
 -------------------
 * (#112,#113) fix service persist without keyward
