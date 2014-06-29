@@ -2,8 +2,8 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.21 (2014-06-30)
+-------------------
 * cmake/roseus.cmake : do not compile roseus message if it couldnot find in find_package-ed
 * Contributors: Kei Okada
 
