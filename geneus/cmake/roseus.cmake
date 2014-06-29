@@ -202,6 +202,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   endif()
   foreach(_pkg ${_depend_output})
     if(NOT ${_pkg}_GENERATE_EUS_DEP_MSGS)
+      set(need_compile TRUE)
       if(NOT ${_pkg}_FOUND)
         # workaround only for for groovy
         if($ENV{ROS_DISTRO} STREQUAL "groovy")
@@ -214,7 +215,9 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
           set(catkin_INCLUDE_DIRS ${_catkin_INCLUDE_DIRS})
         endif()
       endif()
-      set(need_compile TRUE)
+      if(NOT ${_pkg}_FOUND)
+	set(need_compile FALSE)
+      endif()
       string(REPLACE ":" ";" _cmake_prefix_path $ENV{CMAKE_PREFIX_PATH})
       foreach(_path ${_cmake_prefix_path})
         if(EXISTS ${_path}/share/roseus/ros/${_pkg})
