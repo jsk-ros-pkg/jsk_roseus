@@ -2,6 +2,9 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.20 (2014-06-29)
 -------------------
 * 2da6078 (lisp/geo/primp.l, lisp/l/common.l) revert Henry Baker's contribution of 2013 July, this breaks test code  https://github.com/euslisp/jskeus/pull/100
