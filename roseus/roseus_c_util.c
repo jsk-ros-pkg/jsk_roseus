@@ -1,4 +1,6 @@
-#pragma init (register_c_pointcloud_message_converter)
+#if Solaris2 && GCC
+#pragma init (register_roseus_c_util)
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,7 +10,7 @@
 #include "eus.h"
 
 extern pointer ___roseus_c_util();
-static register_roseus_c_util()
+static void register_roseus_c_util()
   { add_module_initializer("___roseus_c_util", ___roseus_c_util);}
 
 #define colsize(p) (intval(p->c.ary.dim[1]))
@@ -23,14 +25,13 @@ pointer CONV_MSG2_PC (ctx,n,argv)
      int n;
      register pointer argv[];
 {
-  numunion nu;
   int i, nanflag;
-  int step, size, bufsize;
+  int step, size;
   int pos_x, pos_y, pos_z;
   int pos_nx, pos_ny, pos_nz;
   int pos_rgb;
   eusfloat_t *mat, *nmat, *cmat;
-  char *data;
+  byte *data;
 
   /* data step size mat x y z nmat nx ny nz cmat rgb nan-remove-flag*/
   /*    0    1    2   3 4 5 6    7  8  9 10   11  12 13 */
@@ -70,6 +71,7 @@ pointer CONV_MSG2_PC (ctx,n,argv)
     pos_z = ckintval(argv[6]);
   } else {
     mat = NULL;
+    pos_x = pos_y = pos_z = 0;
   }
   if ( NIL != argv[7] ) {
     nmat = argv[7]->c.ary.entity->c.fvec.fv;
@@ -78,12 +80,14 @@ pointer CONV_MSG2_PC (ctx,n,argv)
     pos_nz = ckintval(argv[10]);
   } else {
     nmat = NULL;
+    pos_nx = pos_ny = pos_nz = 0;
   }
   if ( NIL != argv[11] ) {
     cmat = argv[11]->c.ary.entity->c.fvec.fv;
     pos_rgb = ckintval(argv[12]);
   } else {
     cmat = NULL;
+    pos_rgb = 0;
   }
 
   for( i = 0; i < size; i++, data += step ) {
@@ -139,10 +143,9 @@ pointer CONV_PC_MSG2 (ctx,n,argv)
      int n;
      register pointer argv[];
 {
-  numunion nu;
   int i, step, size;
   eusfloat_t *mat, *nmat, *cmat;
-  char *data;
+  byte *data;
   /* raw_data  size psize parray carray narray */
   /*        0     1     2      3      4      5 */
   ckarg(6);
@@ -211,5 +214,6 @@ register context *ctx;int n;pointer *argv;pointer env;
 {
   defun(ctx,"CONVERT-MSG2-POINTCLOUD", argv[0], CONV_MSG2_PC);
   defun(ctx,"CONVERT-POINTCLOUD-MSG2", argv[0], CONV_PC_MSG2);
+  return NULL;
 }
 
