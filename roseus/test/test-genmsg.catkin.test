@@ -1,4 +1,6 @@
 <launch>
   <test test-name="test_genmsg" pkg="roseus" type="test-genmsg.sh"
         time-limit="600" />
+  <test test-name="test_geneus_dep1" pkg="roseus" type="test-genmsg.sh" args="--package geneus_dep1"
+        time-limit="600" />
 </launch>

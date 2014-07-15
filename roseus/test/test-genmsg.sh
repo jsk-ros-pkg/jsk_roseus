@@ -22,6 +22,7 @@ set -e                          # exit on error
 MANIFEST=package.xml
 WORKSPACE_TYPE=MULTI
 ARGV=$@
+PACKAGE=ALL
 while [ $# -gt 0 ]; do
     case "$1" in 
         "--rosbuild")
@@ -31,9 +32,14 @@ while [ $# -gt 0 ]; do
         "--one-workspace")
             WORKSPACE_TYPE=ONE
             ;;
+        "--package")
+            shift
+            PACKAGE=$1
+            ;;
     esac
     shift
 done
+
 
 CATKIN_DIR=/tmp/test_genmsg_$$
 GENEUS_DEP1=${CATKIN_DIR}/src/geneus_dep1
@@ -70,14 +76,16 @@ function add_package.xml() {
 <buildtool_depend>catkin</buildtool_depend>
 <build_depend>roscpp</build_depend>
 <build_depend>message_generation</build_depend>
-<build_depend>geometry_msgs</build_depend>
+<build_depend>sensor_msgs</build_depend>
 <build_depend>actionlib_msgs</build_depend>
 <build_depend>std_msgs</build_depend>
+<build_depend>roseus</build_depend>
 <run_depend>roscpp</run_depend>
 <run_depend>message_generation</run_depend>
-<run_depend>geometry_msgs</run_depend>
+<run_depend>sensor_msgs</run_depend>
 <run_depend>actionlib_msgs</run_depend>
 <run_depend>std_msgs</run_depend>
+<run_depend>roseus</run_depend>
 $(for pkg in $@
 do
   echo '<build_depend>'$pkg'</build_depend><run_depend>'$pkg'</run_depend>'
@@ -103,7 +111,7 @@ function add_manifest.xml() {
   <depend package="roseus"/>
   <depend package="roscpp"/>
   <depend package="actionlib_msgs"/>
-  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
 $(for pkg in $@
 do
   echo '<depend package="'$pkg'"/>'
@@ -122,7 +130,7 @@ project($(basename $pkg_path))
 
 if(NOT USE_ROSBUILD) # catkin
 
-find_package(catkin REQUIRED COMPONENTS message_generation roscpp geometry_msgs actionlib_msgs
+find_package(catkin REQUIRED COMPONENTS message_generation roscpp sensor_msgs actionlib_msgs
 $(for pkg in $1
 do
   echo $pkg
@@ -139,14 +147,14 @@ add_action_files(
   FILES Foo.action
 )
 generate_messages(
-  DEPENDENCIES geometry_msgs std_msgs actionlib_msgs
+  DEPENDENCIES sensor_msgs std_msgs actionlib_msgs
 $(for pkg in $2
 do
   echo $pkg
 done)
 )
 catkin_package(
-    CATKIN_DEPENDS message_runtime geometry_msgs std_msgs actionlib_msgs
+    CATKIN_DEPENDS message_runtime roscpp sensor_msgs std_msgs actionlib_msgs
 $(for pkg in $2
 do
   echo $pkg
@@ -228,8 +236,12 @@ function add_lisp() {
   (assert (ros::load-ros-manifest "$pkg_name")
           "load-ros-manifest")
 
+  (assert (eval (read-from-string "(instance sensor_msgs::imu :init)"))
+          "instantiating msg message")
+
   (assert (eval (read-from-string "(instance $pkg_name::String :init)"))
           "instantiating msg message")
+
   )
 
 (run-all-tests)
@@ -342,24 +354,36 @@ else
     # force to clear roseus cache
     rm -rf ~/.ros/roseus/${ROS_DISTRO}
     # always call twice catkin_make
-    catkin_make
-    catkin_make --force-cmake
-    
+    if [ $PACKAGE = ALL ]; then
+        catkin_make --make-args VERBOSE=1
+        catkin_make --force-cmake --make-args VERBOSE=1
+    else
+        catkin_make --only-pkg-with-deps $PACKAGE --make-args VERBOSE=1
+    fi
     source ${CATKIN_DIR}/devel/setup.bash
 fi
 
-
 # # try to run roseus sample program
+EUSLISP_DIR=`rospack find euslisp`
+EUSLISP_EXE=`find $ROSEUS_DIR -type f -name irteusgl`
+if [ ! "$EUSLISP_EXE" ]; then
+    EUSLISP_EXE="rosrun euslisp irteusgl"
+fi
+
 ROSEUS_DIR=`rospack find roseus`
 ROSEUS_EXE=`find $ROSEUS_DIR -type f -name roseus`
 if [ ! "$ROSEUS_EXE" ]; then
     ROSEUS_EXE="rosrun roseus roseus"
 fi
 
-ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $ARGV
-ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
-ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
-ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
+if [ $PACKAGE = ALL ]; then
+    ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $ARGV
+    ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
+    ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
+    ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
+else
+    ROS_MASTER_URI=http://localhost:22422 ${EUSLISP_EXE} ${ROSEUS_DIR}/euslisp/roseus.l ${CATKIN_DIR}/src/$PACKAGE/$PACKAGE.l $ARGV
+fi
 
 rm -rf ${CATKIN_DIR}
 

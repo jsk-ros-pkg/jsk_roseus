@@ -47,17 +47,6 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   macro(_generate_eus_dep_msgs arg_pkg)
     get_filename_component(pkg_full_path ${${arg_pkg}_DIR}/.. ABSOLUTE)
 
-    set(need_compile TRUE)
-    string(REPLACE ":" ";" _cmake_prefix_path $ENV{CMAKE_PREFIX_PATH})
-    foreach(_path ${_cmake_prefix_path})
-      if(EXISTS ${_path}/share/roseus/ros/${arg_pkg})
-	message("[roseus.cmake] is already install via (roseus-msgs) in ${_path}/share/roseus/ros/${arg_pkg}")
-	set(need_compile FALSE)
-      endif()
-    endforeach()
-
-    if(need_compile)
-
     file(GLOB ${arg_pkg}_MESSAGE_FILES "${pkg_full_path}/msg/*.msg")
     file(GLOB ${arg_pkg}_SERVICE_FILES "${pkg_full_path}/srv/*.srv")
 
@@ -104,7 +93,6 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
       endif()
     endforeach()
 
-    endif(need_compile)
   endmacro()
 
   # define macros
@@ -196,7 +184,7 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   _generate_eus_dep_msgs(${PROJECT_NAME})
 
   # generate message/services for installed packages
-  message("[roseus.cmake] compile installed package for ${PROJECT_NMAE}")
+  message("[roseus.cmake] compile installed package for ${PROJECT_NAME}")
   set(_ROS_PACKAGE_PATH $ENV{ROS_PACKAGE_PATH})
   set(ENV{ROS_PACKAGE_PATH} ${CMAKE_SOURCE_DIR}:${_ROS_PACKAGE_PATH})
   #set(_rospack_depends "import rospkg; rp = rospkg.RosPack(); print ';'.join(rp.get_depends('${PROJECT_NAME}'))")
@@ -209,13 +197,44 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
     message("[roseus.cmake] find rospack dpends fails for ${PROJECT_NAME}")
     return()
   endif(_depend_failed)
-  string(REGEX REPLACE "\n" ";" _depend_output ${_depend_output})
+  if (NOT "${_depend_output}" STREQUAL "")
+    string(REGEX REPLACE "\n" ";" _depend_output ${_depend_output})
+  endif()
   foreach(_pkg ${_depend_output})
-    message("[roseus.cmake] compile installed package ${_pkg}")
-    _generate_eus_dep_msgs(${_pkg})
+    if(NOT ${_pkg}_GENERATE_EUS_DEP_MSGS)
+      set(need_compile TRUE)
+      if(NOT ${_pkg}_FOUND)
+        # workaround only for for groovy
+        if($ENV{ROS_DISTRO} STREQUAL "groovy")
+          set(_catkin_LIBRARIES ${catkin_LIBRARIES})
+          set(_catkin_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
+        endif()
+        find_package(${_pkg} QUIET)
+        if($ENV{ROS_DISTRO} STREQUAL "groovy")
+          set(catkin_LIBRARIES ${_catkin_LIBRARIES})
+          set(catkin_INCLUDE_DIRS ${_catkin_INCLUDE_DIRS})
+        endif()
+      endif()
+      if(NOT ${_pkg}_FOUND)
+	set(need_compile FALSE)
+      endif()
+      string(REPLACE ":" ";" _cmake_prefix_path $ENV{CMAKE_PREFIX_PATH})
+      foreach(_path ${_cmake_prefix_path})
+        if(EXISTS ${_path}/share/roseus/ros/${_pkg})
+	  set(need_compile FALSE)
+        endif()
+      endforeach()
+      if(need_compile)
+        message("[roseus.cmake] compile installed package ${_pkg}")
+        _generate_eus_dep_msgs(${_pkg})
+        set(${_pkg}_GENERATE_EUS_DEP_MSGS TRUE)
+      endif(need_compile)
+    endif(NOT ${_pkg}_GENERATE_EUS_DEP_MSGS)
   endforeach()
 
-  add_custom_target(${PROJECT_NAME}_ALL_GEN_OUTPUT_FILES_eus ALL DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}) # generate all
+  if(NOT TARGET ${PROJECT_NAME}_${component}_ALL_GEN_OUTPUT_FILES_eus)
+    add_custom_target(${PROJECT_NAME}_${component}_ALL_GEN_OUTPUT_FILES_eus ALL DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}) # generate all
+  endif()
 
   return()
 endif()

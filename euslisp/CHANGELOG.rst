@@ -2,6 +2,29 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.21 (2014-06-30)
+-------------------
+
+1.1.20 (2014-06-29)
+-------------------
+* 2da6078 (lisp/geo/primp.l, lisp/l/common.l) revert Henry Baker's contribution of 2013 July, this breaks test code  https://github.com/euslisp/jskeus/pull/100
+* c9a76d5 (-objects.l) : Assoc handles and attentions with adequate parent link ;; This bug is reported in https://github.com/euslisp/EusLisp/pull/31
+* b21eda6 (.travis.yaml) : Update travis test to use irteus-demo.l and add test for eus/models
+* 7755cb0 (models/drcbox-*.l) :refrain drcbox model. fix positions of objects in drcbox and color, and add casters
+* 7ee3263 (drcbox-valve*.l) Import handle coordinates from rbrain models
+* 5a89f25 (irt-all-scene.l, load-irt-all-scene.l) Add test codes for all irt scene models like irt-all-robots and irt-all-objects
+* 0397569 (drcbox*.l) Add new models and  scene for drcbox ;; This originally derived from  https://github.com/euslisp/EusLisp/pull/27
+* c9d6c82 (models/darwin.l) revert codes for collision model making according to https://github.com/euslisp/jskeus/pull/93 and https://github.com/jsk-ros-pkg/jsk_model_tools/pull/46
+* 23e85ee (irteus/test/geo.l) owverwrite face-normal-vector, see https://github.com/euslisp/EusLisp/pull/21
+* 454bde8 (irteus/test/geo.l): add test code for geometry functions (https://github.com/euslisp/EusLisp/pull/21)
+* be1ecc0 (irtdyna.l, test-irt-motion.l) Fix bug of :cog-convergence-check and add test codes
+* 99486d7 (irteus/test/joint.l) Execute test even if  display is not found
+* 9e5ff99 (irteus/test/joint.l) Add min-max violation test ;; Update joint.l to replace magic number by min-angle or max-angle
+* 413c575 (irteus/test/all-robots-objects.l) Add unittest for scene models corresponding to  https://github.com/euslisp/EusLisp/pull/29
+* 425c9d1 (irteus/irtrobot.l) revert codes for collision model making according to https://github.com/euslisp/jskeus/pull/93 and https://github.com/jsk-ros-pkg/jsk_model_tools/pull/46
+* Contributors: Shunichi Nozawa, Kei Okada, Eisoku Kuroiwa
+
+
 1.1.19 (2014-06-11)
 -------------------
 * c274553 (Euslisp : models/*-robot.l, models/*-object.l) : Update  sensor access ; do not overwrite :cameras method in each robot file,  remove unused :cameras method from object files discussed in euslisp/jskeus/pull/92

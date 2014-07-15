@@ -65,7 +65,6 @@
       (warning-message 1 ";; ERROR could not find ~A package~%" pkg)(exit 1))
     (setq oname (format nil "~A/roseus/~A/~A/~A/" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg dir))
     (unless (lisp::directory-p oname)
-      (warning-message 6 ";; mkdir ~A~%" oname)
       (unix::system (format nil "mkdir -p ~A" oname)))
     (setq oname (concatenate string oname (format nil "~A.l" name)))))
 
@@ -533,7 +532,6 @@
     (setq pkg (car (last (butlast (pathname-directory fname)))))
     (setq name (pathname-name fname))
     (warning-message 6 ";; generate message for ~A/~A~%" pkg name)
-    (warning-message 6 ";; parsing ~A~%" fname)
     (unless (probe-file fname)
       (warning-message 1 ";; ERROR message file ~A not found~%" fname)(exit 1))
     (list pkg name)))
@@ -590,7 +588,6 @@
     (if oname
         (let ((dir (subseq oname 0 (position #\/ oname :count (count #\/ oname)))))
           (unless (lisp::directory-p dir)
-            (warning-message 6 ";; mkdir ~A~%" dir)
             (unix::system (format nil "mkdir -p ~A" dir))))
       (setq oname (generate-msg-output-file-name fname pkg name "msg")))
     (warning-message 6 ";; writing to ~A~%" oname)
@@ -645,7 +642,6 @@
     (if oname
         (let ((dir (subseq oname 0 (position #\/ oname :count (count #\/ oname)))))
           (unless (lisp::directory-p dir)
-            (warning-message 6 ";; mkdir ~A~%" dir)
             (unix::system (format nil "mkdir -p ~A" dir))))
       (setq oname (generate-msg-output-file-name fname pkg name "srv")))
     (warning-message 6 ";; writing to ~A~%" oname)
@@ -691,7 +687,6 @@
     (setq depend-pkgs (nreverse depend-pkgs))
     (unless depend-pkgs (return-from genmanifest-eus nil))
     (unless (lisp::directory-p dir)
-      (warning-message 6 ";; mkdir ~A~%" dir)
       (unix::system (format nil "mkdir -p ~A" dir)))
     (setq target-file (format nil "~A/~A" dir target-file))
     (with-open-file
