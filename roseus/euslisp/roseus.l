@@ -183,12 +183,15 @@
         (return-from ros::resolve-ros-path nil)))
     (if package-path
 	(format nil "~A/~A" package-path path-name)
-      (progn (warning-message 1 ";; counldn't find pacakge [~a]~%" package-name) nil))))
+      (progn (warning-message 1 ";; could not find pacakge [~a]~%" package-name) nil))))
 
 (defun load (fname &rest args)
-  (if (substringp "package://" fname)
-    (setq fname (ros::resolve-ros-path fname)))
-  (if fname (apply #'load-org-for-ros fname args)))
+  (let ((fullname fname))
+    (if (substringp "package://" fname)
+        (setq fullname (ros::resolve-ros-path fname)))
+    (if (null fullname) ;; when ros::resolve-ros-patch is failed to load
+        (error "file ~s not found" fname))
+    (apply #'load-org-for-ros fullname args)))
 
 ;;; defmacro for rosparams
 
