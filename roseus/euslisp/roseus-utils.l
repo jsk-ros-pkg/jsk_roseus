@@ -278,7 +278,7 @@
       (send msg :colors colors)
       (if ns (send msg :ns ns))
       (if lifetime (send msg :lifetime (ros::time lifetime)))
-      msg))))
+      msg)))
 
 (defun wireframe->marker-msg (wf header &rest args)
   (apply #'line-list->marker-msg (mapcan #'(lambda (eds) (send eds :vertices)) (send wf :edges)) header args))

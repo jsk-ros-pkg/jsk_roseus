@@ -2,6 +2,18 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.21 (2014-06-30)
+-------------------
+* cmake/roseus.cmake : do not compile roseus message if it couldnot find in find_package-ed
+* Contributors: Kei Okada
+
+1.1.20 (2014-06-29)
+-------------------
+* cmake/roseus.cmake : workaround for groovy, prevent overwrite catkin_LIBRARIES
+* cmake/roseus.cmake : do not generate message for install package, since this component is not package_found-ed so far, try to run geneus next-time
+* cmake/roseus.cmake : check if _depend_output is null string
+* Contributors: Kei Okada
+
 1.1.19 (2014-06-11)
 -------------------
 

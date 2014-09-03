@@ -2,7 +2,7 @@ Index: lisp/c/eus.c
 ===================================================================
 --- lisp/c/eus.c	(revision 421)
 +++ lisp/c/eus.c	(working copy)
-@@ -1083,16 +1083,29 @@
+@@ -1083,16 +1083,26 @@
  register context *ctx;
  { pointer argv, p, in;
    int i,j;
@@ -18,7 +18,6 @@ Index: lisp/c/eus.c
 -    fprintf(stderr, "EUSDIR is not setenved, assuming /usr/local/eus\n");
 -    eusdir= "/usr/local/eus/"; }
 +  eusdir=(char *)getenv("EUSDIR");
-+  fprintf(stderr, "set ARCHDIR to DEFAULT_ARCHDIR\n");
 +  archdir= "DEFAULT_ARCHDIR";
 +  setenv("ARCHDIR",archdir,1);
 +  char exepath[1024], *binpath; int ret;
@@ -28,12 +27,10 @@ Index: lisp/c/eus.c
 +    binpath=dirname(strdup(exepath));
 +    eusdir= dirname(dirname(strdup(binpath))); // EUSDIR/ARCHDIR/bin/<executable>
 +    setenv("EUSDIR",eusdir,1);
-+    fprintf(stderr, "use the location of executables to set EUSDIR\n");
 +  } else if (eusdir==NULL) {
 +    fprintf(stderr, "EUSDIR is not setenved, assuming /usr/local/eus\n");
 +    eusdir= "/usr/local/eus/";
 +  }
-+  fprintf(stderr, "set EUSDIR to %s\n", eusdir);
    sprintf(fname,"%s/lib/eus.init.l", eusdir);
  
  #if !Solaris2 || GCC
