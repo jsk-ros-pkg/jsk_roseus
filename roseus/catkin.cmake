@@ -112,6 +112,11 @@ catkin_package(
     LIBRARIES # TODO
 )
 
+# copy bin/roseus to global bin
+execute_process(COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/bin/)
+execute_process(COMMAND cmake -E copy ${PROJECT_SOURCE_DIR}/bin/roseus ${CATKIN_DEVEL_PREFIX}/bin/roseus)
+install(PROGRAMS bin/roseus
+  DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 # install
 install(PROGRAMS bin/roseus
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
