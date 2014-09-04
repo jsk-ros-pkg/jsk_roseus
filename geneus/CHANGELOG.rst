@@ -2,8 +2,8 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.22 (2014-09-04)
+-------------------
 * remove more unused debug message
 * remove unused debug message
 * Contributors: Kei Okada

@@ -2,8 +2,8 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.22 (2014-09-04)
+-------------------
 * eus.c_DEFAULT_ENV.patch: remove debug print message
 * Contributors: Kei Okada
 

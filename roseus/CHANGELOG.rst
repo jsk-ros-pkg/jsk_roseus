@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.22 (2014-09-04)
+-------------------
 * install roseus to global bin, fixed #146
 * fix bracket mathing in roseus-utils.l
 * call error when package:// is not found, fix typo, see #140
