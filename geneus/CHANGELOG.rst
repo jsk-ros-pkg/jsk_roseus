@@ -2,6 +2,12 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove more unused debug message
+* remove unused debug message
+* Contributors: Kei Okada
+
 1.1.21 (2014-06-30)
 -------------------
 * cmake/roseus.cmake : do not compile roseus message if it couldnot find in find_package-ed
