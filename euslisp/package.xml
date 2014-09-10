@@ -7,7 +7,7 @@
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/euslisp</url>
-  <url type="bugtracker">https://sourceforge.net/p/jskeus/tickets/</url>
+  <url type="bugtracker">https://github.com/jsk-ros-pkg/jsk_roseus/issues</url>
 
   <author>Toshihiro Matsui</author>
 
