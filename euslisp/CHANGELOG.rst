@@ -2,6 +2,52 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.22 (2014-09-04)
+-------------------
+* eus.c_DEFAULT_ENV.patch: remove debug print message
+* Contributors: Kei Okada
+
+* 2014-08-31 e23c4e5 (EusLisp.git) fix: escape double quote and less/greater
+* 2014-08-31 d62e6ca (jskeus.git) fix order of author
+* 2014-08-31 a63fd79 (EusLisp.git) escape double quate
+* 2014-08-31 79cd5e6 (jskeus.git) update document strings
+* 2014-08-31 17583a3 (jskeus.git) update readme for new documentation
+* 2014-08-31 017ee01 (EusLisp.git) escape asterisk
+* 2014-08-30 cecad8a (EusLisp.git) add tool to generate tex documentation
+* 2014-08-30 c973174 (EusLisp.git) make latex sometimes silent for 10 min
+* 2014-08-30 c26a5ba (jskeus.git) update documents
+* 2014-08-30 b3946fa (EusLisp.git) fix optional
+* 2014-08-30 6cf0908 (jskeus.git) use travis to generate pdf and htmls, add texlive-latex-base ptex-bin latex2html nkf ebb to install
+* 2014-08-30 5c7a3e1 (jskeus.git) add jmanual.pdf jmanual.dvi
+* 2014-08-30 03ccb7e (jskeus.git) add documentation tools
+* 2014-08-29 cbae8b6 (EusLisp.git) change argument name of sys:poke, fix #46
+* 2014-08-29 b5238a6 (EusLisp.git) write loaded modules to error-output
+* 2014-08-29 69aedd9 (EusLisp.git) use utf8 for default language
+* 2014-08-29 68942ee (EusLisp.git) enable set-dispatch-macro-character for integer
+* 2014-08-29 5ded1ab (jskeus.git) add deftest for reader
+* 2014-08-29 2d1477c (EusLisp.git) commit pdf/dvi
+* 2014-08-29 2d0da02 (EusLisp.git) fix manuals for :newcoords, fixes #44
+* 2014-08-29 2c6e11a (EusLisp.git) change document code to euc for latex
+* 2014-08-28 ffa169b (EusLisp.git) publish documents to gh-pages
+* 2014-08-28 f0d39d4 (EusLisp.git) add tex, nkf, latex
+* 2014-08-28 d97642f (EusLisp.git) Update README.md
+* 2014-08-28 9096c61 (jskeus.git) (sample-*-model) : Define sample-arm-robot and sample-hand-robot as robot-model subclass
+* 2014-08-28 471c750 (EusLisp.git) fix: publish documents in gh-pages
+* 2014-08-28 12975e5 (jskeus.git) (sample-multidof-arm-model) : Enable to set joint class for sample-multidof-arm-robot
+* 2014-08-27 87dd484 (EusLisp.git) use UTF-8 for documents
+* 2014-08-23 c0e1f29 (EusLisp.git) (.travis.yml) : Add apt-get update because error occurs in recent travis test reported in https://github.com/euslisp/EusLisp/pull/40
+* 2014-08-21 6c948ca (EusLisp.git) (pgsql.l) : Fix libpq.so path for x86_64 and i386 environment discussed in https://github.com/euslisp/jskeus/issues/111* 2014-08-31 f98b265 (jskeus.git) add documents for 193a19527c7b9da228488f4831102de16fced155
+* 2014-08-18 be55374 (jskeus.git) (null-space-ik) : Add additional-check for null-space example to wait for being enough distance
+* 2014-08-18 a3815f2 (jskeus.git) (irtmodel.l) : Add comments for addtional-check argument
+* 2014-07-23 2a79e43 (jskeus.git) (test-irt-motion.l) : Add test codes for calc-torque with external force and moment
+* 2014-07-16 daae0e2 (jskeus.git) (irtmodel.l, test-irt-motion.l) : Fix link access in ik fail log and add test code for it. This bug is reported in https://github.com/jsk-ros-pkg/jsk_roseus/issues/139
+* 2014-07-16 d740c10 (jskeus.git) (irtmodel.l, test-irt-motion.l) : Update dump ik fail log to escape all links and list to fix https://github.com/jsk-ros-pkg/jsk_roseus/issues/138 and fix bug in move-target or target-coords
+* 2014-07-16 baf77d6 (jskeus.git) (irtmodel.l, test-irt-motion.l) : Fix link dump for move-target and search link included in :links and add test code
+* 2014-07-16 b5811c1 (jskeus.git) (test-irt-motion.l) : Set *sample-robot* instead of *robot* to avoid conflict
+* 2014-07-16 7fe0769 (jskeus.git) (test-irt-motion) : Clear ik fail log file for one test
+* 2014-07-16 21ef7c9 (jskeus.git) (irtmodel.l, test-irt-motion.l) : Escape string link name and add test for string-name case
+* 2014-07-16 14fff7f (jskeus.git) (.travis.ymml) : Add apt-get update to fix apt-get error reported in https://github.com/euslisp/jskeus/pull/101
+
 1.1.21 (2014-06-30)
 -------------------
 
