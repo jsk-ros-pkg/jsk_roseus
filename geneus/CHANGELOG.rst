@@ -2,6 +2,17 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.23 (2014-09-24)
+-------------------
+* Supress output from geneus if GENEUS_VERBOSE is not set to true
+* Contributors: Ryohei Ueda
+
+1.1.22 (2014-09-04)
+-------------------
+* remove more unused debug message
+* remove unused debug message
+* Contributors: Kei Okada
+
 1.1.21 (2014-06-30)
 -------------------
 * cmake/roseus.cmake : do not compile roseus message if it couldnot find in find_package-ed
