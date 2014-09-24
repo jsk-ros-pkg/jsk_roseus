@@ -2,8 +2,8 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.23 (2014-09-24)
+-------------------
 * (euslisp) update issue tracker location.
 * remove xfont-server, due to https://github.com/ros/rosdistro/issues/5163
 * Contributors: Isaac IY Saito, Kei Okada, Ryohei Ueda
