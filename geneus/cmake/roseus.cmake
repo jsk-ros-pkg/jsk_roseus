@@ -64,35 +64,46 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
         COMMENT "Generating EusLisp code for upstream package ${arg_pkg}")
       list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l)
     endif()
-
+    
+    set(input_msg_files)
+    set(output_msg_files)
     # gen messages
     foreach(_msg_file ${${arg_pkg}_MESSAGE_FILES})
       set(_msg_file ${_${arg_pkg}_PACKAGE_PATH}/${_msg_file})
       get_filename_component(_msg_name ${_msg_file} NAME_WE)
       list(FIND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l _ret)
       if(${_ret} EQUAL -1)
-        add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l
-          DEPENDS genmsg_eus ${_msg_file} ${_depend_generate_py}
-          COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS} ${_msg_file} ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l
-          COMMENT "Generating EusLisp code for upstream message ${arg_pkg}/msg/${_msg_name}")
+        list(APPEND input_msg_files ${_msg_file})
+        list(APPEND output_msg_files ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l)
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l)
       endif()
     endforeach()
-
+    if(output_msg_files)
+      add_custom_command(OUTPUT ${output_msg_files}
+        DEPENDS genmsg_eus ${_msg_file} ${_depend_generate_py}
+        COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS} ${input_msg_files} ":OUTPUT" ${output_msg_files}
+        COMMENT "Generating EusLisp code for upstream message ${input_msg_files}")
+    endif(output_msg_files)
+    
     # gen service
+    set(input_srv_files)
+    set(output_srv_files)
     foreach (_srv_file ${${arg_pkg}_SERVICE_FILES})
       set(_srv_file ${_${arg_pkg}_PACKAGE_PATH}/${_srv_file})
       get_filename_component(_srv_name ${_srv_file} NAME_WE)
       list(FIND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l _ret)
       if(${_ret} EQUAL -1)
-        add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l
-          DEPENDS gensrv_eus ${_srv_file} ${_depend_generate_py}
-          COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENSRV_EUS} ${_srv_file} ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l
-          COMMENT "Generating EusLisp code for upstream service ${arg_pkg}/srv/${_srv_name}")
+        list(APPEND input_srv_files ${_srv_file})
+        list(APPEND output_srv_files ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l)
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l)
       endif()
     endforeach()
-
+    if(output_srv_files)
+      add_custom_command(OUTPUT ${output_srv_files}
+        DEPENDS gensrv_eus ${_srv_file} ${_depend_generate_py}
+        COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENSRV_EUS} ${input_srv_files} ":OUTPUT" ${output_srv_files}
+        COMMENT "Generating EusLisp code for upstream service ${arg_pkg}/srv/${_srv_name}")
+    endif(output_srv_files)
   endmacro()
 
   # define macros
