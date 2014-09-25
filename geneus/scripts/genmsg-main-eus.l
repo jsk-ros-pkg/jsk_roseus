@@ -573,7 +573,30 @@
           (substringp "Feedback.msg" fname))
       (probe-file (format nil "~A/action" (read-line (piped-fork (format nil "rospack find ~A" pkg)))))))
 
-(defun genmsg-eus (fname &optional oname)
+(defun genmsg-eus (&rest args)
+  (cond
+   ((= (length args) 1)
+    (_genmsg-eus (car args)))
+   ((= (length args) 2)
+    (_genmsg-eus (car args) (cadr args)))
+   (t                                   ;multiple input
+    ;; syntax is: input1 input2 ... :OUTPUT output1 output2 ...
+    (let ((target :input)
+          (input-files nil)
+          (output-files nil))
+      (dolist (arg args)
+        (cond ((string= arg ":OUTPUT")
+               (setq target :output))
+              ((eq target :input)
+               (push arg input-files))
+              ((eq target :output)
+               (push arg output-files)))
+        )
+      (if (not (= (length input-files) (length output-files)))
+          (error "mismatch length of input files and output files")
+        (mapcar #'_genmsg-eus input-files output-files))))))
+
+(defun _genmsg-eus (fname &optional oname)
   (let (msgs consts def pkg name)
     (multiple-value-setq (pkg name) (genfile-header fname))
     ;;; https://github.com/willowgarage/catkin/issues/122
@@ -581,7 +604,7 @@
                 (check-msg-file pkg name)
 		(string= (format nil "~A/roseus/~A/~A/action_msg/~A.msg" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg name) fname))
       (warning-message 1 ";; error occured when parsing ~A/msg/~A~% PYTHONPATH=~A~% ROS_PACKAGE_PATH=~A~%" pkg name (unix:getenv "PYTHONPATH") (unix:getenv "ROS_PACKAGE_PATH"))
-      (return-from genmsg-eus nil))
+      (return-from _genmsg-eus nil))
     (with-open-file
      (strm fname :direction :input)
      (multiple-value-setq (msgs consts) (generate-msg-datatype-name-list strm)))
@@ -626,14 +649,37 @@
 |#
     ))
 
-(defun gensrv-eus (fname &optional oname)
+(defun gensrv-eus (&rest args)
+  (cond
+   ((= (length args) 1)
+    (_gensrv-eus (car args)))
+   ((= (length args) 2)
+    (_gensrv-eus (car args) (cadr args)))
+   (t                                   ;multiple input
+    ;; syntax is: input1 input2 ... :OUTPUT output1 output2 ...
+    (let ((target :input)
+          (input-files nil)
+          (output-files nil))
+      (dolist (arg args)
+        (cond ((string= arg ":OUTPUT")
+               (setq target :output))
+              ((eq target :input)
+               (push arg input-files))
+              ((eq target :output)
+               (push arg output-files)))
+        )
+      (if (not (= (length input-files) (length output-files)))
+          (error "mismatch length of input files and output files")
+        (mapcar #'_gensrv-eus input-files output-files))))))
+
+(defun _gensrv-eus (fname &optional oname)
   (let (req-msgs res-msgs consts1 consts2 doc pkg name req-name res-name)
     (multiple-value-setq (pkg name) (genfile-header fname))
     (setq req-name (format nil "~ARequest"  name)
           res-name (format nil "~AResponse" name))
     (unless (check-srv-file pkg name)
       (warning-message 1 ";; error occured when parsing ~A/srv/~A~% PYTHONPATH=~A~% ROS_PACKAGE_PATH=~A~%" pkg name (unix:getenv "PYTHONPATH") (unix:getenv "ROS_PACKAGE_PATH"))
-      (return-from gensrv-eus nil))
+      (return-from _gensrv-eus nil))
     (with-open-file
      (strm fname :direction :input)
      (multiple-value-setq (req-msgs consts1) (generate-msg-datatype-name-list strm))
