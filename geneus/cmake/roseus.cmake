@@ -9,6 +9,10 @@ if(NOT roseus_INSTALL_DIR)
   set(roseus_INSTALL_DIR ${roshomedir}/roseus/$ENV{ROS_DISTRO})
 endif()
 
+if("$ENV{GENEUS_VERBOSE}" STREQUAL "true")
+  set(geneus_verbose TRUE)
+endif("$ENV{GENEUS_VERBOSE}" STREQUAL "true")
+
 if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   # is called for evary packages
   find_package(euslisp QUIET)
@@ -39,9 +43,10 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   else()
     set(euslisp_PACKAGE_PATH ${euslisp_PREFIX}/share/euslisp)
   endif()
-
-  message("[roseus.camke] euslisp_PACKAGE_PATH = ${euslisp_PACKAGE_PATH}")
-  message("[roseus.camke]  euseus_PACKAGE_PATH = ${geneus_PACKAGE_PATH}")
+  if(geneus_verbose)
+    message("[roseus.camke] euslisp_PACKAGE_PATH = ${euslisp_PACKAGE_PATH}")
+    message("[roseus.camke]  euseus_PACKAGE_PATH = ${geneus_PACKAGE_PATH}")
+  endif(geneus_verbose)
   set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${CMAKE_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
 
   macro(_generate_eus_dep_msgs arg_pkg)
@@ -64,35 +69,46 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
         COMMENT "Generating EusLisp code for upstream package ${arg_pkg}")
       list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l)
     endif()
-
+    
+    set(input_msg_files)
+    set(output_msg_files)
     # gen messages
     foreach(_msg_file ${${arg_pkg}_MESSAGE_FILES})
       set(_msg_file ${_${arg_pkg}_PACKAGE_PATH}/${_msg_file})
       get_filename_component(_msg_name ${_msg_file} NAME_WE)
       list(FIND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l _ret)
       if(${_ret} EQUAL -1)
-        add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l
-          DEPENDS genmsg_eus ${_msg_file} ${_depend_generate_py}
-          COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS} ${_msg_file} ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l
-          COMMENT "Generating EusLisp code for upstream message ${arg_pkg}/msg/${_msg_name}")
+        list(APPEND input_msg_files ${_msg_file})
+        list(APPEND output_msg_files ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l)
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l)
       endif()
     endforeach()
-
+    if(output_msg_files)
+      add_custom_command(OUTPUT ${output_msg_files}
+        DEPENDS genmsg_eus ${_msg_file} ${_depend_generate_py}
+        COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS} ${input_msg_files} ":OUTPUT" ${output_msg_files}
+        COMMENT "Generating EusLisp code for upstream message ${input_msg_files}")
+    endif(output_msg_files)
+    
     # gen service
+    set(input_srv_files)
+    set(output_srv_files)
     foreach (_srv_file ${${arg_pkg}_SERVICE_FILES})
       set(_srv_file ${_${arg_pkg}_PACKAGE_PATH}/${_srv_file})
       get_filename_component(_srv_name ${_srv_file} NAME_WE)
       list(FIND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l _ret)
       if(${_ret} EQUAL -1)
-        add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l
-          DEPENDS gensrv_eus ${_srv_file} ${_depend_generate_py}
-          COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENSRV_EUS} ${_srv_file} ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l
-          COMMENT "Generating EusLisp code for upstream service ${arg_pkg}/srv/${_srv_name}")
+        list(APPEND input_srv_files ${_srv_file})
+        list(APPEND output_srv_files ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l)
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l)
       endif()
     endforeach()
-
+    if(output_srv_files)
+      add_custom_command(OUTPUT ${output_srv_files}
+        DEPENDS gensrv_eus ${_srv_file} ${_depend_generate_py}
+        COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENSRV_EUS} ${input_srv_files} ":OUTPUT" ${output_srv_files}
+        COMMENT "Generating EusLisp code for upstream service ${arg_pkg}/srv/${_srv_name}")
+    endif(output_srv_files)
   endmacro()
 
   # define macros
@@ -175,7 +191,9 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   # generate upsteram message/services
   foreach(pkg ${catkin_FIND_COMPONENTS})
     if(${pkg}_SOURCE_DIR OR ${pkg}_SOURCE_PREFIX)
+      if(geneus_verbose)
       message("[roseus.cmake] compile upstream package ${pkg}")
+      endif(geneus_verbose)
       _generate_eus_dep_msgs(${pkg})
     endif()
   endforeach()
@@ -184,7 +202,9 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   _generate_eus_dep_msgs(${PROJECT_NAME})
 
   # generate message/services for installed packages
+  if(geneus_verbose)
   message("[roseus.cmake] compile installed package for ${PROJECT_NAME}")
+  endif(geneus_verbose)
   set(_ROS_PACKAGE_PATH $ENV{ROS_PACKAGE_PATH})
   set(ENV{ROS_PACKAGE_PATH} ${CMAKE_SOURCE_DIR}:${_ROS_PACKAGE_PATH})
   #set(_rospack_depends "import rospkg; rp = rospkg.RosPack(); print ';'.join(rp.get_depends('${PROJECT_NAME}'))")
@@ -225,7 +245,9 @@ if(NOT COMMAND rosbuild_find_ros_package) ## catkin
         endif()
       endforeach()
       if(need_compile)
-        message("[roseus.cmake] compile installed package ${_pkg}")
+        if(geneus_verbose)
+          message("[roseus.cmake] compile installed package ${_pkg}")
+        endif(geneus_verbose)
         _generate_eus_dep_msgs(${_pkg})
         set(${_pkg}_GENERATE_EUS_DEP_MSGS TRUE)
       endif(need_compile)
@@ -277,7 +299,9 @@ macro(genmanifest_eus)
   else()
     set(manifest_xml ${PROJECT_SOURCE_DIR}/manifest.xml)
   endif()
-  message("[roseus.cmake] add custom target ROSBUILD_genmanifest_roseus_${PROJECT_NAME}")
+  if(geneus_verbose)
+    message("[roseus.cmake] add custom target ROSBUILD_genmanifest_roseus_${PROJECT_NAME}")
+  endif(geneus_verbose)
   add_custom_command(OUTPUT ${manifest_eus_target}
     COMMAND ${genmanifest_eus_exe} ${PROJECT_NAME}
     DEPENDS ${manifest_xml} ${msggenerated})
@@ -318,7 +342,9 @@ macro(genmsg_eus)
   endforeach(_msg)
   # Create a target that depends on the union of all the autogenerated
   # files
-  message("[roseus.cmake] add custom target ROSBUILD_genmsg_roseus_${PROJECT_NAME}")
+  if(geneus_verbose)
+    message("[roseus.cmake] add custom target ROSBUILD_genmsg_roseus_${PROJECT_NAME}")
+  endif(geneus_verbose)
   add_custom_target(ROSBUILD_genmsg_roseus_${PROJECT_NAME} DEPENDS ${_autogen})
   # Add our target to the top-level genmsg target, which will be fired if
   # the user calls genmsg()
@@ -358,7 +384,9 @@ macro(gensrv_eus)
   endforeach(_srv)
   # Create a target that depends on the union of all the autogenerated
   # files
-  message("[roseus.cmake] add custom target ROSBUILD_gensrv_roseus_${PROJECT_NAME}")
+  if(geneus_verbose)
+    message("[roseus.cmake] add custom target ROSBUILD_gensrv_roseus_${PROJECT_NAME}")
+  endif(geneus_verbose)
   add_custom_target(ROSBUILD_gensrv_roseus_${PROJECT_NAME} DEPENDS ${_autogen})
   # Add our target to the top-level gensrv target, which will be fired if
   # the user calls gensrv()
@@ -392,7 +420,9 @@ macro(generate_ros_nobuild_eus)
   # for each packages...
   set(depends_counter 1)
   foreach(_package ${depends_packages})
-    message("[roseus.cmake] [${depends_counter}/${depends_length}] Check ${_package} for ${PROJECT_NAME}")
+    if(geneus_verbose)
+      message("[roseus.cmake] [${depends_counter}/${depends_length}] Check ${_package} for ${PROJECT_NAME}")
+    endif(geneus_verbose)
     math(EXPR depends_counter "${depends_counter} + 1")
     # check if the package have ROS_NOBUILD
     rosbuild_find_ros_package(${_package})
@@ -400,15 +430,21 @@ macro(generate_ros_nobuild_eus)
     if(EXISTS ${${_package}_PACKAGE_PATH}/action AND
 	(NOT EXISTS ${${_package}_PACKAGE_PATH}/msg) AND
         (NOT EXISTS ${roseus_INSTALL_DIR}/${_package}/action_msg/generated))
-      message("[roseus.cmake] generate msg from action")
+      if(geneus_verbose)
+        message("[roseus.cmake] generate msg from action")
+      endif(geneus_verbose)
       file(GLOB _actions RELATIVE "${${_package}_PACKAGE_PATH}/action/" "${${_package}_PACKAGE_PATH}/action/*.action")
       foreach(_action ${_actions})
-	message("[roseus.cmake] genaction.py ${_action} -o ${roseus_INSTALL_DIR}/${_package}/action_msg/")
+        if(geneus_verbose)
+	  message("[roseus.cmake] genaction.py ${_action} -o ${roseus_INSTALL_DIR}/${_package}/action_msg/")
+        endif(geneus_verbose)
 	execute_process(COMMAND rosrun actionlib_msgs genaction.py ${${_package}_PACKAGE_PATH}/action/${_action} -o ${roseus_INSTALL_DIR}/${_package}/action_msg)
       endforeach()
       file(GLOB _action_msgs "${roseus_INSTALL_DIR}/${_package}/action_msg/*.msg")
       foreach(_action_msg ${_action_msgs})
-	message("[roseus.cmake] rosrun roseus genmsg_eus ${_action_msg}")
+        if(geneus_verbose)
+	  message("[roseus.cmake] rosrun roseus genmsg_eus ${_action_msg}")
+        endif(geneus_verbose)
 	execute_process(COMMAND rosrun roseus genmsg_eus ${_action_msg})
       endforeach()
       file(WRITE ${roseus_INSTALL_DIR}/${_package}/action_msg/generated "generated")
@@ -422,7 +458,9 @@ macro(generate_ros_nobuild_eus)
     if((EXISTS ${${_package}_PACKAGE_PATH}/ROS_NOBUILD OR
 	  (NOT EXISTS ${${_package}_PACKAGE_PATH}/Makefile))
 	AND NOT "${md5sum_file}" STREQUAL "${md5sum_script}")
-      message("[roseus.cmake] need to re-generate files, remove ${msggenerated}")
+      if(geneus_verbose)
+        message("[roseus.cmake] need to re-generate files, remove ${msggenerated}")
+      endif(geneus_verbose)
       file(REMOVE ${msggenerated})
       set(PROJECT_NAME ${_package})
       set(PROJECT_SOURCE_DIR ${${_package}_PACKAGE_PATH})

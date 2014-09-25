@@ -1,13 +1,13 @@
 <package>
   <name>euslisp</name>
-  <version>1.1.22</version>
+  <version>1.1.24</version>
   <description>This packages contains humanoid robot modeling software based on EusLisp language developed by researchers and students at JSK Robotics Laboratory at the University of Tokyo, Japan.</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/euslisp</url>
-  <url type="bugtracker">https://sourceforge.net/p/jskeus/tickets/</url>
+  <url type="bugtracker">https://github.com/jsk-ros-pkg/jsk_roseus/issues</url>
 
   <author>Toshihiro Matsui</author>
 
@@ -26,7 +26,6 @@
   <build_depend>mk</build_depend>
   <build_depend>xfonts-100dpi</build_depend>
   <build_depend>xfonts-75dpi</build_depend>
-  <build_depend>xfont-server</build_depend>
 
   <run_depend>rostest</run_depend>
   <run_depend>opengl</run_depend>
@@ -37,7 +36,6 @@
   <run_depend>libpq-dev</run_depend>
   <run_depend>xfonts-100dpi</run_depend>
   <run_depend>xfonts-75dpi</run_depend>
-  <run_depend>xfont-server</run_depend>
 
   <export>
     <cpp cflags="-I${prefix}/eus/include"/>

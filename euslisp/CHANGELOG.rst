@@ -2,6 +2,21 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.23 (2014-09-24)
+-------------------
+* (euslisp) update issue tracker location.
+* remove xfont-server, due to https://github.com/ros/rosdistro/issues/5163
+* Contributors: Isaac IY Saito, Kei Okada, Ryohei Ueda
+
+ * 2014-09-10 28f6367 (jskeus) (irtrobot, irtdyna, walk-motion) : Use :name instead of plist for footstep l/r
+* 2014-09-09 06e14cb (jskeus) add documents for de617c2949ace302634611a3ccb3b1b4c7919534
+* 2014-09-05 b62008f (EusLisp) change read-integer-array, please refer to https://github.com/euslisp/EusLisp/pull/51* 2014-09-09 be44a9f (jskeus) add documents for 2f94bc1d9723812bbe6adc1ca9afffb9e8daf68c
+* 2014-09-05 b2bb3d6 (jskeus) add documents for 92f7cf1ea41941421e8f3cdf19a693e8ce4a8efe
+* 2014-09-05 9fcd771 (jskeus) (irtmodel.tex) : Remove sample description for :solve-ik
+* 2014-09-05 9037f92 (jskeus) (sample-arm-model, hanoi-arm) : Use :inverse-kinematics instead of :solve-ik (according to https://github.com/euslisp/jskeus/issues/125#issuecomment-54590070)
+* 2014-09-05 7906365 (EusLisp) add documents for e245bcc12ff5a45dc6b736df1ddaf894d2398d69
+
+
 1.1.22 (2014-09-04)
 -------------------
 * eus.c_DEFAULT_ENV.patch: remove debug print message
