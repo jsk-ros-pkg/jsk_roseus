@@ -52,6 +52,16 @@ mkdir -p ${GENEUS_DEP2}/{msg,srv,action}
 mkdir -p ${ROSEUS_DEP1}/{msg,srv,action}
 mkdir -p ${ROSEUS_DEP2}/{msg,srv,action}
 
+if [ $WORKSPACE_TYPE = MULTI ]; then
+  (cd ${CATKIN_DIR}/src/; git clone https://github.com/ros/std_msgs           std_msgs)
+  (cd ${CATKIN_DIR}/src/; git clone https://github.com/ros/ros_comm           ros_comm        -b hydro-devel)
+  (cd ${CATKIN_DIR}/src/; git clone https://github.com/ros/common_msgs        common_msgs     -b hydro-devel)
+  (cd ${CATKIN_DIR}/src/; git clone https://github.com/ros/actionlib          actionlib       -b hydro-devel)
+  (cd ${CATKIN_DIR}/src/; mv ros_comm/messages/ ros_comm/clients/ .)
+  (cd ${CATKIN_DIR}/src/; rm -fr ros_comm )# do not run test for ros_comm
+  (cd ${CATKIN_DIR}/src/; find actionlib  -name CMakeLists.txt  -exec sed -i 's@add_subdirectory(test)@#add_subdirectory(test)@' {} \;)
+fi
+
 #trap 'rm -fr ${CATKIN_DIR}; exit 1' 1 2 3 15
 
 function add_makefile() {
