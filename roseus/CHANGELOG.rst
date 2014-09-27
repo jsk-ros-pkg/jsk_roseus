@@ -2,6 +2,9 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.23 (2014-09-24)
+-------------------
+
 1.1.22 (2014-09-04)
 -------------------
 * install roseus to global bin, fixed #146

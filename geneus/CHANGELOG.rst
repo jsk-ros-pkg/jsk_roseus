@@ -2,6 +2,11 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.23 (2014-09-24)
+-------------------
+* Supress output from geneus if GENEUS_VERBOSE is not set to true
+* Contributors: Ryohei Ueda
+
 1.1.22 (2014-09-04)
 -------------------
 * remove more unused debug message
