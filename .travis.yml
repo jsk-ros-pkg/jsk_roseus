@@ -23,7 +23,15 @@ matrix:
     - env: ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false
     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true
     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false
-script: source .travis/travis.sh
+script:
+  - git clone https://github.com/ros/std_msgs           std_msgs
+  - git clone https://github.com/ros/ros_comm           ros_comm        -b hydro-devel
+  - git clone https://github.com/ros/common_msgs        common_msgs     -b hydro-devel
+  - git clone https://github.com/ros/actionlib          actionlib       -b hydro-devel
+  - mv ros_comm/messages/ ros_comm/clients/ .
+  - rm -fr ros_comm # do not run test for ros_comm
+  - find actionlib  -name CMakeLists.txt  -exec sed -i 's@add_subdirectory(test)@#add_subdirectory(test)@' {} \;
+  - source .travis/travis.sh
 notifications:
   email:
     on_success: always
