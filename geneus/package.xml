@@ -2,21 +2,19 @@
 <package>
   <name>geneus</name>
   <version>1.1.24</version>
-  <description>EusLisp ROS message and service generators</description>
+  <description>
+  EusLisp ROS message and service generators.
+  </description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
   <license>BSD</license>
 
   <author>Kei Okada</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend version_gte="0.5.78">catkin</buildtool_depend>
 
   <build_depend>genmsg</build_depend>
-  <build_depend>euslisp</build_depend>
-  <build_depend>rospy</build_depend>
 
   <run_depend>genmsg</run_depend>
-  <run_depend>euslisp</run_depend>
-  <run_depend>rospy</run_depend>
 
   <export>
     <message_generator>eus</message_generator>
