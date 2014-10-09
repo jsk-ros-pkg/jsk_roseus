@@ -70,7 +70,7 @@ foreach(executable ${executables})
       file(RPATH_CHANGE
            FILE      \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\"
            OLD_RPATH ${rpath}
-           NEW_RPATH \"\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/lib\")
+           NEW_RPATH \"$ORIGIN/../lib\")
     endif()")
 endforeach()
 
