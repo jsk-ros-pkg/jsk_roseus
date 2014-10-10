@@ -2,8 +2,8 @@
 Changelog for package roseus_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.25 (2014-10-10)
+-------------------
 * Merge pull request #160 from k-okada/add_jsk_visualization
   add jsk_visualization
 * add jsk_visualization
