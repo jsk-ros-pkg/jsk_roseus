@@ -20,7 +20,7 @@ endif(_make_failed)
 catkin_package(
     DEPENDS opengl libjpeg libx11-dev libxext libpng12-dev
     CATKIN-DEPENDS # TODO
-    INCLUDE_DIRS # jskeus/eus/include
+    INCLUDE_DIRS jskeus/eus/lisp/c
     LIBRARIES # TODO
 )
 
@@ -70,7 +70,7 @@ foreach(executable ${executables})
       file(RPATH_CHANGE
            FILE      \"\$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/bin/${filename}\"
            OLD_RPATH ${rpath}
-           NEW_RPATH \"\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/${ARCHDIR}/lib\")
+           NEW_RPATH \"$ORIGIN/../lib\")
     endif()")
 endforeach()
 
@@ -153,8 +153,9 @@ install(CODE "
 
 # could not found a way to set custom install directory for installed configuration file
 install(CODE "
-   message(\"-- Force change Cflags of \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/\${PROJECT_NAME}Config.cmake\")
-   execute_process(COMMAND sed -i s@\${CMAKE_INSTALL_PREFIX}/include@\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include@ \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/${PROJECT_NAME}Config.cmake)
+   message(\"-- Force change Cflags of \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/euslispConfig.cmake\")
+   execute_process(COMMAND sed -i s@\${CMAKE_INSTALL_PREFIX}/include@\${CMAKE_INSTALL_PREFIX}/${EUSDIR}/include@ \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/euslispConfig.cmake)
+   execute_process(COMMAND sed -i s@\${euslisp_DIR}/../../../include@\${euslisp_DIR}/../jskeus/eus/lisp/c@ \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/pkgconfig/euslisp.pc \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/euslispConfig.cmake)
    ")
 
 
