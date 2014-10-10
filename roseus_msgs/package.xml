@@ -30,6 +30,10 @@
   <build_depend>jsk_recognition</build_depend>
   <build_depend>jsk_model_tools</build_depend>
   <build_depend>jsk_planning</build_depend>
+  <build_depend>jsk_rviz_plugins</build_depend>
+  <build_depend>jsk_rqt_plugins</build_depend>
+  <build_depend>jsk_interactive</build_depend>
+  <build_depend>jsk_interactive_marker</build_depend>
 
 
 
