@@ -2,6 +2,12 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.25 (2014-10-10)
+-------------------
+* Do not generate message/service files which are already generated
+* Merge remote-tracking branch 'refs/remotes/origin/master' into not-invoke-many-eus-when-genmsg
+* Do not invoke many eus when generating ros message files
+
 1.1.23 (2014-09-24)
 -------------------
 * Supress output from geneus if GENEUS_VERBOSE is not set to true

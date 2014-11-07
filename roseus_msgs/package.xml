@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>roseus_msgs</name>
-  <version>1.1.24</version>
+  <version>1.1.25</version>
   <description>Special package that generates roseus msgs for all installed packages</description>
 
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
@@ -30,6 +30,10 @@
   <build_depend>jsk_recognition</build_depend>
   <build_depend>jsk_model_tools</build_depend>
   <build_depend>jsk_planning</build_depend>
+  <build_depend>jsk_rviz_plugins</build_depend>
+  <build_depend>jsk_rqt_plugins</build_depend>
+  <build_depend>jsk_interactive</build_depend>
+  <build_depend>jsk_interactive_marker</build_depend>
 
 
 

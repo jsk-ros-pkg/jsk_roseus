@@ -2,6 +2,13 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.25 (2014-10-10)
+-------------------
+* Merge pull request #157 from k-okada/fix_rpath
+  use ORIGIN to set rpath
+* enabel euslisp_INCLUDE_DIRS
+* use ORIGIN to set rpath
+
 1.1.23 (2014-09-24)
 -------------------
 * (euslisp) update issue tracker location.
