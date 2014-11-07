@@ -3,6 +3,8 @@
 
 ;; load c-binding library
 (load-library "roseus_c_util.so" '("roseus_c_util"))
+(ros::roseus-add-srvs "dynamic_reconfigure")
+(ros::roseus-add-msgs "dynamic_reconfigure")
 
 (defun print-ros-msg (msg &optional (rp (find-package "ROS"))
                           (ro ros::object) (nest 0) (padding "  "))
@@ -989,3 +991,27 @@
   (unix::usleep (round (* wait 1000)))
   (if unadvertise (ros::unadvertise topic-name))
   msg)
+
+
+(defun ros::set-dynamic-reconfigure-param (srv name type value)
+  "set dynamic_reconfugre parameter."
+  (let ((req (instance dynamic_reconfigure::ReconfigureRequest :init)))
+    (cond ((eq type :double)
+           (send req :config :doubles
+                 (list (instance dynamic_reconfigure::DoubleParameter :init
+                                 :name name :value value))))
+          ((eq type :string)
+           (send req :config :strs
+                 (list (instance dynamic_reconfigure::StrParameter :init
+                                 :name name :value value))))
+          ((eq type :bool)
+           (send req :config :bools
+                 (list (instance dynamic_reconfigure::BoolParameter :init
+                                 :name name :value value))))
+          ((eq type :int)
+           (send req :config :ints
+                 (list (instance dynamic_reconfigure::IntParameter :init
+                                 :name name :value value))))
+          (t
+           (error "unknown type ~A" type)))
+    (ros::service-call (format nil "~A/set_parameters" srv) req)))
