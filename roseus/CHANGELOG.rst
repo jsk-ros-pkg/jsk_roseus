@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.26 (2014-11-10)
+-------------------
 * Add utility function to set dynamic_reconfigure parameter
 * Contributors: Ryohei Ueda
 
