@@ -95,6 +95,7 @@ add_rostest(test/test-roseus.test)
 add_rostest(test/test-tf.test)
 add_rostest(test/test-disconnect.test)
 add_rostest(test/test-multi-queue.test)
+add_rostest(test/test-parameter.test)
 add_rostest(test/test-genmsg.catkin.test)
 add_rostest(test/test-genmsg-oneworkspace.catkin.launch) # use launch not to run on travis/catkin
 
