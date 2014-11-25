@@ -138,6 +138,9 @@
   (:send-goal
    (goal &key done-cb active-cb feedback-cb)
    (let ((now (ros::time-now)))
+     (if (not (equal (send goal :goal_id :id) ""))
+	 (ros::ros-warn "goal_id's id is already set in goal instance. But :send-goal will overwrite")
+       )
      (setq goal_id (instance actionlib_msgs::GoalID :init
                              :id (format nil "~A_~A_~A_~A" (ros::get-name) (unix::getpid) name-space seq-count)))
      (incf seq-count)
