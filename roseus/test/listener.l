@@ -17,7 +17,7 @@
 
 ; lambda function
 ;(ros::subscribe "chatter" std_msgs::string
-;                #'(lambda (msg) (ros::rosinfo 
+;                #'(lambda (msg) (ros::ros-info
 ;                                 (format nil "I heard ~A" (send msg :data)))))
 
 ;; method call
@@ -34,17 +34,3 @@
  ;;(sys::gc)
 )
 ;(ros::spin)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
