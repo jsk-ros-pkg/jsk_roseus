@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_smach)
 
-find_package(catkin REQUIRED COMPONENTS euslisp roseus)
+find_package(catkin REQUIRED COMPONENTS euslisp roseus smach smach_ros smach_msgs)
 
 catkin_package(
-    DEPENDS euslisp roseus # executive_smach
-    CATKIN-DEPENDS # TODO
-    INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
+#    DEPENDS 
+    CATKIN_DEPENDS euslisp roseus smach smach_ros smach_msgs # TODO
+#    INCLUDE_DIRS # TODO include
+#    LIBRARIES # TODO
 )
 
 install(DIRECTORY sample src test
