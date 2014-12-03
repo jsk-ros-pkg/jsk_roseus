@@ -1406,6 +1406,43 @@ pointer ROSEUS_GETNAMESPACE(register context *ctx,int n,pointer *argv)
 		    ros::this_node::getNamespace().length()));
 }
 
+pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
+{
+  ckarg(2);
+  string logger;
+  if (isstring(argv[0])) logger.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+  int log_level = intval(argv[1]);
+  ros::console::levels::Level  level = ros::console::levels::Debug;
+  switch(log_level){
+  case 1:
+    level = ros::console::levels::Debug;
+    break;
+  case 2:
+    level = ros::console::levels::Info;
+    break;
+  case 3:
+    level = ros::console::levels::Warn;
+    break;
+  case 4:
+    level = ros::console::levels::Error;
+    break;
+  case 5:
+    level = ros::console::levels::Fatal;
+    break;
+  default:
+    return (NIL);
+  }
+
+  bool success = ::ros::console::set_logger_level(logger, level);
+  if (success)
+    {
+      console::notifyLoggerLevelsChanged();
+      return (T);
+    }
+  return (NIL);
+}
+
 /************************************************************
  *   __roseus
  ************************************************************/
@@ -1462,6 +1499,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
   defun(ctx,"CREATE-NODEHANDLE", argv[0], (pointer (*)())ROSEUS_CREATE_NODEHANDLE);
+  defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL);
 
   pointer_update(Spevalof(PACKAGE),p);
 
