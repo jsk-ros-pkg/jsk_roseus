@@ -1,19 +1,36 @@
 <launch>
-  <param name="single" value="1" />
-  <param name="display" value="1" />
-  <param name="rect0_size_x" value="0.030" />
-  <param name="rect0_size_y" value="0.030" />
-  <param name="grid0_size_x" value="7" />
-  <param name="grid0_size_y" value="5" />
-  <param name="type0" value="test_object" />
-  <param name="translation0" value="0.060 0.090 0" />
+  <!--
+      This example is jsk_pcl_ros's checkerboard_detector.
+  -->
+  <arg name="single" default="1" />
+  <arg name="display" default="1" />
+  <arg name="rect0_size_x" default="0.030" />
+  <arg name="rect0_size_y" default="0.030" />
+  <arg name="grid0_size_x" default="7" />
+  <arg name="grid0_size_y" default="5" />
+  <arg name="type0" default="test_object" />
+  <arg name="translation0" default="0.060 0.090 0" />
   <!-- (array-entity (send (make-coords :rpy (float-vector 0 0 pi)) :worldrot)) -->
-  <param name="rotation0" value="1.0 0.0 0.0 0.0 -1.0 -6.278329e-07 0.0 6.278329e-07 -1.0" />
-  <param name="frame_id" value="camera" />
-  <node name="checkerboard_detector" pkg="checkerboard_detector"
-	type="checkerboard_detector">
-    <remap from="image" to="image_rect" />
-  </node>
+  <arg name="rotation0" default="1.0 0.0 0.0 0.0 -1.0 -6.278329e-07 0.0 6.278329e-07 -1.0" />
+  <arg name="frame_id" default="camera" />
+  <arg name="image" default="image_rect" />
+  <arg name="group" default="/" />
+  <group ns="$(arg group)">
+    <param name="single" value="$(arg single)" />
+    <param name="display" value="$(arg display)" />
+    <param name="rect0_size_x" value="$(arg rect0_size_x)" />
+    <param name="rect0_size_y" value="$(arg rect0_size_y)" />
+    <param name="grid0_size_x" value="$(arg grid0_size_x)" />
+    <param name="grid0_size_y" value="$(arg grid0_size_y)" />
+    <param name="type0" value="$(arg type0)" />
+    <param name="translation0" value="$(arg translation0)" />
+    <param name="rotation0" value="$(arg rotation0)" />
+    <param name="frame_id" value="$(arg frame_id)" />
+    <node name="checkerboard_detector" pkg="checkerboard_detector"
+          type="checkerboard_detector">
+      <remap from="image" to="$(arg image)" />
+    </node>
+  </group>
 
   <sphinxdoc><![CDATA[
 This script starts checkerbord detection program
