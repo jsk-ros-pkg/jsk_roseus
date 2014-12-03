@@ -10,6 +10,7 @@
 (load "models/chessboard-30-7x5-object.l")
 (if (not (boundp '*irtviewer*)) (make-irtviewer))
 (setq *target-object* (chessboard-30-7x5 :name "/test_object"))
+(defvar *root-frame-id* "/camera")
 ;;(setq *target-object* (iphone4 :name "/test_object"))
 (objects (list (make-cube 1000 1000 1) (make-cylinder 10 1000) *target-object*))
 
@@ -64,7 +65,7 @@
 
 (ros::rate 10)
 (while (ros::ok)
-  (tf-object-update (list *target-object*) :root-frame-id "/camera")
+  (tf-object-update (list *target-object*) :root-frame-id *root-frame-id*)
   (ros::spin-once)
   (send *irtviewer* :draw-objects)
   (x::window-main-one)
