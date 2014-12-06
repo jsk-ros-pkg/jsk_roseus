@@ -130,7 +130,7 @@ static bool s_bInstalled = false;
 #define s_mapServiced s_staticdata.mapServiced
 #define s_mapHandle s_staticdata.mapHandle
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,QANON,QNOOUT,QREPOVERSION;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,QANON,QNOOUT,QREPOVERSION,QROSDEBUG,QROSINFO,QROSWARN,QROSERROR,QROSFATAL;
 extern pointer LAMCLOSURE;
 
 /***********************************************************
@@ -1456,6 +1456,11 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   QANON=defvar(ctx,"*ANONYMOUS-NAME*",makeint(ros::init_options::AnonymousName),rospkg);
   QNOOUT=defvar(ctx,"*NO-ROSOUT*",makeint(ros::init_options::NoRosout),rospkg);
+  QROSDEBUG=defvar(ctx,"*ROSDEBUG*",makeint(1),rospkg);
+  QROSINFO=defvar(ctx,"*ROSINFO*",makeint(2),rospkg);
+  QROSWARN=defvar(ctx,"*ROSWARN*",makeint(3),rospkg);
+  QROSERROR=defvar(ctx,"*ROSERROR*",makeint(4),rospkg);
+  QROSFATAL=defvar(ctx,"*ROSFATAL*",makeint(5),rospkg);
   defun(ctx,"SPIN",argv[0],(pointer (*)())ROSEUS_SPIN);
   defun(ctx,"SPIN-ONCE",argv[0],(pointer (*)())ROSEUS_SPINONCE);
   defun(ctx,"TIME-NOW-RAW",argv[0],(pointer (*)())ROSEUS_TIME_NOW);
