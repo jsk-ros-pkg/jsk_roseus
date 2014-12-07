@@ -427,7 +427,7 @@
 	  (unless sc
 	    (setq sc (float-vector 100.0 100.0 0))))
       (progn
-	(send msg :pose ros::coords->pose arg)
+	(send msg :pose (ros::coords->tf-pose arg))
 	(unless sc
 	  (setq sc (float-vector 1000.0 100.0 100.0)))))
     (send msg :scale (ros::pos->tf-translation sc))
