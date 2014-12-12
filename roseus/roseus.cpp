@@ -1164,6 +1164,59 @@ pointer ROSEUS_SET_PARAM(register context *ctx,int n,pointer *argv)
   return (T);
 }
 
+pointer XmlRpcToEusValue(register context *ctx, XmlRpc::XmlRpcValue rpc_value)
+{
+  numunion nu;
+  pointer ret, first;
+
+  if ( rpc_value.getType() == XmlRpc::XmlRpcValue::TypeBoolean ){
+    if ( rpc_value ) return T; else return NIL;
+  }
+  else if ( rpc_value.getType() == XmlRpc::XmlRpcValue::TypeDouble ){
+    return makeflt((double)rpc_value);
+  }
+  else if ( rpc_value.getType() == XmlRpc::XmlRpcValue::TypeInt ){
+    return makeint((int)rpc_value);
+  }
+  else if ( rpc_value.getType() == XmlRpc::XmlRpcValue::TypeString ){
+    std::string str = rpc_value;
+    return makestring((char*)str.c_str(), ((std::string)rpc_value).length());
+  }
+  else if ( rpc_value.getType() == XmlRpc::XmlRpcValue::TypeArray ){
+    ret = cons(ctx, NIL, NIL);
+    first = ret;
+    vpush(ret);
+    for ( int i = 0; i < rpc_value.size(); i++){
+      ccdr(ret) = cons(ctx, XmlRpcToEusValue(ctx, rpc_value[i]), NIL);
+      ret = ccdr(ret);
+    }
+    vpop(); // vpush(ret);
+    return ccdr(first);
+  }
+  else if ( rpc_value.getType() == XmlRpc::XmlRpcValue::TypeStruct ){
+    ret = cons(ctx, NIL, NIL);
+    first = ret;
+    vpush(ret);
+    XmlRpc::XmlRpcValue::iterator it = rpc_value.begin();
+    while(it !=rpc_value.end()) {
+      std::string key = it->first;
+      pointer tmp = cons(ctx, makestring((char*)key.c_str(), key.length()), NIL);
+      vpush(tmp);
+      ccdr(tmp) = XmlRpcToEusValue(ctx, it->second);
+      ccdr(ret) = cons(ctx, tmp, NIL);
+      ret = ccdr(ret);
+      vpop(); // vpush(tmp);
+      it++;
+    }
+    vpop(); // vpush(ret);
+    return ccdr(first);
+  } else {
+    ROS_FATAL("unkown rosparam type!");
+    return NIL;
+  }
+  return NIL;
+}
+
 pointer XmlRpcToEusList(register context *ctx, XmlRpc::XmlRpcValue param_list)
 {
     numunion nu;
@@ -1195,6 +1248,10 @@ pointer XmlRpcToEusList(register context *ctx, XmlRpc::XmlRpcValue param_list)
                 ccdr(ret) = cons(ctx, makestring((char*)str.c_str(), ((std::string)param_list[i]).length()), NIL);
                 ret = ccdr(ret);
             }
+            else if ( param_list[i].getType() == XmlRpc::XmlRpcValue::TypeStruct ){
+                ccdr(ret) = cons(ctx, XmlRpcToEusValue(ctx, param_list[i]), NIL);
+                ret = ccdr(ret);
+            }
             else {
                 ROS_FATAL("unkown rosparam type!");
                 vpop();         // remove vpush(ret)
@@ -1203,6 +1260,8 @@ pointer XmlRpcToEusList(register context *ctx, XmlRpc::XmlRpcValue param_list)
         }
         vpop();                 // remove vpush(ret)
         return ccdr(first);
+    } else if ( param_list.getType() == XmlRpc::XmlRpcValue::TypeStruct ) {
+        return XmlRpcToEusValue(ctx, param_list);
     } else
         return (NIL);
 }
@@ -1347,6 +1406,43 @@ pointer ROSEUS_GETNAMESPACE(register context *ctx,int n,pointer *argv)
 		    ros::this_node::getNamespace().length()));
 }
 
+pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
+{
+  ckarg(2);
+  string logger;
+  if (isstring(argv[0])) logger.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+  int log_level = intval(argv[1]);
+  ros::console::levels::Level  level = ros::console::levels::Debug;
+  switch(log_level){
+  case 1:
+    level = ros::console::levels::Debug;
+    break;
+  case 2:
+    level = ros::console::levels::Info;
+    break;
+  case 3:
+    level = ros::console::levels::Warn;
+    break;
+  case 4:
+    level = ros::console::levels::Error;
+    break;
+  case 5:
+    level = ros::console::levels::Fatal;
+    break;
+  default:
+    return (NIL);
+  }
+
+  bool success = ::ros::console::set_logger_level(logger, level);
+  if (success)
+    {
+      console::notifyLoggerLevelsChanged();
+      return (T);
+    }
+  return (NIL);
+}
+
 /************************************************************
  *   __roseus
  ************************************************************/
@@ -1403,6 +1499,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
   defun(ctx,"CREATE-NODEHANDLE", argv[0], (pointer (*)())ROSEUS_CREATE_NODEHANDLE);
+  defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL);
 
   pointer_update(Spevalof(PACKAGE),p);
 

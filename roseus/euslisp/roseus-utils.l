@@ -3,6 +3,8 @@
 
 ;; load c-binding library
 (load-library "roseus_c_util.so" '("roseus_c_util"))
+(ros::roseus-add-srvs "dynamic_reconfigure")
+(ros::roseus-add-msgs "dynamic_reconfigure")
 
 (defun print-ros-msg (msg &optional (rp (find-package "ROS"))
                           (ro ros::object) (nest 0) (padding "  "))
@@ -237,8 +239,8 @@
                                ((:color col) (float-vector 1 1 1))
 			       ((:alpha a) 1.0)
                                ((:id idx) 0) ns lifetime)
-  (send obj :worldcoords) ;; make sure to update vertices
   (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
+    (send-all bodies :worldcoords) ;; make sure to update vertices
     (let* ((msg (instance visualization_msgs::Marker :init
 			  :type visualization_msgs::Marker::*TRIANGLE_LIST*
 			  :header header
@@ -425,7 +427,7 @@
 	  (unless sc
 	    (setq sc (float-vector 100.0 100.0 0))))
       (progn
-	(send msg :pose ros::coords->pose arg)
+	(send msg :pose (ros::coords->tf-pose arg))
 	(unless sc
 	  (setq sc (float-vector 1000.0 100.0 100.0)))))
     (send msg :scale (ros::pos->tf-translation sc))
@@ -989,3 +991,27 @@
   (unix::usleep (round (* wait 1000)))
   (if unadvertise (ros::unadvertise topic-name))
   msg)
+
+
+(defun ros::set-dynamic-reconfigure-param (srv name type value)
+  "set dynamic_reconfugre parameter."
+  (let ((req (instance dynamic_reconfigure::ReconfigureRequest :init)))
+    (cond ((eq type :double)
+           (send req :config :doubles
+                 (list (instance dynamic_reconfigure::DoubleParameter :init
+                                 :name name :value value))))
+          ((eq type :string)
+           (send req :config :strs
+                 (list (instance dynamic_reconfigure::StrParameter :init
+                                 :name name :value value))))
+          ((eq type :bool)
+           (send req :config :bools
+                 (list (instance dynamic_reconfigure::BoolParameter :init
+                                 :name name :value value))))
+          ((eq type :int)
+           (send req :config :ints
+                 (list (instance dynamic_reconfigure::IntParameter :init
+                                 :name name :value value))))
+          (t
+           (error "unknown type ~A" type)))
+    (ros::service-call (format nil "~A/set_parameters" srv) req)))

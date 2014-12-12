@@ -2,6 +2,9 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.26 (2014-11-10)
+-------------------
+
 1.1.25 (2014-10-10)
 -------------------
 * Do not generate message/service files which are already generated

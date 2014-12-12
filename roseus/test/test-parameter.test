@@ -1,0 +1,25 @@
+<launch>
+  <param name="test"
+         value="test_global" />
+  <group ns="param">
+    <param name="test"
+         value="test_ns" />
+  <test test-name="read_parameter"
+        pkg="roseus"
+        type="roseus"
+        args="$(find roseus)/test/param-test.l"
+        clear_params="true">
+    <param name="test"
+           value="test_private" />
+  </test>
+  </group>
+  <rosparam>
+test_dictionary:
+  str_value: '00000'
+  int_value: 10000
+  dbl_value: 20000.0
+  bool_value: false
+  list: ['0', 1, 2.0, true, ['nest0', 100, 200.0, true], {nest_str: 'nest', nest_int: 10, nest_dbl: 20.0, nest_bool: true}]
+  dictionary: {key_str: '0000', key_int: 1000, key_dbl: 2000.0, key_bool: true, key_list: ['0', 1, 2.0, true]}
+  </rosparam>
+</launch>
