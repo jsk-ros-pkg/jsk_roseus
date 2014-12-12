@@ -38,6 +38,8 @@
 
 (defun ros::roseus (name &key
                     (anonymous t)
+                    (logger "ros.roseus")
+                    (level ros::*rosinfo*)
                     (args lisp::*eustop-argument*))
   ;; (pprint (list 'roseus_args args))
   (let ((option (if anonymous (list ros::*anonymous-name*) (list))))
@@ -50,6 +52,7 @@
           (setf (elt lisp::*eustop-argument* i)
                 (format nil "(warning-message 1 \"ignore ~a~%\")"
                         (elt lisp::*eustop-argument* i)))))
+      (ros::set-logger-level logger level)
       )))
 
 (setq ros::*compile-message* nil)
