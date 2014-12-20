@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.27 (2014-12-20)
+-------------------
 * update body's worldcoords before using its faces
 * add logger and level key param to ros::roseus
 * fix typo of ros::coords->pose
