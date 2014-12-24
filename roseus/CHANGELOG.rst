@@ -2,6 +2,18 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.27 (2014-12-20)
+-------------------
+* update body's worldcoords before using its faces
+* add logger and level key param to ros::roseus
+* fix typo of ros::coords->pose
+* add :anonymous to ros::roseus
+* add set_logger_level func
+* modified typo ros::rosinfo => ros::ros-info
+* add warning if id is set
+* update param-test.l for testing parameter handling by roseus
+* add code for reading dictionary type parameter to roseus
+
 1.1.26 (2014-11-10)
 -------------------
 * Add utility function to set dynamic_reconfigure parameter

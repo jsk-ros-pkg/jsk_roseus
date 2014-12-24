@@ -2,6 +2,11 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.27 (2014-12-20)
+-------------------
+* remove cmake file for rosbuild
+* not use executive_smach as deps directly; remove manifest.xml
+
 1.1.26 (2014-11-10)
 -------------------
 
