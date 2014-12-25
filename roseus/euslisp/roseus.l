@@ -123,10 +123,9 @@
 (defun ros::time>= (a b)
   (or (ros::time= a b) (ros::time> a b)))
 (defun ros::time< (a b)
-  (let ((t-dif (coerce (send (ros::time- a b) :sec-nsec) cons)))
-    (or (< (car t-dif) 0) (and (= (car t-dif) 0) (< (cadr t-dif) 0)))))
+  (not (ros::time>= a b)))
 (defun ros::time<= (a b)
-  (or (ros::time= a b) (ros::time< a b)))
+  (not (ros::time> a b)))
 
 
 
