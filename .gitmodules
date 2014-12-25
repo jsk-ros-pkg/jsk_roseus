@@ -1,3 +1,6 @@
 [submodule ".travis"]
 	path = .travis
 	url = git://github.com/jsk-ros-pkg/jsk_travis
+[submodule "geneus"]
+	path = geneus
+	url = https://github.com/jsk-ros-pkg/geneus.git
