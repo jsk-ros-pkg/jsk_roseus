@@ -117,6 +117,17 @@
     (instance ros::time :init :sec csec :nsec cnsec)))
 (defun ros::time= (a b)
   (equal (a . sec-nsec) (b . sec-nsec)))
+(defun ros::time> (a b)
+  (let ((t-dif (coerce (send (ros::time- a b) :sec-nsec) cons)))
+    (or (> (car t-dif) 0) (and (= (car t-dif) 0) (> (cadr t-dif) 0)))))
+(defun ros::time>= (a b)
+  (or (ros::time= a b) (ros::time> a b)))
+(defun ros::time< (a b)
+  (not (ros::time>= a b)))
+(defun ros::time<= (a b)
+  (not (ros::time> a b)))
+
+
 
 (defun ros::ros-home-dir ()
   (let ((ros-home (unix::getenv "ROS_HOME"))

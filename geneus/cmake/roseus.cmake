@@ -16,6 +16,8 @@ endif("$ENV{GENEUS_VERBOSE}" STREQUAL "true")
 if(NOT COMMAND rosbuild_find_ros_package) ## catkin
   find_package(geneus)
   message("geneus_SOURCE_DIR ${geneus_SOURCE_DIR}")
+  message("geneus_SOURCE_PREFIX ${geneus_SOURCE_PREFIX}")
+  message("geneus_PREFIX ${geneus_PREFIX}")
   if(EXISTS ${geneus_SOURCE_DIR}/cmake/roseus_catkin.cmake)
     include(${geneus_SOURCE_DIR}/cmake/roseus_catkin.cmake)
   elseif(EXISTS ${geneus_SOURCE_PREFIX}/cmake/roseus_catkin.cmake)
