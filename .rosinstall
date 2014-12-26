@@ -1,0 +1,3 @@
+- git:
+    uri: https://github.com/jsk-ros-pkg/geneus.git
+    local-name: jsk-ros-pkg/geneus
