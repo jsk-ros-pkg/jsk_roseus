@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.28 (2014-12-26)
+-------------------
 * simplify function
 * add compare function for ros::time
 * Contributors: Chi Wun Au
