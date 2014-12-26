@@ -2,6 +2,9 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.27 (2014-12-20)
 -------------------
 * remove cmake file for rosbuild
@@ -132,4 +135,4 @@ Changelog for package roseus_smach
 * commit current source tree
 * add code for smach_viewer
 * change name smach_roseus -> roseus_smach
-* Contributors: Kei Okada, chen, manabu, youhei
+* Contributors: chen, Kei Okada, youhei, manabu

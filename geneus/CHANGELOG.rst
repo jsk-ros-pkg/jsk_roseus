@@ -2,6 +2,22 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [geneus] Fix manifest order by using rospack depends rather than
+  rospack_depends script
+* Refactor geneus to supress output message from catkin
+* Use global property not to generate same messages twice
+* Use eus1 to generate message files
+* Install cmake files
+* Separate geneus cmake into two separated cmake files: one for catkin
+  and another for rosbuild
+* Refactor roseus_catkin.cmake by separating _generate_eus_dep_msgs into
+  several functions
+* Separate geneus cmake into two separated cmake files: one for catkin
+  and another for rosbuild
+* Contributors: Ryohei Ueda
+
 1.1.27 (2014-12-20)
 -------------------
 
@@ -108,7 +124,7 @@ Changelog for package geneus
  * fix depend tag of geneus manifest.xml
  * check SOURCE_DIR before set generate_messages_py
  * add depends to generate_messages_to_py
-* Contributors: Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada
 
 1.1.0 (2014-04-07)
 ------------------

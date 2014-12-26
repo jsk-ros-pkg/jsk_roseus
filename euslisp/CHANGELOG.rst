@@ -2,6 +2,9 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.27 (2014-12-20)
 -------------------
 
@@ -19,7 +22,7 @@ Changelog for package euslisp
 -------------------
 * (euslisp) update issue tracker location.
 * remove xfont-server, due to https://github.com/ros/rosdistro/issues/5163
-* Contributors: Isaac IY Saito, Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada, Isaac IY Saito
 
  * 2014-09-10 28f6367 (jskeus) (irtrobot, irtdyna, walk-motion) : Use :name instead of plist for footstep l/r
 * 2014-09-09 06e14cb (jskeus) add documents for de617c2949ace302634611a3ccb3b1b4c7919534
@@ -96,7 +99,7 @@ Changelog for package euslisp
 * 9e5ff99 (irteus/test/joint.l) Add min-max violation test ;; Update joint.l to replace magic number by min-angle or max-angle
 * 413c575 (irteus/test/all-robots-objects.l) Add unittest for scene models corresponding to  https://github.com/euslisp/EusLisp/pull/29
 * 425c9d1 (irteus/irtrobot.l) revert codes for collision model making according to https://github.com/euslisp/jskeus/pull/93 and https://github.com/jsk-ros-pkg/jsk_model_tools/pull/46
-* Contributors: Shunichi Nozawa, Kei Okada, Eisoku Kuroiwa
+* Contributors: Eisoku Kuroiwa, Shunichi Nozawa, Kei Okada
 
 
 1.1.19 (2014-06-11)
@@ -107,7 +110,7 @@ Changelog for package euslisp
 * 1564d0a (jskeus : irtrobot.l, robot-model-usage.l, sample-robot-model.l) Add sensor accessosr and test codes discussed in euslisp/jskeus/pull/72 and jsk-ros-pkg/jsk_model_tools/issues/18
 * 9996bf0 (Euslisp : primt.l) Henry Baker's contribution of 2013 July
 * aca5c68 (jskeus : README.md) Update README.md
-* Contributors: Henry Baker, Shunichi Nozawa, Kei Okada
+* Contributors: Shunichi Nozawa, Kei Okada, Henry Baker
 
 1.1.18 (2014-05-16)
 -------------------
@@ -128,7 +131,7 @@ Changelog for package euslisp
 -------------------
 * Fix long first name of k-okada with traditional japanese person style
 * remove euslisp codes which are arleady migrated to irteus/test and include them in test launch
-* Contributors: Yuto Inagaki, Shunichi Nozawa
+* Contributors: Shunichi Nozawa, Yuto Inagaki
 
 1.1.13 (2014-05-06)
 -------------------
@@ -212,4 +215,4 @@ Changelog for package euslisp
 1.0.1 (2014-03-27)
 ------------------
 * euslisp/roseus: add version numeber to 1.0.0
-* Contributors: Kei Okada, Manabu saito, Masaki Murooka, Shunnichi Nozawa, Youhei Kakiuchi
+* Contributors: Manabu saito, Kei Okada, Shunnichi Nozawa, Youhei Kakiuchi, Masaki Murooka

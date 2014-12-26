@@ -2,6 +2,12 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* simplify function
+* add compare function for ros::time
+* Contributors: Chi Wun Au
+
 1.1.27 (2014-12-20)
 -------------------
 * update body's worldcoords before using its faces
@@ -42,13 +48,13 @@ Changelog for package roseus
 * test-genmsg.sh: catkin_make with --make-args VERBOSE=1
 * test-genmsg.sh/test-genmsg.catkin.test : check #120 situation
 * roseus.cpp : support reconnection of service when persist is set true
-* Contributors: Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada
 
 1.1.19 (2014-06-11)
 -------------------
 * (#112,#113) fix service persist without keyward
   ros::service-call (name value &optional (persist nil))
-* Contributors: Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada
 
 1.1.18 (2014-05-16)
 -------------------
@@ -125,7 +131,7 @@ Changelog for package roseus
 * (`#32 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/32>`_) add test-genmsg, test message generation on catkin and rosbuild
 * add check delay of lookuptransform
 * add checking delay of tf return
-* Contributors: Kei Okada, Ryohei Ueda, YoheiKakiuchi
+* Contributors: Ryohei Ueda, Yohei Kakiuchi, Kei Okada
 
 1.0.4 (2014-03-31)
 ------------------
@@ -133,7 +139,7 @@ Changelog for package roseus
 * set euslisp_PACKAGE_PATH for both devel and installed
 * switch from svnversion to git rev-parse --short HEAD
 * removed debug messages
-* Contributors: Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada
 
 1.0.3 (2014-03-29)
 ------------------
@@ -164,4 +170,4 @@ Changelog for package roseus
 1.0.1 (2014-03-27)
 ------------------
 * roseus: add version numeber to 1.0.0
-* Contributors: Kei Okada, Ryohei Ueda, Yohei Kakiuchi, Haseru Chen, Yuki Furuta, Yuto Inagaki, kazuto Murase, Eisoku Kuroiwa, Manabu Saito, Hiroyuki Mikita, Shunnich Nozawa
+* Contributors: Haseru Chen, Shunnich Nozawa, Yuki Furuta, Kei Okada, Yuto Inagaki, Eisoku Kuroiwa, kazuto Murase, Manabu Saito, Ryohei Ueda, Yohei Kakiuchi, Hiroyuki Mikita
