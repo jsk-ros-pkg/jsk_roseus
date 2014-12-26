@@ -725,7 +725,7 @@
         (setq dir (string-right-trim "manifest.l" target-file)
               target-file "manifest.l")
       (setq dir (format nil "~A/roseus/~A/~A" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO") pkg)))
-    (setq strm (piped-fork (format nil "~A/scripts/rospack_depends ~A" *geneus-dir* pkg)))
+    (setq strm (piped-fork (format nil "rospack depends ~A" pkg)))
     (while (setq l (read-line strm nil))
       (push l depend-pkgs))
     (close strm)
