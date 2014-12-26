@@ -39,14 +39,15 @@ macro(geneus_add_manifest arg_pkg)
   if(NOT geneus_all_output_files)
     set(geneus_all_output_files ${ALL_GEN_OUTPUT_FILES_eus})
   endif()
-  list(FIND geneus_all_output_files ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l _ret)
+  set(_output_file ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l)
+  list(FIND geneus_all_output_files ${_output_file} _ret)
   if(${_ret} EQUAL -1)
-    add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l
+    add_custom_command(OUTPUT ${_output_file}
       DEPENDS genmanifest_eus ${_depend_generate_py}
-      COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENMANIFEST_EUS} ${arg_pkg} ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l
+      COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENMANIFEST_EUS} ${arg_pkg} ${_output_file} >/dev/null 2>&1
       COMMENT "Generating EusLisp manifest for upstream package ${arg_pkg}")
-    list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l)
-    list(APPEND geneus_all_output_files ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l)
+    list(APPEND ALL_GEN_OUTPUT_FILES_eus ${_output_file})
+    list(APPEND geneus_all_output_files ${_output_file})
   endif()
   set_property(GLOBAL PROPERTY geneus_all_output_files ${geneus_all_output_files})
 endmacro(geneus_add_manifest arg_pkg)
@@ -80,8 +81,8 @@ macro(geneus_add_msgs arg_pkg)
   if(output_msg_files)
     add_custom_command(OUTPUT ${output_msg_files}
       DEPENDS genmsg_eus ${_msg_file} ${_depend_generate_py}
-      COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS} ${input_msg_files} ":OUTPUT" ${output_msg_files}
-      COMMENT "Generating EusLisp code for upstream message ${input_msg_files}")
+      COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${GENMSG_EUS} ${input_msg_files} ":OUTPUT" ${output_msg_files} >/dev/null 2>&1
+      COMMENT "Generating EusLisp message for upstream message ${input_msg_files}")
   endif(output_msg_files)
 endmacro(geneus_add_msgs arg_pkg)
 
@@ -112,8 +113,8 @@ macro(geneus_add_srvs arg_pkg)
   if(output_srv_files)
     add_custom_command(OUTPUT ${output_srv_files}
       DEPENDS gensrv_eus ${_srv_file} ${_depend_generate_py}
-      COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENSRV_EUS} ${input_srv_files} ":OUTPUT" ${output_srv_files}
-      COMMENT "Generating EusLisp code for upstream service ${arg_pkg}/srv/${_srv_name}")
+      COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENSRV_EUS} ${input_srv_files} ":OUTPUT" ${output_srv_files} >/dev/null 2>&1
+      COMMENT "Generating EusLisp service for upstream service ${arg_pkg}/srv/${_srv_name}")
   endif(output_srv_files)
 endmacro(geneus_add_srvs arg_pkg)
 
@@ -174,8 +175,8 @@ macro(_generate_msg_srv_eus MSG_OR_SRV ARG_PKG ARG_MSG ARG_IFLAGS ARG_MSG_DEPS A
     string(TOUPPER GEN${MSG_OR_SRV}_EUS gen_msg_srv_eus)
     add_custom_command(OUTPUT ${GEN_OUTPUT_FILE}
       DEPENDS gen${MSG_OR_SRV}_eus ${ARG_MSG} ${ARG_MSG_DEPS} ${ARG_PKG}_generate_messages_py
-      COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${${gen_msg_srv_eus}} ${ARG_MSG} ${GEN_OUTPUT_FILE}
-      COMMENT "Generating EusLisp message code from ${ARG_PKG}/${MSG_NAME}")
+      COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} PYTHONPATH=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}:$ENV{PYTHONPATH} ${${gen_msg_srv_eus}} ${ARG_MSG} ${GEN_OUTPUT_FILE} >/dev/null 2>&1
+      COMMENT "Generating EusLisp file code from ${ARG_PKG}/${MSG_NAME}")
 
     list(APPEND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE})
     list(APPEND ALL_GEN_OUTPUT_PACKAGES_eus ${GEN_OUTPUT_FILE})
