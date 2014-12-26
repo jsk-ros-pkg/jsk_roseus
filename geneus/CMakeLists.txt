@@ -8,7 +8,7 @@ project(geneus)
 find_package(catkin REQUIRED COMPONENTS euslisp genmsg)
 
 catkin_package(
-  CFG_EXTRAS roseus.cmake
+  CFG_EXTRAS roseus.cmake roseus_catkin.cmake roseus_rosbuild.cmake
 )
 
 install(DIRECTORY scripts
