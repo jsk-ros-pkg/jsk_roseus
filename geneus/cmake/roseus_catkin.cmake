@@ -35,20 +35,30 @@ endif(geneus_verbose)
 set(ROS_PACKAGE_PATH ${euslisp_PACKAGE_PATH}:${geneus_PACKAGE_PATH}:${CMAKE_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
 
 macro(geneus_add_manifest arg_pkg)
-  list(FIND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l _ret)
+  get_property(geneus_all_output_files GLOBAL PROPERTY geneus_all_output_files)
+  if(NOT geneus_all_output_files)
+    set(geneus_all_output_files ${ALL_GEN_OUTPUT_FILES_eus})
+  endif()
+  list(FIND geneus_all_output_files ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l _ret)
   if(${_ret} EQUAL -1)
     add_custom_command(OUTPUT ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l
       DEPENDS genmanifest_eus ${_depend_generate_py}
       COMMAND ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH} ${GENMANIFEST_EUS} ${arg_pkg} ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l
       COMMENT "Generating EusLisp manifest for upstream package ${arg_pkg}")
     list(APPEND ALL_GEN_OUTPUT_FILES_eus ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l)
+    list(APPEND geneus_all_output_files ${roseus_INSTALL_DIR}/${arg_pkg}/manifest.l)
   endif()
+  set_property(GLOBAL PROPERTY geneus_all_output_files ${geneus_all_output_files})
 endmacro(geneus_add_manifest arg_pkg)
 
 macro(geneus_add_msgs arg_pkg)
   set(input_msg_files)
   set(output_msg_files)
   # gen messages
+  get_property(geneus_all_output_files GLOBAL PROPERTY geneus_all_output_files)
+  if(NOT geneus_all_output_files)
+    set(geneus_all_output_files ${ALL_GEN_OUTPUT_FILES_eus})
+  endif()
   foreach(_msg_file ${${arg_pkg}_MESSAGE_FILES})
     set(_msg_file ${_${arg_pkg}_PACKAGE_PATH}/${_msg_file})
     get_filename_component(_msg_name ${_msg_file} NAME_WE)
@@ -56,14 +66,17 @@ macro(geneus_add_msgs arg_pkg)
     set(_output_msg ${roseus_INSTALL_DIR}/${arg_pkg}/msg/${_msg_name}.l)
     if(NOT EXISTS ${_output_msg} #not generated yet..?
         OR ${_msg_file} IS_NEWER_THAN ${_output_msg})
-      list(FIND ALL_GEN_OUTPUT_FILES_eus ${_output_msg} _ret)
+      #list(FIND ALL_GEN_OUTPUT_FILES_eus ${_output_msg} _ret)
+      list(FIND geneus_all_output_files ${_output_msg} _ret)      
       if(${_ret} EQUAL -1 )
         list(APPEND input_msg_files ${_msg_file})
         list(APPEND output_msg_files ${_output_msg})
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${_output_msg})
+        list(APPEND geneus_all_output_files ${_output_msg})
       endif()
     endif()
   endforeach()
+  set_property(GLOBAL PROPERTY geneus_all_output_files ${geneus_all_output_files})
   if(output_msg_files)
     add_custom_command(OUTPUT ${output_msg_files}
       DEPENDS genmsg_eus ${_msg_file} ${_depend_generate_py}
@@ -75,6 +88,10 @@ endmacro(geneus_add_msgs arg_pkg)
 macro(geneus_add_srvs arg_pkg)
   set(input_srv_files)
   set(output_srv_files)
+  get_property(geneus_all_output_files GLOBAL PROPERTY geneus_all_output_files)
+  if(NOT geneus_all_output_files)
+    set(geneus_all_output_files ${ALL_GEN_OUTPUT_FILES_eus})
+  endif()
   foreach (_srv_file ${${arg_pkg}_SERVICE_FILES})
     set(_srv_file ${_${arg_pkg}_PACKAGE_PATH}/${_srv_file})
     get_filename_component(_srv_name ${_srv_file} NAME_WE)
@@ -82,14 +99,16 @@ macro(geneus_add_srvs arg_pkg)
     set(_output_srv ${roseus_INSTALL_DIR}/${arg_pkg}/srv/${_srv_name}.l)
     if(NOT EXISTS ${_output_srv} #not generated yet..?
         OR ${_srv_file} IS_NEWER_THAN ${_output_srv})
-      list(FIND ALL_GEN_OUTPUT_FILES_eus ${_output_srv} _ret)
+      list(FIND geneus_all_output_files ${_output_srv} _ret)
       if(${_ret} EQUAL -1)
         list(APPEND input_srv_files ${_srv_file})
         list(APPEND output_srv_files ${_output_srv})
         list(APPEND ALL_GEN_OUTPUT_FILES_eus ${_output_srv})
+        list(APPEND geneus_all_output_files ${_output_srv})
       endif()
     endif()
   endforeach()
+  set_property(GLOBAL PROPERTY geneus_all_output_files ${geneus_all_output_files})
   if(output_srv_files)
     add_custom_command(OUTPUT ${output_srv_files}
       DEPENDS gensrv_eus ${_srv_file} ${_depend_generate_py}
@@ -121,7 +140,10 @@ macro(_generate_msg_srv_eus MSG_OR_SRV ARG_PKG ARG_MSG ARG_IFLAGS ARG_MSG_DEPS A
 
   get_filename_component(MSG_NAME ${ARG_MSG} NAME)
   get_filename_component(MSG_SHORT_NAME ${ARG_MSG} NAME_WE)
-
+  get_property(geneus_all_output_files GLOBAL PROPERTY geneus_all_output_files)
+  if(NOT geneus_all_output_files)
+    set(geneus_all_output_files ${ALL_GEN_OUTPUT_FILES_eus})
+  endif()
   set(_depend_packages "")
   foreach(_msg ${ARG_MSG_DEPS})
     get_filename_component(_msg ${_msg} ABSOLUTE)
@@ -139,7 +161,7 @@ macro(_generate_msg_srv_eus MSG_OR_SRV ARG_PKG ARG_MSG ARG_IFLAGS ARG_MSG_DEPS A
   set(MSG_GENERATED_NAME ${MSG_SHORT_NAME})
   set(GEN_OUTPUT_FILE ${roseus_INSTALL_DIR}/${ARG_PKG}/${MSG_OR_SRV}/${MSG_GENERATED_NAME}.l)
 
-  list(FIND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE} _ret)
+  list(FIND geneus_all_output_files ${GEN_OUTPUT_FILE} _ret)
   if(${_ret} EQUAL -1)
 
     set(ROS_PACKAGE_PATH $ENV{ROS_PACKAGE_PATH})
@@ -157,9 +179,9 @@ macro(_generate_msg_srv_eus MSG_OR_SRV ARG_PKG ARG_MSG ARG_IFLAGS ARG_MSG_DEPS A
 
     list(APPEND ALL_GEN_OUTPUT_FILES_eus ${GEN_OUTPUT_FILE})
     list(APPEND ALL_GEN_OUTPUT_PACKAGES_eus ${GEN_OUTPUT_FILE})
-
+    list(APPEND geneus_all_output_files ${GEN_OUTPUT_FILE})
   endif()
-
+  set_property(GLOBAL PROPERTY geneus_all_output_files ${geneus_all_output_files})
 endmacro()
 
 macro(_generate_msg_eus ARG_PKG ARG_MSG ARG_IFLAGS ARG_MSG_DEPS ARG_GEN_OUTPUT_DIR)
