@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.29 (2014-12-27)
+-------------------
 * check it euslisp provide euslisp_INCLUDE_DIR
 
 1.1.28 (2014-12-26)
