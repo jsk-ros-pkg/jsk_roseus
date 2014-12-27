@@ -2,6 +2,9 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.28 (2014-12-26)
 -------------------
 * [geneus] Fix manifest order by using rospack depends rather than
