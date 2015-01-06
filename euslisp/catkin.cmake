@@ -7,9 +7,9 @@ find_package(catkin REQUIRED COMPONENTS rostest)
 # build euslisp
 execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f Makefile.eus
                 RESULT_VARIABLE _make_failed)
-if (_make_failed)
+if (NOT ${_make_failed} EQUAL 0)
   message(FATAL_ERROR "Build of euslisp failed")
-endif(_make_failed)
+endif(NOT ${_make_failed} EQUAL 0)
 
 #check_for_display(disp)
 #if(disp)
