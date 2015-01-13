@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.30 (2015-01-14)
+-------------------
 * use -L to find symlinked irteusgl
 
 1.1.29 (2014-12-27)
