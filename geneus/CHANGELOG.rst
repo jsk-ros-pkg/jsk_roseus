@@ -2,6 +2,10 @@
 Changelog for package geneus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [geneus] Supress debug message
+
 1.1.29 (2014-12-27)
 -------------------
 

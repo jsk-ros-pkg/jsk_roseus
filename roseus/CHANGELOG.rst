@@ -2,6 +2,10 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use -L to find symlinked irteusgl
+
 1.1.29 (2014-12-27)
 -------------------
 * check it euslisp provide euslisp_INCLUDE_DIR

@@ -2,6 +2,12 @@
 Changelog for package euslisp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [euslisp] fix syntax of cmake of euslisp.
+  Result variable of execute_process will be defined always, we need to
+  check the value of the variable
+
 1.1.29 (2014-12-27)
 -------------------
 
