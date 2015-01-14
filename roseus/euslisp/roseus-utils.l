@@ -268,7 +268,7 @@
 	   (colors
 	    (mapcar #'(lambda (c)
 			(if (derivedp c gl::colormaterial) (setq c (send c :diffuse))) ;; jsk
-			(vector->rgba c 1.0))
+			(vector->rgba c a))
 		    (apply #'append color-list)))
 	   )
       (send msg :frame_locked t)
