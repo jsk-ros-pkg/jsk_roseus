@@ -115,6 +115,7 @@ catkin_package(
     CATKIN_DEPENDS message_runtime # euslisp TODO
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
+    CFG_EXTRAS roseus.cmake
 )
 
 # copy bin/roseus to global bin
@@ -134,5 +135,6 @@ install(DIRECTORY euslisp test scripts cmake
   USE_SOURCE_PERMISSIONS)
 
 
+include(cmake/roseus.cmake)
 
 
