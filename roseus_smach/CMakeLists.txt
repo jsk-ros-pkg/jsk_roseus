@@ -1,8 +1,3 @@
-if(USE_ROSBUILD)
-  message("ROSBUILD IS NO LONGER SUPPORTED! USE CATKIN!")
-  return()
-endif()
-
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_smach)
 
