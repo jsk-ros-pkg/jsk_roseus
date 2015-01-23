@@ -1,0 +1,10 @@
+- git:
+    uri: http://github.com/jsk-ros-pkg/geneus
+    local-name: geneus
+# they are released source code and you can not modify this, see setup.sh if you wan to use original source code and make change and contribute
+- git:
+    uri: http://github.com/tork-a/jskeus-release
+    local-name: jskeus
+- git:
+    uri: http://github.com/tork-a/euslisp-release
+    local-name: euslisp
