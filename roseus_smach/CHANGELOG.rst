@@ -2,6 +2,11 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove old manifest.xml, fully catkinize
+* Contributors: Kei Okada
+
 1.1.30 (2015-01-14)
 -------------------
 

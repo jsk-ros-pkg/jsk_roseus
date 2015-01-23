@@ -2,6 +2,17 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add dynamic_reconfigure
+* fix to use catkin-tools
+* remove old manifest.xml, fully catkinize
+* use originl source (node rosmake proxy package) for euslisp
+* add new macro, generate_all_roseus_message() to generate all dependency msgs using new geneus written by python
+* enable alpha when converting eus object to ros marker
+* [roseus] Fix error of VERSION_LESS around TF2_ROS_VERSION
+* Contributors: Kei Okada, Ryohei Ueda, Yusuke Furuta
+
 1.1.30 (2015-01-14)
 -------------------
 * use -L to find symlinked irteusgl
