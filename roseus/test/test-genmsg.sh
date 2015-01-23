@@ -355,10 +355,10 @@ else
     rm -rf ~/.ros/roseus/${ROS_DISTRO}
     # always call twice catkin_make
     if [ $PACKAGE = ALL ]; then
-        catkin_make --make-args VERBOSE=1
-        catkin_make --force-cmake --make-args VERBOSE=1
+        catkin build --make-args VERBOSE=1
+        catkin build --force-cmake --make-args VERBOSE=1
     else
-        catkin_make --only-pkg-with-deps $PACKAGE --make-args VERBOSE=1
+        catkin build --start-from $PACKAGE $PACKAGE --make-args VERBOSE=1
     fi
     source ${CATKIN_DIR}/devel/setup.bash
 fi
@@ -377,12 +377,12 @@ if [ ! "$ROSEUS_EXE" ]; then
 fi
 
 if [ $PACKAGE = ALL ]; then
-    ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $ARGV
-    ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
-    ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
-    ROS_MASTER_URI=http://localhost:22422 ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
 else
-    ROS_MASTER_URI=http://localhost:22422 ${EUSLISP_EXE} ${ROSEUS_DIR}/euslisp/roseus.l ${CATKIN_DIR}/src/$PACKAGE/$PACKAGE.l $ARGV
+    ${EUSLISP_EXE} ${ROSEUS_DIR}/euslisp/roseus.l ${CATKIN_DIR}/src/$PACKAGE/$PACKAGE.l $ARGV
 fi
 
 rm -rf ${CATKIN_DIR}
