@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.31 (2015-01-23)
+-------------------
 * add dynamic_reconfigure
 * fix to use catkin-tools
 * remove old manifest.xml, fully catkinize
