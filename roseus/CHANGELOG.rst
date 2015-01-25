@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.32 (2015-01-26)
+-------------------
 * generate all roseus messages on buildfirm
 
 1.1.31 (2015-01-23)
