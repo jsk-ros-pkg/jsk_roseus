@@ -2,6 +2,10 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* generate all roseus messages on buildfirm
+
 1.1.31 (2015-01-23)
 -------------------
 * add dynamic_reconfigure
