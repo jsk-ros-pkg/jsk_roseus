@@ -61,7 +61,7 @@ macro(generate_all_roseus_messages)
       ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}
       "${ALL_GEN_OUTPUT_FILES_eus}"
       )
-    add_custom_target(${_pkg}_generate_messages_roseus ALL
+    add_custom_target(${_pkg}_generate_messages_eus ALL
       DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
       )
   endforeach()
