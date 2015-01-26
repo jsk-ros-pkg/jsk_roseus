@@ -64,6 +64,7 @@ macro(generate_all_roseus_messages)
     add_custom_target(${_pkg}_generate_messages_eus ALL
       DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
       )
+    install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/share/roseus/ros/${_pkg}/)
   endforeach()
 endmacro()
 
