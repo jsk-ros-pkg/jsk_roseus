@@ -2,6 +2,10 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix wrong all_generate_message_eus target
+
 1.1.32 (2015-01-26)
 -------------------
 * generate all roseus messages on buildfirm
