@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.33 (2015-01-26)
+-------------------
 * fix wrong all_generate_message_eus target
 
 1.1.32 (2015-01-26)
