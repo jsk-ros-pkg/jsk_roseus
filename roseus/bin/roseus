@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
 
-EUSLISP_DIR=`rospack find euslisp`
-EUSLISP_EXE=`find -L $EUSLISP_DIR -type f -name irteusgl`
+EUSLISP_EXE=`find -L $EUSDIR -type f -name irteusgl`
 ROSEUS_DIR=`rospack find roseus`
 ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
         roseus.l eustf.l actionlib.l roseus-utils.l)
