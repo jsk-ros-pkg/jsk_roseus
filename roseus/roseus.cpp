@@ -450,12 +450,16 @@ public:
                  NULL, argc);
     while(argc-->0)vpop();// _res._message, _req._message, eus_msg._message
     vpush(r); // _res._message, _req._message, eus_msg._message, r, 
-    
     // Serializaion
     EuslispMessage eus_res(_res);
     eus_res.replaceContents(r);
+    // check return value is valid
+    pointer ret_serialize_method, ret_class;
+    ret_serialize_method = (pointer)findmethod(ctx,K_ROSEUS_SERIALIZATION_LENGTH,classof(r),&ret_class);
+    if (ret_serialize_method == NIL) {
+      ROS_ERROR("you may not return valid value in service callback");
+    }
     vpush(eus_res._message);    // _res._message, _req._message, eus_msg._message, r, eus_res._message
-    
     uint32_t serialized_length = eus_res.serializationLength();
     params.response.num_bytes = serialized_length + 5; // add 5 bytes of message header
     params.response.buf.reset (new uint8_t[params.response.num_bytes]);
