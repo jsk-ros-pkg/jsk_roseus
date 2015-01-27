@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.2 (2015-01-27)
+------------------
 * do not compile message if it is already installed
 
 1.2.1 (2015-01-27)
