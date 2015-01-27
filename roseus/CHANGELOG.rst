@@ -2,6 +2,10 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* do not compile message if it is already installed
+
 1.2.1 (2015-01-27)
 ------------------
 * install generated messages
