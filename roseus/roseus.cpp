@@ -324,7 +324,7 @@ public:
         _scb=scb;
       }
     } else {
-      ROS_ERROR("subcriptoin callback function install error");
+      ROS_ERROR("subscription callback function install error");
     }
     // avoid gc
     pointer p=gensym(ctx);
@@ -332,7 +332,7 @@ public:
     mutex_unlock(&mark_lock);
   }
   ~EuslispSubscriptionCallbackHelper() {
-      ROS_ERROR("subcriptoin gc");
+      ROS_ERROR("subscription gc");
   }
   virtual ros::VoidConstPtr deserialize(const ros::SubscriptionCallbackHelperDeserializeParams& param) {
 #if DEBUG
