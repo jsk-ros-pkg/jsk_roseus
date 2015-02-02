@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.3 (2015-02-02)
+------------------
 * find package if not messages path is not found
 * [roseus] Fix typo
 * euslisp is now non-catkin package
