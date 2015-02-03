@@ -358,7 +358,7 @@ else
         catkin build --make-args VERBOSE=1
         catkin build --force-cmake --make-args VERBOSE=1
     else
-        catkin build --start-from $PACKAGE $PACKAGE --make-args VERBOSE=1
+        catkin build --start-with $PACKAGE $PACKAGE --make-args VERBOSE=1
     fi
     source ${CATKIN_DIR}/devel/setup.bash
 fi
