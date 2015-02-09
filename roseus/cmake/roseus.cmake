@@ -40,6 +40,12 @@ macro(generate_all_roseus_messages)
       endif()
     endif()
   endforeach()
+  ## add target package those who does not have msg files
+  if(NOT TARGET ${target_pkg}_generate_messages_eus AND
+      NOT ${target_pkg}_MESSAGE_FILES AND NOT ${target_pkg}_SERVICE_FILES AND
+      NOT EXISTS ${roseus_PREFIX}/share/roseus/ros/${target_pkg})
+    _list_append_unique(_${target_pkg}_generate_roseus_message_packages ${target_pkg})
+  endif()
   message(STATUS "[roseus.cmake] ${target_pkg} depends on ${_${target_pkg}_generate_roseus_message_packages_all}")
   message(STATUS "[roseus.cmake] ${target_pkg} will compile ${_${target_pkg}_generate_roseus_message_packages}")
 
