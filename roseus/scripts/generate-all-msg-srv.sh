@@ -70,23 +70,27 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     pkg=${pkg_list[$pkg_i]}
     echo -e "\e[1;31mgenerating... $pkg_i/${#pkg_list[@]}\e[m"
     pkg_name=`basename $pkg`
+    pkg_depends=`rospack depends ${pkg_name}`
+    pkg_includes="-I$pkg_name:`rospack find $pkg_name`"
+    for pkg_d in $pkg_depends; do
+        pkg_includes="$pkg_includes -I$pkg_d:`rospack find $pkg_d`/msg"
+    done
     if [ -e $pkg/msg/ ] ; then
 	for file in `find $pkg/msg -type f -name "*.msg"`; do
 	    echo -e "\e[1;32mgenerating msg... ${file}\e[m"
-	    `rosrun geneus gen_eus.py $file -p $pkg_name -o ${output_dir}/${pkg_name}/msg`;
+	    rosrun geneus gen_eus.py -p $pkg_name -o ${output_dir}/${pkg_name}/msg $pkg_includes $file
 	    check-error
 	done
     fi
     if [ -e $pkg/srv/ ] ; then
 	for file in `find $pkg/srv -type f -name "*.srv"`; do
 	    echo -e "\e[1;32mgenerating srv... ${file}\e[m"
-	    `rosrun geneus gen_eus.py  $file -p $pkg_name -o ${output_dir}/${pkg_name}/srv`;
+	    rosrun geneus gen_eus.py -p $pkg_name -o ${output_dir}/${pkg_name}/srv $pkg_includes $file
 	    check-error
 	done
     fi
     rospack depends $pkg_name > /dev/null || (check-warn) ; ## just for check depends error
     echo -e "\e[1;32mgenerating manifest... ${pkg_name}\e[m"
-    pkg_depends=`rospack depends ${pkg_name}`
     `rosrun geneus gen_eus.py -m -o ${output_dir}/${pkg_name} ${pkg_depends}`;
     check-error
     if [ "${COMPILE}" = "Yes" ]; then
