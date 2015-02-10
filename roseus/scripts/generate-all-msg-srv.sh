@@ -1,17 +1,14 @@
 #!/bin/bash
 
-EUSLISP_PKGDIR=`rospack find euslisp`
-EUS2_EXE=`find $EUSLISP_PKGDIR -name eus2`
+#rosrun geneus gen_eus.py -m libccd -o /home/k-okada/catkin_ws/ws_msggen/devel/share/roseus/ros/libccd
 
-if [ ! "$EUS2_EXE" ] ; then
-    echo -e "\e[1;31mERROR in eus2 is not found\e[m"
-    exit 1
-fi
-
-function generate-msg-srv {
-    local dir=$1;
-    echo $dir
-    cd $dir; rm -fr msg/eus srv/eus; if [ -e build ]; then cd build; make ROSBUILD_genmsg_eus; fi
+function print-usage {
+    echo "Usage $0 : [option] [package_name] "
+    echo "    (no option)     : generate for all packages that previously build "
+    echo "    [package_name]  : generate for the [package_name] package"
+    echo "    --all           : generate for all packages in the ROS_PACKAGE_PATH"
+    echo "    --compile       : compile generated message files"
+    echo "    --help          : print this message"
 }
 
 function check-error {
@@ -27,17 +24,7 @@ function check-warn {
     fi
 }
 
-function print-usage {
-    echo "Usage $0 : [option] [package_name] "
-    echo "    (no option)     : generate for all packages that previously build "
-    echo "    [package_name]  : generate for the [package_name] package"
-    echo "    --all           : generate for all packages in the ROS_PACKAGE_PATH"
-    echo "    --shared        : generate for all packages in the ROS_PACKAGE_PATH with ROS_NOBUILD files"
-    echo "    --compile       : compile generated message files"
-    echo "    --help          : print this message"
-}
 
-#trap 'kill -s HUP $$ ' INT TERM
 ALL=No
 SHARED=No
 COMPILE=No
@@ -46,8 +33,6 @@ do
     case $1 in
 	-h|--help)
 	    print-usage; exit 0;;
-	-s|--shared)
-            SHARED=Yes;;
 	-a|--all)
             ALL=Yes;;
         -c|--compile)
@@ -61,22 +46,15 @@ done
 rospack profile > /dev/null
 
 
-if [ "" != "$ROS_HOME" ] ; then
-    roshomedir="$ROS_HOME";
-else
-    roshomedir="$HOME/.ros";
-fi
-
-mkdir -p $roshomedir/roseus/$ROS_DISTRO
-# listap all packages
+IFS=':' read -ra TMP <<< "$CMAKE_PREFIX_PATH"
+output_dir=${TMP[0]}/share/roseus/ros
 
 if [ "${ALL}" = "Yes" ]; then
     package_list_names=${@:-`rospack list-names`}
-elif [ "${SHARED}" = "Yes" ] ;  then
-    package_list_names=${@:-`for pkg in \`rospack list | cut -d\\  -f 2\`; do if [ -e $pkg/ROS_NOBUILD ]; then echo \`basename $pkg\`; fi; done`}
 else
-    package_list_names=${@:-`cd $roshomedir/roseus/$ROS_DISTRO; find ./ -maxdepth 1 -type d -print | sed s%^./%%g`}
+    package_list_names=${@:-`cd $output_dir; find ./ -maxdepth 1 -type d -print | sed s%^./%%g`}
 fi
+
 for pkg in $package_list_names; do
     fullpath_pkg=`rospack find $pkg`;
     if [ "$fullpath_pkg" ] ; then
@@ -85,7 +63,7 @@ for pkg in $package_list_names; do
     fi
 done
 
-echo -e "\e[1;32mgenerating... ${#pkg_list[@]} files with ALL=${ALL}, SHARED=${SHARED}, COMPILE=${COMPILE} option\e[m"
+echo -e "\e[1;32mgenerating... ${#pkg_list[@]} files with ALL=${ALL}, COMPILE=${COMPILE} option\e[m"
 
 # generate msg file
 for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
@@ -95,20 +73,21 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     if [ -e $pkg/msg/ ] ; then
 	for file in `find $pkg/msg -type f -name "*.msg"`; do
 	    echo -e "\e[1;32mgenerating msg... ${file}\e[m"
-	    `rospack find geneus`/scripts/genmsg_eus $file;
+	    `rosrun geneus gen_eus.py $file -p $pkg_name -o ${output_dir}/${pkg_name}/msg`;
 	    check-error
 	done
     fi
     if [ -e $pkg/srv/ ] ; then
 	for file in `find $pkg/srv -type f -name "*.srv"`; do
 	    echo -e "\e[1;32mgenerating srv... ${file}\e[m"
-	    `rospack find geneus`/scripts/gensrv_eus $file;
+	    `rosrun geneus gen_eus.py  $file -p $pkg_name -o ${output_dir}/${pkg_name}/srv`;
 	    check-error
 	done
     fi
     rospack depends $pkg_name > /dev/null || (check-warn) ; ## just for check depends error
     echo -e "\e[1;32mgenerating manifest... ${pkg_name}\e[m"
-    `rospack find geneus`/scripts/genmanifest_eus $pkg_name
+    pkg_depends=`rospack depends ${pkg_name}`
+    `rosrun geneus gen_eus.py -m -o ${output_dir}/${pkg_name} ${pkg_depends}`;
     check-error
     if [ "${COMPILE}" = "Yes" ]; then
         rosrun roseus roseus "(progn (setq lisp::*error-handler* #'(lambda (&rest args) (print args *error-output*)(exit 1))) (setq ros::*compile-message* t) (ros::load-ros-manifest \"$pkg_name\") (exit 0))"

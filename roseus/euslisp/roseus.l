@@ -310,18 +310,18 @@ always the rank of list is 2"
 ;;
 ;; first look under "~A/roseus/${ROS_DISTRO}/${PKG}" and if not check CMAKE_PREFIX_PATH/share/roseus/ros/${PKG}
 (defun ros::find-load-msg-path (pkg)
-  (let ((dirs (list (format nil "~A/roseus/~A" (ros::ros-home-dir) (unix:getenv "ROS_DISTRO"))))
+  (let ((dirs (list ))
         (ppath (unix::getenv "CMAKE_PREFIX_PATH"))
         (s 0))
     (while (setq i (position #\: ppath :start s))
-      (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s i))))
+      (setq dirs (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s i)))))
       (setq s (1+ i)))
-    (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s))))
+    (setq dirs (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s)))))
     ;;
     (dolist (dir dirs)
       (if (probe-file (format nil "~A/~A/" dir pkg))
           (return-from ros::find-load-msg-path (format nil "~A/~A" dir pkg))))
-    (ros::ros-error "Could not find roseus messages under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" dirs pkg)
+    (ros::ros-error "Could not find roseus messages for ~A under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" pkg dirs pkg)
     nil))
 
 (defun ros::load-ros-manifest (pkg)
