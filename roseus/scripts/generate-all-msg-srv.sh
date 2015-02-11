@@ -71,7 +71,7 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     echo -e "\e[1;31mgenerating... $pkg_i/${#pkg_list[@]}\e[m"
     pkg_name=`basename $pkg`
     pkg_depends=`rospack depends ${pkg_name}`
-    pkg_includes="-I$pkg_name:`rospack find $pkg_name`"
+    pkg_includes="-I$pkg_name:`rospack find $pkg_name`/msg"
     for pkg_d in $pkg_depends; do
         pkg_includes="$pkg_includes -I$pkg_d:`rospack find $pkg_d`/msg"
     done
