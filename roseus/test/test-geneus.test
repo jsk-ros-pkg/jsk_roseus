@@ -1,0 +1,5 @@
+<launch>
+  <node name="send_msgs" pkg="roseus" type="test_geneus_send_msgs.py" />
+  <test test-name="test_geneus" pkg="roseus" type="test-geneus.l" />
+</launch>
+
