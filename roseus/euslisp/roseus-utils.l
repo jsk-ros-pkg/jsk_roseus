@@ -1015,3 +1015,91 @@
           (t
            (error "unknown type ~A" type)))
     (ros::service-call (format nil "~A/set_parameters" srv) req)))
+
+;; Class to synchronize multiple topics
+;; like message_filters
+(defclass exact-time-message-filter-callback-helper
+  :super propertied-object
+  :slots (deligate topic))
+
+(defmethod exact-time-message-filter-callback-helper
+  (:init (topic-info &key deligate-object)
+    "topic-info := (topic message-type)
+     deligate-object := exact-time-message-filter"
+    (setq deligate deligate-object)
+    (setq topic (car topic-info))
+    (ros::subscribe (car topic-info) (cadr topic-info) #'send self :callback)
+    )
+  (:callback (msg)
+    "just call :add-message method of deligate object"
+    (send deligate :add-message topic msg))
+  )
+
+(defclass exact-time-message-filter
+  :super propertied-object
+  :slots (callback-helpers buffers buffer-length)
+  )
+
+
+(defmethod exact-time-message-filter
+  (:init (topics &key ((:buffer-length abuffer-length) 50))
+    "topic := ((topic message-type) (topic message-type) ...)"
+    ;; initialize buffers for each topics
+    (setq buffer-length abuffer-length)
+    (setq buffers (mapcar #'(lambda (topic-info)
+                              (cons (car topic-info) (make-list 0)))
+                          topics))
+    (setq callback-helpers
+          (mapcar #'(lambda (topic-info)
+                      (instance exact-time-message-filter-callback-helper
+                                :init topic-info
+                                :deligate-object self))
+                  topics)))
+  (:add-message (topic-name message)
+    "add message to buffer and call callback if possible"
+    (let ((buffer (cdr (assoc topic-name buffers))))
+      (setf (cdr (assoc topic-name buffers)) (nconc buffer (list message)))
+      ;; check the length of buffer
+      (when (> (length buffer) buffer-length)
+        (setf (cdr (assoc topic-name buffers))
+              (subseq (cdr (assoc topic-name buffers))
+                      (- (length (cdr (assoc topic-name buffers))) buffer-length)
+                      (length (cdr (assoc topic-name buffers))))))
+      ;; (format t "buffer length ~A~%" (length buffer))
+      (send self :call-callback-if-possible (send message :header :stamp))
+      ))
+  (:call-callback-if-possible (stamp)
+    "call synchronized callback if messages can be found
+with the same timestamp"
+    (let ((candidates
+           (mapcar #'(lambda (buffer)
+                       (find-if #'(lambda (x)
+                                    (let ((diff (ros::time- (send x :header :stamp) stamp)))
+                                      (= (send diff :to-sec) 0)))
+                                buffer))
+                   (mapcar #'cdr buffers))))
+      ;; check if all topic is available
+      (when (= (length (remove-if #'null candidates)) 
+               (length candidates))
+        (send* self :callback candidates))
+      ))
+  )
+
+#|
+;; sample
+(defclass image-caminfo-synchronizer
+  :super exact-time-message-filter)
+
+(defmethod image-caminfo-synchronizer
+  (:callback (image caminfo)
+    (print (list image caminfo))
+    (print (send-all (list image caminfo) :header :stamp))
+    ))
+(ros::roseus "hoge")
+(ros::roseus-add-msgs "sensor_msgs")
+;; test
+(setq hoge (instance image-caminfo-synchronizer :init
+                     (list (list "/multisense/left/image_rect_color" sensor_msgs::Image)
+                           (list "/multisense/left/camera_info" sensor_msgs::CameraInfo))))
+(ros::spin)
+|#
