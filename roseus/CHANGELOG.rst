@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.5 (2015-02-13)
+------------------
 * [roseus.cmake] add more condition
 * [roseus] Add class to synchronize multiple topics with the same timestamp like message_filters
 * Contributors: Kei Okada, Ryohei Ueda
