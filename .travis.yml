@@ -8,8 +8,10 @@ compiler:
 env:
   - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=true
   - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false
+  - ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=source
   - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true
   - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false
+  - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=source
 # matrix:
 #   allow_failures:
 #     - env: ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false
