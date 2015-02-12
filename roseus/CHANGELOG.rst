@@ -2,6 +2,12 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus.cmake] add more condition
+* [roseus] Add class to synchronize multiple topics with the same timestamp like message_filters
+* Contributors: Kei Okada, Ryohei Ueda
+
 1.2.4 (2015-02-12)
 ------------------
 * do not run upstream message generation on buildfirm
