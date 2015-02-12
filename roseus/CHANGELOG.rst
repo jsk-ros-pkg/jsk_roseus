@@ -2,6 +2,20 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* do not run upstream message generation on buildfirm
+* fir for generating manifest for packages does not have depends
+* add test code for geneus
+* more fix to generate-all-msg-srv
+* fit for generating msgs
+* add target package those who does not have msg files
+* [roseus] generate-all-msgs-srv.sh fix for new geneus package
+* roseus messages under home-dir is nolonger supported
+* [roseus] add more debug messages ros message generation
+* [roseus] test/test-genmsg.sh, fix typo start-from -> start-with for catkin-tools
+* Contributors: Kei Okada
+
 1.2.3 (2015-02-02)
 ------------------
 * find package if not messages path is not found
@@ -20,7 +34,7 @@ Changelog for package roseus
 ------------------
 * [roseus] If user return invalid instance in service callback, print error message
 * use EUSDIR insted of using rospack find euslisp
-* Contributors: Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada
 
 1.1.33 (2015-01-26)
 -------------------
@@ -39,7 +53,7 @@ Changelog for package roseus
 * add new macro, generate_all_roseus_message() to generate all dependency msgs using new geneus written by python
 * enable alpha when converting eus object to ros marker
 * [roseus] Fix error of VERSION_LESS around TF2_ROS_VERSION
-* Contributors: Kei Okada, Ryohei Ueda, Yusuke Furuta
+* Contributors: Ryohei Ueda, Kei Okada, Yusuke Furuta
 
 1.1.30 (2015-01-14)
 -------------------
@@ -217,4 +231,4 @@ Changelog for package roseus
 1.0.1 (2014-03-27)
 ------------------
 * roseus: add version numeber to 1.0.0
-* Contributors: Haseru Chen, Shunnich Nozawa, Yuki Furuta, Kei Okada, Yuto Inagaki, Eisoku Kuroiwa, kazuto Murase, Manabu Saito, Ryohei Ueda, Yohei Kakiuchi, Hiroyuki Mikita
+* Contributors: Haseru Chen, Shunnich Nozawa, Yuki Furuta, Kei Okada, Yuto Inagaki, Manabu Saito, kazuto Murase, Yohei Kakiuchi, Eisoku Kuroiwa, Ryohei Ueda, Hiroyuki Mikita

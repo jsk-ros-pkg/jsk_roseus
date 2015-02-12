@@ -2,6 +2,9 @@
 Changelog for package roseus_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.2.3 (2015-02-02)
 ------------------
 
@@ -41,7 +44,7 @@ Changelog for package roseus_tutorials
 * Use argument for checkerboard detector. Enable to set group.
 * Replace deprecated kinect_color_filter by hsi_color_filter in jsk_pcl_ros
 * update vision-action-example3 to use checkerboard_detector
-* Contributors: Kei Okada, Shunichi Nozawa, aginika
+* Contributors: Kei Okada, Shunichi Nozawa, Yuto Inagaki
 
 1.1.26 (2014-11-10)
 -------------------
@@ -115,7 +118,7 @@ Changelog for package roseus_tutorials
 1.1.4 (2014-04-25)
 ------------------
 * update tabletop detector
-* Contributors: YoheiKakiuchi
+* Contributors: Yohei Kakiuchi
 
 1.1.3 (2014-04-14)
 ------------------
@@ -291,4 +294,4 @@ Changelog for package roseus_tutorials
 * change to use roseus, whcih automatically load roseus.l eustf.l actionlib.l
 * add publish_marker example by t-ito
 * add roseus_tutorials
-* Contributors: Kei Okada, Ryohei Ueda, Haseru Chen, Yuto Inagaki, Satoshi Iwaishi, Eisoku kuroiwa, Manabu Saito, Shunsuke Nozawa, Rosen Diankov, Tukasa Ito, Atushi Tsuda, Youhei Kakiuchi
+* Contributors: Haseru Chen, Rosen Diankov, Shunsuke Nozawa, Manabu Saito, Kei Okada, Yuto Inagaki, Satoshi Iwaishi, Eisoku kuroiwa, Atushi Tsuda, Ryohei Ueda, Tukasa Ito, Youhei Kakiuchi
