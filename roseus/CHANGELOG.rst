@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.4 (2015-02-12)
+------------------
 * do not run upstream message generation on buildfirm
 * fir for generating manifest for packages does not have depends
 * add test code for geneus
