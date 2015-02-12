@@ -91,7 +91,7 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     fi
     rospack depends $pkg_name > /dev/null || (check-warn) ; ## just for check depends error
     echo -e "\e[1;32mgenerating manifest... ${pkg_name}\e[m"
-    `rosrun geneus gen_eus.py -m -o ${output_dir}/${pkg_name} ${pkg_depends}`;
+    rosrun geneus gen_eus.py -m -o ${output_dir}/${pkg_name} ${pkg} ${pkg_depends}
     check-error
     if [ "${COMPILE}" = "Yes" ]; then
         rosrun roseus roseus "(progn (setq lisp::*error-handler* #'(lambda (&rest args) (print args *error-output*)(exit 1))) (setq ros::*compile-message* t) (ros::load-ros-manifest \"$pkg_name\") (exit 0))"
