@@ -46,6 +46,7 @@ macro(generate_all_roseus_messages)
   ## add target package those who does not have msg files
   if(NOT TARGET ${target_pkg}_generate_messages_eus AND
       NOT ${target_pkg}_MESSAGE_FILES AND NOT ${target_pkg}_SERVICE_FILES AND
+      NOT EXISTS ${PROJECT_SOURCE_DIR}/msg AND NOT EXISTS ${PROJECT_SOURCE_DIR}/srv AND
       NOT EXISTS ${roseus_PREFIX}/share/roseus/ros/${target_pkg})
     _list_append_unique(_${target_pkg}_generate_roseus_message_packages ${target_pkg})
   endif()
