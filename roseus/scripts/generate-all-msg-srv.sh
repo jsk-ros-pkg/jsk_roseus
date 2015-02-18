@@ -64,6 +64,7 @@ for pkg in $package_list_names; do
 done
 
 echo -e "\e[1;32mgenerating... ${#pkg_list[@]} files with ALL=${ALL}, COMPILE=${COMPILE} option\e[m"
+echo -e "\e[1;32mwriting output to...${output_dir}\e[m"
 
 # generate msg file
 for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
@@ -72,8 +73,13 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
     pkg_name=`basename $pkg`
     pkg_depends=`rospack depends ${pkg_name}`
     pkg_includes="-I$pkg_name:`rospack find $pkg_name`/msg"
+    pkg_msg_depends=""
     for pkg_d in $pkg_depends; do
-        pkg_includes="$pkg_includes -I$pkg_d:`rospack find $pkg_d`/msg"
+        pkg_d_path=`rospack find $pkg_d`
+        if [ -e ${pkg_d_path}/msg -o -e ${pkg_d_path}/srv ]; then
+            pkg_msg_depends="$pkg_msg_depends $pkg_d"
+            pkg_includes="$pkg_includes -I$pkg_d:${pkg_d_path}/msg"
+        fi
     done
     if [ -e $pkg/msg/ ] ; then
 	for file in `find $pkg/msg -type f -name "*.msg"`; do
@@ -90,8 +96,8 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
 	done
     fi
     rospack depends $pkg_name > /dev/null || (check-warn) ; ## just for check depends error
-    echo -e "\e[1;32mgenerating manifest... ${pkg_name}\e[m"
-    rosrun geneus gen_eus.py -m -o ${output_dir}/${pkg_name} ${pkg_name} ${pkg_depends}
+    echo -e "\e[1;32mgenerating manifest... ${output_dir}/${pkg_name}/manifest.l\e[m"
+    rosrun geneus gen_eus.py -m -o ${output_dir}/${pkg_name} ${pkg_name} ${pkg_msg_depends}
     check-error
     if [ "${COMPILE}" = "Yes" ]; then
         rosrun roseus roseus "(progn (setq lisp::*error-handler* #'(lambda (&rest args) (print args *error-output*)(exit 1))) (setq ros::*compile-message* t) (ros::load-ros-manifest \"$pkg_name\") (exit 0))"
