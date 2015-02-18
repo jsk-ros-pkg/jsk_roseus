@@ -180,7 +180,7 @@
 (defun ros::resolve-ros-path (fname)
   (let* ((urlname (url-pathname fname))
 	 (package-name (send urlname :host))
-	 (path-name (namestring urlname))
+	 (path-name (string-left-trim "/" (namestring urlname)))
 	 (package-path (ros::rospack-find package-name)))
     (when ros::*compile-message*
       (let* ((fname (pathname-name path-name))
@@ -324,11 +324,15 @@ always the rank of list is 2"
     (ros::ros-error "Could not find roseus messages for ~A under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" pkg dirs pkg)
     nil))
 
-(defun ros::load-ros-manifest (pkg)
-  (let ((manifest (format nil "~A/manifest.l" (ros::find-load-msg-path pkg))))
-    (if (probe-file manifest)
-	(load-org-for-ros manifest)
-      (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg))))
+(defun ros::load-ros-manifest (pkg-name &key (with-deps t))
+  (let ((pkgs (list pkg-name)))
+    (when with-deps
+      (push (ros::find-ros-build-depend-packages pkg-name) pkgs))
+    (dolist (pkg (flatten pkgs))
+      (let ((manifest (format nil "~A/manifest.l" (ros::find-load-msg-path pkg))))
+        (if (probe-file manifest)
+            (load-org-for-ros manifest)
+          (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg))))))
 
 (defun ros::load-ros-package (pkg)
   (unless (find-package (string-upcase pkg))
@@ -336,7 +340,20 @@ always the rank of list is 2"
   (when (probe-file (format nil "~A/msg" (ros::find-load-msg-path pkg)))
     (ros::roseus-add-msgs pkg))
   (when (probe-file (format nil "~A/srv" (ros::find-load-msg-path pkg)))
-    (ros::roseus-add-srvs pkg)))
+    (ros::roseus-add-srvs pkg)))))
+
+(defun ros::find-ros-build-depend-packages (pkg)
+  (let ((os
+         (piped-fork (format nil "~A ~A"
+                             (ros::resolve-ros-path "package://roseus/scripts/find_build_depend_packages.py")
+                             pkg)))
+        s
+        lst)
+    (while t
+      (setq s (read-line os nil nil))
+      (if (null s)
+          (return-from ros::find-ros-build-depend-packages (nreverse lst))
+        (push s lst)))))
 
 (setq sys::*exit-hook* 'ros::exit)
 
