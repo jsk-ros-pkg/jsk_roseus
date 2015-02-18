@@ -16,6 +16,7 @@ set -e                          # exit on error
 #    roseus
 #    roseus_dep1 (depends on roseus and geneus_dep2)
 #    roseus_dep2 (depends on roseus and roseus_dep1)
+#    roseus_dep3 (build depends on roseus_dep1, roseus_dep2, generate_messages roseus_dep1, using messages in roseus_dep2) # manifest should have all depends packages
 
 
 # parse arguments
@@ -42,11 +43,13 @@ GENEUS_DEP1=${CATKIN_DIR}/src/geneus_dep1
 GENEUS_DEP2=${CATKIN_DIR}/src/geneus_dep2
 ROSEUS_DEP1=${CATKIN_DIR}/src/roseus_dep1
 ROSEUS_DEP2=${CATKIN_DIR}/src/roseus_dep2
+ROSEUS_DEP3=${CATKIN_DIR}/src/roseus_dep3
 
 mkdir -p ${GENEUS_DEP1}/{msg,srv,action}
 mkdir -p ${GENEUS_DEP2}/{msg,srv,action}
 mkdir -p ${ROSEUS_DEP1}/{msg,srv,action}
 mkdir -p ${ROSEUS_DEP2}/{msg,srv,action}
+mkdir -p ${ROSEUS_DEP3}/{msg,srv,action}
 
 #trap 'rm -fr ${CATKIN_DIR}; exit 1' 1 2 3 15
 
@@ -201,6 +204,7 @@ EOF
 function add_lisp() {
     pkg_path=$1
     pkg_name=$2
+    msg_pkg=${3:-$pkg_name}
     cat <<EOF > $pkg_path/$pkg_name.l
 (require :unittest "lib/llib/unittest.l")
 
@@ -215,7 +219,7 @@ function add_lisp() {
   (assert (eval (read-from-string "(instance sensor_msgs::imu :init)"))
           "instantiating msg message")
 
-  (assert (eval (read-from-string "(instance $pkg_name::String :init)"))
+  (assert (eval (read-from-string "(instance $msg_pkg::String :init)"))
           "instantiating msg message")
 
   )
@@ -268,35 +272,43 @@ add_${MANIFEST} ${GENEUS_DEP1} geneus_dep1 geneus
 add_${MANIFEST} ${GENEUS_DEP2} geneus_dep2 geneus geneus_dep1
 add_${MANIFEST} ${ROSEUS_DEP1} roseus_dep1 roseus geneus_dep2 geneus_dep1
 add_${MANIFEST} ${ROSEUS_DEP2} roseus_dep2 roseus_dep1 roseus geneus_dep1 geneus_dep2
+add_${MANIFEST} ${ROSEUS_DEP3} roseus_dep3 roseus_dep2 roseus_dep1 roseus geneus_dep1 geneus_dep2
 
 add_cmake ${GENEUS_DEP1} 
 add_cmake ${GENEUS_DEP2} "geneus_dep1" "geneus_dep1"
 add_cmake ${ROSEUS_DEP1} "geneus_dep1 roseus geneus_dep2" "geneus_dep1 roseus geneus_dep2"
 add_cmake ${ROSEUS_DEP2} "geneus_dep1 roseus geneus_dep2 roseus_dep1" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
+add_cmake ${ROSEUS_DEP3} "geneus_dep2 geneus_dep1 roseus geneus_dep2 roseus_dep1" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
 add_cpp ${GENEUS_DEP1} geneus_dep1
 add_cpp ${GENEUS_DEP2} geneus_dep2
 add_cpp ${ROSEUS_DEP1} roseus_dep1
 add_cpp ${ROSEUS_DEP2} roseus_dep2
+add_cpp ${ROSEUS_DEP3} roseus_dep3
 add_lisp ${GENEUS_DEP1} geneus_dep1
 add_lisp ${GENEUS_DEP2} geneus_dep2
 add_lisp ${ROSEUS_DEP1} roseus_dep1
 add_lisp ${ROSEUS_DEP2} roseus_dep2
+add_lisp ${ROSEUS_DEP3} roseus_dep3
+add_lisp ${ROSEUS_DEP3} roseus_dep3 roseus_dep2
 
 add_msg ${GENEUS_DEP1} std_msgs
 add_msg ${GENEUS_DEP2} geneus_dep1
 add_msg ${ROSEUS_DEP1} geneus_dep2
 add_msg ${ROSEUS_DEP2} roseus_dep1
+add_msg ${ROSEUS_DEP3} roseus_dep1
 
 add_action ${GENEUS_DEP1} std_msgs
 add_action ${GENEUS_DEP2} geneus_dep1
 add_action ${ROSEUS_DEP1} geneus_dep2
 add_action ${ROSEUS_DEP2} roseus_dep1
+add_action ${ROSEUS_DEP3} roseus_dep1
 
 
 add_srv ${GENEUS_DEP1} std_msgs
 add_srv ${GENEUS_DEP2} geneus_dep1
 add_srv ${ROSEUS_DEP1} geneus_dep2
 add_srv ${ROSEUS_DEP2} roseus_dep1
+add_srv ${ROSEUS_DEP3} roseus_dep1
 
 
 if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
@@ -340,7 +352,18 @@ if [ $PACKAGE = ALL ]; then
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep3/roseus_dep3.l $ARGV
+    rm -fr ${CAATKIN_DIR}/devel/share/roseus/ros
+    rosun roseus generate-all-msg-srv.sh
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep3/roseus_dep3.l $ARGV
 else
+    ${EUSLISP_EXE} ${ROSEUS_DIR}/euslisp/roseus.l ${CATKIN_DIR}/src/$PACKAGE/$PACKAGE.l $ARGV
+    rm -fr ${CAATKIN_DIR}/devel/share/roseus/ros
+    rosun roseus generate-all-msg-srv.sh
     ${EUSLISP_EXE} ${ROSEUS_DIR}/euslisp/roseus.l ${CATKIN_DIR}/src/$PACKAGE/$PACKAGE.l $ARGV
 fi
 
