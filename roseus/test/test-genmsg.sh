@@ -5,7 +5,7 @@ set -e                          # exit on error
 #######################
 # a script to test geneus
 # it supports
-#   * rosbuild/catkin
+#   * catkin
 #   * one workspace/multiple workspaces
 #   * several dependency situation
 
@@ -25,10 +25,6 @@ ARGV=$@
 PACKAGE=ALL
 while [ $# -gt 0 ]; do
     case "$1" in 
-        "--rosbuild")
-            ROSBUILD=TRUE
-            MANIFEST=manifest.xml
-            ;;
         "--one-workspace")
             WORKSPACE_TYPE=ONE
             ;;
@@ -53,13 +49,6 @@ mkdir -p ${ROSEUS_DEP1}/{msg,srv,action}
 mkdir -p ${ROSEUS_DEP2}/{msg,srv,action}
 
 #trap 'rm -fr ${CATKIN_DIR}; exit 1' 1 2 3 15
-
-function add_makefile() {
-    cat <<EOF > $1/Makefile
-EXTRA_CMAKE_FLAGS = -DUSE_ROSBUILD:BOOL=1
-include \$(shell rospack find mk)/cmake.mk
-EOF
-}
 
 function add_package.xml() {
     pkg_path=$1
@@ -128,8 +117,6 @@ function add_cmake() {
     cmake_minimum_required(VERSION 2.8.3)
 project($(basename $pkg_path))
 
-if(NOT USE_ROSBUILD) # catkin
-
 find_package(catkin REQUIRED COMPONENTS message_generation roscpp sensor_msgs actionlib_msgs
 $(for pkg in $1
 do
@@ -166,17 +153,6 @@ add_executable(\${PROJECT_NAME} \${PROJECT_NAME}.cpp)
 target_link_libraries(\${PROJECT_NAME} \${catkin_LIBRARIES})
 add_dependencies(\${PROJECT_NAME} \${PROJECT_NAME}_generate_messages_cpp)
 
-else() ## rosbuild
-
-include(\$ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-rosbuild_init()
-
-rosbuild_gensrv()
-rosbuild_genmsg()
-
-rosbuild_add_executable(\${PROJECT_NAME} \${PROJECT_NAME}.cpp)
-
-endif()
 EOF
 }
 
@@ -288,10 +264,6 @@ EOF
 }
 
 # makeup packages
-add_makefile ${GENEUS_DEP1} 
-add_makefile ${GENEUS_DEP2} 
-add_makefile ${ROSEUS_DEP1}
-add_makefile ${ROSEUS_DEP2}
 add_${MANIFEST} ${GENEUS_DEP1} geneus_dep1 geneus
 add_${MANIFEST} ${GENEUS_DEP2} geneus_dep2 geneus geneus_dep1
 add_${MANIFEST} ${ROSEUS_DEP1} roseus_dep1 roseus geneus_dep2 geneus_dep1
@@ -333,11 +305,6 @@ if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
         exit 0
     fi
     cp -r `rospack find roseus`/.. ${CATKIN_DIR}/src/jsk_roseus
-    if [ ${ROSBUILD} ] ; then
-        rm -fr ${CATKIN_DIR}/src/jsk_roseus/euslisp/build # rm if alredy rosmaked
-        rm -fr ${CATKIN_DIR}/src/jsk_roseus/geneus/build # rm if alredy rosmaked
-        rm -fr ${CATKIN_DIR}/src/jsk_roseus/roseus/build # rm if alredy rosmaked
-    fi
 fi
 
 if [ $WORKSPACE_TYPE = ONE ]; then
@@ -346,22 +313,14 @@ if [ $WORKSPACE_TYPE = ONE ]; then
 fi
 
 cd ${CATKIN_DIR}
-if [ ${ROSBUILD} ] ; then
-    export ROS_PACKAGE_PATH=${CATKIN_DIR}/src/:${ROS_PACKAGE_PATH}
-    rospack profile
-    rosmake  -V roseus_dep2
+# always call twice catkin_make
+if [ $PACKAGE = ALL ]; then
+    catkin build --make-args VERBOSE=1
+    catkin build --force-cmake --make-args VERBOSE=1
 else
-    # force to clear roseus cache
-    rm -rf ~/.ros/roseus/${ROS_DISTRO}
-    # always call twice catkin_make
-    if [ $PACKAGE = ALL ]; then
-        catkin build --make-args VERBOSE=1
-        catkin build --force-cmake --make-args VERBOSE=1
-    else
-        catkin build --start-with $PACKAGE $PACKAGE --make-args VERBOSE=1
-    fi
-    source ${CATKIN_DIR}/devel/setup.bash
+    catkin build --start-with $PACKAGE $PACKAGE --make-args VERBOSE=1
 fi
+source ${CATKIN_DIR}/devel/setup.bash
 
 # # try to run roseus sample program
 EUSLISP_DIR=`rospack find euslisp`
