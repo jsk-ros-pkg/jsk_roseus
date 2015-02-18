@@ -324,23 +324,23 @@ always the rank of list is 2"
     (ros::ros-error "Could not find roseus messages for ~A under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" pkg dirs pkg)
     nil))
 
-(defun ros::load-ros-manifest (pkg)
-  (let ((manifest (format nil "~A/manifest.l" (ros::find-load-msg-path pkg))))
-    (if (probe-file manifest)
-	(load-org-for-ros manifest)
-      (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg))))
-
-(defun ros::load-ros-package (pkg-name &key (with-deps nil))
+(defun ros::load-ros-manifest (pkg-name &key (with-deps t))
   (let ((pkgs (list pkg-name)))
     (when with-deps
       (push (ros::find-ros-build-depend-packages pkg-name) pkgs))
     (dolist (pkg (flatten pkgs))
-      (unless (find-package (string-upcase pkg))
-        (make-package (string-upcase pkg)))
-      (when (probe-file (format nil "~A/msg" (ros::find-load-msg-path pkg)))
-        (ros::roseus-add-msgs pkg))
-      (when (probe-file (format nil "~A/srv" (ros::find-load-msg-path pkg)))
-        (ros::roseus-add-srvs pkg)))))
+      (let ((manifest (format nil "~A/manifest.l" (ros::find-load-msg-path pkg))))
+        (if (probe-file manifest)
+            (load-org-for-ros manifest)
+          (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg))))))
+
+(defun ros::load-ros-package (pkg)
+  (unless (find-package (string-upcase pkg))
+    (make-package (string-upcase pkg)))
+  (when (probe-file (format nil "~A/msg" (ros::find-load-msg-path pkg)))
+    (ros::roseus-add-msgs pkg))
+  (when (probe-file (format nil "~A/srv" (ros::find-load-msg-path pkg)))
+    (ros::roseus-add-srvs pkg)))))
 
 (defun ros::find-ros-build-depend-packages (pkg)
   (let ((os
