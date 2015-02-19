@@ -316,7 +316,11 @@ if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
         echo "$0: Could not found roseus source directory so quitting..."
         exit 0
     fi
-    cp -r `rospack find roseus`/.. ${CATKIN_DIR}/src/jsk_roseus
+    cp -Lr `rospack find roseus` ${CATKIN_DIR}/src/roseus
+    # if rospack find is source, then copy
+    if [ -e `rospack find geneus`/CMakeLists.txt ]; then
+        cp -Lr `rospack find geneus` ${CATKIN_DIR}/src/geneus
+    fi
 fi
 
 if [ $WORKSPACE_TYPE = ONE ]; then
