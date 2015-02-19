@@ -53,16 +53,19 @@ wstool merge /tmp/rosinstall.$$ -t $WORKSPACE/src
 wstool info -t $WORKSPACE/src
 wstool update --continue-on-error --abort-changed-uris -t $WORKSPACE/src
 
+if [ "$ROS_DISTRO" == "" ] ; then
+    export ROS_DISTRO=indigo
+fi
 (
 cd $WORKSPACE/src;
 mkdir -p euslisp/cmake euslisp/env-hooks
 for file in CMakeLists.txt package.xml cmake/euslisp-extras.cmake.in env-hooks/99.euslisp.sh.in; do
     if [ ! -e euslisp/$file ]; then
-        wget https://raw.githubusercontent.com/tork-a/euslisp-release/master/patches/${file} -O euslisp/${file}
+        wget https://raw.githubusercontent.com/tork-a/euslisp-release/release/$ROS_DISTRO/euslisp/${file} -O euslisp/${file}
     fi
 done
 if [ ! -e jskeus/CMakeLists.txt ]; then
-    wget https://raw.githubusercontent.com/tork-a/jskeus-release/master/patches/CMakeLists.txt -O jskeus/CMakeLists.txt
+    wget https://raw.githubusercontent.com/tork-a/jskeus-release/release/$ROS_DISTRO/jskeus/CMakeLists.txt -O jskeus/CMakeLists.txt
 fi
 )
 
