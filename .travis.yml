@@ -17,7 +17,11 @@ env:
 #     - env: ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false
 #     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true
 #     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false
-script: source .travis/travis.sh
+script:
+  - source .travis/travis.sh
+  - source /home/travis/ros/ws_jsk_roseus/devel/setup.bash
+  - rostest roseus test-genmsg.catkin.test
+  - rostest roseus test-genmsg-oneworkspace.catkin.launch
 notifications:
   email:
     on_success: always
