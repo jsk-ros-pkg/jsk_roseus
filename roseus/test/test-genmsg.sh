@@ -331,10 +331,10 @@ fi
 cd ${CATKIN_DIR}
 # always call twice catkin_make
 if [ $PACKAGE = ALL ]; then
-    catkin build --make-args VERBOSE=1
-    catkin build --force-cmake --make-args VERBOSE=1
+    catkin build -v -i --no-status
+    catkin build -v -i --no-status --force-cmake
 else
-    catkin build --start-with $PACKAGE $PACKAGE --make-args VERBOSE=1
+    catkin build -v -i --no-status --start-with $PACKAGE $PACKAGE
 fi
 source ${CATKIN_DIR}/devel/setup.bash
 
