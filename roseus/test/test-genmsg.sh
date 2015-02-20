@@ -318,9 +318,11 @@ if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
     fi
     cp -Lr `rospack find roseus` ${CATKIN_DIR}/src/roseus
     # if rospack find is source, then copy
-    if [ -e `rospack find geneus`/CMakeLists.txt ]; then
-        cp -Lr `rospack find geneus` ${CATKIN_DIR}/src/geneus
-    fi
+    for pkg in geneus euslisp jskeus; do
+        if [ -e `rospack find $pkg`/CMakeLists.txt ]; then
+            cp -Lr `rospack find $pkg` ${CATKIN_DIR}/src/$pkg
+        fi
+    done
 fi
 
 if [ $WORKSPACE_TYPE = ONE ]; then
