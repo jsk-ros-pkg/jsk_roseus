@@ -126,10 +126,8 @@ execute_process(COMMAND cmake -E copy ${PROJECT_SOURCE_DIR}/bin/roseus ${CATKIN_
 install(PROGRAMS bin/roseus
   DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 # install
-install(CODE "execute_process(COMMAND cmake -E make_directory \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_GLOBAL_BIN_DESTINATION} RESULT_VARIABLE _mkdir_roseus_result OUTPUT_VARIABLE _mkdir_roseus_output)
-              message(\"cmake -E make_directory \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_GLOBAL_BIN_DESTINATION} returns \${_mkdir_roseus_result} ... \${_mkdir_roseus_output}.\")
-              execute_process(COMMAND cmake -E create_symlink ../${CATKIN_PACKAGE_SHARE_DESTINATION}/bin/roseus roseus WORKING_DIRECTORY \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_GLOBAL_BIN_DESTINATION}/ RESULT_VARIABLE _install_roseus_result OUTPUT_VARIABLE _install_roseus_output)
-              message(\"create_symlink ../${CATKIN_PACKAGE_SHARE_DESTINATION}/bin/roseus roseus WORKING_DIRECTORY \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_GLOBAL_BIN_DESTINATION}/ returns \${_install_roseus_result} ... \${_install_roseus_output}.\")")
+install(CODE "execute_process(COMMAND cmake -E create_symlink ../bin/roseus roseus WORKING_DIRECTORY \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/ RESULT_VARIABLE _install_roseus_result OUTPUT_VARIABLE _install_roseus_output)
+              message(\"create_symlink ../bin/roseus roseus WORKING_DIRECTORY \$ENV{DESTDIR}/\${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/ returns \${_install_roseus_result} ... \${_install_roseus_output}.\")")
 install(DIRECTORY euslisp test scripts cmake
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
