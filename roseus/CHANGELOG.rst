@@ -2,11 +2,22 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [test-genmsg.sh] fix for latest source code
+* [CMakeLists.txt] create symlink from share/roseus -> ../../bin/roseus
+* [test-genmsg.sh] fix typo rosun -> rosrun
+* [test/test-genmsg.sh] add test for 'manifest should have all depends packages'
+* [test/test-genmsg.sh] remove rosbuild settings
+* [roseus] Install roseus binary to share directory
+* [generate-all-msg-srv] fix msg gen
+* Contributors: Yuki Furuta, Kei Okada, Yuto Inagaki
+
 1.2.5 (2015-02-13)
 ------------------
 * [roseus.cmake] add more condition
 * [roseus] Add class to synchronize multiple topics with the same timestamp like message_filters
-* Contributors: Kei Okada, Ryohei Ueda
+* Contributors: Ryohei Ueda, Kei Okada
 
 1.2.4 (2015-02-12)
 ------------------
@@ -237,4 +248,4 @@ Changelog for package roseus
 1.0.1 (2014-03-27)
 ------------------
 * roseus: add version numeber to 1.0.0
-* Contributors: Haseru Chen, Shunnich Nozawa, Yuki Furuta, Kei Okada, Yuto Inagaki, Manabu Saito, kazuto Murase, Yohei Kakiuchi, Eisoku Kuroiwa, Ryohei Ueda, Hiroyuki Mikita
+* Contributors: Haseru Chen, Ryohei Ueda, Shunnich Nozawa, Yuki Furuta, Kei Okada, Yuto Inagaki, Manabu Saito, kazuto Murase, Eisoku Kuroiwa, Yohei Kakiuchi, Hiroyuki Mikita
