@@ -312,7 +312,7 @@ always the rank of list is 2"
 (defun ros::find-load-msg-path (pkg)
   (let ((dirs (list ))
         (ppath (unix::getenv "CMAKE_PREFIX_PATH"))
-        (s 0))
+        (s 0) i)
     (while (setq i (position #\: ppath :start s))
       (setq dirs (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s i)))))
       (setq s (1+ i)))
