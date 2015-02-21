@@ -67,8 +67,11 @@ for file in CMakeLists.txt cmake/euslisp-extras.cmake.in env-hooks/99.euslisp.sh
         wget https://raw.githubusercontent.com/tork-a/euslisp-release/master/patches/${file} -O euslisp/${file}
     fi
 done
+if [ ! -e jskeus/package.xml ]; then
+    wget https://raw.githubusercontent.com/tork-a/jskeus-release/release/$ROS_DISTRO/jskeus/package.xml -O jskeus/package.xml
+fi
 if [ ! -e jskeus/CMakeLists.txt ]; then
-    wget https://raw.githubusercontent.com/tork-a/jskeus-release/release/$ROS_DISTRO/jskeus/CMakeLists.txt -O jskeus/CMakeLists.txt
+    wget https://raw.githubusercontent.com/tork-a/jskeus-release/master/patches/CMakeLists.txt -O jskeus/CMakeLists.txt
 fi
 )
 
