@@ -1073,8 +1073,8 @@
 with the same timestamp"
     (let ((candidates
            (mapcar #'(lambda (buffer)
-                       (find-if #'(lambda (x)
-                                    (let ((diff (ros::time- (send x :header :stamp) stamp)))
+                       (find-if #'(lambda (msg)
+                                    (let ((diff (ros::time- (send msg :header :stamp) stamp)))
                                       (= (send diff :to-sec) 0)))
                                 buffer))
                    (mapcar #'cdr buffers))))
