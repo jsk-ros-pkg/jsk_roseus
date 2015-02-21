@@ -33,6 +33,9 @@ while [ $# -gt 0 ]; do
             shift
             PACKAGE=$1
             ;;
+        --gtest_output=* )
+            OUTPUT=${1#--gtest_output=xml:}
+            ;;
     esac
     shift
 done
@@ -399,6 +402,15 @@ else
     rm -fr ${CAATKIN_DIR}/devel/share/roseus/ros
     rosrun roseus generate-all-msg-srv.sh
     ${EUSLISP_EXE} ${ROSEUS_DIR}/euslisp/roseus.l ${CATKIN_DIR}/src/$PACKAGE/$PACKAGE.l $ARGV
+fi
+
+if [ "$OUTPUT" ]; then
+    echo $OUTPUT
+    cat <<EOF > $OUTPUT
+<?xml version="1.0" encoding="utf-8"?>
+<testsuite errors="0" failures="0" name="unittest.suite.TestSuite" tests="1" time="1.0">
+</testsuite>
+EOF
 fi
 
 rm -rf ${CATKIN_DIR}
