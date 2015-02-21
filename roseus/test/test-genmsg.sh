@@ -386,14 +386,14 @@ if [ $PACKAGE = ALL ]; then
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
-    #${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep3/roseus_dep3.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep3/roseus_dep3.l $ARGV
     rm -fr ${CAATKIN_DIR}/devel/share/roseus/ros
     rosrun roseus generate-all-msg-srv.sh
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep2/geneus_dep2.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
-    #${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep3/roseus_dep3.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep3/roseus_dep3.l $ARGV
 else
     ${EUSLISP_EXE} ${ROSEUS_DIR}/euslisp/roseus.l ${CATKIN_DIR}/src/$PACKAGE/$PACKAGE.l $ARGV
     rm -fr ${CAATKIN_DIR}/devel/share/roseus/ros
