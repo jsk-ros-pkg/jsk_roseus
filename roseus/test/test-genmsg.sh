@@ -312,13 +312,8 @@ add_srv ${ROSEUS_DEP3} roseus_dep1
 
 
 if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
-    if [ ! -e `rospack find roseus`/CMakeLists.txt ]; then
-        echo "$0: Could not found roseus source directory so quitting..."
-        exit 0
-    fi
-    cp -Lr `rospack find roseus` ${CATKIN_DIR}/src/roseus
     # if rospack find is source, then copy
-    for pkg in geneus euslisp jskeus; do
+    for pkg in geneus roseus; do
         if [ -e `rospack find $pkg`/CMakeLists.txt ]; then
             cp -Lr `rospack find $pkg` ${CATKIN_DIR}/src/$pkg
         fi
@@ -326,8 +321,41 @@ if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
 fi
 
 if [ $WORKSPACE_TYPE = ONE ]; then
+    # need to keep euslisp/jskeus envirnments
+    OLD_ROS_PACKAGE_PATH=`rospack find euslisp`
+    OLD_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
+    OLD_CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH
+    # create dummy package
+    mkdir -p ${CATKIN_DIR}/src/jskeus
+    ls -al ${CATKIN_DIR}/src/jskeus
+    cat <<EOF > ${CATKIN_DIR}/src/jskeus/package.xml
+<package> 
+<name>jskeus</name>
+<version>0.0.1</version>
+<description>dummy jskeus for geneus</description>
+<maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+<license>BSD</license>
+<buildtool_depend>catkin</buildtool_depend>
+<build_depend>euslisp</build_depend>
+<run_depend>euslisp</run_depend>
+</package>
+EOF
+    cat <<EOF > ${CATKIN_DIR}/src/jskeus/CMakeLists.txt
+cmake_minimum_required(VERSION 2.8.3)
+project(jskeus)
+find_package(catkin)
+catkin_package()
+EOF
+    ls -al ${CATKIN_DIR}/src/jskeus
     # reset environmental variables by sousing
     source /opt/ros/${ROS_DISTRO}/setup.bash
+    export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$OLD_ROS_PACKAGE_PATH
+    export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$OLD_PKG_CONFIG_PATH
+    export CMAKE_PREFIX_PATH=$OLD_CMAKE_PREFIX_PATH:$CMAKE_PREFIX_PATH
+    echo "---------------"
+    echo "ROS_PACKAGE_PATH  $ROS_PACKAGE_PATH"
+    echo "PKG_CONFIG_PATH   $PKG_CONFIG_PATH"
+    echo "CMAKE_PREFIX_PATH $CMAKE_PREFIX_PATH"
 fi
 
 cd ${CATKIN_DIR}
