@@ -4,7 +4,7 @@ project(roseus)
 
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack rostest actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros dynamic_reconfigure geneus)
+find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack rostest rosnode actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros dynamic_reconfigure geneus)
 
 find_package(euslisp REQUIRED)
 add_definitions(-Wall)
