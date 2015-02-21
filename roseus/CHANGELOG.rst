@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.6 (2015-02-21)
+------------------
 * [test-genmsg.sh] fix for latest source code
 * [CMakeLists.txt] create symlink from share/roseus -> ../../bin/roseus
 * [test-genmsg.sh] fix typo rosun -> rosrun
