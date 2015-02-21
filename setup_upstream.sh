@@ -59,7 +59,10 @@ fi
 (
 cd $WORKSPACE/src;
 mkdir -p euslisp/cmake euslisp/env-hooks
-for file in CMakeLists.txt package.xml cmake/euslisp-extras.cmake.in env-hooks/99.euslisp.sh.in; do
+if [ ! -e euslisp/package.xml ]; then
+    wget https://raw.githubusercontent.com/tork-a/euslisp-release/release/$ROS_DISTRO/euslisp/package.xml -O euslisp/package.xml
+fi
+for file in CMakeLists.txt cmake/euslisp-extras.cmake.in env-hooks/99.euslisp.sh.in; do
     if [ ! -e euslisp/$file ]; then
         wget https://raw.githubusercontent.com/tork-a/euslisp-release/release/$ROS_DISTRO/euslisp/${file} -O euslisp/${file}
     fi
