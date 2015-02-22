@@ -274,18 +274,19 @@ function add_srv() {
 EOF
 }
 
-# makeup packages
+# makeup packages [pkg_path package_name build_depends]
 add_${MANIFEST} ${GENEUS_DEP1} geneus_dep1 geneus
 add_${MANIFEST} ${GENEUS_DEP2} geneus_dep2 geneus geneus_dep1
 add_${MANIFEST} ${ROSEUS_DEP1} roseus_dep1 roseus geneus_dep2 geneus_dep1
 add_${MANIFEST} ${ROSEUS_DEP2} roseus_dep2 roseus_dep1 roseus geneus_dep1 geneus_dep2
 add_${MANIFEST} ${ROSEUS_DEP3} roseus_dep3 roseus_dep2 roseus_dep1 roseus geneus_dep1 geneus_dep2
 
+# makeup cmake files [pkg_path find_package message_depends]
 add_cmake ${GENEUS_DEP1} 
 add_cmake ${GENEUS_DEP2} "geneus_dep1" "geneus_dep1"
 add_cmake ${ROSEUS_DEP1} "geneus_dep1 roseus geneus_dep2" "geneus_dep1 roseus geneus_dep2"
 add_cmake ${ROSEUS_DEP2} "geneus_dep1 roseus geneus_dep2 roseus_dep1" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
-add_cmake ${ROSEUS_DEP3} "geneus_dep2 geneus_dep1 roseus geneus_dep2 roseus_dep1" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
+add_cmake ${ROSEUS_DEP3} "geneus_dep2 geneus_dep1 roseus roseus_dep2 roseus_dep1" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
 add_cpp ${GENEUS_DEP1} geneus_dep1
 add_cpp ${GENEUS_DEP2} geneus_dep2
 add_cpp ${ROSEUS_DEP1} roseus_dep1
@@ -329,31 +330,9 @@ fi
 
 if [ $WORKSPACE_TYPE = ONE ]; then
     # need to keep euslisp/jskeus envirnments
-    OLD_ROS_PACKAGE_PATH=`rospack find euslisp`
+    OLD_ROS_PACKAGE_PATH=`rospack find euslisp`:`rospack find jskeus`
     OLD_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
     OLD_CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH
-    # create dummy package
-    mkdir -p ${CATKIN_DIR}/src/jskeus
-    ls -al ${CATKIN_DIR}/src/jskeus
-    cat <<EOF > ${CATKIN_DIR}/src/jskeus/package.xml
-<package>
-<name>jskeus</name>
-<version>0.0.1</version>
-<description>dummy jskeus for geneus</description>
-<maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
-<license>BSD</license>
-<buildtool_depend>catkin</buildtool_depend>
-<build_depend>euslisp</build_depend>
-<run_depend>euslisp</run_depend>
-</package>
-EOF
-    cat <<EOF > ${CATKIN_DIR}/src/jskeus/CMakeLists.txt
-cmake_minimum_required(VERSION 2.8.3)
-project(jskeus)
-find_package(catkin)
-catkin_package()
-EOF
-    ls -al ${CATKIN_DIR}/src/jskeus
     # reset environmental variables by sousing
     source /opt/ros/${ROS_DISTRO}/setup.bash
     export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$OLD_ROS_PACKAGE_PATH
@@ -369,7 +348,7 @@ cd ${CATKIN_DIR}
 # always call twice catkin_make
 if [ $PACKAGE = ALL ]; then
     catkin build -v -i --no-status
-    catkin build -v -i --no-status --force-cmake
+    # catkin build -v -i --no-status --force-cmake ### this yeilds `make[5]: *** read jobs pipe: No such file or directory.  Stop.` when catkin run_tests
 else
     catkin build -v -i --no-status --start-with $PACKAGE $PACKAGE
 fi
