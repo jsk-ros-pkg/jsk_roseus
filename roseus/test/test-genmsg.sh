@@ -36,6 +36,10 @@ while [ $# -gt 0 ]; do
         --gtest_output=* )
             OUTPUT=${1#--gtest_output=xml:}
             ;;
+        --results-filename )
+            shift
+            OUTPUT=${CATKIN_RESULTS_TEST_DIR}/$1
+            ;;
     esac
     shift
 done
@@ -405,7 +409,7 @@ else
 fi
 
 if [ "$OUTPUT" ]; then
-    echo $OUTPUT
+    echo "writing test results to ... $OUTPUT"
     cat <<EOF > $OUTPUT
 <?xml version="1.0" encoding="utf-8"?>
 <testsuite errors="0" failures="0" name="unittest.suite.TestSuite" tests="1" time="1.0">
