@@ -206,7 +206,9 @@
         (setq fullname (ros::resolve-ros-path fname)))
     (if (null fullname) ;; when ros::resolve-ros-patch is failed to load
         (error "file ~s not found" fname))
-    (apply #'load-org-for-ros fullname args)))
+    (if (substringp ":=" fname) ;; this may be roslaunched, but not called (ros::roseus)
+        (warning-message 1 "try loading roseus arguments ~A, are you forget to call ros::roseus?~%" fname)
+      (apply #'load-org-for-ros fullname args))))
 
 ;;; defmacro for rosparams
 
