@@ -47,7 +47,7 @@ rospack profile > /dev/null
 
 
 IFS=':' read -ra TMP <<< "$CMAKE_PREFIX_PATH"
-output_dir=${TMP[0]}/share/roseus/ros
+export output_dir=${TMP[0]}/share/roseus/ros
 
 if [ "${ALL}" = "Yes" ]; then
     package_list_names=${@:-`rospack list-names`}
@@ -66,10 +66,9 @@ done
 echo -e "\e[1;32mgenerating... ${#pkg_list[@]} files with ALL=${ALL}, COMPILE=${COMPILE} option\e[m"
 echo -e "\e[1;32mwriting output to...${output_dir}\e[m"
 
-# generate msg file
-for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
-    pkg=${pkg_list[$pkg_i]}
-    echo -e "\e[1;31mgenerating... $pkg_i/${#pkg_list[@]}\e[m"
+function run_pkg()
+{
+    pkg=$(rospack find $1)
     pkg_name=`basename $pkg`
     pkg_depends=`rospack depends ${pkg_name}`
     pkg_includes="-I$pkg_name:`rospack find $pkg_name`/msg"
@@ -82,18 +81,18 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
         fi
     done
     if [ -e $pkg/msg/ ] ; then
-	for file in `find $pkg/msg -type f -name "*.msg"`; do
-	    echo -e "\e[1;32mgenerating msg... ${file}\e[m"
-	    rosrun geneus gen_eus.py -p $pkg_name -o ${output_dir}/${pkg_name}/msg $pkg_includes $file
-	    check-error
-	done
+        for file in `find $pkg/msg -type f -name "*.msg"`; do
+            echo -e "\e[1;32mgenerating msg... ${file}\e[m"
+            rosrun geneus gen_eus.py -p $pkg_name -o ${output_dir}/${pkg_name}/msg $pkg_includes $file
+            check-error
+        done
     fi
     if [ -e $pkg/srv/ ] ; then
-	for file in `find $pkg/srv -type f -name "*.srv"`; do
-	    echo -e "\e[1;32mgenerating srv... ${file}\e[m"
-	    rosrun geneus gen_eus.py -p $pkg_name -o ${output_dir}/${pkg_name}/srv $pkg_includes $file
-	    check-error
-	done
+        for file in `find $pkg/srv -type f -name "*.srv"`; do
+            echo -e "\e[1;32mgenerating srv... ${file}\e[m"
+            rosrun geneus gen_eus.py -p $pkg_name -o ${output_dir}/${pkg_name}/srv $pkg_includes $file
+            check-error
+        done
     fi
     rospack depends $pkg_name > /dev/null || (check-warn) ; ## just for check depends error
     echo -e "\e[1;32mgenerating manifest... ${output_dir}/${pkg_name}/manifest.l\e[m"
@@ -103,7 +102,18 @@ for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
         rosrun roseus roseus "(progn (setq lisp::*error-handler* #'(lambda (&rest args) (print args *error-output*)(exit 1))) (setq ros::*compile-message* t) (ros::load-ros-manifest \"$pkg_name\") (exit 0))"
         check-error
     fi
-done
+}
+
+export -f run_pkg
+export -f check-error
+export -f check-warn
+
+# generate msg file
+echo $package_list_names | xargs -d' ' -n 1 -P $(grep -c processor /proc/cpuinfo) -I % bash -c "run_pkg %"
+# echo $pkg_list | xargs -n 1 -I % bash -c "run_pkg %"
+# for pkg_i in $(seq 0 $((${#pkg_list[@]} - 1))); do
+#     pkg=${pkg_list[$pkg_i]}
+# done
 
 if [ $((${#warn_list[@]})) -gt 0 ] ; then
     echo -e "\e[1;33m[WARNING] occurred while processing $0, missing dependencies?\e[m"
@@ -122,5 +132,3 @@ if [ $((${#err_list[@]})) -gt 0 ] ; then
     done
     exit 1
 fi
-
-
