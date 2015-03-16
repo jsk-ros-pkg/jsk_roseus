@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_smach)
 
-find_package(catkin REQUIRED COMPONENTS euslisp roseus smach smach_ros smach_msgs)
+find_package(catkin REQUIRED COMPONENTS euslisp smach smach_ros smach_msgs roseus)
 
 catkin_package(
 #    DEPENDS 
