@@ -137,23 +137,23 @@
   (with-open-file
    (fd filename :direction :output)
    (format fd ";;~%;; Please Fill in the Actions~%;; DOMAIN : ~a~%;;"
-	   (send domain :name))
+     (send domain :name))
    (format fd "~%~%")
    ;;
    (pprint
     `(let ((ns ,(string-upcase (send *domain* :name))))
        (when (and ns (not (find-package ns)))
-	 (make-package ns)))
+   (make-package ns)))
     fd)
    (format fd "~%~%")
    ;;
   (dolist (act (send domain :action))
     (format fd "(defun ~a::~a~%  ~a~%t )~%"
-	    (send domain :name) (send act :name)
-	    (mapcan
-	     #'(lambda(x)(if (= 1 (length x)) x (subseq x 0 (1- (length x)))))
-	     (send act :parameters))
-	    ))
+      (send domain :name) (send act :name)
+      (mapcan
+       #'(lambda(x)(if (= 1 (length x)) x (subseq x 0 (1- (length x)))))
+       (send act :parameters))
+      ))
   ;;
   (format fd "~%;; END OF THE FILE~%")
     ))

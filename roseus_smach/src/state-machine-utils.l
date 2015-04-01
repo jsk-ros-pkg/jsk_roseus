@@ -14,7 +14,7 @@
       (ros::spin-once)
       (send insp :publish-status mydata)
       (when (not (send sm :goal-reached))
-	(send sm :execute mydata :step -1))
+        (send sm :execute mydata :step -1))
       (unix::usleep (round (/ 1e6 hz))))
      ;; finally block
      (progn
