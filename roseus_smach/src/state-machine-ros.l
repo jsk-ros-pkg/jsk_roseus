@@ -1,3 +1,5 @@
+;; state-machine-ros.l
+
 (require :state-machine "package://roseus_smach/src/state-machine.l")
 (require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
 (require :pickle "pickle.l")
@@ -33,37 +35,38 @@
   (:publish-status
    (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStatus :init))
-         (initial (send (send machine :start-state) :name))
-         (active (send (send machine :active-state) :name)))
+         (initial (send-all (flatten (list (send machine :start-state))) :name))
+         (active (send-all (flatten (list (send machine :active-state))) :name)))
      (if (send machine :goal-reached) (setq active "None"))
      (send msg :header :seq (incf state-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
-     (send msg :initial_states (list (string initial)))
-     (send msg :active_states (list (string active)))
+     (send msg :initial_states (mapcar #'string initial))
+     (send msg :active_states (mapcar #'string active))
      (send msg :local_data (pickle::dump userdata))
      (ros::publish (concatenate string srv-name "/smach/container_status") msg)
      ;; recursive call for publish active sub-machines
-     (when (send (send machine :active-state) :submachine)
-       (send self :publish-status userdata
-             (send (send machine :active-state) :submachine)
-             (format nil "~A/~A" path
-                     (string (send (send machine :active-state) :name)))))
+     (dolist (active-state (flatten (list (send machine :active-state))))
+       (when (send active-state :submachine)
+         (send self :publish-status userdata
+               (send active-state :submachine)
+               (format nil "~A/~A" path
+                       (string (send active-state :name))))))
      ))
   (:publish-all-status
    (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStatus :init))
-         (initial (send (send machine :start-state) :name))
+         (initial (send-all (flatten (list (send machine :start-state))) :name))
          active)
      (cond
       ((send machine :goal-reached) (setq active "None"))
       ((null (send machine :active-state)) (setq active "None"))
-      (t (setq active (send (send machine :active-state) :name))))
+      (t (setq active (send-all (flatten (list (send machine :active-state))) :name))))
      (send msg :header :seq (incf state-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
-     (send msg :initial_states (list (string initial)))
-     (send msg :active_states (list (string active)))
+     (send msg :initial_states (mapcar #'string initial))
+     (send msg :active_states (mapcar #'string active))
      (send msg :local_data (pickle::dump userdata))
      (ros::publish (concatenate string srv-name "/smach/container_status") msg)
      ;; recursive call for publish active sub-machines
