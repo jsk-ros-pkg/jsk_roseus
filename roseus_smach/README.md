@@ -15,27 +15,29 @@ Sample codes are available on `sample` directory.
 
 - `sample/state-machine-ros-sample.l`
   - simple state machine
-  ![](https://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/3ad11bb4e5be0d50496c267b2fd38f18368948b0/smach-simple.gif)
+  ![](http://bl.ocks.org/furushchev/raw/9b1ed0aa57b47537cd2d/smach-simple.gif)
   ```lisp
   roseus state-machine-ros-sample.l
   (smach-exec-simple)
   ```
   - nested state machine
-  ![](https://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/3ad11bb4e5be0d50496c267b2fd38f18368948b0/smach-nested.gif)
+  ![](http://bl.ocks.org/furushchev/raw/9b1ed0aa57b47537cd2d/smach-nested.gif)
   ```lisp
   roseus state-machine-ros-sample.l
   (smach-exec-nested)
   ```
   - state machine with userdata
-  ![](https://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/3ad11bb4e5be0d50496c267b2fd38f18368948b0/smach-userdata.gif)
+  ![](http://bl.ocks.org/furushchev/raw/9b1ed0aa57b47537cd2d/smach-userdata.gif)
   ```lisp
   roseus state-machine-ros-sample.l
   (smach-exec-userdata)
   ```
+- `sample/parallel-state-machine-sample.l`
+
   - state machine with parallel action execution
-  ![](https://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/3ad11bb4e5be0d50496c267b2fd38f18368948b0/smach-parallel.gif)
+  ![](http://bl.ocks.org/furushchev/raw/9b1ed0aa57b47537cd2d/smach-parallel.gif)
   ```lisp
-  roseus parallelstate-machine-sample.l
+  roseus parallel-state-machine-sample.l
   (demo)
   ```
   
