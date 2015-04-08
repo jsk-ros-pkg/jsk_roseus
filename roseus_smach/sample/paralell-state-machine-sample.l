@@ -39,7 +39,7 @@
      ((null cloth)
       (warning-message 1 "no cloth in washing machine!!~%"))
      (t
-      (warning-message 4 "To keep your cloth clean is to kep your mind clean.")
+      (warning-message 4 "To keep your cloth clean is to keep your mind clean.")
       (return-from :press-button t)))
    (error)))
 
@@ -47,9 +47,9 @@
   (setq *wash* (instance washing-machine :init))
   (setq *sm*
         (make-state-machine
-         '((:open-door -> :put-cloth)
-           (:put-cloth -> (:put-soap :close-door))
-           (:put-soap -> :press-button)
+         '((:open-door -> (:put-cloth :put-soap))
+           (:put-cloth ->  :close-door)
+           (:put-soap -> :close-door)
            (:close-door -> :press-button)
            (:press-button -> :success))
          '((:open-door #'(lambda (&rest args) (send *wash* :open-door)))
