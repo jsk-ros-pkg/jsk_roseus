@@ -17,6 +17,7 @@
       (send insp :publish-status mydata)
       (when (not (send sm :goal-reached))
         (send sm :execute mydata :step -1))
+       (read-char)
       (unix::usleep (round (/ 1e6 hz))))
      ;; finally block
      (progn
@@ -32,7 +33,34 @@
 (defun remove-seq (subseq seq &key (test #'eq))
   (if subseq (remove-seq (cdr subseq) (remove (car subseq) seq :test test) :test test) seq))
 
-(defun make-state-machine (graph-list func-map initial-state goal-states &key (parallel-exec-result t))
+(defun make-state-machine (graph-list func-map initial-state goal-states
+                           &key state-machine
+                             (exec-result t) (parallel-exec-result t))
+  "This is utility function to make state machine
+e.g. (make-state-machine '((:a -> :b)
+                           (:b -> :c)
+                           (:c -> (:d1 :d2))
+                           (:d1 -> :end)
+                           (:d2 -> :end))
+                         '((:a #'action-a)
+                           (:b #'action-b)
+                           (:c #'action-c)
+                           (:d1 #'action-d1)
+                           (:d2 #'action-d2))
+                          '(:a)
+                          '(:end))
+    This makes state machine like:
+      :a -> :b -> :c -> :d1 -> :end
+                   \ -> :d2 /
+    Each actions are assumed to implement like below:
+    ```
+    (defun action-a (&rest args)
+     (if (eq (do-action-a) :success)
+       t nil))
+    ```
+    By default, if `action-a` returns value t, then state transits as defined above.
+    You can specify return value as `exec-result` key.
+"
   (let ((sm (instance state-machine :init))
         (all-nodes (unique
                     (flatten
@@ -62,7 +90,7 @@
                   (send sm :node from-node)
                   (send sm :node to-node)
                   (case (length to-nodes)
-                    (1 t)
+                    (1 exec-result)
                     (t parallel-exec-result)))))))
     (send sm :parallel-exec-result parallel-exec-result)
 
