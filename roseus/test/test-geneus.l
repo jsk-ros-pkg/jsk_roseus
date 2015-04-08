@@ -75,7 +75,9 @@
                 (list std_msgs::uint16multiarray :data #i(1 2 3))
                 (list std_msgs::uint32multiarray :data #i(4 5 6))
                 (list std_msgs::uint64multiarray :data #i(7 8 9))
-                (list std_msgs::uint8multiarray :data #i(10 11 12))
+                (list std_msgs::uint8multiarray :data (make-array 3
+                                                                  :element-type :char
+                                                                  :initial-contents "eus"))
                 ))
   )
 
@@ -121,7 +123,9 @@
   (subscribe-and-check-msg "uint16multiarray" std_msgs::UInt16MultiArray :data #i(1 2 3))
   (subscribe-and-check-msg "uint32multiarray" std_msgs::UInt32MultiArray :data #i(4 5 6))
   (subscribe-and-check-msg "uint64multiarray" std_msgs::UInt64MultiArray :data #i(7 8 9))
-  (subscribe-and-check-msg "uint8multiarray" std_msgs::UInt8MultiArray :data #i(10 11 12))
+  ;; roseus treats uint8[] data as a string, which is the Euslisp reresentation for byte data.
+  ;; see http://wiki.ros.org/msg#Fields
+  (subscribe-and-check-msg "uint8multiarray" std_msgs::UInt8MultiArray :data "eus")
   (ros::rate 10)
   (dotimes (i 25)
     (ros::spin-once)
