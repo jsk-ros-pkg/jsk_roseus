@@ -346,11 +346,12 @@ fi
 
 cd ${CATKIN_DIR}
 # always call twice catkin_make
+catkin config --no-jobserver || echo "disable internal jobserver"
 if [ $PACKAGE = ALL ]; then
-    catkin build -v -i --no-status
+    MAKEFLAGS= catkin build -v -i --no-status -p1 --make-args -j1 -l1 --
     # catkin build -v -i --no-status --force-cmake ### this yeilds `make[5]: *** read jobs pipe: No such file or directory.  Stop.` when catkin run_tests
 else
-    catkin build -v -i --no-status --start-with $PACKAGE $PACKAGE
+    MAKEFLAGS= catkin build -v -i --no-status -p1 --start-with $PACKAGE $PACKAGE --make-args -j1 -l1 --
 fi
 source ${CATKIN_DIR}/devel/setup.bash
 
