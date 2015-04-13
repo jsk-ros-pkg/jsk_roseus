@@ -36,6 +36,7 @@ def send_msgs():
              rospy.Publisher('uint32multiarray', std_msgs.msg.UInt32MultiArray, queue_size=10)       : std_msgs.msg.UInt32MultiArray(data=[4,5,6]),
              rospy.Publisher('uint64multiarray', std_msgs.msg.UInt64MultiArray, queue_size=10)       : std_msgs.msg.UInt64MultiArray(data=[7,8,9]),
              rospy.Publisher('uint8multiarray', std_msgs.msg.UInt8MultiArray, queue_size=10)       : std_msgs.msg.UInt8MultiArray(data=[ord('e'),ord('u'),ord('s')]), # ascii codes of 'eus'
+             rospy.Publisher('uint8fixedmultiarray', roseus.msg.UInt8FixedMultiArray, queue_size=10)       : roseus.msg.UInt8FixedMultiArray(data=[ord('j'),ord('o'),ord('h'),ord('o'),ord('s'),ord('y'),ord('s'),ord('t'),ord('e'),ord('m'),ord('k'),ord('o'),ord('u'),ord('g'),ord('a'),ord('k'),ord('u')]),
             }
     rospy.init_node('test_geneus_send_msgs', anonymous=True)
     rate = rospy.Rate(10) # 10hz

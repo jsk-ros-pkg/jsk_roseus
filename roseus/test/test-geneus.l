@@ -78,6 +78,9 @@
                 (list std_msgs::uint8multiarray :data (make-array 3
                                                                   :element-type :char
                                                                   :initial-contents "eus"))
+                (list roseus::UInt8FixedMultiArray :data (make-array 17
+                                                                     :element-type :char
+                                                                     :initial-contents "johosystemkougaku"))
                 ))
   )
 
@@ -126,6 +129,7 @@
   ;; roseus treats uint8[] data as a string, which is the Euslisp reresentation for byte data.
   ;; see http://wiki.ros.org/msg#Fields
   (subscribe-and-check-msg "uint8multiarray" std_msgs::UInt8MultiArray :data "eus")
+  (subscribe-and-check-msg "uint8fixedmultiarray" roseus::UInt8FixedMultiArray :data "johosystemkougaku")
   (ros::rate 10)
   (dotimes (i 25)
     (ros::spin-once)

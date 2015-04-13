@@ -82,7 +82,7 @@ add_service_files(
   FILES AddTwoInts.srv StringString.srv
 )
 add_message_files(
-  FILES String.msg StringStamped.msg
+  FILES String.msg StringStamped.msg UInt8FixedMultiArray.msg
 )
 
 # CATKIN_MIGRATION: removed during catkin migration
