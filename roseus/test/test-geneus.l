@@ -78,7 +78,16 @@
                 (list std_msgs::uint8multiarray :data (make-array 3
                                                                   :element-type :char
                                                                   :initial-contents "eus"))
-                (list roseus::UInt8FixedMultiArray :data (make-array 17
+                (list roseus::FixedArray :float32_data #f(1 -2 3))
+                (list roseus::FixedArray :float64_data #f(4 -5 6))
+                (list roseus::FixedArray :int16_data #i(7 -8 9))
+                (list roseus::FixedArray :int32_data #i(10 -11 12))
+                (list roseus::FixedArray :int64_data #i(13 -14 15))
+                (list roseus::FixedArray :int8_data #i(16 -17 18))
+                (list roseus::FixedArray :uint16_data #i(1 2 3))
+                (list roseus::FixedArray :uint32_data #i(4 5 6))
+                (list roseus::FixedArray :uint64_data #i(7 8 9))
+                (list roseus::FixedArray :uint8_data (make-array 17
                                                                      :element-type :char
                                                                      :initial-contents "johosystemkougaku"))
                 ))
@@ -129,7 +138,21 @@
   ;; roseus treats uint8[] data as a string, which is the Euslisp reresentation for byte data.
   ;; see http://wiki.ros.org/msg#Fields
   (subscribe-and-check-msg "uint8multiarray" std_msgs::UInt8MultiArray :data "eus")
-  (subscribe-and-check-msg "uint8fixedmultiarray" roseus::UInt8FixedMultiArray :data "johosystemkougaku")
+
+  (ros::subscribe "fixedarray" roseus::FixedArray #'(lambda (x)
+                                                      (dolist (o '((:float32_data #f(1 -2 3)) (:float64_data #f(4 -5 6))
+                                                                   (:int16_data #i(7 -8 9)) (:int32_data #i(10 -11 12)) (:int64_data #i(13 -14 15))
+                                                                   (:int8_data #i(16 -17 18)) (:uint16_data #i(1 2 3))  (:uint32_data #i(4 5 6))
+                                                                   (:uint64_data #i(7 8 9))
+                                                                   (:uint8_data "johosystemkougaku")))
+                                                        (let ((method (car o)) (data (cadr o)))
+                                                          (format *error-output* "~A ~A ~A~%" method data (send x method))
+                                                          (cond ((floatp data)
+                                                                 (assert (eps= (send x method) data)))
+                                                                ((float-vector-p data)
+                                                                 (assert (eps-v= (send x method) data)))
+                                                                (t
+                                                                 (assert (equal (send x method) data))))))))
   (ros::rate 10)
   (dotimes (i 25)
     (ros::spin-once)
