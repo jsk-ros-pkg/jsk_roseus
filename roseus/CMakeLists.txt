@@ -111,6 +111,12 @@ generate_messages(
   DEPENDENCIES geometry_msgs std_msgs
 )
 
+# copy bin/roseus to global bin
+add_custom_command(OUTPUT ${CATKIN_DEVEL_PREFIX}/bin/roseus
+  COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/bin/
+  COMMAND cmake -E copy ${PROJECT_SOURCE_DIR}/bin/roseus ${CATKIN_DEVEL_PREFIX}/bin/roseus
+  DEPENDS bin/roseus)
+add_custom_target(install_roseus ALL DEPENDS ${CATKIN_DEVEL_PREFIX}/bin/roseus roseus eustf roseus_c_util)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
@@ -119,12 +125,10 @@ catkin_package(
     CATKIN_DEPENDS message_runtime # euslisp TODO
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
+    EXPORTED_TARGETS install_roseus
     CFG_EXTRAS roseus.cmake
 )
 
-# copy bin/roseus to global bin
-execute_process(COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/bin/)
-execute_process(COMMAND cmake -E copy ${PROJECT_SOURCE_DIR}/bin/roseus ${CATKIN_DEVEL_PREFIX}/bin/roseus)
 install(PROGRAMS bin/roseus
   DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 # install
