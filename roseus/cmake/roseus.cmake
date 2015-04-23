@@ -130,7 +130,7 @@ macro(generate_eusdoc _lispfile)
   add_custom_command(OUTPUT ${_mdfile}
     COMMAND ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} $ENV{EUSDIR}/lib/llib/documentation.l ${_generate_eusdoc_command_list}
     DEPENDS ${_lispfile})
-  add_custom_target(${PROJECT_NAME}_${_name}_generate_eusdoc ALL DEPENDS ${_mdfile})
+  add_custom_target(${PROJECT_NAME}_${_name}_generate_eusdoc ALL DEPENDS ${_mdfile} install_roseus)
   if(TARGET ${PROJECT_NAME}_generate_messages_eus)
     add_dependencies(${PROJECT_NAME}_${_name}_generate_eusdoc ${PROJECT_NAME}_generate_messages_eus)
   endif()
