@@ -1,3 +1,5 @@
+;; state-machine-ros.l
+
 (require :state-machine "package://roseus_smach/src/state-machine.l")
 (require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
 (require :pickle "pickle.l")
@@ -33,37 +35,38 @@
   (:publish-status
    (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStatus :init))
-         (initial (send (send machine :start-state) :name))
-         (active (send (send machine :active-state) :name)))
+         (initial (send-all (flatten (list (send machine :start-state))) :name))
+         (active (send-all (flatten (list (send machine :active-state))) :name)))
      (if (send machine :goal-reached) (setq active "None"))
      (send msg :header :seq (incf state-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
-     (send msg :initial_states (list (string initial)))
-     (send msg :active_states (list (string active)))
+     (send msg :initial_states (mapcar #'string initial))
+     (send msg :active_states (mapcar #'string active))
      (send msg :local_data (pickle::dump userdata))
      (ros::publish (concatenate string srv-name "/smach/container_status") msg)
      ;; recursive call for publish active sub-machines
-     (when (send (send machine :active-state) :submachine)
-       (send self :publish-status userdata
-             (send (send machine :active-state) :submachine)
-             (format nil "~A/~A" path
-                     (string (send (send machine :active-state) :name)))))
+     (dolist (active-state (flatten (list (send machine :active-state))))
+       (when (send active-state :submachine)
+         (send self :publish-status userdata
+               (send active-state :submachine)
+               (format nil "~A/~A" path
+                       (string (send active-state :name))))))
      ))
   (:publish-all-status
    (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStatus :init))
-         (initial (send (send machine :start-state) :name))
+         (initial (send-all (flatten (list (send machine :start-state))) :name))
          active)
      (cond
       ((send machine :goal-reached) (setq active "None"))
       ((null (send machine :active-state)) (setq active "None"))
-      (t (setq active (send (send machine :active-state) :name))))
+      (t (setq active (send-all (flatten (list (send machine :active-state))) :name))))
      (send msg :header :seq (incf state-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
-     (send msg :initial_states (list (string initial)))
-     (send msg :active_states (list (string active)))
+     (send msg :initial_states (mapcar #'string initial))
+     (send msg :active_states (mapcar #'string active))
      (send msg :local_data (pickle::dump userdata))
      (ros::publish (concatenate string srv-name "/smach/container_status") msg)
      ;; recursive call for publish active sub-machines
@@ -102,32 +105,32 @@
   (:set-initial-state-cb
    (msg)
    (let ((path (send msg :path))
-	 ;; this smach takes only one state
-	 (name (car (send msg :initial_states))))
+     ;; this smach takes only one state
+     (name (car (send msg :initial_states))))
      ;; path should be start from root-name
      (when (not (string= (subseq path 1 (1+ (length root-name))) root-name))
        (return-from :set-initial-state-cb))
      (setq path (format nil "~A/~A"
-			(subseq path (1+ (length root-name))) name))
+                        (subseq path (1+ (length root-name))) name))
      ;; initialize can be called every 5 sec
      (when init-tm
        (when (< (send (ros::time- (ros::time-now) init-tm) :to-sec) 5)
-	 (return-from :set-initial-state-cb)))
+         (return-from :set-initial-state-cb)))
      ;; parse the path string and get target node
      (let ((nd sm)
-	   (node-list (cdr (send (pathname path) :directory))))
+           (node-list (cdr (send (pathname path) :directory))))
        (dolist (node-name node-list)
-	 (when nd
-	   (setq nd (find node-name (send nd :nodes) :test #'string=
-			  :key #'(lambda(x)(string (send x :name)))))
-	   (setq nd (send nd :submachine))))
+         (when nd
+           (setq nd (find node-name (send nd :nodes) :test #'string=
+                                                     :key #'(lambda(x)(string (send x :name)))))
+           (setq nd (send nd :submachine))))
        ;; set active-state
        (when nd
-	 (setq nd (find name (send nd :nodes) :test #'string=
-			:key #'(lambda(x)(string (send x :name)))))
-	 (send sm :start-state nd)
-	 (send sm :reset-state)
-	 (ros::ros-info "Set initial/active state [~a]" nd)))
+         (setq nd (find name (send nd :nodes) :test #'string=
+                                              :key #'(lambda(x)(string (send x :name)))))
+         (send sm :start-state nd)
+         (send sm :reset-state)
+         (ros::ros-info "Set initial/active state [~a]" nd)))
      ;; TODO apply userdata
      (setq init-tm (ros::time-now))
      ))
