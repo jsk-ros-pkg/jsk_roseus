@@ -24,6 +24,7 @@ script:
   - .travis/travis.sh
 after_success:
   - TRAVIS_JOB_SUBNUMBER="${TRAVIS_JOB_NUMBER##*.}"
+  - sudo wget https://raw.githubusercontent.com/euslisp/EusLisp/master/lib/llib/documentation.l -O /opt/ros/$ROS_DISTRO/share/euslisp/jskeus/eus/lib/llib/documentation.l # hot fix unitl 9.12.2 is relesed
   - if [ "$TRAVIS_JOB_SUBNUMBER" == 1 -a "$TRAVIS_BRANCH" == "master" ]; then .travis/upload-docs.sh; fi
 after_failure:
   - source /home/travis/ros/ws_jsk_roseus/devel/setup.bash
