@@ -88,6 +88,9 @@ macro(generate_all_roseus_messages)
     add_custom_target(${_pkg}_generate_messages_eus ALL
       DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
       )
+    if(TARGET ${PROJECT_NAME}_generate_messages_eus)
+      add_dependencies(${target_pkg}_generate_messages_eus ALL ${_pkg}_generate_messages_eus)
+    endif()
     install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/share/roseus/ros/${_pkg}/)
   endforeach()
 endmacro()
@@ -108,3 +111,27 @@ if(NOT "${message_generation_requires}" MATCHES "geneus")
   generate_all_roseus_messages()
 endif()
 
+# utility to make doc
+macro(generate_eusdoc _lispfile)
+  get_filename_component(_name ${_lispfile} NAME_WE)
+  set(_lisppath "${CMAKE_CURRENT_SOURCE_DIR}/${_lispfile}")
+  set(_mdfile "${_name}.md")
+  set(_generate_eusdoc_command "\\\"(setq lisp::*error-handler* 'exit)\\\" \\\"(load \\\\\\\"${_lisppath}\\\\\\\")\\\" \\\"(make-document \\\\\\\"${_lisppath}\\\\\\\" \\\\\\\"${_mdfile}\\\\\\\")\\\" \\\"(exit)\\\" ")
+  separate_arguments(_generate_eusdoc_command_list WINDOWS_COMMAND "${_generate_eusdoc_command}")
+  #set(_roseus_exe roseus)
+  find_program(_roseus_exe roseus)
+  set(_ROS_PACKAGE_PATH $ENV{ROS_PACKAGE_PATH})
+  string(REPLACE ";" ":" _CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+  if(${PROJECT_NAME} STREQUAL "roseus") # this is only for roseus package
+    set(_ROS_PACKAGE_PATH ${PROJECT_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
+    set(_CMAKE_PREFIX_PATH ${CATKIN_DEVEL_PREFIX}:${_CMAKE_PREFIX_PATH})
+    set(_roseus_exe ${PROJECT_SOURCE_DIR}/bin/roseus)
+  endif()
+  add_custom_command(OUTPUT ${_mdfile}
+    COMMAND ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} $ENV{EUSDIR}/lib/llib/documentation.l ${_generate_eusdoc_command_list}
+    DEPENDS ${_lispfile})
+  add_custom_target(${PROJECT_NAME}_${_name}_generate_eusdoc ALL DEPENDS ${_mdfile})
+  if(TARGET ${PROJECT_NAME}_generate_messages_eus)
+    add_dependencies(${PROJECT_NAME}_${_name}_generate_eusdoc ${PROJECT_NAME}_generate_messages_eus)
+  endif()
+endmacro()

@@ -12,13 +12,20 @@ env:
   - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true
   - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false      NOT_TEST_INSTALL=true
   - ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=source
-# matrix:
+matrix:
+  - env: ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=true
+    global:
+      - secure: "JrCIE7tJutfUGfkENMvARCMMcmI0Z4YVhRV/bon+gOJj0OvKC8bx8FALLPNbF6QV8xyQ1QUd5wYxUwAupRbtI6X7JBfMlLNisbx3+an3bEmBiG+iahKNXFASFfbp0kGS8sgsMuYqmIPNO2x7UggM9Fb1tROut/RezYccKICuflE="
 #   allow_failures:
 #     - env: ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false
 #     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true
 #     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false
 script:
+  - printenv
+  - if [ "$TRAVIS_BRANCH" == "master" -a "$GH_TOKEN" ]; then .travis/upload-docs.sh; fi
   - .travis/travis.sh
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" -a "$GH_TOKEN" ]; then .travis/upload-docs.sh; fi
 after_failure:
   - source /home/travis/ros/ws_jsk_roseus/devel/setup.bash
   - rostest -t roseus test-genmsg.catkin.test
