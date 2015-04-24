@@ -59,11 +59,14 @@ fi
 (
 cd $WORKSPACE/src;
 mkdir -p euslisp/cmake euslisp/env-hooks
+echo "Adding package.xml to euslisp"
 wget https://raw.githubusercontent.com/tork-a/euslisp-release/release/$ROS_DISTRO/euslisp/package.xml -O euslisp/package.xml
 for file in CMakeLists.txt cmake/euslisp-extras.cmake.in env-hooks/99.euslisp.sh.in; do
+    echo "Adding $file to euslisp"
     wget https://raw.githubusercontent.com/tork-a/euslisp-release/master/patches/${file} -O euslisp/${file}
 done
+echo "Adding package.xml to jskeus"
 wget https://raw.githubusercontent.com/tork-a/jskeus-release/release/$ROS_DISTRO/jskeus/package.xml -O jskeus/package.xml
+echo "Adding CMakeLists.txt to jskeus"
 wget https://raw.githubusercontent.com/tork-a/jskeus-release/master/patches/CMakeLists.txt -O jskeus/CMakeLists.txt
 )
-
