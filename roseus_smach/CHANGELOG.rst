@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.0 (2015-04-24)
+------------------
 * [roseus_smach] add docstring for 'make-state-machine' function; add key option to custom exec-result to transit states
 * [roseus_smach] fix sample parallel task transition; fix typo
 * [roseus_smach] fix typo; change image link
