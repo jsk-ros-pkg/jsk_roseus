@@ -2,6 +2,17 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus_smach] add docstring for 'make-state-machine' function; add key option to custom exec-result to transit states
+* [roseus_smach] fix sample parallel task transition; fix typo
+* [roseus_smach] fix typo; change image link
+* [roseus_smach] Create README.md add sample image
+* [roseus_smach] add syntax suggar of creating state machine with parallel execution, and its sample code
+* [roseus_smach] add feature: parallel executive state machine, and its visualization stuff
+* [roseus_smach] use soft tab
+* Contributors: Yuki Furuta
+
 1.2.6 (2015-02-21)
 ------------------
 

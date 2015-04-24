@@ -2,6 +2,33 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
+* add generate_eusdoc
+
+  * [roseus/cmake/roseus.cmake] depends on install_roseus for doc generation
+  * [roseus/CMakeLists.txt] generate eus-docs
+  * [roseus/cmake/roseus.cmake] add generate_eusdoc macro
+
+* CMakeLists.txt
+
+  * [roseus/CMakeLists.txt] use add_custom_target to copy roseus to   bin
+
+* roseus.cmake
+
+  * [cmake/roseus/roseus.cmake] fix for msg in workspace using {$msg}_SOURCE_PREFIX
+  * do not raise error for old catkin
+
+* convert unit8[] as string https://github.com/jsk-ros-pkg/geneus/issues/14
+
+  * [test/test_geneus] add test for fixed length data
+  * [test-genmsg.sh] compile with -j1 and -l1, unset MAKEFLAGS  https://github.com/catkin/catkin_tools/pull/85
+  * [roseus] fix test for treating uint8[] as string
+
+* [roseus] add test-anonymous for `#179 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/179>`_
+* Contributors: Yuki Furuta, Kei Okada
+
 1.2.6 (2015-02-21)
 ------------------
 * [test-genmsg.sh] fix for latest source code
