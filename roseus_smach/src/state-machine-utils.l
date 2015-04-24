@@ -34,8 +34,7 @@
   (if subseq (remove-seq (cdr subseq) (remove (car subseq) seq :test test) :test test) seq))
 
 (defun make-state-machine (graph-list func-map initial-state goal-states
-                           &key state-machine
-                             (exec-result t) (parallel-exec-result t))
+                           &key (exec-result t) (parallel-exec-result t))
   "This is utility function to make state machine
 e.g. (make-state-machine '((:a -> :b)
                            (:b -> :c)
