@@ -2,6 +2,12 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [cmake/roseus.cmake] fix for package only with action
+* [roseus/test/roseus.cmake] check package only action messages, (jsk_demo_common)
+* Contributors: Kei Okada
+
 1.3.0 (2015-04-24)
 ------------------
 
