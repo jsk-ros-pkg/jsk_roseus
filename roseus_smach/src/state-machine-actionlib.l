@@ -77,7 +77,7 @@
         (funcall (quote ,key) (cdr (assoc :goal userdata))))
   (while (ros::ok)
     (ros::sleep)
-    (ros::spin-once)
+    (send ,client :spin-once)
     ;;
     (cond
      ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*SUCCEEDED*)
