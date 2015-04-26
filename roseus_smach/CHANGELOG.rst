@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.1 (2015-04-26)
+------------------
 * [roseus_smach/src/state-machine-actionlib.l] support spin action client group, see `#274 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/274>`_
 * [roseus_smach/src/state-machine-utils.l] modify make-state-machine
 * [roseus_smach/src/state-machine-utils.l] add iterative execute state machine util
