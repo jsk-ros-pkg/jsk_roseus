@@ -2,6 +2,9 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.3.1 (2015-04-26)
 ------------------
 * [roseus_smach/src/state-machine-actionlib.l] support spin action client group, see `#274 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/274>`_
@@ -191,4 +194,4 @@ Changelog for package roseus_smach
 * commit current source tree
 * add code for smach_viewer
 * change name smach_roseus -> roseus_smach
-* Contributors: chen, Kei Okada, youhei, manabu
+* Contributors: Kei Okada, youhei, manabu, Xiangyu Chen

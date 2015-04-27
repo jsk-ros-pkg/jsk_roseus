@@ -2,6 +2,11 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [cmake/roseus.cmake] use ${PROJECT_NAME}_generate_messages_eus_all_target for depend to eusdoc
+* Contributors: Kei Okada
+
 1.3.1 (2015-04-26)
 ------------------
 * [cmake/roseus.cmake] fix for package only with action
@@ -281,4 +286,4 @@ Changelog for package roseus
 1.0.1 (2014-03-27)
 ------------------
 * roseus: add version numeber to 1.0.0
-* Contributors: Haseru Chen, Ryohei Ueda, Shunnich Nozawa, Yuki Furuta, Kei Okada, Yuto Inagaki, Manabu Saito, kazuto Murase, Eisoku Kuroiwa, Yohei Kakiuchi, Hiroyuki Mikita
+* Contributors: Haseru Chen, Shunnich Nozawa, Yuki Furuta, Kei Okada, Yuto Inagaki, Eisoku Kuroiwa, Manabu Saito, kazuto Murase, Ryohei Ueda, Yohei Kakiuchi, Hiroyuki Mikita

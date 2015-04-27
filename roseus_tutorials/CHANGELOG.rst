@@ -2,6 +2,9 @@
 Changelog for package roseus_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.3.1 (2015-04-26)
 ------------------
 
@@ -306,4 +309,4 @@ Changelog for package roseus_tutorials
 * change to use roseus, whcih automatically load roseus.l eustf.l actionlib.l
 * add publish_marker example by t-ito
 * add roseus_tutorials
-* Contributors: Haseru Chen, Rosen Diankov, Shunsuke Nozawa, Manabu Saito, Kei Okada, Yuto Inagaki, Satoshi Iwaishi, Eisoku kuroiwa, Atushi Tsuda, Ryohei Ueda, Tukasa Ito, Youhei Kakiuchi
+* Contributors: Haseru Chen, Rosen Diankov, Shunsuke Nozawa, Manabu Saito, Kei Okada, Yuto Inagaki, Satoshi Iwaishi, Ryohei Ueda, Atushi Tsuda, Eisoku kuroiwa, Tukasa Ito, Youhei Kakiuchi
