@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.2 (2015-04-28)
+------------------
 * [cmake/roseus.cmake] use ${PROJECT_NAME}_generate_messages_eus_all_target for depend to eusdoc
 * Contributors: Kei Okada
 
