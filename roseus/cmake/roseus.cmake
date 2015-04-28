@@ -123,11 +123,10 @@ macro(generate_eusdoc _lispfile)
   separate_arguments(_generate_eusdoc_command_list WINDOWS_COMMAND "${_generate_eusdoc_command}")
   #set(_roseus_exe roseus)
   find_program(_roseus_exe roseus)
-  set(_ROS_PACKAGE_PATH $ENV{ROS_PACKAGE_PATH})
+  set(_ROS_PACKAGE_PATH ${PROJECT_SOURCE_DIR}:${roseus_SOURCE_PREFIX}:$ENV{ROS_PACKAGE_PATH})
   string(REPLACE ";" ":" _CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+  set(_CMAKE_PREFIX_PATH ${CATKIN_DEVEL_PREFIX}:${_CMAKE_PREFIX_PATH})
   if(${PROJECT_NAME} STREQUAL "roseus") # this is only for roseus package
-    set(_ROS_PACKAGE_PATH ${PROJECT_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH})
-    set(_CMAKE_PREFIX_PATH ${CATKIN_DEVEL_PREFIX}:${_CMAKE_PREFIX_PATH})
     set(_roseus_exe ${PROJECT_SOURCE_DIR}/bin/roseus)
   endif()
   add_custom_command(OUTPUT ${_mdfile}
