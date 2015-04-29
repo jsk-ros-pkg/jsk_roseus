@@ -78,11 +78,11 @@
   (send ,client :send-goal
         (funcall (quote ,key) (cdr (assoc :goal userdata))))
   (when async
-    (set-alist :async client userdata)
+    (set-alist :async (append (cdr (assoc :async userdata)) client) userdata)
     (return return-async))
   (while (ros::ok)
     (ros::sleep)
-    (ros::spin-once)
+    (send ,client :spin-once)
     ;;
     (cond
      ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*SUCCEEDED*)
@@ -121,37 +121,23 @@
 
 (defclass async-join-state
  :super state
- :slots (clients async-return timeout))
+ :slots (timeout))
 
 (defmethod async-join-state
  (:init
-  (name clients &key ((:async-return ar) t) ((:timeout tm) nil))
-  (send-super :init name))
-  (setq remap-list '((:async . clients))
-        async-return ar)
+  (name &key ((:timeout tm) nil))
+  (send-super :init name)
+  (setq timeout tm))
  (:execute
   (userdata &key (step nil))
-  (let (start-time ret)
+  (let (start-time ret clients)
     (send self :remap userdata :invert nil)
     (setq start-time (ros::time-now))
-    (while (member nil (mapcar #'(lambda (c)
-                                   (send c :spin-once)
-                                   (or
-                                    (not (eq
-                                          (send c :get-state)
-                                          actionlib_msgs::GoalStatus::*SUCCEEDED*))
-                                    (not (eq
-                                          (send c :get-state)
-                                          actionlib_msgs::GoalStatus::*ABORTED*))))
-                               clients))
-           (when (and timeout (> (send (ros::time- (ros::time-now) start-time) :to-sec) timeout))
-             (ros::ros-warn "Time exceeded limit ~A sec! Request cancel" timeout)
-             (send-all clients :cancel-goal)
-             (return)
-             )
-           (ros::sleep))
+    (setq clients (cdr (assoc :async userdata)))
+    (if (member nil (send-all clients :wait-for-result :timeout timeout))
+      (setq ret nil) (setq ret t))
+    (set-alist :results (send-all clients :get-result) userdata)
     (send self :remap userdata :invert t)
-    (return ret)))
-)
+    (return-from :execute ret))))
 
 (provide :state-machine-actionlib) ;; end of state-machine-actionlib.l
