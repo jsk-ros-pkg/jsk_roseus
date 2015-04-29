@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.3 (2015-04-29)
+------------------
 * [roseus/cmake/roseus.cmake] need to know roseus exeutable path when compile within same workspace
 * [roseus/CMkeLists.txt] in some cases, rosversion tf2_ros did not resspond the results, use tf2_ros_VERSION, since this is only for old tf2, so we can remove this
 * Contributors: Kei Okada
