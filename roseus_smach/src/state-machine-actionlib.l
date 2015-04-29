@@ -67,7 +67,9 @@
 ;;   this state returns :succeeded or :failed
 ;;
 (defun actionlib-client-state
-  (name client &key (timeout 10) (retry nil) (key #'identity))
+  (name client
+   &key (timeout 10) (retry nil) (key #'identity) (return-success :succeeded) (return-fail :failed)
+        (async nil) (return-async t))
   (send client :wait-for-server)
   (instance state :init name
    ;; main loop
@@ -75,23 +77,26 @@
       (let ((start (ros::time-now)))
   (send ,client :send-goal
         (funcall (quote ,key) (cdr (assoc :goal userdata))))
+  (when async
+    (set-alist :async client userdata)
+    (return return-async))
   (while (ros::ok)
     (ros::sleep)
     (send ,client :spin-once)
     ;;
     (cond
      ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*SUCCEEDED*)
-       (return :succeeded))
+       (return return-success))
       ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*ABORTED*)
        (if ,retry
      (send ,client :send-goal
            (funcall (quote ,key) (cdr (assoc :goal userdata))))
-         (return :failed)))
+         (return return-fail)))
       ((member (send ,client :get-state)
          (list actionlib_msgs::GoalStatus::*PREEMPTED*
          actionlib_msgs::GoalStatus::*RECALLED*
          actionlib_msgs::GoalStatus::*REJECTED*))
-       (return :failed))
+       (return return-fail))
       ((member (send ,client :get-state)
          (list actionlib_msgs::GoalStatus::*ACTIVE*
           actionlib_msgs::GoalStatus::*PENDING*))
