@@ -2,6 +2,12 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus/cmake/roseus.cmake] need to know roseus exeutable path when compile within same workspace
+* [roseus/CMkeLists.txt] in some cases, rosversion tf2_ros did not resspond the results, use tf2_ros_VERSION, since this is only for old tf2, so we can remove this
+* Contributors: Kei Okada
+
 1.3.2 (2015-04-28)
 ------------------
 * [cmake/roseus.cmake] use ${PROJECT_NAME}_generate_messages_eus_all_target for depend to eusdoc
@@ -286,4 +292,4 @@ Changelog for package roseus
 1.0.1 (2014-03-27)
 ------------------
 * roseus: add version numeber to 1.0.0
-* Contributors: Haseru Chen, Shunnich Nozawa, Yuki Furuta, Kei Okada, Yuto Inagaki, Eisoku Kuroiwa, Manabu Saito, kazuto Murase, Ryohei Ueda, Yohei Kakiuchi, Hiroyuki Mikita
+* Contributors: Haseru Chen, Shunnich Nozawa, Yuki Furuta, Kei Okada, Yuto Inagaki, Manabu Saito, kazuto Murase, Yohei Kakiuchi, Eisoku Kuroiwa, Ryohei Ueda, Hiroyuki Mikita
