@@ -67,7 +67,9 @@
 ;;   this state returns :succeeded or :failed
 ;;
 (defun actionlib-client-state
-  (name client &key (timeout 10) (retry nil) (key #'identity))
+  (name client
+   &key (timeout 10) (retry nil) (key #'identity) (return-success :succeeded) (return-fail :failed)
+        (async nil) (return-async t))
   (send client :wait-for-server)
   (instance state :init name
    ;; main loop
@@ -75,23 +77,26 @@
       (let ((start (ros::time-now)))
   (send ,client :send-goal
         (funcall (quote ,key) (cdr (assoc :goal userdata))))
+  (when async
+    (set-alist :async client userdata)
+    (return return-async))
   (while (ros::ok)
     (ros::sleep)
     (ros::spin-once)
     ;;
     (cond
      ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*SUCCEEDED*)
-       (return :succeeded))
+       (return return-success))
       ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*ABORTED*)
        (if ,retry
      (send ,client :send-goal
            (funcall (quote ,key) (cdr (assoc :goal userdata))))
-         (return :failed)))
+         (return return-fail)))
       ((member (send ,client :get-state)
          (list actionlib_msgs::GoalStatus::*PREEMPTED*
          actionlib_msgs::GoalStatus::*RECALLED*
          actionlib_msgs::GoalStatus::*REJECTED*))
-       (return :failed))
+       (return return-fail))
       ((member (send ,client :get-state)
          (list actionlib_msgs::GoalStatus::*ACTIVE*
           actionlib_msgs::GoalStatus::*PENDING*))
@@ -113,3 +118,40 @@
 ;; reserved keyword in userdata
 ;; :goal,:feedback,:result variables in userdata are message defined in .action
 ;; :cancel variable in userdata is vector which (elt v 0) = t when preempt-requested
+
+(defclass async-join-state
+ :super state
+ :slots (clients async-return timeout))
+
+(defmethod async-join-state
+ (:init
+  (name clients &key ((:async-return ar) t) ((:timeout tm) nil))
+  (send-super :init name))
+  (setq remap-list '((:async . clients))
+        async-return ar)
+ (:execute
+  (userdata &key (step nil))
+  (let (start-time ret)
+    (send self :remap userdata :invert nil)
+    (setq start-time (ros::time-now))
+    (while (member nil (mapcar #'(lambda (c)
+                                   (send c :spin-once)
+                                   (or
+                                    (not (eq
+                                          (send c :get-state)
+                                          actionlib_msgs::GoalStatus::*SUCCEEDED*))
+                                    (not (eq
+                                          (send c :get-state)
+                                          actionlib_msgs::GoalStatus::*ABORTED*))))
+                               clients))
+           (when (and timeout (> (send (ros::time- (ros::time-now) start-time) :to-sec) timeout))
+             (ros::ros-warn "Time exceeded limit ~A sec! Request cancel" timeout)
+             (send-all clients :cancel-goal)
+             (return)
+             )
+           (ros::sleep))
+    (send self :remap userdata :invert t)
+    (return ret)))
+)
+
+(provide :state-machine-actionlib) ;; end of state-machine-actionlib.l
