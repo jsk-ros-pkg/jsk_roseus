@@ -42,9 +42,7 @@
      ))
   (:next-arc-list
    (&optional state)
-   (or (remove-if-not #'(lambda(tr)(send tr :check parallel-exec-result))
-                      (send state :arc-list))
-       (send state :arc-list)))
+   (send state :arc-list))
   (:parallel-exec-result
    (&optional res)
    (cond ((null res) parallel-exec-result)
