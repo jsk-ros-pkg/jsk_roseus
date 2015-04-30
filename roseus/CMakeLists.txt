@@ -9,8 +9,11 @@ find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospac
 find_package(euslisp REQUIRED)
 add_definitions(-Wall)
 #
-execute_process(COMMAND rosversion tf2_ros OUTPUT_VARIABLE TF2_ROS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-message(STATUS "tf2_ros version: ${TF2_ROS_VERSION}")
+execute_process(COMMAND rosversion tf2_ros OUTPUT_VARIABLE TF2_ROS_VERSION RESULT_VARIABLE TF2_ROS_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT ${TF2_ROS_RESULT} EQUAL 0)
+  set(TF2_ROS_VERSION ${tf2_ros_VERSION})
+endif()
+message(STATUS "tf2_ros version: ${TF2_ROS_VERSION} (${TF2_ROS_RESULT})")
 if(TF2_ROS_VERSION)
   if(${TF2_ROS_VERSION} VERSION_LESS  0.4.0)
     add_definitions(-DTF2_ROS_VERSION_3)

@@ -2,6 +2,19 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.3 (2015-04-29)
+------------------
+
+1.3.2 (2015-04-28)
+------------------
+
+1.3.1 (2015-04-26)
+------------------
+* [roseus_smach/src/state-machine-actionlib.l] support spin action client group, see `#274 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/274>`_
+* [roseus_smach/src/state-machine-utils.l] modify make-state-machine
+* [roseus_smach/src/state-machine-utils.l] add iterative execute state machine util
+* Contributors: Yuki Furuta, Hitoshi Kamada, Kei Okada
+
 1.3.0 (2015-04-24)
 ------------------
 * [roseus_smach] add docstring for 'make-state-machine' function; add key option to custom exec-result to transit states
@@ -184,4 +197,4 @@ Changelog for package roseus_smach
 * commit current source tree
 * add code for smach_viewer
 * change name smach_roseus -> roseus_smach
-* Contributors: chen, Kei Okada, youhei, manabu
+* Contributors: Kei Okada, youhei, manabu, Xiangyu Chen

@@ -51,12 +51,14 @@ GENEUS_DEP2=${CATKIN_DIR}/src/geneus_dep2
 ROSEUS_DEP1=${CATKIN_DIR}/src/roseus_dep1
 ROSEUS_DEP2=${CATKIN_DIR}/src/roseus_dep2
 ROSEUS_DEP3=${CATKIN_DIR}/src/roseus_dep3
+ROSEUS_DEP4=${CATKIN_DIR}/src/roseus_dep4
 
 mkdir -p ${GENEUS_DEP1}/{msg,srv,action}
 mkdir -p ${GENEUS_DEP2}/{msg,srv,action}
 mkdir -p ${ROSEUS_DEP1}/{msg,srv,action}
 mkdir -p ${ROSEUS_DEP2}/{msg,srv,action}
 mkdir -p ${ROSEUS_DEP3}/{msg,srv,action}
+mkdir -p ${ROSEUS_DEP4}/action
 
 #trap 'rm -fr ${CATKIN_DIR}; exit 1' 1 2 3 15
 
@@ -166,6 +168,42 @@ add_dependencies(\${PROJECT_NAME} \${PROJECT_NAME}_generate_messages_cpp)
 EOF
 }
 
+function add_cmake_only_action() {
+    pkg_path=$1
+    shift
+    cat <<EOF >$pkg_path/CMakeLists.txt
+    cmake_minimum_required(VERSION 2.8.3)
+project($(basename $pkg_path))
+
+find_package(catkin REQUIRED COMPONENTS message_generation roscpp sensor_msgs actionlib_msgs
+$(for pkg in $1
+do
+  echo $pkg
+done)
+)
+
+add_action_files(
+  FILES Foo.action
+)
+generate_messages(
+  DEPENDENCIES sensor_msgs std_msgs actionlib_msgs
+$(for pkg in $2
+do
+  echo $pkg
+done)
+)
+catkin_package(
+    CATKIN_DEPENDS message_runtime roscpp sensor_msgs std_msgs actionlib_msgs
+$(for pkg in $2
+do
+  echo $pkg
+done)
+)
+
+
+EOF
+}
+
 function add_cpp() {
     pkg_path=$1
     pkg_name=$2
@@ -237,6 +275,34 @@ function add_lisp() {
 EOF
 }
 
+function add_lisp_only_action() {
+    pkg_path=$1
+    pkg_name=$2
+    msg_pkg=${3:-$pkg_name}
+    cat <<EOF > $pkg_path/$pkg_name.l
+(require :unittest "lib/llib/unittest.l")
+
+(init-unit-test)
+
+(ros::roseus "roseus_test_genmsg")
+
+(deftest test-msg-instance
+  (assert (ros::load-ros-manifest "$pkg_name")
+          "load-ros-manifest")
+
+  (assert (eval (read-from-string "(instance sensor_msgs::imu :init)"))
+          "instantiating msg message")
+
+  (assert (eval (read-from-string "(instance $msg_pkg::FooGoal :init)"))
+          "instantiating msg message")
+  )
+
+(run-all-tests)
+
+(exit)
+EOF
+}
+
 function add_msg() {
     pkg_path=$1
     parent_pkg=$2
@@ -280,6 +346,7 @@ add_${MANIFEST} ${GENEUS_DEP2} geneus_dep2 geneus geneus_dep1
 add_${MANIFEST} ${ROSEUS_DEP1} roseus_dep1 roseus geneus_dep2 geneus_dep1
 add_${MANIFEST} ${ROSEUS_DEP2} roseus_dep2 roseus_dep1 roseus geneus_dep1 geneus_dep2
 add_${MANIFEST} ${ROSEUS_DEP3} roseus_dep3 roseus_dep2 roseus_dep1 roseus geneus_dep1 geneus_dep2
+add_${MANIFEST} ${ROSEUS_DEP4} roseus_dep4 roseus geneus_dep2 geneus_dep1
 
 # makeup cmake files [pkg_path find_package message_depends]
 add_cmake ${GENEUS_DEP1} 
@@ -287,17 +354,21 @@ add_cmake ${GENEUS_DEP2} "geneus_dep1" "geneus_dep1"
 add_cmake ${ROSEUS_DEP1} "geneus_dep1 roseus geneus_dep2" "geneus_dep1 roseus geneus_dep2"
 add_cmake ${ROSEUS_DEP2} "geneus_dep1 roseus geneus_dep2 roseus_dep1" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
 add_cmake ${ROSEUS_DEP3} "geneus_dep2 geneus_dep1 roseus roseus_dep2 roseus_dep1" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
+add_cmake_only_action ${ROSEUS_DEP4} "geneus_dep1 roseus geneus_dep2" "geneus_dep1 roseus geneus_dep2"
+
 add_cpp ${GENEUS_DEP1} geneus_dep1
 add_cpp ${GENEUS_DEP2} geneus_dep2
 add_cpp ${ROSEUS_DEP1} roseus_dep1
 add_cpp ${ROSEUS_DEP2} roseus_dep2
 add_cpp ${ROSEUS_DEP3} roseus_dep3
+
 add_lisp ${GENEUS_DEP1} geneus_dep1
 add_lisp ${GENEUS_DEP2} geneus_dep2
 add_lisp ${ROSEUS_DEP1} roseus_dep1
 add_lisp ${ROSEUS_DEP2} roseus_dep2
 add_lisp ${ROSEUS_DEP3} roseus_dep3
 add_lisp ${ROSEUS_DEP3} roseus_dep3 roseus_dep2
+add_lisp_only_action ${ROSEUS_DEP4} roseus_dep4
 
 add_msg ${GENEUS_DEP1} std_msgs
 add_msg ${GENEUS_DEP2} geneus_dep1
@@ -310,14 +381,13 @@ add_action ${GENEUS_DEP2} geneus_dep1
 add_action ${ROSEUS_DEP1} geneus_dep2
 add_action ${ROSEUS_DEP2} roseus_dep1
 add_action ${ROSEUS_DEP3} roseus_dep1
-
+add_action ${ROSEUS_DEP4} geneus_dep2
 
 add_srv ${GENEUS_DEP1} std_msgs
 add_srv ${GENEUS_DEP2} geneus_dep1
 add_srv ${ROSEUS_DEP1} geneus_dep2
 add_srv ${ROSEUS_DEP2} roseus_dep1
 add_srv ${ROSEUS_DEP3} roseus_dep1
-
 
 if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
     # if rospack find is source, then copy
@@ -374,6 +444,7 @@ if [ $PACKAGE = ALL ]; then
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep3/roseus_dep3.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep4/roseus_dep4.l $ARGV
     rm -fr ${CAATKIN_DIR}/devel/share/roseus/ros
     rosrun roseus generate-all-msg-srv.sh
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/geneus_dep1/geneus_dep1.l $ARGV
@@ -381,6 +452,7 @@ if [ $PACKAGE = ALL ]; then
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep1/roseus_dep1.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep2/roseus_dep2.l $ARGV
     ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep3/roseus_dep3.l $ARGV
+    ${ROSEUS_EXE} ${CATKIN_DIR}/src/roseus_dep4/roseus_dep4.l $ARGV
 else
     ${EUSLISP_EXE} ${ROSEUS_DIR}/euslisp/roseus.l ${CATKIN_DIR}/src/$PACKAGE/$PACKAGE.l $ARGV
     rm -fr ${CAATKIN_DIR}/devel/share/roseus/ros
