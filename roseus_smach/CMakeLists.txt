@@ -10,7 +10,7 @@ add_action_files(
   Sub5.action)
 
 generate_messages(
-  DEPENDENCIES actionlib_msgs)
+  DEPENDENCIES actionlib_msgs std_msgs)
 
 catkin_package(
 #    DEPENDS 

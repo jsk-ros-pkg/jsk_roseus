@@ -6,9 +6,14 @@
 (ros::roseus "sub5_action_server")
 
 (defun sub5-callback (server goal)
-  (let ((input (send goal :goal :value)))
-    (unix:sleep 5)
-    (setq msg (send server :result :value (- input 5)))
+  (let* ((input (send goal :goal :value))
+        (output input))
+    (dotimes (i 5)
+      (unix:sleep 1)
+      (setq output (- output 1))
+      (setq fmsg (send server :feedback :value output))
+      (send server :publish-feedback fmsg))
+    (setq msg (send server :result :value output))
     (send server :set-succeeded msg)))
 
 (setq s (instance ros::simple-action-server :init

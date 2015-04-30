@@ -6,9 +6,14 @@
 (ros::roseus "multiply10_action_server")
 
 (defun multiply10-callback (server goal)
-  (let ((input (send goal :goal :value)))
-    (unix:sleep 10)
-    (setq msg (send server :result :value (* 10 input)))
+  (let* ((input (send goal :goal :value))
+         (output 0))
+    (dotimes (i 10)
+      (unix:sleep 1)
+      (setq output (+ output input))
+      (setq fmsg (send server :feedback :value output))
+      (send server :publish-feedback fmsg))
+    (setq msg (send server :result :value output))
     (send server :set-succeeded msg)))
 
 (setq s (instance ros::simple-action-server :init
