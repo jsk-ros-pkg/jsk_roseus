@@ -1,6 +1,8 @@
 ;; test-async-join-state-machine-actionlib.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(ros::load-ros-manifest "roseus_smach")
+(ros::roseus "test_async_join_state_machine_actionlib")
 (require :state-machine-actionlib "package://roseus_smach/src/state-machine-actionlib.l")
 (require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
 
@@ -29,8 +31,6 @@
                                 "multiply10" roseus_smach::Multiply10Action))
         (sub5-client (instance ros::simple-action-client :init
                                "sub5" roseus_smach::Sub5Action))
-        (average-client (instance ros::simple-action-client :init
-                                  "average" roseus_smach::AverageTwoIntAction))
         random-int-value)
     (send sm :add-node
           (instance state :init :make-random-int
@@ -51,8 +51,8 @@
                     :remap-list '((:values . :results))))
 
     (send sm :arg-keys :results 'random-int-value :cancel)
-    (send :start-state :make-random-int)
-    (send :goal-state (list :success))
+    (send sm :start-state :make-random-int)
+    (send sm :goal-state (list :success))
     (send sm :add-transition :make-random-int :multiply-10 t)
     (send sm :add-transition :make-random-int :sub-5 t)
     (send sm :add-transition :multiply-10 :join t)
@@ -61,7 +61,4 @@
     (send sm :add-transition :sum :success t)
     sm))
 
-
-
-
-(provide :test-async-join-state-machine-actionlib) ;; end of test-async-join-state-machine-actionlib.l
+(setq s (make-async-join-state-machine))

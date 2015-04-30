@@ -13,7 +13,7 @@
 
 (setq s (instance ros::simple-action-server :init
                   "sub5" roseus_smach::Sub5Action
-                  :execute-cb #'sub5-callback))
+                  :execute-cb 'sub5-callback))
 
 (ros::rate 10)
 (do-until-key
@@ -21,3 +21,4 @@
   (ros::spin-once)
   (ros::sleep))
 
+(exit)

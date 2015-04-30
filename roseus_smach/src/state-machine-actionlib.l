@@ -126,7 +126,7 @@
 (defmethod async-join-state
  (:init
   (name &key ((:timeout tm) nil))
-  (send-super :init name)
+  (send-super :init name nil)
   (setq timeout tm))
  (:execute
   (userdata &key (step nil))

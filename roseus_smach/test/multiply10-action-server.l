@@ -13,11 +13,13 @@
 
 (setq s (instance ros::simple-action-server :init
                   "multiply10" roseus_smach::Multiply10Action
-                  :execute-cb #'multiply10-callback))
+                  :execute-cb 'multiply10-callback))
 
 (ros::rate 10)
 (do-until-key
  (send s :worker)
   (ros::spin-once)
   (ros::sleep))
+
+(exit)
 
