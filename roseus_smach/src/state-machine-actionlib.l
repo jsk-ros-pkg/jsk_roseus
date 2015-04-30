@@ -67,31 +67,40 @@
 ;;   this state returns :succeeded or :failed
 ;;
 (defun actionlib-client-state
-  (name client &key (timeout 10) (retry nil) (key #'identity))
+  (name client
+   &key (timeout 10) (retry nil) (key #'identity) (return-success :succeeded) (return-fail :failed)
+        (async nil) (return-async t))
   (send client :wait-for-server)
   (instance state :init name
    ;; main loop
    `(lambda (userdata)
-      (let ((start (ros::time-now)))
+      (let ((start (ros::time-now)) async-clients)
   (send ,client :send-goal
         (funcall (quote ,key) (cdr (assoc :goal userdata))))
+  (if ,async
+    (progn
+      (setq async-clients (cdr (assoc :async userdata)))
+      (set-alist :async (flatten (list async-clients ,client)) userdata)
+     (ros::sleep)
+     (send ,client :spin-once)
+     ,return-async)
   (while (ros::ok)
     (ros::sleep)
     (send ,client :spin-once)
     ;;
     (cond
      ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*SUCCEEDED*)
-       (return :succeeded))
+       (return ,return-success))
       ((eq (send ,client :get-state) actionlib_msgs::GoalStatus::*ABORTED*)
        (if ,retry
      (send ,client :send-goal
            (funcall (quote ,key) (cdr (assoc :goal userdata))))
-         (return :failed)))
+         (return ,return-fail)))
       ((member (send ,client :get-state)
          (list actionlib_msgs::GoalStatus::*PREEMPTED*
          actionlib_msgs::GoalStatus::*RECALLED*
          actionlib_msgs::GoalStatus::*REJECTED*))
-       (return :failed))
+       (return ,return-fail))
       ((member (send ,client :get-state)
          (list actionlib_msgs::GoalStatus::*ACTIVE*
           actionlib_msgs::GoalStatus::*PENDING*))
@@ -103,7 +112,7 @@
        (if (and (numberp ,timeout)
           (< ,timeout (send (ros::time- (ros::time-now) start) :to-sec)))
      (send ,client :cancel-goal))))
-    ))))
+    )))))
   )
 
 ;; simple usage
@@ -113,3 +122,33 @@
 ;; reserved keyword in userdata
 ;; :goal,:feedback,:result variables in userdata are message defined in .action
 ;; :cancel variable in userdata is vector which (elt v 0) = t when preempt-requested
+
+(defclass async-join-state
+ :super state
+ :slots (timeout))
+
+(defmethod async-join-state
+ (:init
+  (name &key ((:timeout tm) 0) ((:remap-list rlst) nil))
+  (send-super :init name nil)
+  (setq timeout tm
+        remap-list rlst))
+ (:execute
+  (userdata &key (step nil))
+  (let (start-time ret clients)
+    (send self :remap userdata :invert nil)
+    (setq start-time (ros::time-now))
+    (setq clients (cdr (assoc :async userdata)))
+    (when (atom clients)
+      (setq clients (list clients)))
+    (warning-message 2 "waiting action client: ~A~%" clients)
+    (send-all clients :spin-once)
+    (if (member nil (send-all clients :wait-for-result :timeout timeout))
+      (setq ret nil) (setq ret t))
+    (warn "ret: ~A~%" ret)
+    (set-alist :results (send-all clients :get-result) userdata)
+    (warn "result: ~A~%" (send-all clients :get-result))
+    (send self :remap userdata :invert t)
+    (return-from :execute ret))))
+
+(provide :state-machine-actionlib) ;; end of state-machine-actionlib.l
