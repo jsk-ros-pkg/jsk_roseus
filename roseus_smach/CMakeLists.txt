@@ -4,10 +4,11 @@ project(roseus_smach)
 find_package(catkin REQUIRED COMPONENTS
   euslisp
   rostest
-  roseus
   smach
   smach_ros
-  smach_msgs)
+  smach_msgs
+  roseus
+)
 
 catkin_package(
 #    DEPENDS 
