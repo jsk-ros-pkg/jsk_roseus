@@ -1,5 +1,5 @@
 #!/usr/bin/env irteusgl
-;; paralell-state-machine-sample.l
+;; parallel-state-machine-sample.l
 ;; Author: Furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 (require :state-machine "package://roseus_smach/src/state-machine.l")
@@ -74,4 +74,4 @@
 
 (warning-message 3 ";; (demo)~%")
 
-(provide :paralell-state-machine-sample)
+(provide :parallel-state-machine-sample)
