@@ -238,7 +238,7 @@
 			       coords
                                ((:color col) (float-vector 1 1 1))
 			       ((:alpha a) 1.0)
-                               ((:id idx) 0) ns lifetime)
+                               ((:id idx) 0) ns lifetime rainbow)
   (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
     (send-all bodies :worldcoords) ;; make sure to update vertices
     (let* ((msg (instance visualization_msgs::Marker :init
@@ -262,7 +262,12 @@
 	   (color-list
 	    (mapcar #'(lambda (vlist c)
 			(if (derivedp c gl::colormaterial) (setq c (send c :diffuse))) ;; jsk
-			(make-list (length vlist) :initial-element c))
+                        (if rainbow
+                            (let ((r (make-list (length vlist))))
+                              (dotimes (i (length vlist))
+                                (setf (elt r i) (scale (/ 1.0 255.0) (coerce (color-category20 i) float-vector))))
+                              r)
+                          (make-list (length vlist) :initial-element c)))
 		    triface-vertices-list body-colors))
 	   (points
 	    (mapcar #'(lambda (v)
