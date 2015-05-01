@@ -25,3 +25,4 @@ install(DIRECTORY sample src test
 
 add_rostest(test/test-samples.launch)
 add_rostest(test/test_async_join_state_machine_actionlib.launch)
+add_rostest(test/test_parallel_state_machine_sample.launch)
