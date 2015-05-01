@@ -405,6 +405,8 @@
         (:sphere (apply #'sphere->marker-msg eusgeom header args))
         (t (apply #'object->marker-msg eusgeom header args)))
       ))
+   ((derivedp eusgeom bodyset)
+    (apply #'object->marker-msg eusgeom header args))
    ((and (listp eusgeom) (derivedp (car eusgeom) line))
     (apply #'line->marker-msg eusgeom header args))
    ((derivedp eusgeom line)
