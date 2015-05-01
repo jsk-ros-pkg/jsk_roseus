@@ -1,6 +1,5 @@
-(load "unittest.l")
+(require :unittest "lib/llib/unittest.l")
 
-(load "package://roseus_smach/sample/state-machine-sample.l")
 (load "package://roseus_smach/sample/state-machine-ros-sample.l")
 
 (ros::roseus "test_roseus_smach_samples")
