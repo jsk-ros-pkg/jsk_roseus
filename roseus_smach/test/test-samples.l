@@ -6,14 +6,17 @@
 
 (init-unit-test)
 
-(deftest test-smach-sample
+(deftest test-smach-sample-simple
   (assert (eq (send (smach-exec-simple) :name) :outcome4)
-	  "simple smach sample")
+	  "simple smach sample"))
+
+(deftest test-smach-sample-nested
   (assert (eq (send (smach-exec-nested) :name) :outcome5)
-	  "nested smach sample")
+	  "nested smach sample"))
+
+(deftest test-smach-sample-userdata
   (assert (eq (send (smach-exec-userdata) :name) :outcome4)
-	  "sample of smach with userdata")
-  )
+	  "sample of smach with userdata"))
 
 (run-all-tests)
 

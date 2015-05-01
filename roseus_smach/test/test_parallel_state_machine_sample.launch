@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="test_parallel_state_machine_samples" pkg="roseus" type="roseus"
+        args="$(find roseus_smach)/test/test-parallel-state-machine.l" />
+</launch>
