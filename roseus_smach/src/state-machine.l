@@ -220,6 +220,9 @@
   (:has-been-activated (&rest is-ac)
    (if is-ac (setq has-been-activated is-ac))
    has-been-activated)
+  (:executed-result
+   ()
+   executed-result)
   (:remap-list
    (&rest args)
    (if (car args) (setq remap-list (car args))) remap-list)
@@ -242,6 +245,7 @@
                  ((functionp action) (funcall action userdata))
                  (t (send self :name))))
      (send self :remap userdata :invert t) ;; unremap
+     (setq executed-result res)
      res ))
   )
 
