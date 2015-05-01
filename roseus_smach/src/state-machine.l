@@ -208,7 +208,7 @@
 ;; action is function or state-machine instance
 (defclass state
   :super node
-  :slots (action remap-list))
+  :slots (action remap-list has-been-activated executed-result))
 (defmethod state
   (:init
    (name act &key ((:remap-list rlst) nil))
@@ -217,6 +217,9 @@
   ;; check if this state is state-machine, then return it
   (:submachine () (if (derivedp action state-machine) action nil))
   ;; remap userdata names
+  (:has-been-activated (&rest is-ac)
+   (if is-ac (setq has-been-activated is-ac))
+   has-been-activated)
   (:remap-list
    (&rest args)
    (if (car args) (setq remap-list (car args))) remap-list)
@@ -230,6 +233,7 @@
   ;;
   (:execute
    (userdata &key (step nil))
+   (send self :has-been-activated t)
    (let (res)
      (send self :remap userdata :invert nil) ;; remap
      (setq res
