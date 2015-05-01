@@ -5,7 +5,7 @@
 (ros::load-ros-manifest "roseus_smach")
 (ros::roseus "test_async_join_state_machine_actionlib")
 (load "async-join-state-machine-sample.l")
-(load "package://roseus_smach/sample/state-machine-ros-sample.l")
+(require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
 
 (init-unit-test)
 
