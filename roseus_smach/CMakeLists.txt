@@ -24,3 +24,4 @@ install(DIRECTORY sample src test
         USE_SOURCE_PERMISSIONS)
 
 add_rostest(test/test-samples.launch)
+add_rostest(test/test_async_join_state_machine_actionlib.launch)
