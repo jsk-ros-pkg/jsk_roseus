@@ -255,7 +255,10 @@
 	    (mapcar #'(lambda (fs)
 			(mapcan #'(lambda (f) (cdr (send f :vertices)))
 				(send fs :faces)))
-		    (mapcar #'body-to-faces bodies)))
+		    (mapcar #'(lambda (b)
+                                (if (find-method b :glvertices)
+                                    (send b :glvertices :convert-to-faceset :wrt :world)
+                                  (body-to-faces b))) bodies)))
 	   (color-list
 	    (mapcar #'(lambda (vlist c)
 			(if (derivedp c gl::colormaterial) (setq c (send c :diffuse))) ;; jsk
