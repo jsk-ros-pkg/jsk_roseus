@@ -165,7 +165,7 @@
          (setq trans (remove-if-not #'(lambda(tr)
                                         (send self :check-if-transition-is-possible tr)) trans))
          (case (length trans)
-           (0 (error "undefined transition ~A from ~A~%" exec-result last-state))
+           (0 (ros::ros-warn "transition ~A from ~A is  impossible." exec-result last-state))
            (1 t) ;; OK
            (t
             (case (length active-state)
