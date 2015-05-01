@@ -42,9 +42,7 @@
      ))
   (:next-arc-list
    (&optional state)
-   (or (remove-if-not #'(lambda(tr)(send tr :check parallel-exec-result))
-                      (send state :arc-list))
-       (send state :arc-list)))
+   (send state :arc-list))
   (:parallel-exec-result
    (&optional res)
    (cond ((null res) parallel-exec-result)
@@ -116,7 +114,7 @@
          (send active-state :execute userdata :step (1- step))))
 |#
    ;; execute once on this machine
-   (let (ret)
+   (let (ret next-active-state)
      (dolist (astate active-state)
        (let* ((last-state astate)
               (trans (send self :next-arc-list astate))
@@ -134,10 +132,11 @@
          (when (not (eq astate last-state))
            (error "active state has not changed ~A -> ~A~%" last-state astate)
            (return-from :execute-impl (send astate :name)))
-         (setq active-state (send-all trans :to))
+         (setq next-active-state (append next-active-state (send-all trans :to)))
          (if (send astate :submachine)
              (send (send astate :submachine) :reset-state))
          (push exec-result ret)))
+     (setq active-state (unique next-active-state))
      ret))
 
   ;; set :step to execute once at selected depth.
