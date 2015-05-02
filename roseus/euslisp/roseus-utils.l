@@ -238,7 +238,7 @@
 			       coords
                                ((:color col) (float-vector 1 1 1))
 			       ((:alpha a) 1.0)
-                               ((:id idx) 0) ns lifetime)
+                               ((:id idx) 0) ns lifetime rainbow)
   (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
     (send-all bodies :worldcoords) ;; make sure to update vertices
     (let* ((msg (instance visualization_msgs::Marker :init
@@ -255,11 +255,19 @@
 	    (mapcar #'(lambda (fs)
 			(mapcan #'(lambda (f) (cdr (send f :vertices)))
 				(send fs :faces)))
-		    (mapcar #'body-to-faces bodies)))
+		    (mapcar #'(lambda (b)
+                                (if (find-method b :glvertices)
+                                    (send b :glvertices :convert-to-faceset :wrt :world)
+                                  (body-to-faces b))) bodies)))
 	   (color-list
 	    (mapcar #'(lambda (vlist c)
 			(if (derivedp c gl::colormaterial) (setq c (send c :diffuse))) ;; jsk
-			(make-list (length vlist) :initial-element c))
+                        (if rainbow
+                            (let ((r (make-list (length vlist))))
+                              (dotimes (i (length vlist))
+                                (setf (elt r i) (scale (/ 1.0 255.0) (coerce (color-category20 i) float-vector))))
+                              r)
+                          (make-list (length vlist) :initial-element c)))
 		    triface-vertices-list body-colors))
 	   (points
 	    (mapcar #'(lambda (v)
@@ -397,6 +405,8 @@
         (:sphere (apply #'sphere->marker-msg eusgeom header args))
         (t (apply #'object->marker-msg eusgeom header args)))
       ))
+   ((derivedp eusgeom bodyset)
+    (apply #'object->marker-msg eusgeom header args))
    ((and (listp eusgeom) (derivedp (car eusgeom) line))
     (apply #'line->marker-msg eusgeom header args))
    ((derivedp eusgeom line)
