@@ -1447,6 +1447,50 @@ pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
   return (NIL);
 }
 
+pointer ROSEUS_ISADVERTISED(register context *ctx,int n,pointer *argv)
+{
+  string topicname;
+  string ret;
+
+  ckarg(1);
+  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  if( s_mapAdvertised.find(topicname) == s_mapAdvertised.end() ) {
+    return NIL;
+  }
+  return T;
+}
+
+pointer ROSEUS_ISSUBSCRIBED(register context *ctx,int n,pointer *argv)
+{
+  string topicname;
+  string ret;
+
+  ckarg(1);
+  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  if( s_mapSubscribed.find(topicname) == s_mapSubscribed.end() ) {
+    return NIL;
+  }
+  return T;
+}
+
+pointer ROSEUS_ISSERVICED(register context *ctx,int n,pointer *argv)
+{
+  string topicname;
+  string ret;
+
+  ckarg(1);
+  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  if( s_mapServiced.find(topicname) == s_mapServiced.end() ) {
+    return NIL;
+  }
+  return T;
+}
 /************************************************************
  *   __roseus
  ************************************************************/
@@ -1509,6 +1553,10 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
   defun(ctx,"CREATE-NODEHANDLE", argv[0], (pointer (*)())ROSEUS_CREATE_NODEHANDLE);
   defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL);
+
+  defun(ctx,"ISADVERTISED",argv[0],(pointer (*)())ROSEUS_ISADVERTISED);
+  defun(ctx,"ISSUBSCRIBED",argv[0],(pointer (*)())ROSEUS_ISSUBSCRIBED);
+  defun(ctx,"ISSERVICED",argv[0],(pointer (*)())ROSEUS_ISSERVICED);
 
   pointer_update(Spevalof(PACKAGE),p);
 
