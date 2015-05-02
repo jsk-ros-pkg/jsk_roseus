@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.4 (2015-05-03)
+------------------
 * [roseus_smach] add test for parallel state machine
 * [roseus_smach] add parallel state machine sample test to CMakeLists
 * [roseus_smach] add sample test to CMakeLists
