@@ -1447,6 +1447,78 @@ pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
   return (NIL);
 }
 
+pointer ROSEUS_GET_HOST(register context *ctx,int n,pointer *argv)
+{
+  ckarg(0);
+
+  std::string host = ros::master::getHost();
+  return makestring((char*)host.c_str(), host.length());
+}
+
+pointer ROSEUS_GET_NODES(register context *ctx,int n,pointer *argv)
+{
+  ckarg(0);
+
+  ros::V_string nodes;
+  if ( ! ros::master::getNodes(nodes) ) {
+    return NIL;
+  }
+
+  register pointer ret, first;
+  ret=cons(ctx, NIL, NIL);
+  first = ret;
+  vpush(ret);
+  for (ros::V_string::iterator it = nodes.begin() ; it != nodes.end(); it++) {
+    std::string node = *it;
+    ccdr(ret) = cons(ctx, makestring((char *)node.c_str(), node.length()), NIL);
+    ret = ccdr(ret);
+  }
+  vpop(); // vpush(ret)
+
+  return ccdr(first);
+}
+
+pointer ROSEUS_GET_PORT(register context *ctx,int n,pointer *argv)
+{
+  ckarg(0);
+
+  return makeint(ros::master::getPort());
+}
+
+pointer ROSEUS_GET_URI(register context *ctx,int n,pointer *argv)
+{
+  ckarg(0);
+
+  std::string uri = ros::master::getURI();
+  return makestring((char*)uri.c_str(), uri.length());
+}
+
+pointer ROSEUS_GET_TOPICS(register context *ctx,int n,pointer *argv)
+{
+  ckarg(0);
+
+  ros::master::V_TopicInfo topics;
+  if ( !ros::master::getTopics(topics) ) {
+    return NIL;
+  }
+
+  register pointer ret, first;
+  ret=cons(ctx, NIL, NIL);
+  first = ret;
+  vpush(ret);
+  for (ros::master::V_TopicInfo::iterator it = topics.begin() ; it != topics.end(); it++) {
+    const ros::master::TopicInfo& info = *it;
+    pointer tmp = cons(ctx,makestring((char*)info.name.c_str(), info.name.length()), makestring((char*)info.datatype.c_str(), info.datatype.length()));
+    vpush(tmp);
+    ccdr(ret) = cons(ctx, tmp, NIL);
+    ret = ccdr(ret);
+    vpop(); // vpush(tmp)
+  }
+  vpop(); // vpush(ret)
+
+  return ccdr(first);
+}
+
 /************************************************************
  *   __roseus
  ************************************************************/
@@ -1509,6 +1581,12 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"ROSEUS-RAW",argv[0],(pointer (*)())ROSEUS);
   defun(ctx,"CREATE-NODEHANDLE", argv[0], (pointer (*)())ROSEUS_CREATE_NODEHANDLE);
   defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL);
+
+  defun(ctx,"GET-HOST",argv[0],(pointer (*)())ROSEUS_GET_HOST);
+  defun(ctx,"GET-NODES",argv[0],(pointer (*)())ROSEUS_GET_NODES);
+  defun(ctx,"GET-PORT",argv[0],(pointer (*)())ROSEUS_GET_PORT);
+  defun(ctx,"GET-URI",argv[0],(pointer (*)())ROSEUS_GET_URI);
+  defun(ctx,"GET-TOPICS",argv[0],(pointer (*)())ROSEUS_GET_TOPICS);
 
   pointer_update(Spevalof(PACKAGE),p);
 
