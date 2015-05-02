@@ -2,6 +2,15 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus.cpp] add get-host, get-nodes, get-port, get-uri, get-topics, from http://docs.ros.org/indigo/api/roscpp/html/master_8h.html
+* [euslisp/roseus-utils.l] support bodyset object
+* [euslisp/roseus-utils.l] support random color
+* [euslisp/roseus-utils.l] support object with :glvertices
+* [jsk_roseus] Parallelize generate-all-msg-srv
+* Contributors: Kei Okada, Ryohei Ueda
+
 1.3.3 (2015-04-29)
 ------------------
 * [roseus/cmake/roseus.cmake] need to know roseus exeutable path when compile within same workspace
