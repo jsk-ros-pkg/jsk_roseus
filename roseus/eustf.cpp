@@ -79,8 +79,12 @@
 #define export  eus_export
 #define vector  eus_vector
 #define string  eus_string
-
+#ifdef __clang__
+#undef MAX
+#undef MIN
+#endif
 #include "eus.h"
+
 extern "C" {
   pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env);
   void register_eustf(){
