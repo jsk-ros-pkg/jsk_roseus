@@ -104,7 +104,7 @@ using namespace ros;
 using namespace std;
 
 #define isInstalledCheck \
-  if( ! ros::ok() ) { error(E_USER,"You must call ros::init() before creating the first NodeHandle"); }
+  if( ! ros::ok() ) { error(E_USER,"You must call (ros::roseus \"name\") before creating the first NodeHandle"); }
 
 class RoseusStaticData
 {
