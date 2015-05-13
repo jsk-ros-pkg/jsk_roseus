@@ -48,6 +48,7 @@
 	   :tx tx :ty ty :parent-coords frame-coords args)))
 
 (defun make-camera-from-ros-camera-info (msg)
+  "Make camera model from ros sensor_msgs::CameraInfo message"
   (let ((pwidth (send msg :width))
         (pheight (send msg :height))
         (p (send msg :P)))
@@ -58,6 +59,7 @@
 ;; 3dpoint cloud
 ;;
 (defun make-msg-from-3dpointcloud (points-list &key color-list (frame "/sensor_frame"))
+  "Make sensor_msgs::PointCloud from list of 3d point"
   (let (points hdr msg)
     ;; make-points
     (dolist (length points-list)
@@ -102,6 +104,7 @@
 ;; ros helper
 
 (defun vector->rgba (cv &optional (alpha 1.0))
+  "Convert vector to std_msgs::ColorRGBA"
   (if (vectorp cv)
       (instance std_msgs::ColorRGBA :init
                 :r (elt cv 0)
@@ -117,6 +120,7 @@
 				 &key ((:color col) (float-vector 1.0 0 0))
 				      ((:alpha a) 1.0)
                                       ((:id idx) 0) ns lifetime)
+  "Convert cylinder object to visualization_msgs::Marker"
   (send cyl :worldcoords) ;; make sure to update vertices
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*CYLINDER*
@@ -138,6 +142,7 @@
 			    &key ((:color col) (float-vector 1.0 0 0))
    			         ((:alpha a) 1.0)
                                  ((:id idx) 0) ns lifetime)
+  "Convert cube object to visualization_msgs::Marker"
   (send cb :worldcoords) ;; make sure to update vertices
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*CUBE*
@@ -159,6 +164,7 @@
 			    &key ((:color col) (float-vector 1.0 0 0))
    			         ((:alpha a) 1.0)
                                  ((:id idx) 0) ns lifetime)
+  "Convert shpere object to visualization_msgs::Marker"
   (send sp :worldcoords) ;; make sure to update vertices
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*SPHERE*
@@ -179,6 +185,7 @@
                                  ((:alpha a) 1.0)
                                  ((:id idx) 0)
                                  ((:scale sc) 10.0) ns lifetime)
+  "Convert line object to visualization_msgs::Marker"
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*LINE_STRIP*
                        :header header
@@ -195,6 +202,7 @@
                                  ((:alpha a) 1.0)
                                  ((:id idx) 0)
                                  ((:scale sc) 10.0) ns lifetime)
+  "Convert list of line object to visualization_msgs::Marker"
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*LINE_LIST*
                        :header header
@@ -209,6 +217,7 @@
 (defun faces->marker-msg (faces header &key
                                 ((:color col) (float-vector 1 0 0))
                                 ((:id idx) 0) ns lifetime)
+  "Convert face objects to visualization_msgs::Marker"
   ;;(send-all faces :worldcoords) ;; make sure to update vertices
   (let* ((tri-faces
           (mapcan #'(lambda (f) (geo::face-to-triangle f))
@@ -239,6 +248,7 @@
                                ((:color col) (float-vector 1 1 1))
 			       ((:alpha a) 1.0)
                                ((:id idx) 0) ns lifetime rainbow)
+  "Convert euslisp body object to visualization_msgs::Marker"
   (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
     (send-all bodies :worldcoords) ;; make sure to update vertices
     (let* ((msg (instance visualization_msgs::Marker :init
@@ -291,6 +301,7 @@
       msg)))
 
 (defun wireframe->marker-msg (wf header &rest args)
+  "Convert euslisp object to visualization_msgs::Marker as wireframe"
   (apply #'line-list->marker-msg (mapcan #'(lambda (eds) (send eds :vertices)) (send wf :edges)) header args))
 
 (defun text->marker-msg (str c header
@@ -299,6 +310,7 @@
 			   ((:alpha a) 1.0)
 			   ((:id idx) 0)
 			   ((:scale sc) 100.0) ns lifetime)
+  "Convert text to visualization_msgs::Marker"
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*TEXT_VIEW_FACING*
                        :header header
@@ -312,6 +324,7 @@
     msg))
 
 (defun coords->marker-msg (coords header &key (size 100) (width 10) (id 0) ns lifetime)
+  "Convert coordinates to visualization_msgs::Marker"
   (let* ((msg (instance visualization_msgs::Marker :init
                         :type visualization_msgs::Marker::*LINE_LIST*
                         :header header
@@ -343,6 +356,7 @@
        &key ((:color col) (float-vector 1 1 1)) ((:scale sc) 1000)
        ((:id idx) 0) ((:mesh_use_embedded_materials use_embedded) t)
        (alpha 1.0) ns lifetime)
+    "Convert mesh resources to visualization_msgs::Marker"
     (let* ((msg (instance visualization_msgs::Marker :init
 			  :type visualization_msgs::Marker::*MESH_RESOURCE*
 			  :header header :id idx)))
@@ -361,6 +375,7 @@
                                   ((:alpha a) 1.0)
                                   (use-color) (point-width 0.01) (point-height 0.01)
                                   ((:id idx) 0) ns lifetime)
+  "Convert pointcloud data to visualization_msgs::Marker"
   (let ((msg (instance visualization_msgs::Marker :init
                        :type visualization_msgs::Marker::*POINTS*
                        :header header
@@ -394,6 +409,7 @@
 
 (defun eusobj->marker-msg (eusgeom header &rest args &key (wireframe)
                                     &allow-other-keys)
+  "Convert any euslisp object to visualization_msgs::Marker"
   (cond
    (wireframe
     (apply #'wireframe->marker-msg eusgeom header args))
@@ -427,6 +443,7 @@
 			           ((:alpha a) 1.0)
 			           ((:id idx) 0)
 			           ((:scale sc) nil) ns lifetime)
+  "Convert arrow object to visualization_msgs::Marker"
   (let ((msg (instance visualization_msgs::Marker :init
 		       :type visualization_msgs::Marker::*ARROW*
 		       :header header
@@ -450,6 +467,7 @@
 ;; visualization_msgs::Marker -> eus shape object
 
 (defun marker-msg->shape (msg &rest args)
+  "Convert visualization_msgs::Marker to euslisp object"
   (let ((type (send msg :type)))
     (print type)
     (print (numberp type))
@@ -462,6 +480,7 @@
      )))
 
 (defun marker-msg->shape/cube (msg)
+  "Convert visualization_msgs::Marker to euslisp cube object"
   (let* ((scale (ros::tf-point->pos (send msg :scale)))
          (rgba (send msg :color))
          (cb (make-cube (elt scale 0) (elt scale 1) (elt scale 2)
@@ -474,6 +493,7 @@
     cb))
 
 (defun marker-msg->shape/cylinder (msg)
+  "Convert visualization_msgs::Marker to euslisp cylinder object"
   (let* ((scale (ros::tf-point->pos (send msg :scale)))
          (rgba (send msg :color))
          (radius (/ (elt scale 0) 2.0))
@@ -490,6 +510,7 @@
     cyl))
 
 (defun marker-msg->shape/sphere (msg)
+  "Convert visualization_msgs::Marker to euslisp sphere object"
   (let* ((scale (ros::tf-point->pos (send msg :scale)))
          (rgba (send msg :color))
          (sp (make-sphere (/ (elt scale 0) 2.0)
@@ -502,6 +523,7 @@
     sp))
 
 (defun marker-msg->shape/cube_list (msg &key ((:pointcloud pt)))
+  "Convert visualization_msgs::Marker to eusliss list of cube objects"
   (let* ((scale (ros::tf-point->pos (send msg :scale)))
          (rgba (send msg :color))
          (cds (ros::tf-pose->coords (send msg :pose)))
@@ -548,7 +570,7 @@
 ;;
 (defun make-ros-msg-from-eus-pointcloud (pcloud &key (with-color :rgb)
                                                 (with-normal t) (frame "/sensor_frame"))
-  "convert from pointcloud in eus to sensor_msgs::PointCloud2 in ros"
+  "Convert from pointcloud in eus to sensor_msgs::PointCloud2 in ros"
   (let ((size (send pcloud :size))
         fld-lst hdr msg psize raw_data
         (width (send pcloud :width))
@@ -631,7 +653,7 @@
     ))
 
 (defun make-eus-pointcloud-from-ros-msg (msg &key (pcloud) (remove-nan))
-  "convert from sensor_msgs::PointCloud2 in ros to pointcloud in eus"
+  "Convert from sensor_msgs::PointCloud2 in ros to pointcloud in eus"
   (let* ((f-lst (send msg :fields))
          (w (send msg :width))
          (h (send msg :height))
@@ -694,6 +716,7 @@
     ))
 
 (defun dump-pointcloud-to-pcd-file (fname pcloud &key (rgb :rgb) (binary) (scale 0.001))
+  "Write pointcloud data to pcd file"
   (let ((pmat (send pcloud :points))
         (cmat (send pcloud :colors))
         (nmat (send pcloud :normals))
@@ -766,6 +789,7 @@
       (setq ret (nreverse ret))
       )))
 (defun read-pcd-file (fname &key (scale 1000.0))
+  "Write read pcd file and construct pointcloud object"
   (let (str
         version pfields
         psize ptype pcount
@@ -961,10 +985,12 @@
 ;;
 (ros::roseus-add-srvs "std_srvs")
 (defun call-empty-service (srvname &key (wait nil))
+  "Call empty service"
   (if wait (ros::wait-for-service srvname))
   (ros::service-call srvname (instance std_srvs::EmptyRequest :init)))
 
 (defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
+  "Subscribe message, just for once"
   (let (lmsg)
     (unless (ros::get-num-publishers topic-name)
       (cond
@@ -990,6 +1016,7 @@
     lmsg))
 
 (defun one-shot-publish (topic-name msg &key (wait 500) (after-stamp) (unadvertise t))
+  "Publish message just for once"
   (ros::advertise topic-name (class msg))
   (unix::usleep (round (* wait 1000)))
   (while after-stamp
@@ -1048,12 +1075,33 @@
 (defclass exact-time-message-filter
   :super propertied-object
   :slots (callback-helpers buffers buffer-length)
+  :documentation "Exact time message filter synchronizes incoming channels by the timestamps contained in their headers, and outputs them in the form of a single callback that takes the same number of channels. This filter requres messages to have exactly the same timestamp in order to match. Your callback is only called if a message has been received on all specified channels with the same exact timestamp.
+
+topic := ((topic message-type) (topic message-type) ...)
+
+	;; sample
+	(defclass image-caminfo-synchronizer
+	  :super exact-time-message-filter)
+	
+	(defmethod image-caminfo-synchronizer
+	  (:callback (image caminfo)
+		(print (list image caminfo))
+		(print (send-all (list image caminfo) :header :stamp))
+		))
+	(ros::roseus \"hoge\")
+	(ros::roseus-add-msgs \"sensor_msgs\")
+	;; test
+	(setq hoge (instance image-caminfo-synchronizer :init
+			 (list (list \"/multisense/left/image_rect_color\" sensor_msgs::Image)
+			   (list \"/multisense/left/camera_info\" sensor_msgs::CameraInfo))))
+	(ros::spin)
+"
   )
 
 
 (defmethod exact-time-message-filter
   (:init (topics &key ((:buffer-length abuffer-length) 50))
-    "topic := ((topic message-type) (topic message-type) ...)"
+    "Create exact-time-message-filter instance"
     ;; initialize buffers for each topics
     (setq buffer-length abuffer-length)
     (setq buffers (mapcar #'(lambda (topic-info)

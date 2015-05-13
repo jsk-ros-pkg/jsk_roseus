@@ -41,6 +41,7 @@
                     (logger "ros.roseus")
                     (level ros::*rosinfo*)
                     (args lisp::*eustop-argument*))
+  "Register roseus client node with the master under the specified name"
   ;; (pprint (list 'roseus_args args))
   (let ((option (if anonymous (list ros::*anonymous-name*) (list))))
     (prog1
@@ -73,6 +74,7 @@
   :slots (sec-nsec))
 (defmethod ros::time
   (:init (&key ((:sec _sec) 0) ((:nsec _nsec) 0))
+         "ros::time represents ROS time primitive type, which consits of two integers, seconds and nanoseconds"
          (setq sec-nsec (integer-vector _sec _nsec)) self)
   (:sec  (&optional s) (if s (setf (elt sec-nsec 0) s)) (elt sec-nsec 0))
   (:nsec (&optional s) (if s (setf (elt sec-nsec 1) s)) (elt sec-nsec 1))
@@ -81,6 +83,7 @@
   (:to-sec () (+ (send self :sec) (/ (send self :nsec) 1000000000.0)))
   (:to-nsec () (+ (* (send self :sec) 1000000000) (send self :nsec)))
   (:from-sec (sec)
+             "create new ros::time instance from a float seconds representation"
              (send self :sec (floor sec))
              (send self :nsec (floor (* 1000000000 (- sec (floor sec)))))
              self)
@@ -100,31 +103,39 @@
   )
 
 (defun ros::time (&optional (sec 0))
+  "Create new ros::time instance"
   (send (instance ros::time :init) :from-sec sec))
 
-(defun ros::time-now () (send (instance ros::time :init) :now))
+(defun ros::time-now () "Create new ros::time instance representing current time" (send (instance ros::time :init) :now))
 
 (defun ros::time+ (a b)
+  "add ros::time"
   (let* ((csec  (+ (send a :sec)  (send b :sec)))
 	 (cnsec (+ (send a :nsec) (send b :nsec))))
     (if (>= cnsec 1000000000) (setq csec (+ csec 1)
 				    cnsec (- cnsec 1000000000)))
     (instance ros::time :init :sec csec :nsec cnsec)))
 (defun ros::time- (a b)
+  "substruct ros::time"
   (let* ((csec  (- (send a :sec)  (send b :sec)))
 	 (cnsec (- (send a :nsec) (send b :nsec))))
     (if (< cnsec 0) (setq csec (- csec 1) cnsec (+ cnsec 1000000000)))
     (instance ros::time :init :sec csec :nsec cnsec)))
 (defun ros::time= (a b)
+  "check if two ros::time is equal"
   (equal (a . sec-nsec) (b . sec-nsec)))
 (defun ros::time> (a b)
+  "check if given ros::time is greater then the others"
   (let ((t-dif (coerce (send (ros::time- a b) :sec-nsec) cons)))
     (or (> (car t-dif) 0) (and (= (car t-dif) 0) (> (cadr t-dif) 0)))))
 (defun ros::time>= (a b)
+  "check if given ros::time is greater then or equal to the others"
   (or (ros::time= a b) (ros::time> a b)))
 (defun ros::time< (a b)
+  "check if given ros::time is less then the others"
   (not (ros::time>= a b)))
 (defun ros::time<= (a b)
+  "check if given ros::time is less the or equal to the others"
   (not (ros::time> a b)))
 
 
@@ -331,6 +342,7 @@ always the rank of list is 2"
       (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg))))
 
 (defun ros::load-ros-package (pkg)
+  "load reqruied roseus files for given package"
   (unless (find-package (string-upcase pkg))
     (make-package (string-upcase pkg)))
   (when (probe-file (format nil "~A/msg" (ros::find-load-msg-path pkg)))
