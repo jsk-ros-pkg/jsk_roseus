@@ -129,8 +129,12 @@ macro(generate_eusdoc _lispfile)
   if(${PROJECT_NAME} STREQUAL "roseus") # this is only for roseus package
     set(_roseus_exe ${PROJECT_SOURCE_DIR}/bin/roseus)
   endif()
+  string(ASCII 27 Esc)
+  set(ColourReset "${Esc}[m")
+  set(ColourBold  "${Esc}[1m")
+  set(Red         "${Esc}[31m")
   add_custom_command(OUTPUT ${_mdfile}
-    COMMAND ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} $ENV{EUSDIR}/lib/llib/documentation.l ${_generate_eusdoc_command_list}
+    COMMAND ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} $ENV{EUSDIR}/lib/llib/documentation.l ${_generate_eusdoc_command_list} || echo "${Red}Failed to generate ${_lispfile}, but do not raise error${ColourReset}"
     DEPENDS ${_lispfile})
   add_custom_target(${PROJECT_NAME}_${_name}_generate_eusdoc ALL DEPENDS ${_mdfile} install_roseus)
   if(TARGET ${PROJECT_NAME}_generate_messages_eus)
