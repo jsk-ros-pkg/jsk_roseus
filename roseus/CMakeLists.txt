@@ -144,7 +144,7 @@ install(DIRECTORY euslisp test scripts cmake
 
 include(cmake/roseus.cmake)
 
-generate_eusdoc(euslisp/roseus.l)
+generate_eusdoc(euslisp/roseus.l "ROS")
 generate_eusdoc(euslisp/roseus-utils.l)
 generate_eusdoc(euslisp/eustf.l)
 generate_eusdoc(euslisp/actionlib.l)
