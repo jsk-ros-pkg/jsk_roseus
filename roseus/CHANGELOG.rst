@@ -2,6 +2,19 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus.cpp] remove error message in get-topic-subscriber
+* [roseus.cpp] add more documentations
+* [cmake/roseus.cmake] update generate_eusdoc for installed functions\n\n this requires https://github.com/euslisp/EusLisp/pull/112
+* [cmake/roseus.cmake] do not raise error when geneus doc failed
+* [euslisp/{eustf.l, roseus-utils.l, roseus.l}] add more documenations
+* [roseus.cpp] is fix error message, You must call ros::init() -> (ros::roseus "name")
+* [roseus/CMakeLists.txt] add compiler option for C to suppress looking-up undefined symbol when linking using Clang compiler
+* [roseus/eustf.cpp] undef duplicated macros defined in standard library and in euslisp
+* [roseus.cpp] remove error message meanless in get-topic-publisher
+* Contributors: Yuki Furuta, Kei Okada, Yuto Inagaki
+
 1.3.4 (2015-05-03)
 ------------------
 * [roseus.cpp] add get-host, get-nodes, get-port, get-uri, get-topics, from http://docs.ros.org/indigo/api/roscpp/html/master_8h.html

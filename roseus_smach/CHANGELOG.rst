@@ -2,6 +2,9 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.3.4 (2015-05-03)
 ------------------
 * [roseus_smach] add test for parallel state machine
@@ -11,19 +14,14 @@ Changelog for package roseus_smach
 * [roseus_smach] change order of roseus in find_package
 * [roseus_smach] move smach-exec function from sample to utils
 * [roseus_smach] fix wrong file/module name
-* Merge pull request `#294 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/294>`_ from furushchev/fix-multiple-return-value-in-parallel-state
-  [roseus_smach] fix transition fail when parallel state
 * [roseus_smach] miscellaneous fixes
 * [roseus_smach] add test launch
-* Merge branch 'master' of https://github.com/jsk-ros-pkg/jsk_roseus into async-join-state
-  Conflicts:
-  .travis
 * [roseus_smach] add feature async join
 * [roseus_smach] fix transition fail when parallel state
 * [roseus_smach] add async join state to  state-machine
 * [roseus_smach] fix tmp -> next
 * [roseus_smach] modify state-machine :execute-impl
-* Contributors: Yuki Furuta, Kamada Hitoshi, Kei Okada
+* Contributors: Yuki Furuta, Kamada Hitoshi
 
 1.3.3 (2015-04-29)
 ------------------
