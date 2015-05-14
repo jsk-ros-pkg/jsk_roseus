@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.5 (2015-05-15)
+------------------
 * [roseus.cpp] remove error message in get-topic-subscriber
 * [roseus.cpp] add more documentations
 * [cmake/roseus.cmake] update generate_eusdoc for installed functions\n\n this requires https://github.com/euslisp/EusLisp/pull/112
