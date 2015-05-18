@@ -116,6 +116,9 @@ endif()
 
 # utility to make doc
 macro(generate_eusdoc _lispfile)
+  if("$ENV{NO_GENERATE_EUSDOC}" OR "${NO_GENERATE_EUSDOC}")
+    return()
+  endif()
   set(_pkg_name ${ARGN})
   get_filename_component(_name ${_lispfile} NAME_WE)
   set(_lisppath "${CMAKE_CURRENT_SOURCE_DIR}/${_lispfile}")
