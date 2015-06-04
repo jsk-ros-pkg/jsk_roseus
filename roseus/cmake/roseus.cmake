@@ -28,6 +28,9 @@ endmacro()
 
 macro(_package_depends_impl target_pkg dest_dir)
   file(MAKE_DIRECTORY ${dest_dir})
+  if(${target_pkg} STREQUAL "roseus")
+    set(roseus_SOURCE_PREFIX ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
   safe_execute_process(COMMAND ${PYTHON_EXECUTABLE}
     ${roseus_SOURCE_PREFIX}/cmake/get_all_depends.py
     ${target_pkg}
