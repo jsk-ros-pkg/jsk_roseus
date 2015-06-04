@@ -26,6 +26,15 @@ macro(find_all_msg_dependences _pkg _msg_path)
   endif()
 endmacro()
 
+macro(_package_depends_impl target_pkg dest_dir)
+  file(MAKE_DIRECTORY ${dest_dir})
+  safe_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+    ${roseus_SOURCE_PREFIX}/cmake/get_all_depends.py
+    ${target_pkg}
+    ${dest_dir}/all_depends.cmake)
+  include(${dest_dir}/all_depends.cmake)
+endmacro()
+
 # generate all roseus messages
 string(ASCII 27 Esc)
 macro(generate_all_roseus_messages)
@@ -38,10 +47,9 @@ macro(generate_all_roseus_messages)
   # 3) does not have <package>_generate_messages_eus (it is not create target before)
   string(REGEX MATCH "catkin" need_catkin "$ENV{_}")
   if(need_catkin OR ${target_pkg} STREQUAL "roseus") # do not run upstream message generation on buildfirm
-    get_cmake_property(_variables VARIABLES)
-    foreach(_variable ${_variables})
-      string(REGEX REPLACE "^(.*)_(MESSAGE|SERVICE)_FILES$" "\\1" _pkg ${_variable})
-      if("${_pkg}_FOUND" AND NOT ${_pkg}_SOURCE_PREFIX AND NOT TARGET ${_pkg}_generate_messages_eus)
+    _package_depends_impl(${target_pkg} ${CMAKE_CURRENT_BINARY_DIR}/roseus_generated)
+    foreach(_pkg ${${target_pkg}_ALL_RUN_DEPENDS})
+      if(NOT ${_pkg}_SOURCE_PREFIX AND NOT TARGET ${_pkg}_generate_messages_eus)
         _list_append_unique(_${target_pkg}_generate_roseus_message_packages_all ${_pkg})
         if(NOT EXISTS ${roseus_PREFIX}/share/roseus/ros/${_pkg})
           _list_append_unique(_${target_pkg}_generate_roseus_message_packages ${_pkg})
