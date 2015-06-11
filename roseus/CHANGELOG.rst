@@ -2,6 +2,13 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [CMakeLists.txt] add catkin_INCLUDE_DIRS, this fixes #317
+* [roseus] Add NO_GENERATE_EUSDOC environmental variable to disable
+  generation of eusdoc
+* Contributors: Kei Okada, Ryohei Ueda
+
 1.3.5 (2015-05-15)
 ------------------
 * [roseus.cpp] remove error message in get-topic-subscriber
