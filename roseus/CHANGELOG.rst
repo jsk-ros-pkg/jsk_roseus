@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.6 (2015-06-11)
+------------------
 * [CMakeLists.txt] add catkin_INCLUDE_DIRS, this fixes #317
 * [roseus] Add NO_GENERATE_EUSDOC environmental variable to disable
   generation of eusdoc
