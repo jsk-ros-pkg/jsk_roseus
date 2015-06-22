@@ -62,8 +62,8 @@ set_target_properties(roseus_c_util PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJEC
 add_definitions(-O2 -Wno-write-strings -Wno-comment)
 add_definitions(-Di486 -DLinux -D_REENTRANT -DVERSION='\"9.00\"' -DTHREADED -DPTHREAD -DX11R6_1)
 add_definitions('-DREPOVERSION="\\"${REPOVERSION}\\""')
-if(${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64* OR
-   ${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* )
+if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "amd64(.*)" OR
+   "${CMAKE_SYSTEM_PROCESSOR}" MATCHES "x86_64(.*)" )
  add_definitions(-Dx86_64)
 else()
  add_definitions(-Di486)
