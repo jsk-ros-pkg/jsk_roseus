@@ -31,10 +31,14 @@ macro(_package_depends_impl target_pkg dest_dir)
   if(${target_pkg} STREQUAL "roseus")
     set(roseus_SOURCE_PREFIX ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
+  set(_tmp_CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
+  string(REPLACE ";" ":" _CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+  set(ENV{CMAKE_PREFIX_PATH} ${_CMAKE_PREFIX_PATH})
   safe_execute_process(COMMAND ${PYTHON_EXECUTABLE}
     ${roseus_SOURCE_PREFIX}/cmake/get_all_depends.py
     ${target_pkg}
     ${dest_dir}/all_depends.cmake)
+  set(ENV{CMAKE_PREFIX_PATH} ${_tmp_CMAKE_PREFIX_PATH})
   include(${dest_dir}/all_depends.cmake)
 endmacro()
 
