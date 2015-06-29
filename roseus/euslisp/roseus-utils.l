@@ -469,8 +469,6 @@
 (defun marker-msg->shape (msg &rest args)
   "Convert visualization_msgs::Marker to euslisp object"
   (let ((type (send msg :type)))
-    (print type)
-    (print (numberp type))
     (cond
      ((eq type visualization_msgs::Marker::*CUBE*)     (marker-msg->shape/cube msg))
      ((eq type visualization_msgs::Marker::*CYLINDER*) (marker-msg->shape/cylinder msg))
