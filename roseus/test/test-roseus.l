@@ -32,6 +32,38 @@
 
   )
 
+(ros::load-ros-manifest "std_msgs")
+(defun equal-vector-list (a b)
+  (every #'(lambda (x y) (eps-v= x y)) a b))
+(deftest test-marker-msg ()
+  (let (b)
+    (assert (equal (vector->rgba #f(255 255 0)) (instance std_msgs::ColorRGBA :init :r 255 :g 255 :b 0 :a 1)))
+    (setq b (marker-msg->shape/cylinder (cylinder->marker-msg (make-cylinder 100 100) (instance std_msgs::header))))
+    (assert (equal-vector-list (send b :vertices) (send (make-cylinder 100 100) :vertices)))
+    (setq b (marker-msg->shape/cube (cube->marker-msg (make-cube 100 100 100) (instance std_msgs::header))))
+    (assert (equal-vector-list (send b :vertices) (send (make-cube 100 100 100) :vertices)))
+    (setq b (marker-msg->shape/sphere (sphere->marker-msg (make-sphere 100) (instance std_msgs::header))))
+    (assert (equal-vector-list (send b :vertices) (send (make-sphere 100) :vertices)))
+    (setq b (line->marker-msg (list #f(0 0 0) #f(100 100 100)) (instance std_msgs::header)))
+    (assert (equal-vector-list (mapcar #'(lambda (l) (ros::tf-point->pos l)) (send b :points)) (list #f(0 0 0) #f(100 100 100))))
+    (setq b (line-list->marker-msg (list #f(0 0 0) #f(100 100 100)) (instance std_msgs::header)))
+    (assert (equal-vector-list (mapcar #'(lambda (l) (ros::tf-point->pos l)) (send b :points)) (list #f(0 0 0) #f(100 100 100))))
+    ;;
+    (assert (faces->marker-msg (send (make-cube 100 100 100) :faces) (instance std_msgs::header)))
+    (assert (object->marker-msg (make-cube 100 100 100) (instance std_msgs::header)))
+    (assert (wireframe->marker-msg (make-cube 100 100 100) (instance std_msgs::header)))
+    (assert (text->marker-msg "test" (make-coords) (instance std_msgs::header)))
+    (assert (coords->marker-msg (make-coords) (instance std_msgs::header)))
+    ;; (mesh->marker-msg)
+    ;; (pointcloud-marker-msg)
+    (assert (eusobj->marker-msg (make-cube 100 100 100) (instance std_msgs::header)))
+    (assert (arrow->marker-msg (make-coords) (instance std_msgs::header)))
+    (assert (marker-msg->shape (cylinder->marker-msg (make-cylinder 100 100) (instance std_msgs::header))))
+    (assert (marker-msg->shape (cube->marker-msg (make-cube 100 100 100) (instance std_msgs::header))))
+    (assert (marker-msg->shape (sphere->marker-msg (make-sphere 100) (instance std_msgs::header))))
+    ;;
+    ))
+
 (run-all-tests)
 
 (exit)
