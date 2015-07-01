@@ -90,6 +90,7 @@
                 (list roseus::FixedArray :uint8_data (make-array 17
                                                                      :element-type :char
                                                                      :initial-contents "johosystemkougaku"))
+                (list roseus::FixedArray :bool_data #(t nil))
                 ))
   )
 
@@ -144,7 +145,8 @@
                                                                    (:int16_data #i(7 -8 9)) (:int32_data #i(10 -11 12)) (:int64_data #i(13 -14 15))
                                                                    (:int8_data #i(16 -17 18)) (:uint16_data #i(1 2 3))  (:uint32_data #i(4 5 6))
                                                                    (:uint64_data #i(7 8 9))
-                                                                   (:uint8_data "johosystemkougaku")))
+                                                                   (:uint8_data "johosystemkougaku")
+                                                                   (:bool_data #(t nil))))
                                                         (let ((method (car o)) (data (cadr o)))
                                                           (format *error-output* "~A ~A ~A~%" method data (send x method))
                                                           (cond ((floatp data)
