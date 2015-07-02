@@ -78,34 +78,34 @@
                 (list std_msgs::uint8multiarray :data (make-array 3
                                                                   :element-type :char
                                                                   :initial-contents "eus"))
-                ;; FixedArray
-                (list roseus::FixedArray :float32_data #f(1 -2 3))
-                (list roseus::FixedArray :float64_data #f(4 -5 6))
-                (list roseus::FixedArray :int16_data #i(7 -8 9))
-                (list roseus::FixedArray :int32_data #i(10 -11 12))
-                (list roseus::FixedArray :int64_data #i(13 -14 15))
-                (list roseus::FixedArray :int8_data #i(16 -17 18))
-                (list roseus::FixedArray :uint16_data #i(1 2 3))
-                (list roseus::FixedArray :uint32_data #i(4 5 6))
-                (list roseus::FixedArray :uint64_data #i(7 8 9))
-                (list roseus::FixedArray :uint8_data (make-array 17
+                ;; FixedArrayForTest
+                (list roseus::FixedArrayForTest :float32_data #f(1 -2 3))
+                (list roseus::FixedArrayForTest :float64_data #f(4 -5 6))
+                (list roseus::FixedArrayForTest :int16_data #i(7 -8 9))
+                (list roseus::FixedArrayForTest :int32_data #i(10 -11 12))
+                (list roseus::FixedArrayForTest :int64_data #i(13 -14 15))
+                (list roseus::FixedArrayForTest :int8_data #i(16 -17 18))
+                (list roseus::FixedArrayForTest :uint16_data #i(1 2 3))
+                (list roseus::FixedArrayForTest :uint32_data #i(4 5 6))
+                (list roseus::FixedArrayForTest :uint64_data #i(7 8 9))
+                (list roseus::FixedArrayForTest :uint8_data (make-array 17
                                                                      :element-type :char
                                                                      :initial-contents "johosystemkougaku"))
-                (list roseus::FixedArray :bool_data #(t nil))
-                ;; VariableArray (data set is copied from FixedArray)
-                (list roseus::VariableArray :float32_data #f(1 -2 3))
-                (list roseus::VariableArray :float64_data #f(4 -5 6))
-                (list roseus::VariableArray :int16_data #i(7 -8 9))
-                (list roseus::VariableArray :int32_data #i(10 -11 12))
-                (list roseus::VariableArray :int64_data #i(13 -14 15))
-                (list roseus::VariableArray :int8_data #i(16 -17 18))
-                (list roseus::VariableArray :uint16_data #i(1 2 3))
-                (list roseus::VariableArray :uint32_data #i(4 5 6))
-                (list roseus::VariableArray :uint64_data #i(7 8 9))
-                (list roseus::VariableArray :uint8_data (make-array 17
+                (list roseus::FixedArrayForTest :bool_data #(t nil))
+                ;; VariableArrayForTest (data set is copied from FixedArrayForTest)
+                (list roseus::VariableArrayForTest :float32_data #f(1 -2 3))
+                (list roseus::VariableArrayForTest :float64_data #f(4 -5 6))
+                (list roseus::VariableArrayForTest :int16_data #i(7 -8 9))
+                (list roseus::VariableArrayForTest :int32_data #i(10 -11 12))
+                (list roseus::VariableArrayForTest :int64_data #i(13 -14 15))
+                (list roseus::VariableArrayForTest :int8_data #i(16 -17 18))
+                (list roseus::VariableArrayForTest :uint16_data #i(1 2 3))
+                (list roseus::VariableArrayForTest :uint32_data #i(4 5 6))
+                (list roseus::VariableArrayForTest :uint64_data #i(7 8 9))
+                (list roseus::VariableArrayForTest :uint8_data (make-array 17
                                                                      :element-type :char
                                                                      :initial-contents "johosystemkougaku"))
-                (list roseus::VariableArray :bool_data #(t nil))
+                (list roseus::VariableArrayForTest :bool_data #(t nil))
                 ))
   )
 
@@ -171,9 +171,9 @@
   (subscribe-and-check-msg "uint8multiarray" std_msgs::UInt8MultiArray :data "eus")
 
   (format *error-output* "fixedarray~%")
-  (ros::subscribe "fixedarray" roseus::FixedArray #'subscribe-and-check-array-msg)
+  (ros::subscribe "fixedarray" roseus::FixedArrayForTest #'subscribe-and-check-array-msg)
   (format *error-output* "variablearray~%")
-  (ros::subscribe "variablearray" roseus::VariableArray #'subscribe-and-check-array-msg)
+  (ros::subscribe "variablearray" roseus::VariableArrayForTest #'subscribe-and-check-array-msg)
 
 
   (ros::rate 10)
