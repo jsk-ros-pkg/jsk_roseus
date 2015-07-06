@@ -267,6 +267,13 @@ function add_lisp() {
   (assert (eval (read-from-string "(instance $msg_pkg::String :init)"))
           "instantiating msg message")
 
+  (assert (eval (read-from-string "(instance roseus::String :init)"))
+          "instantiating msg message")
+  (assert (eval (read-from-string "(instance roseus::StringStamped :init)"))
+          "instantiating msg message")
+  (assert (ros::load-ros-manifest "roseus")
+          "load-ros-manifest")
+
   )
 
 (run-all-tests)
