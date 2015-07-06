@@ -219,6 +219,12 @@
         (error "file ~s not found" fname))
     (apply #'load-org-for-ros fullname args)))
 
+(defmacro ros::load-message-with-compile (&rest forms)
+  `(progn
+     (setq ros::*compile-message* t)
+     ,@forms
+     (setq ros::*compile-message* nil)))
+
 ;;; defmacro for rosparams
 
 (defun ros::append-name-space (&rest args)
