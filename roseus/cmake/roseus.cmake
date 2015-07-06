@@ -34,8 +34,13 @@ macro(_package_depends_impl target_pkg dest_dir)
   set(_tmp_CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
   string(REPLACE ";" ":" _CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
   set(ENV{CMAKE_PREFIX_PATH} ${_CMAKE_PREFIX_PATH})
+  if(EXISTS ${roseus_SOURCE_PREFIX}/cmake/get_all_depends.py)
+    set(GET_ALL_DEPENDS_PY ${roseus_SOURCE_PREFIX}/cmake/get_all_depends.py)
+  else()
+    set(GET_ALL_DEPENDS_PY ${roseus_PREFIX}/share/roseus/cmake/get_all_depends.py)
+  endif()
   safe_execute_process(COMMAND ${PYTHON_EXECUTABLE}
-    ${roseus_SOURCE_PREFIX}/cmake/get_all_depends.py
+    ${GET_ALL_DEPENDS_PY}
     ${target_pkg}
     ${dest_dir}/all_depends.cmake)
   set(ENV{CMAKE_PREFIX_PATH} ${_tmp_CMAKE_PREFIX_PATH})
@@ -112,7 +117,6 @@ macro(generate_all_roseus_messages)
     install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/share/roseus/ros/${_pkg}/)
   endforeach()
 endmacro()
-
 
 # run generate_all_roseus_messages() if this is invoked from catkin_* command and genmsg does not depends on geneus
 find_program(_pkg_config_executable NAMES pkg-config DOC "pkg-config executable")
