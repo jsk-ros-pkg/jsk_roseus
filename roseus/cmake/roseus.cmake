@@ -84,10 +84,17 @@ macro(generate_all_roseus_messages)
   set(${target_pkg}_generate_messages_eus_all_target)
   set(ALL_GEN_OUTPUT_FILES_eus)
   foreach(_pkg ${_${target_pkg}_generate_roseus_message_packages})
-    set(_msg_prefix "${${_pkg}_PREFIX}/share/${_pkg}/")
+    if(NOT ${_pkg}_PREFIX)
+      find_package(${_pkg})
+    endif()
     set(_msg_path "-I${_pkg}:${${_pkg}_PREFIX}/share/${_pkg}/msg")
     find_all_msg_dependences(${_pkg} _msg_path)
     foreach(_msg ${${_pkg}_MESSAGE_FILES})
+      if(EXISTS ${_msg})
+        set(_msg_prefix "")
+      else()
+        set(_msg_prefix "${${_pkg}_PREFIX}/share/${_pkg}/")
+      endif()
       _generate_msg_eus(${_pkg}
 	"${_msg_prefix}/${_msg}"
 	"${_msg_path}"
@@ -96,6 +103,11 @@ macro(generate_all_roseus_messages)
 	)
     endforeach()
     foreach(_srv ${${_pkg}_SERVICE_FILES})
+      if(EXISTS ${_srv})
+        set(_msg_prefix "")
+      else()
+        set(_msg_prefix "${${_pkg}_PREFIX}/share/${_pkg}/")
+      endif()
       _generate_srv_eus(${_pkg}
 	"${_msg_prefix}/${_srv}"
 	"${_msg_path}"
@@ -107,9 +119,11 @@ macro(generate_all_roseus_messages)
       ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}
       "${ALL_GEN_OUTPUT_FILES_eus}"
       )
-    add_custom_target(${_pkg}_generate_messages_eus ALL
-      DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
-      )
+    if(NOT TARGET ${_pkg}_generate_messages_eus)
+      add_custom_target(${_pkg}_generate_messages_eus ALL
+        DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
+        )
+    endif()
     if(TARGET ${PROJECT_NAME}_generate_messages_eus)
       add_dependencies(${target_pkg}_generate_messages_eus ${_pkg}_generate_messages_eus)
     endif()
