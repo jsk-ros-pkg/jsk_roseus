@@ -9,3 +9,4 @@ float64[3]  float64_data
  uint32[3]  uint32_data
  uint64[3]  uint64_data
   uint8[17] uint8_data
+   bool[2]  bool_data
