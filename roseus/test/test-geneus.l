@@ -91,7 +91,7 @@
                 (list roseus::FixedArray :uint8_data (make-array 17
                                                                      :element-type :char
                                                                      :initial-contents "johosystemkougaku"))
-                (list roseus::FixedArray :bool_data #(t nil))
+                (list roseus::FixedArray :bool_data (list t nil))
                 (list roseus::FixedArray :time_data (list (ros::time 0) (ros::time 1)))
                 (list roseus::FixedArray :duration_data (list (ros::time 0) (ros::time 1)))
                 (list roseus::FixedArray :string_data (list (instance std_msgs::String :data "ros") (instance std_msgs::String :data "eus")))
@@ -109,7 +109,7 @@
                 (list roseus::VariableArray :uint8_data (make-array 17
                                                                      :element-type :char
                                                                      :initial-contents "johosystemkougaku"))
-                (list roseus::VariableArray :bool_data #(t nil))
+                (list roseus::VariableArray :bool_data (list t nil))
                 (list roseus::VariableArray :time_data (list (ros::time 0) (ros::time 1)))
                 (list roseus::VariableArray :duration_data (list (ros::time 0) (ros::time 1)))
                 (list roseus::VariableArray :string_data (list (instance std_msgs::String :data "ros") (instance std_msgs::String :data "eus")))
@@ -131,7 +131,7 @@
                (:int8_data #i(16 -17 18)) (:uint16_data #i(1 2 3))  (:uint32_data #i(4 5 6))
                (:uint64_data #i(7 8 9))
                (:uint8_data "johosystemkougaku")
-               (:bool_data #(t nil))
+               (:bool_data ,(list t nil))
                (:time_data ,(list (ros::time 0) (ros::time 1)))
                (:duration_data ,(list (ros::time 0) (ros::time 1)))
                (:string_data ,(list (instance std_msgs::String :data "ros") (instance std_msgs::String :data "eus")))
