@@ -92,6 +92,10 @@
                                                                      :element-type :char
                                                                      :initial-contents "johosystemkougaku"))
                 (list roseus::FixedArray :bool_data #(t nil))
+                (list roseus::FixedArray :time_data (list (ros::time 0) (ros::time 1)))
+                (list roseus::FixedArray :duration_data (list (ros::time 0) (ros::time 1)))
+                (list roseus::FixedArray :string_data (list (instance std_msgs::String :data "ros") (instance std_msgs::String :data "eus")))
+
                 ;; VariableArray (data set is copied from FixedArray)
                 (list roseus::VariableArray :float32_data #f(1 -2 3))
                 (list roseus::VariableArray :float64_data #f(4 -5 6))
@@ -106,6 +110,9 @@
                                                                      :element-type :char
                                                                      :initial-contents "johosystemkougaku"))
                 (list roseus::VariableArray :bool_data #(t nil))
+                (list roseus::VariableArray :time_data (list (ros::time 0) (ros::time 1)))
+                (list roseus::VariableArray :duration_data (list (ros::time 0) (ros::time 1)))
+                (list roseus::VariableArray :string_data (list (instance std_msgs::String :data "ros") (instance std_msgs::String :data "eus")))
                 ))
   )
 
@@ -119,12 +126,16 @@
                                          (t
                                           (assert (equal (send x ,method) ,data)))))))
 (defun subscribe-and-check-array-msg (x)
-  (dolist (o '((:float32_data #f(1 -2 3)) (:float64_data #f(4 -5 6))
+  (dolist (o `((:float32_data #f(1 -2 3)) (:float64_data #f(4 -5 6))
                (:int16_data #i(7 -8 9)) (:int32_data #i(10 -11 12)) (:int64_data #i(13 -14 15))
                (:int8_data #i(16 -17 18)) (:uint16_data #i(1 2 3))  (:uint32_data #i(4 5 6))
                (:uint64_data #i(7 8 9))
                (:uint8_data "johosystemkougaku")
-               (:bool_data #(t nil))))
+               (:bool_data #(t nil))
+               (:time_data ,(list (ros::time 0) (ros::time 1)))
+               (:duration_data ,(list (ros::time 0) (ros::time 1)))
+               (:string_data ,(list (instance std_msgs::String :data "ros") (instance std_msgs::String :data "eus")))
+               ))
     (let ((method (car o)) (data (cadr o)))
       (format *error-output* "~A ~A ~A~%" method data (send x method))
       (cond ((floatp data)
