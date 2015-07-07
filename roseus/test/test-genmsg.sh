@@ -24,6 +24,7 @@ MANIFEST=package.xml
 WORKSPACE_TYPE=MULTI
 ARGV=$@
 PACKAGE=ALL
+REMOVE_MSG=FALSE
 while [ $# -gt 0 ]; do
     case "$1" in 
         "--one-workspace")
@@ -32,6 +33,9 @@ while [ $# -gt 0 ]; do
         "--package")
             shift
             PACKAGE=$1
+            ;;
+        "--remove-message")
+            REMOVE_MSG=TRUE
             ;;
         --gtest_output=* )
             OUTPUT=${1#--gtest_output=xml:}
@@ -43,7 +47,6 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
-
 
 CATKIN_DIR=/tmp/test_genmsg_$$
 GENEUS_DEP1=${CATKIN_DIR}/src/geneus_dep1
@@ -267,6 +270,13 @@ function add_lisp() {
   (assert (eval (read-from-string "(instance $msg_pkg::String :init)"))
           "instantiating msg message")
 
+  (assert (eval (read-from-string "(instance roseus::String :init)"))
+          "instantiating msg message")
+  (assert (eval (read-from-string "(instance roseus::StringStamped :init)"))
+          "instantiating msg message")
+  (assert (ros::load-ros-manifest "roseus")
+          "load-ros-manifest")
+
   )
 
 (run-all-tests)
@@ -388,6 +398,15 @@ add_srv ${GENEUS_DEP2} geneus_dep1
 add_srv ${ROSEUS_DEP1} geneus_dep2
 add_srv ${ROSEUS_DEP2} roseus_dep1
 add_srv ${ROSEUS_DEP3} roseus_dep1
+
+if [ $REMOVE_MSG = TRUE ]; then
+    ROSEUS_MSG_DIR=`cut -f 1 -d: <<< $CMAKE_PREFIX_PATH`/share/roseus
+    trap 'mv ${ROSEUS_MSG_DIR}/ros.bak ${ROSEUS_MSG_DIR}/ros; exit ' 1 2 3 15 EXIT
+    mv ${ROSEUS_MSG_DIR}/ros ${ROSEUS_MSG_DIR}/ros.bak
+    # need to copy since roseus_SOURCE_PREFIX exists
+    mkdir -p ${CATKIN_DIR}/devel/share/roseus/ros/
+    cp -r ${ROSEUS_MSG_DIR}/ros.bak/roseus ${CATKIN_DIR}/devel/share/roseus/ros/
+fi
 
 if [ $WORKSPACE_TYPE = ONE -a ! -e ${CATKIN_DIR}/src/jsk_roseus ]; then
     # if rospack find is source, then copy

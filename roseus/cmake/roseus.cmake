@@ -26,6 +26,27 @@ macro(find_all_msg_dependences _pkg _msg_path)
   endif()
 endmacro()
 
+macro(_package_depends_impl target_pkg dest_dir)
+  file(MAKE_DIRECTORY ${dest_dir})
+  if(${target_pkg} STREQUAL "roseus")
+    set(roseus_SOURCE_PREFIX ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
+  set(_tmp_CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
+  string(REPLACE ";" ":" _CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+  set(ENV{CMAKE_PREFIX_PATH} ${_CMAKE_PREFIX_PATH})
+  if(EXISTS ${roseus_SOURCE_PREFIX}/cmake/get_all_depends.py)
+    set(GET_ALL_DEPENDS_PY ${roseus_SOURCE_PREFIX}/cmake/get_all_depends.py)
+  else()
+    set(GET_ALL_DEPENDS_PY ${roseus_PREFIX}/share/roseus/cmake/get_all_depends.py)
+  endif()
+  safe_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+    ${GET_ALL_DEPENDS_PY}
+    ${target_pkg}
+    ${dest_dir}/all_depends.cmake)
+  set(ENV{CMAKE_PREFIX_PATH} ${_tmp_CMAKE_PREFIX_PATH})
+  include(${dest_dir}/all_depends.cmake)
+endmacro()
+
 # generate all roseus messages
 string(ASCII 27 Esc)
 macro(generate_all_roseus_messages)
@@ -38,10 +59,9 @@ macro(generate_all_roseus_messages)
   # 3) does not have <package>_generate_messages_eus (it is not create target before)
   string(REGEX MATCH "catkin" need_catkin "$ENV{_}")
   if(need_catkin OR ${target_pkg} STREQUAL "roseus") # do not run upstream message generation on buildfirm
-    get_cmake_property(_variables VARIABLES)
-    foreach(_variable ${_variables})
-      string(REGEX REPLACE "^(.*)_(MESSAGE|SERVICE)_FILES$" "\\1" _pkg ${_variable})
-      if("${_pkg}_FOUND" AND NOT ${_pkg}_SOURCE_PREFIX AND NOT TARGET ${_pkg}_generate_messages_eus)
+    _package_depends_impl(${target_pkg} ${CMAKE_CURRENT_BINARY_DIR}/roseus_generated)
+    foreach(_pkg ${${target_pkg}_ALL_RUN_DEPENDS})
+      if(NOT ${_pkg}_SOURCE_PREFIX AND NOT TARGET ${_pkg}_generate_messages_eus)
         _list_append_unique(_${target_pkg}_generate_roseus_message_packages_all ${_pkg})
         if(NOT EXISTS ${roseus_PREFIX}/share/roseus/ros/${_pkg})
           _list_append_unique(_${target_pkg}_generate_roseus_message_packages ${_pkg})
@@ -64,10 +84,17 @@ macro(generate_all_roseus_messages)
   set(${target_pkg}_generate_messages_eus_all_target)
   set(ALL_GEN_OUTPUT_FILES_eus)
   foreach(_pkg ${_${target_pkg}_generate_roseus_message_packages})
-    set(_msg_prefix "${${_pkg}_PREFIX}/share/${_pkg}/")
+    if(NOT ${_pkg}_PREFIX)
+      find_package(${_pkg})
+    endif()
     set(_msg_path "-I${_pkg}:${${_pkg}_PREFIX}/share/${_pkg}/msg")
     find_all_msg_dependences(${_pkg} _msg_path)
     foreach(_msg ${${_pkg}_MESSAGE_FILES})
+      if(EXISTS ${_msg})
+        set(_msg_prefix "")
+      else()
+        set(_msg_prefix "${${_pkg}_PREFIX}/share/${_pkg}/")
+      endif()
       _generate_msg_eus(${_pkg}
 	"${_msg_prefix}/${_msg}"
 	"${_msg_path}"
@@ -76,6 +103,11 @@ macro(generate_all_roseus_messages)
 	)
     endforeach()
     foreach(_srv ${${_pkg}_SERVICE_FILES})
+      if(EXISTS ${_srv})
+        set(_msg_prefix "")
+      else()
+        set(_msg_prefix "${${_pkg}_PREFIX}/share/${_pkg}/")
+      endif()
       _generate_srv_eus(${_pkg}
 	"${_msg_prefix}/${_srv}"
 	"${_msg_path}"
@@ -87,9 +119,11 @@ macro(generate_all_roseus_messages)
       ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}
       "${ALL_GEN_OUTPUT_FILES_eus}"
       )
-    add_custom_target(${_pkg}_generate_messages_eus ALL
-      DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
-      )
+    if(NOT TARGET ${_pkg}_generate_messages_eus)
+      add_custom_target(${_pkg}_generate_messages_eus ALL
+        DEPENDS ${ALL_GEN_OUTPUT_FILES_eus}
+        )
+    endif()
     if(TARGET ${PROJECT_NAME}_generate_messages_eus)
       add_dependencies(${target_pkg}_generate_messages_eus ${_pkg}_generate_messages_eus)
     endif()
@@ -97,7 +131,6 @@ macro(generate_all_roseus_messages)
     install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/share/roseus/ros/${_pkg}/)
   endforeach()
 endmacro()
-
 
 # run generate_all_roseus_messages() if this is invoked from catkin_* command and genmsg does not depends on geneus
 find_program(_pkg_config_executable NAMES pkg-config DOC "pkg-config executable")
