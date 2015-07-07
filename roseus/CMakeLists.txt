@@ -109,6 +109,7 @@ add_rostest(test/test-genmsg.catkin.test)
 # this will not ok on running from run_tests, may be running test within launch file may not good.
 #add_rostest(test/test-genmsg-oneworkspace.catkin.launch) # use launch not to run on travis/catkin
 add_rostest(test/test-geneus.test)
+add_rostest(test/test-compile-message.test)
 
 generate_messages(
   DEPENDENCIES geometry_msgs std_msgs
