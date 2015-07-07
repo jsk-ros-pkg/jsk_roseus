@@ -10,3 +10,6 @@ float64[]  float64_data
  uint64[]  uint64_data
   uint8[]  uint8_data
    bool[]  bool_data
+   time[]  time_data
+duration[]  duration_data
+std_msgs/String[] string_data
