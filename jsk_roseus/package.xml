@@ -22,6 +22,10 @@
   <run_depend>geneus</run_depend>
   <run_depend>roseus</run_depend>
 
+  <!-- this is not necessary but added to avoid race conding on
+       generating .catkin file, see https://github.com/ros/catkin/pull/671 -->
+  <build_depend>roseus</build_depend>
+
   <export>
     <metapackage/>
   </export>
