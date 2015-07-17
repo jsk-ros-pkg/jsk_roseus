@@ -189,14 +189,34 @@
 	 (package-name (send urlname :host))
 	 (path-name (namestring urlname))
 	 (package-path (ros::rospack-find package-name)))
+    (if (= (elt package-path (1- (length package-path))) #\/) ;; if end with /
+        (setq package-path (subseq package-path 0 (1- (length package-path)))))
+    (if (= (elt path-name 0) #\/) ;; if start with /
+        (setq path-name (subseq path-name 1)))
     (if package-path
 	(format nil "~A/~A" package-path path-name)
       (progn (warning-message 1 ";; could not find pacakge [~a]~%" package-name) nil))))
 
 (defun load (fname &rest args)
   (let ((fullname fname))
-    (if (substringp "package://" fname)
-        (setq fullname (ros::resolve-ros-path fname)))
+    (when (substringp "package://" fname)
+      (setq fullname (ros::resolve-ros-path fname))
+      (when ros::*compile-message*
+        (let* ((urlname (url-pathname fname))
+               (package-name (send urlname :host))
+               (path-name (format nil "~A_~A" package-name (substitute #\_ #\/ (concatenate string (subseq (send urlname :directory-string) 1) (send urlname :name)))))
+               (old-module (find path-name
+                                 *loaded-modules*
+                                 :key #'lisp::load-module-file-name
+                                 :test #'equal)))
+          (unless old-module
+            (let* ((ppath (unix::getenv "CMAKE_PREFIX_PATH"))
+                   (dir (format nil "~A/share/roseus/ros/~A" (subseq ppath 0 (position #\: ppath)) package-name)))
+              (unless (probe-file dir) (unix:mkdir dir))
+              (comp::compile-file-if-src-newer fullname (format nil "~A/~A" dir path-name))
+              (return-from load (load (format nil "~A/~A.so" dir path-name)
+                                      :entry (format nil "___~A" path-name)))))
+          )))
     (if (null fullname) ;; when ros::resolve-ros-patch is failed to load
         (error "file ~s not found" fname))
     (apply #'load-org-for-ros fullname args)))
@@ -336,3 +356,4 @@ always the rank of list is 2"
 
 (provide :roseus "roseus.l")
 
+(in-package "USER")
