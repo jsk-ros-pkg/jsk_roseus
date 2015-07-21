@@ -38,7 +38,10 @@ import argparse
 from collections import Counter
 
 from geneus.geneus_main import package_depends
-
+# we need this for geneus <= 2.2.2 (hydro release)
+import geneus.geneus_main
+if geneus.geneus_main.pkg_map is None:
+    geneus.geneus_main.pkg_map = geneus.geneus_main.get_pkg_map()
 
 def _get_output(package):
     depends = package_depends(package)
