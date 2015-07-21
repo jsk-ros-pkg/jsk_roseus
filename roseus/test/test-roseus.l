@@ -55,19 +55,20 @@
     (assert (text->marker-msg "test" (make-coords) (instance std_msgs::header)))
     (assert (coords->marker-msg (make-coords) (instance std_msgs::header)))
     ;; (mesh->marker-msg)
-    (let ((pc (make-random-pointcloud :num 100 :with-color t :with-normal t)))
-      (assert (pointcloud->marker-msg pc (instance std_msgs::header))))
-    (let ((pc (make-random-pointcloud :num 100 :with-color t :with-normal t))
-          msg)
-      (assert
-       (setq msg (make-ros-msg-from-eus-pointcloud pc)))
-      (let ((rt (make-eus-pointcloud-from-ros-msg msg)))
-        (assert (= (send pc :size) (send rt :size)))
-        (assert (equal-vector-list (send pc :point-list) (send rt :point-list)))
-        ;; color conversion ( float -> uint8 -> float ) may change color value
-        (assert (equal-vector-list (send pc :color-list) (send rt :color-list) 0.007))
-        (assert (equal-vector-list (send pc :normal-list) (send rt :normal-list)))
-        ))
+    (when (functionp 'make-random-pointcloud) ;; only available on jskeus >= 1.0.9
+      (let ((pc (make-random-pointcloud :num 100 :with-color t :with-normal t)))
+        (assert (pointcloud->marker-msg pc (instance std_msgs::header))))
+      (let ((pc (make-random-pointcloud :num 100 :with-color t :with-normal t))
+            msg)
+        (assert
+         (setq msg (make-ros-msg-from-eus-pointcloud pc)))
+        (let ((rt (make-eus-pointcloud-from-ros-msg msg)))
+          (assert (= (send pc :size) (send rt :size)))
+          (assert (equal-vector-list (send pc :point-list) (send rt :point-list)))
+          ;; color conversion ( float -> uint8 -> float ) may change color value
+          (assert (equal-vector-list (send pc :color-list) (send rt :color-list) 0.007))
+          (assert (equal-vector-list (send pc :normal-list) (send rt :normal-list)))
+          )))
     (assert (eusobj->marker-msg (make-cube 100 100 100) (instance std_msgs::header)))
     (assert (arrow->marker-msg (make-coords) (instance std_msgs::header)))
     (assert (marker-msg->shape (cylinder->marker-msg (make-cylinder 100 100) (instance std_msgs::header))))
