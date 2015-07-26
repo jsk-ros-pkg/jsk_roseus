@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>roseus_mongo</name>
+  <version>0.0.0</version>
+  <description>The roseus_mongo package</description>
+
+  <maintainer email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</maintainer>
+
+  <license>BSD</license>
+
+  <author email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>mongodb_store</build_depend>
+  <build_depend>mongodb_store_msgs</build_depend>
+  <build_depend>roseus</build_depend>
+  <build_depend>rostest</build_depend>
+  <run_depend>mongodb_store</run_depend>
+  <run_depend>mongodb_store_msgs</run_depend>
+  <run_depend>roseus</run_depend>
+</package>
