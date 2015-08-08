@@ -24,7 +24,8 @@
 
   <!-- this is not necessary but added to avoid race conding on
        generating .catkin file, see https://github.com/ros/catkin/pull/671 -->
-  <build_depend>roseus</build_depend>
+  <!-- build_depend>roseus</build_depend --> <!-- removed, WARNING: Metapackage "jsk_roseus" should not have other dependencies besides a buildtool_depend on catkin and run_depends.
+ -->
 
   <export>
     <metapackage/>
