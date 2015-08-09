@@ -91,5 +91,21 @@
     (setq res (ros::service-call user::*mongo-service-delete* req))
     (send res :success)))
 
+(defun replicate (&key
+                    (database *mongo-database*)
+                    (colections (list *mongo-collection*))
+                    (move-before (ros::time (* 60 60 24)))
+                    (delete-after-move nil))
+  (let ((c (instance ros::simple-action-client :init
+                     "move_mongodb_entries" mongodb_store_msgs::MoveEntriesAction))
+        (goal (instance mongodb_store_msgs::MoveEntriesActionGoal :init
+                        :database database
+                        :collections (instance mongodb_store_msgs::StringList :init
+                                               :data collections)
+                        :move_before move-before
+                        :delete_after_move delete-after-move)))
+    (send c :send-goel goal)
+    (send c :wait-for-result)
+    (send (send c :get-result) :completed)))
 
 (provide :mongo-client) ;; end of mongo-client.l
