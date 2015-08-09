@@ -81,7 +81,7 @@
     (setq res (ros::service-call user::*mongo-service-insert* req))
     (send res :id)))
 
-(defun delete (id)
+(defun delete-by-id (id)
   (let ((req (instance mongodb_store_msgs::MongoDeleteMsgRequest :init))
         res)
     (send req :database user::*mongo-database*)

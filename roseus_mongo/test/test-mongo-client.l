@@ -22,10 +22,10 @@
   (setq assume-nil (mongo::query geometry_msgs::TransformStamped :msg-only t))
   (assert (null assume-nil))
 
-  (setq assume-fail (mongo::delete "11a1e111e111111e11000000"))
+  (setq assume-fail (mongo::delete-by-id "11a1e111e111111e11000000"))
   (assert (not assume-fail))
 
-  (setq assume-success (mongo::delete doc-id))
+  (setq assume-success (mongo::delete-by-id doc-id))
   (assert assume-success)
   (setq assume-deleted
         (mongo::query geometry_msgs::Pose :query '((:_id . ((:$oid . doc-id)))) :single t :msg-only t))
