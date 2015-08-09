@@ -127,9 +127,9 @@
 (defun convertable-to-date-p (obj)
   (case user::*json-parse-object-as*
     (:alist
-     (string= (caar obj) "$date"))
+     (string= (string-downcase (string (caar obj))) "$date"))
     (:plist
-     (string= (car obj) "$date"))))
+     (string= (string-downcase (string (car obj))) "$date"))))
 
 (defun datetime-from-object (obj)
   (case user::*json-parse-object-as*
