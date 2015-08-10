@@ -1,3 +1,5 @@
+#!/usr/bin/env roseus
+
 (load "package://roseus_smach/src/state-machine-ros.l")
 (load "package://roseus_smach/src/state-machine-utils.l")
 (load "state-machine-sample.l")

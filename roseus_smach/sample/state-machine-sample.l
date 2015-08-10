@@ -1,3 +1,4 @@
+#!/usr/bin/env roseus
 ;;
 ;; 3 type samples of State machine from SMACH tutorials
 ;;
