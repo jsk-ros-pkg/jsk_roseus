@@ -68,27 +68,27 @@
 
 (deftest test-json-decode-object
   (assert (equal
-           '(("1" . 2))
+           '((:1 . 2))
            (with-input-from-string (is "{1:2}")
                          (json::parse-object is))))
   (assert (equal
-           '(("1" . "abc"))
+           '((:1 . "abc"))
            (with-input-from-string (is "{1:\"abc\"}")
                          (json::parse-object is))))
   (assert (equal
-           '(("1" . 2) ("2" . t))
+           '((:1 . 2) (:2 . t))
            (with-input-from-string (is "{1:2,  \"2\": true}")
                          (json::parse-object is))))
   (assert (equal
-           '(("1" ("abc" . 2)))
+           '((:1 (:abc . 2)))
            (with-input-from-string (is "{1:{\"abc\":2}}")
                          (json::parse-object is))))
   (assert (equal
-           '(("1" ("abc" 2 t)))
+           '((:1 (:abc 2 t)))
            (with-input-from-string (is "{1:{\"abc\":[2,true]}}")
                          (json::parse-object is))))
   (assert (equal
-           '(("1" (("2" . 3)) (("4" . t))))
+           '((:1 ((:2 . 3)) ((:4 . t))))
            (with-input-from-string (is "{1:[{2:3},{4:true}]}")
                          (json::parse-object is))))
   )

@@ -5,10 +5,7 @@
   (intern (string-upcase str) *keyword-package*))
 
 (defvar *json-parse-object-as* :alist)
-(defvar *json-parse-key-function*
-  (if (eq *json-parse-object-as* :plist)
-      #'string->keyword
-      #'identity))
+(defvar *json-parse-key-function* #'string->keyword)
 
 (unless (find-package "JSON") (make-package "JSON"))
 (in-package "JSON")
