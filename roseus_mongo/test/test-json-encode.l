@@ -8,6 +8,12 @@
 
 (init-unit-test)
 
+(deftest test-timezone
+  (setq a-date-1 (now))
+  (assert (eq (send a-date-1 :compute-seconds)
+              (send (json::datetime-from-utc-epoch-time (json::get-utc-epoch-time a-date-1)) :compute-seconds))))
+
+(setq json::*tzoffset* 0)
 (deftest test-encode-alist
   (warn "~%(json::encode-alist '((:a . 1)))~%")
   (assert (string= "{\"a\":1}" (json::stream->string #'json::encode-alist '((:a . 1)))))

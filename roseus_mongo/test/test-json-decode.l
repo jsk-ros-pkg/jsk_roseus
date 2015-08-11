@@ -4,6 +4,8 @@
 (require :unittest "lib/llib/unittest.l")
 (require :json-decode "package://roseus_mongo/euslisp/json/json-decode.l")
 
+(setq json::*tzoffset* 0)
+
 (init-unit-test)
 
 (deftest test-skip-space
