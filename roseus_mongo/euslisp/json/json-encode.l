@@ -72,7 +72,7 @@
 
 (defun encode-time (ctime &optional (os *standard-output*))
   (with-blacket os #\{ #\}
-    (encode-key-value "$date" (get-epoch-time ctime) os)))
+    (encode-key-value "$date" (get-utc-epoch-time ctime) os)))
 
 (defun encode-list (l &optional (os *standard-output*))
   (with-blacket os #\[ #\]
