@@ -92,20 +92,25 @@
     (send res :success)))
 
 (defun replicate (&key
-                    (database *mongo-database*)
-                    (colections (list *mongo-collection*))
+                    (database user::*mongo-database*)
+                    (collections (list user::*mongo-collection*))
                     (move-before (ros::time (* 60 60 24)))
                     (delete-after-move nil))
   (let ((c (instance ros::simple-action-client :init
-                     "move_mongodb_entries" mongodb_store_msgs::MoveEntriesAction))
+                     "/move_mongodb_entries" mongodb_store_msgs::MoveEntriesAction :groupname "move_entries"))
         (goal (instance mongodb_store_msgs::MoveEntriesActionGoal :init
+                        :header (instance std_msgs::Header :init :stamp (ros::time-now))
+                        :goal
+                        (instance mongodb_store_msgs::MoveEntriesGoal :init
                         :database database
                         :collections (instance mongodb_store_msgs::StringList :init
                                                :data collections)
                         :move_before move-before
-                        :delete_after_move delete-after-move)))
-    (send c :send-goel goal)
-    (send c :wait-for-result)
-    (send (send c :get-result) :completed)))
+                        :delete_after_move delete-after-move))))
+    (when (not (send c :wait-for-server 30))
+      (ros::ros-error "no response from server..")
+      (return-from replicate nil))
+    (send c :send-goal-and-wait goal))
+  t)
 
 (provide :mongo-client) ;; end of mongo-client.l
