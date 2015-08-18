@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.7 (2015-08-18)
+------------------
 * geneus stuff
 
   * [cmake/get_all_depends.py] hydro releaes still uses 2.2.2, so we need to update pkg_map

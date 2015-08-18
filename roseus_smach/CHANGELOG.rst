@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.7 (2015-08-18)
+------------------
 * [README.md] describe how to run smach viewer
 * [sample/state-machine-ros-sample.l, sample/state-machine-sample.l] add shbang
 * [roseus_smach/CMakeLists.txt] disable test/test_parallel_state_machine_sample.launch for now

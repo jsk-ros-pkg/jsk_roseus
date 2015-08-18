@@ -2,8 +2,8 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.7 (2015-08-18)
+------------------
 * [roseus_mongo/euslisp/json/json-decode.l] use keyword for key as default
 * [roseus_mongo] support immediate replicatation function
 * [roseus_mongo] avoid reserved function name delete -> delete-by-id
