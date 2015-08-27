@@ -1,9 +1,8 @@
 #!/usr/bin/env roseus
 
-(ros::load-ros-manifest "roseus_tutorials")
-
-(setq ros::*compile-message* t)
-(ros::roseus-add-msgs "sensor_msgs")
+(ros::load-message-with-compile
+ (ros::load-ros-manifest "roseus_tutorials")
+ (ros::roseus-add-msgs "sensor_msgs"))
 
 (setq *points* nil)
 (defun callback ( msg )
