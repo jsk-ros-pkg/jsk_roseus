@@ -1,6 +1,8 @@
 jsk_roseus [![Build Status](https://travis-ci.org/jsk-ros-pkg/jsk_roseus.png?branch=master)](https://travis-ci.org/jsk-ros-pkg/jsk_roseus)
 ----------
 
+[![Join the chat at https://gitter.im/jsk-ros-pkg/jsk_roseus](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jsk-ros-pkg/jsk_roseus?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 euslisp
 
 - sourcedeb [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-hydro-euslisp_sourcedeb)](http://jenkins.ros.org/job/ros-hydro-euslisp_sourcedeb/)
