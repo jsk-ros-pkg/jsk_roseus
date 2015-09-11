@@ -1,4 +1,6 @@
 <launch>
+  <param name="robot/database" value="test_database" />
+  <param name="robot/name" value="test_collection" />
   <include file="$(find roseus_mongo)/test/temp_mongodb_store.xml" />
   <test test-name="test_mongo_client" pkg="roseus" type="roseus"
         args="$(find roseus_mongo)/test/test-mongo-client.l" />
