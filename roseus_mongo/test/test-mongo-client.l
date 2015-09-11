@@ -12,7 +12,7 @@
 
   (setq msg (instance geometry_msgs::Pose :init
                       :position (instance geometry_msgs::Point :init :x 1 :y 2 :z 3)))
-  (setq doc-id (mongo::insert msg))
+  (setq doc-id (mongo::insert-msg msg))
   (warn "doc-id: ~A~%" doc-id)
 
   (setq res (mongo::query geometry_msgs::Pose :query '((:_id . ((:$oid . doc-id)))) :single t :msg-only t))
@@ -33,7 +33,7 @@
 
   (dotimes (i 10)
     (send msg :position :x i)
-    (mongo::insert msg))
+    (mongo::insert-msg msg))
 
   (setq res-many (mongo::query geometry_msgs::Pose :sort '((:natural . 1 )) :msg-only t))
   (dotimes (i 10)

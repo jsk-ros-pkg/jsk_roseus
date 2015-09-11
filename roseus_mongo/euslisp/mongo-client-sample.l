@@ -29,10 +29,10 @@
 
 ;; inserting message to database
 (setq msg (instance geometry_msgs::Pose :init))
-(setq document-id (mongo::insert msg))
+(setq document-id (mongo::insert-msg msg))
 
 ;; you can also insert with annotating meta data
-(mongo::insert msg :meta '((:memo . "my awesome pose")))
+(mongo::insert-msg msg :meta '((:memo . "my awesome pose")))
 
 ;; deleting message from database
 (setq success-p (mongo::delete-by-id document-id))

@@ -67,7 +67,7 @@
                       (cons msg (json::parse-from-string meta-raw-string)))))
             (send res :messages) (send res :metas))))
 
-(defun insert (msg &key meta (encoder #'json::encode-alist))
+(defun insert-msg (msg &key meta (encoder #'json::encode-alist))
   (let ((req (instance mongodb_store_msgs::MongoInsertMsgRequest :init))
         res)
     (send req :database user::*mongo-database*)
