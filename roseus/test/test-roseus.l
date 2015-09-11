@@ -77,6 +77,11 @@
     ;;
     ))
 
+(deftest resolve-path ()
+  (assert (ros::resolve-ros-path "package://roseus"))
+  (assert (not (ros::resolve-ros-path "package://not_existing_package")))
+  )
+
 (run-all-tests)
 
 (exit)

@@ -189,11 +189,11 @@
 	 (package-name (send urlname :host))
 	 (path-name (namestring urlname))
 	 (package-path (ros::rospack-find package-name)))
-    (if (= (elt package-path (1- (length package-path))) #\/) ;; if end with /
+    (if (and package-path (= (elt package-path (1- (length package-path))) #\/)) ;; if end with /
         (setq package-path (subseq package-path 0 (1- (length package-path)))))
-    (if (= (elt path-name 0) #\/) ;; if start with /
+    (if (and path-name (= (elt path-name 0) #\/)) ;; if start with /
         (setq path-name (subseq path-name 1)))
-    (if package-path
+    (if (and package-path path-name)
 	(format nil "~A/~A" package-path path-name)
       (progn (warning-message 1 ";; could not find pacakge [~a]~%" package-name) nil))))
 
