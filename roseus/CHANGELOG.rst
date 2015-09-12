@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.8 (2015-09-12)
+------------------
 * [roseus] Add test to read ros parameter with default value 1000 times
 * [roseus] Use COPYOBJ instead of copyobj to copy object of default
   parameter in ros::get-param

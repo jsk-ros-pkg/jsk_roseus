@@ -2,8 +2,8 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.8 (2015-09-12)
+------------------
 * [roseus_mongo] fix replicate function (send-goal did not send-goal
 * [roseus_mongo/euslisp/mongo-client-sample.l] fix: update sample
 * Contributors: Yuki Furuta
