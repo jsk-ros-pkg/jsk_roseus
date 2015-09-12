@@ -2,6 +2,12 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus_mongo] fix replicate function (send-goal did not send-goal
+* [roseus_mongo/euslisp/mongo-client-sample.l] fix: update sample
+* Contributors: Yuki Furuta
+
 1.3.7 (2015-08-18)
 ------------------
 * [roseus_mongo/euslisp/json/json-decode.l] use keyword for key as default

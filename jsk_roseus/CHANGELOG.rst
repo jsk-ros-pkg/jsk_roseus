@@ -2,6 +2,9 @@
 Changelog for package jsk_roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.3.7 (2015-08-18)
 ------------------
 * adding build_depends to package.xml was wrong.

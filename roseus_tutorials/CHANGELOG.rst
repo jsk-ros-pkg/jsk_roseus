@@ -2,6 +2,9 @@
 Changelog for package roseus_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.3.7 (2015-08-18)
 ------------------
 
