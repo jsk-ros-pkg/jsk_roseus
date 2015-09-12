@@ -1289,7 +1289,7 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
       ret = XmlRpcToEusList(ctx, param_list);
   }else {
     if ( n == 2 ) {
-      ret = copyobj(ctx,argv[1]);
+      ret = COPYOBJ(ctx,1,argv+1);
     } else {
       ROS_ERROR("unknown ros::param::get, key=%s", key.c_str());
       ret = NIL;
@@ -1328,7 +1328,7 @@ pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
       ret = XmlRpcToEusList(ctx, param_list);
   } else {
     if ( n == 2 ) {
-      ret = copyobj(ctx,argv[1]);
+      ret = COPYOBJ(ctx,1,argv+1);
     } else {
       ROS_ERROR("unknown ros::param::get, key=%s", key.c_str());
       ret = NIL;
