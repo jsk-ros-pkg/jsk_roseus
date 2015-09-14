@@ -2,6 +2,54 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.9 (2015-09-14)
+------------------
+* roseus.cpp: add ros::create-timer function
+* Contributors: Kei Okada, Ryohei Ueda
+
+1.3.8 (2015-09-12)
+------------------
+* [roseus] Add test to read ros parameter with default value 1000 times
+* [roseus] Use COPYOBJ instead of copyobj to copy object of default
+  parameter in ros::get-param
+* fix ros::resolve-path returns nil for non existing package name
+* add test for ros::resolve-path
+* [euslisp/roseus.l] compile when loaded as package://
+* [euslisp/roseus.l] fix roseus-add-files to use normal compile-file-if-src-newer
+* [test/test-compile-message.l] add test for compiling message
+* Contributors: Kei Okada, Ryohei Ueda, Yohei Kakiuchi
+
+1.3.7 (2015-08-18)
+------------------
+* geneus stuff
+
+  * [cmake/get_all_depends.py] hydro releaes still uses 2.2.2, so we need to update pkg_map
+  * [cmake/roseus.cmake] display eus-related package version
+  * [cmake/roseus.cmake] call find_package  to get ${_pkg}_PREFIX
+  * [cmake/roseus.cmake] fix for get_all_depends in installed space
+  * [cmake/roseus.cmake] Set CMAKE_PREFIX_PATH to run generate all deps
+  * [cmake/roseus.cmake] Add condition for roseus_SOURCE_PREFIX when building roseus
+  * [cmake/roseus.cmake] Add macro(_package_depends_impl) in roseus.cmake
+  * [cmake/get_all_depends.py] Add cmake/get_all_depends.py to get all implicit depends
+
+* marker conversion
+  * [euslisp/roseus-utils.l] fix eusobj->marker-msg 's check body type
+  * [euslisp/roseus-utils.l] remove debug code (marker-msg->shape)
+
+* test codes
+  * [test/test-roseus.l] add test for irtpointcloud
+  * [test/test-roseus.l] add test code for marker message <-> eus object conversion function in euslisp/roseus-utils.l
+  * [test/test-genmsg.sh, test/test-genmsg.catkin.test] check after remove messages in devel/share/roseus/ros
+  * [test/test-genmsg.sh] add test to check if messages in roseus is generated
+  * [roseus/test/test-rosues.l] make-random-pointcloud is only available on jskeus 1.0.9
+
+* build system
+* [roseus/CMakeLists.txt] somehow regex in if statemet must be double quated?
+* [roseus/cmake/roseus.cmake] Unset DISPLAY environmental variable when generating eusdoc to avoid init-xwindow error
+* [roseus] Add .gitignore
+
+* Contributors: Kei Okada, Kentaro Wada, Ryohei Ueda, Yohei Kakiuchi, Yuto Inagaki
+
 1.3.6 (2015-06-11)
 ------------------
 * [CMakeLists.txt] add catkin_INCLUDE_DIRS, this fixes #317
