@@ -77,6 +77,13 @@
     )
   )
 
+(deftest test-param-default-value ()
+  ;; Read parameter 1000 times with default value
+  (dotimes (i 1000)
+    (assert (equal "foo" (ros::get-param "bar" "foo")))
+    )
+  )
+
 (run-all-tests)
 
 (exit)

@@ -1,0 +1,35 @@
+<launch>
+  <node type="roseus" pkg="roseus" name="test_timer"
+        args="$(find roseus)/test/test-timer.l" output="screen"
+        required="true" />
+
+  <param name="hz_timer1/topic" value="chatter1" />  
+  <param name="hz_timer1/hz" value="10.0" />
+  <param name="hz_timer1/hzerror" value="0.5" />
+  <param name="hz_timer1/test_duration" value="5.0" />
+  <test test-name="test_timer1" pkg="rostest" type="hztest" name="hz_timer1" />
+
+  <param name="hz_timer2/topic" value="chatter1" />  
+  <param name="hz_timer2/hz" value="10.0" />
+  <param name="hz_timer2/hzerror" value="0.5" />
+  <param name="hz_timer2/test_duration" value="5.0" />
+  <test test-name="test_timer2" pkg="rostest" type="hztest" name="hz_timer2" />
+
+  <param name="hz_timer3/topic" value="chatter1" />  
+  <param name="hz_timer3/hz" value="10.0" />
+  <param name="hz_timer3/hzerror" value="0.5" />
+  <param name="hz_timer3/test_duration" value="5.0" />
+  <test test-name="test_timer3" pkg="rostest" type="hztest" name="hz_timer3" />
+
+  <param name="hz_timer4/topic" value="chatter1" />  
+  <param name="hz_timer4/hz" value="10.0" />
+  <param name="hz_timer4/hzerror" value="0.5" />
+  <param name="hz_timer4/test_duration" value="5.0" />
+  <test test-name="test_timer4" pkg="rostest" type="hztest" name="hz_timer4" />
+
+  <param name="hz_timer5/topic" value="chatter1" />  
+  <param name="hz_timer5/hz" value="10.0" />
+  <param name="hz_timer5/hzerror" value="0.5" />
+  <param name="hz_timer5/test_duration" value="5.0" />
+  <test test-name="test_timer5" pkg="rostest" type="hztest" name="hz_timer5" />
+</launch>

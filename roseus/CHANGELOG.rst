@@ -2,6 +2,23 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.3.9 (2015-09-14)
+------------------
+* roseus.cpp: add ros::create-timer function
+* Contributors: Kei Okada, Ryohei Ueda
+
+1.3.8 (2015-09-12)
+------------------
+* [roseus] Add test to read ros parameter with default value 1000 times
+* [roseus] Use COPYOBJ instead of copyobj to copy object of default
+  parameter in ros::get-param
+* fix ros::resolve-path returns nil for non existing package name
+* add test for ros::resolve-path
+* [euslisp/roseus.l] compile when loaded as package://
+* [euslisp/roseus.l] fix roseus-add-files to use normal compile-file-if-src-newer
+* [test/test-compile-message.l] add test for compiling message
+* Contributors: Kei Okada, Ryohei Ueda, Yohei Kakiuchi
+
 1.3.7 (2015-08-18)
 ------------------
 * geneus stuff
