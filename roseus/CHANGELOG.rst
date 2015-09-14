@@ -2,6 +2,11 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* roseus.cpp: add ros::create-timer function
+* Contributors: Kei Okada, Ryohei Ueda
+
 1.3.8 (2015-09-12)
 ------------------
 * [roseus] Add test to read ros parameter with default value 1000 times
