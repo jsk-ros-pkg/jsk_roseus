@@ -138,6 +138,30 @@
   "check if given ros::time is less the or equal to the others"
   (not (ros::time> a b)))
 
+;;
+(defclass timer-event
+  :super propertied-object
+  :slots (last-expected last-real current-expected current-real last-duration))
+(defmethod timer-event
+  (:init ()
+    (setq last-expected (ros::time)
+          last-real (ros::time)
+          current-expected (ros::time)
+          current-real (ros::time)
+          last-duration (ros::time))
+    self)
+  (:prin1 (&optional (strm t) &rest msgs)
+	    (send-super :prin1 strm
+			(format nil "last-expected ~7,3f, last-real ~7,3f, current-expected ~7,3f, current-real ~7,3f, last-duration ~7,3f" (send last-expected :to-sec) (send last-real :to-sec) (send current-expected :to-sec) (send current-real :to-sec) (send last-duration :to-sec))))
+  (:last-expected (&rest args) (user::forward-message-to last-expected args))
+  (:last-real (&rest args) (user::forward-message-to last-real args))
+  (:current-expected (&rest args) (user::forward-message-to current-expected args))
+  (:current-real (&rest args) (user::forward-message-to current-real args))
+  (:last-duration (&rest args) (user::forward-message-to last-duration args))
+  )
+
+
+;;
 
 
 (defun ros::ros-home-dir ()
