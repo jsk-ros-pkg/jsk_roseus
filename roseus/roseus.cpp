@@ -117,6 +117,7 @@ public:
   map<string, boost::shared_ptr<Publisher> > mapAdvertised; ///< advertised topics
   map<string, boost::shared_ptr<Subscriber> > mapSubscribed; ///< subscribed topics
   map<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
+  map<string, Timer > mapTimered; ///< subscribed timers
 
   map<string, boost::shared_ptr<NodeHandle> > mapHandle; ///< for grouping nodehandle
 };
@@ -128,9 +129,10 @@ static bool s_bInstalled = false;
 #define s_mapAdvertised s_staticdata.mapAdvertised
 #define s_mapSubscribed s_staticdata.mapSubscribed
 #define s_mapServiced s_staticdata.mapServiced
+#define s_mapTimered s_staticdata.mapTimered
 #define s_mapHandle s_staticdata.mapHandle
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,QANON,QNOOUT,QREPOVERSION,QROSDEBUG,QROSINFO,QROSWARN,QROSERROR,QROSFATAL;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,K_ROSEUS_ONESHOT,K_ROSEUS_LAST_EXPECTED,K_ROSEUS_LAST_REAL,K_ROSEUS_CURRENT_EXPECTED,K_ROSEUS_CURRENT_REAL,K_ROSEUS_LAST_DURATION,K_ROSEUS_SEC,K_ROSEUS_NSEC,QANON,QNOOUT,QREPOVERSION,QROSDEBUG,QROSINFO,QROSWARN,QROSERROR,QROSFATAL;
 extern pointer LAMCLOSURE;
 
 /***********************************************************
@@ -542,10 +544,19 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   K_ROSEUS_REQUEST  = defkeyword(ctx,"REQUEST");
   K_ROSEUS_RESPONSE = defkeyword(ctx,"RESPONSE");
   K_ROSEUS_GROUPNAME = defkeyword(ctx,"GROUPNAME");
+  K_ROSEUS_ONESHOT = defkeyword(ctx,"ONESHOT");
+  K_ROSEUS_LAST_EXPECTED = defkeyword(ctx,"LAST-EXPECTED");
+  K_ROSEUS_LAST_REAL = defkeyword(ctx,"LAST-REAL");
+  K_ROSEUS_CURRENT_EXPECTED = defkeyword(ctx,"CURRENT-EXPECTED");
+  K_ROSEUS_CURRENT_REAL = defkeyword(ctx,"CURRENT-REAL");
+  K_ROSEUS_LAST_DURATION = defkeyword(ctx,"LAST-DURATION");
+  K_ROSEUS_SEC = defkeyword(ctx,"SEC");
+  K_ROSEUS_NSEC = defkeyword(ctx,"NSEC");
 
   s_mapAdvertised.clear();
   s_mapSubscribed.clear();
   s_mapServiced.clear();
+  s_mapTimered.clear();
   s_mapHandle.clear();
   
   /*
@@ -728,6 +739,7 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
     s_mapAdvertised.clear();
     s_mapSubscribed.clear();
     s_mapServiced.clear();
+    s_mapTimered.clear();
     s_mapHandle.clear();
     ros::shutdown();
   }
@@ -1507,6 +1519,115 @@ pointer ROSEUS_GET_TOPICS(register context *ctx,int n,pointer *argv)
   return ccdr(first);
 }
 
+class TimerFunction
+{
+  pointer _scb, _args;
+public:
+  TimerFunction(pointer scb, pointer args) : _scb(scb), _args(args) {
+    context *ctx = current_ctx;
+    //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
+    //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
+  }
+  void operator()(const ros::TimerEvent& event)
+  {
+    mutex_trylock(&mark_lock);
+    context *ctx = current_ctx;
+    numunion nu;
+    pointer argp=_args;
+    int argc=0;
+
+    pointer clsptr = NIL;
+    for(int i=0; i<nextcix;i++) {
+      if(!memcmp(classtab[i].def->c.cls.name->c.sym.pname->c.str.chars,(char *)"TIMER-EVENT",11)) {
+        clsptr = classtab[i].def;
+      }
+    }
+    if ( ! ( issymbol(_scb) || piscode(_scb) || ccar(_scb)==LAMCLOSURE ) ) {
+      ROS_ERROR("%s : can't find callback function", __PRETTY_FUNCTION__);
+    }
+
+    pointer tevent = makeobject(clsptr);
+    csend(ctx,tevent,K_ROSEUS_INIT,0);
+    csend(ctx,tevent,K_ROSEUS_LAST_EXPECTED,2,K_ROSEUS_SEC,makeint(event.last_expected.sec));
+    csend(ctx,tevent,K_ROSEUS_LAST_EXPECTED,2,K_ROSEUS_NSEC,makeint(event.last_expected.nsec));
+    csend(ctx,tevent,K_ROSEUS_LAST_REAL,2,K_ROSEUS_SEC,makeint(event.last_real.sec));
+    csend(ctx,tevent,K_ROSEUS_LAST_REAL,2,K_ROSEUS_NSEC,makeint(event.last_real.nsec));
+    csend(ctx,tevent,K_ROSEUS_CURRENT_EXPECTED,2,K_ROSEUS_SEC,makeint(event.current_expected.sec));
+    csend(ctx,tevent,K_ROSEUS_CURRENT_EXPECTED,2,K_ROSEUS_NSEC,makeint(event.current_expected.nsec));
+    csend(ctx,tevent,K_ROSEUS_CURRENT_REAL,2,K_ROSEUS_SEC,makeint(event.current_real.sec));
+    csend(ctx,tevent,K_ROSEUS_CURRENT_REAL,2,K_ROSEUS_NSEC,makeint(event.current_real.nsec));
+    csend(ctx,tevent,K_ROSEUS_LAST_DURATION,2,K_ROSEUS_SEC,makeint(event.profile.last_duration.sec));
+    csend(ctx,tevent,K_ROSEUS_LAST_DURATION,2,K_ROSEUS_NSEC,makeint(event.profile.last_duration.nsec));
+
+    while(argp!=NIL){ ckpush(ccar(argp)); argp=ccdr(argp); argc++;}
+    vpush((pointer)(tevent));argc++;
+
+    ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_scb,(pointer)(ctx->vsp-argc),NULL,argc);
+    while(argc-->0)vpop();
+
+    mutex_unlock(&mark_lock);
+  }
+};
+
+pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
+{
+  isInstalledCheck;
+  numunion nu;
+  bool oneshot = false;
+  pointer fncallback, args;
+  NodeHandle *lnode = s_node.get();
+  string fncallname;
+  float period=ckfltval(argv[0]);
+
+  mutex_trylock(&mark_lock);
+  // period callbackfunc args0 ... argsN [ oneshot ]
+  // ;; oneshot ;;
+  if (n > 1 && issymbol(argv[n-2]) && issymbol(argv[n-1])) {
+    if (argv[n-2] == K_ROSEUS_ONESHOT) {
+      if ( argv[n-1] != NIL ) {
+        oneshot = true;
+      }
+      n -= 2;
+    }
+  }
+  // ;; functions ;;
+  if (piscode(argv[1])) { // compiled code
+    fncallback=argv[1];
+    std::ostringstream stringstream;
+    stringstream << reinterpret_cast<long>(argv[2]) << " ";
+    for (int i=3; i<n;i++)
+      stringstream << string((char*)(argv[i]->c.sym.pname->c.str.chars)) << " ";
+    fncallname = stringstream.str();
+  } else if ((ccar(argv[1]))==LAMCLOSURE) { // uncompiled code
+    if ( ccar(ccdr(argv[1])) != NIL ) { // function
+      fncallback=ccar(ccdr(argv[1]));
+      fncallname = string((char*)(fncallback->c.sym.pname->c.str.chars));
+    } else { // lambda function
+      fncallback=argv[1];
+      std::ostringstream stringstream;
+      stringstream << reinterpret_cast<long>(argv[1]);
+      fncallname = stringstream.str();
+    }
+  } else {
+    ROS_ERROR("subscription callback function install error");
+  }
+
+  // ;; arguments ;;
+  args=NIL;
+  for (int i=n-1;i>=2;i--) args=cons(ctx,argv[i],args);
+
+  // avoid gc
+  pointer p=gensym(ctx);
+  setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
+
+  // ;; store mapTimered
+  ROS_DEBUG("create timer %s at %f (oneshot=%d)", fncallname.c_str(), period, oneshot);
+  s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), TimerFunction(fncallback, args), oneshot);
+
+  mutex_unlock(&mark_lock);
+  return (T);
+}
+
 /************************************************************
  *   __roseus
  ************************************************************/
@@ -1640,6 +1761,8 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   _defun(ctx,"GET-PORT",argv[0],(pointer (*)())ROSEUS_GET_PORT, "Get the port where the master runs.");
   _defun(ctx,"GET-URI",argv[0],(pointer (*)())ROSEUS_GET_URI, "Get the full URI to the master ");
   _defun(ctx,"GET-TOPICS",argv[0],(pointer (*)())ROSEUS_GET_TOPICS, "Get the list of topics that are being published by all nodes.");
+
+  defun(ctx,"CREATE-TIMER",argv[0],(pointer (*)())ROSEUS_CREATE_TIMER);
 
   pointer_update(Spevalof(PACKAGE),p);
 

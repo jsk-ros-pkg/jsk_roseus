@@ -105,6 +105,7 @@ add_rostest(test/test-disconnect.test)
 add_rostest(test/test-multi-queue.test)
 add_rostest(test/test-parameter.test)
 add_rostest(test/test-anonymous.test)
+add_rostest(test/test-timer.test)
 add_rostest(test/test-genmsg.catkin.test)
 # this will not ok on running from run_tests, may be running test within launch file may not good.
 #add_rostest(test/test-genmsg-oneworkspace.catkin.launch) # use launch not to run on travis/catkin
