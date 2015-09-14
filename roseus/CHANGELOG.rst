@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.9 (2015-09-14)
+------------------
 * roseus.cpp: add ros::create-timer function
 * Contributors: Kei Okada, Ryohei Ueda
 
