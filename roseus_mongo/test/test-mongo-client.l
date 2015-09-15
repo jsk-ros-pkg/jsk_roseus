@@ -6,6 +6,10 @@
 
 (init-unit-test)
 
+(deftest mongo-client-param
+  (assert (string= *mongo-database* "test_database"))
+  (assert (string= *mongo-collection* "test_collection")))
+
 (deftest mongo-client
 
   (mongo::wait-for-server)
