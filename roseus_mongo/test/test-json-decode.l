@@ -4,6 +4,8 @@
 (require :unittest "lib/llib/unittest.l")
 (require :json-decode "package://roseus_mongo/euslisp/json/json-decode.l")
 
+(setq json::*tzoffset* 0)
+
 (init-unit-test)
 
 (deftest test-skip-space
@@ -94,13 +96,27 @@
   )
 
 (deftest test-json-decode-date
+  (setq json::*tzoffset* 0)
   (setq res1 (json::parse-from-string "{$date: 1437900513823}"))
   (assert (and
            (eq (send res1 :year) 2015)
            (eq (send res1 :month) 7)
            (eq (send res1 :day) 26)
+           (eq (send res1 :hour) 8)
+           (eq (send res1 :minute) 48)
            (eq (send res1 :second) 33)
            (eq (send res1 :micro) 823))))
+
+  (setq json::*tzoffset* 9)
+  (setq res2 (json::parse-from-string "{$date: 1437900513823}"))
+  (assert (and
+           (eq (send res2 :year) 2015)
+           (eq (send res2 :month) 7)
+           (eq (send res2 :day) 26)
+           (eq (send res2 :hour) 17)
+           (eq (send res2 :minute) 48)
+           (eq (send res2 :second) 33)
+           (eq (send res2 :micro) 823))))
 
 (run-all-tests)
 (exit)

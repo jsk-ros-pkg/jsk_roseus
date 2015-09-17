@@ -131,9 +131,9 @@
 (defun datetime-from-object (obj)
   (case user::*json-parse-object-as*
     (:alist
-     (datetime-from-epoch-time (cdar obj)))
+     (datetime-from-utc-epoch-time (cdar obj)))
     (:plist
-     (datetime-from-epoch-time (cadr obj)))))
+     (datetime-from-utc-epoch-time (cadr obj)))))
 
 (defun parse-object (is)
   (let (ret lp)
