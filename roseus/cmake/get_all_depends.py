@@ -35,7 +35,6 @@
 
 import sys
 import argparse
-from collections import Counter
 
 from geneus.geneus_main import package_depends
 # we need this for geneus <= 2.2.2 (hydro release)

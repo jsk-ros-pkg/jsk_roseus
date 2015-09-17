@@ -8,7 +8,7 @@
 (require :json-encode "json/json-encode.l")
 (require :json-decode "json/json-decode.l")
 
-(defvar *mongo-database* (ros::get-param "mongodb/database" "test"))
+(defvar *mongo-database* (ros::get-param "robot/database" "test"))
 (defvar *mongo-collection* (ros::get-param "robot/name" "test"))
 (defvar *mongo-query-default-buffer-size* 4096)
 (defvar *mongo-service-query* "/message_store/query_messages")
