@@ -78,6 +78,7 @@
                 (list std_msgs::uint8multiarray :data (make-array 3
                                                                   :element-type :char
                                                                   :initial-contents "eus"))
+                ;; FixedArray
                 (list roseus::FixedArray :float32_data #f(1 -2 3))
                 (list roseus::FixedArray :float64_data #f(4 -5 6))
                 (list roseus::FixedArray :int16_data #i(7 -8 9))
@@ -90,6 +91,28 @@
                 (list roseus::FixedArray :uint8_data (make-array 17
                                                                      :element-type :char
                                                                      :initial-contents "johosystemkougaku"))
+                (list roseus::FixedArray :bool_data (list t nil))
+                (list roseus::FixedArray :time_data (list (ros::time 0) (ros::time 1)))
+                (list roseus::FixedArray :duration_data (list (ros::time 0) (ros::time 1)))
+                (list roseus::FixedArray :string_data (list (instance std_msgs::String :data "ros") (instance std_msgs::String :data "eus")))
+
+                ;; VariableArray (data set is copied from FixedArray)
+                (list roseus::VariableArray :float32_data #f(1 -2 3))
+                (list roseus::VariableArray :float64_data #f(4 -5 6))
+                (list roseus::VariableArray :int16_data #i(7 -8 9))
+                (list roseus::VariableArray :int32_data #i(10 -11 12))
+                (list roseus::VariableArray :int64_data #i(13 -14 15))
+                (list roseus::VariableArray :int8_data #i(16 -17 18))
+                (list roseus::VariableArray :uint16_data #i(1 2 3))
+                (list roseus::VariableArray :uint32_data #i(4 5 6))
+                (list roseus::VariableArray :uint64_data #i(7 8 9))
+                (list roseus::VariableArray :uint8_data (make-array 17
+                                                                     :element-type :char
+                                                                     :initial-contents "johosystemkougaku"))
+                (list roseus::VariableArray :bool_data (list t nil))
+                (list roseus::VariableArray :time_data (list (ros::time 0) (ros::time 1)))
+                (list roseus::VariableArray :duration_data (list (ros::time 0) (ros::time 1)))
+                (list roseus::VariableArray :string_data (list (instance std_msgs::String :data "ros") (instance std_msgs::String :data "eus")))
                 ))
   )
 
@@ -102,6 +125,25 @@
                                           (assert (eps-v= (send x ,method) ,data)))
                                          (t
                                           (assert (equal (send x ,method) ,data)))))))
+(defun subscribe-and-check-array-msg (x)
+  (dolist (o `((:float32_data #f(1 -2 3)) (:float64_data #f(4 -5 6))
+               (:int16_data #i(7 -8 9)) (:int32_data #i(10 -11 12)) (:int64_data #i(13 -14 15))
+               (:int8_data #i(16 -17 18)) (:uint16_data #i(1 2 3))  (:uint32_data #i(4 5 6))
+               (:uint64_data #i(7 8 9))
+               (:uint8_data "johosystemkougaku")
+               (:bool_data ,(list t nil))
+               (:time_data ,(list (ros::time 0) (ros::time 1)))
+               (:duration_data ,(list (ros::time 0) (ros::time 1)))
+               (:string_data ,(list (instance std_msgs::String :data "ros") (instance std_msgs::String :data "eus")))
+               ))
+    (let ((method (car o)) (data (cadr o)))
+      (format *error-output* "~A ~A ~A~%" method data (send x method))
+      (cond ((floatp data)
+             (assert (eps= (send x method) data)))
+            ((float-vector-p data)
+             (assert (eps-v= (send x method) data)))
+            (t
+             (assert (equal (send x method) data)))))))
 
 (deftest test-send_msgs
   (subscribe-and-check-msg "bool" std_msgs::bool :data t)
@@ -139,20 +181,12 @@
   ;; see http://wiki.ros.org/msg#Fields
   (subscribe-and-check-msg "uint8multiarray" std_msgs::UInt8MultiArray :data "eus")
 
-  (ros::subscribe "fixedarray" roseus::FixedArray #'(lambda (x)
-                                                      (dolist (o '((:float32_data #f(1 -2 3)) (:float64_data #f(4 -5 6))
-                                                                   (:int16_data #i(7 -8 9)) (:int32_data #i(10 -11 12)) (:int64_data #i(13 -14 15))
-                                                                   (:int8_data #i(16 -17 18)) (:uint16_data #i(1 2 3))  (:uint32_data #i(4 5 6))
-                                                                   (:uint64_data #i(7 8 9))
-                                                                   (:uint8_data "johosystemkougaku")))
-                                                        (let ((method (car o)) (data (cadr o)))
-                                                          (format *error-output* "~A ~A ~A~%" method data (send x method))
-                                                          (cond ((floatp data)
-                                                                 (assert (eps= (send x method) data)))
-                                                                ((float-vector-p data)
-                                                                 (assert (eps-v= (send x method) data)))
-                                                                (t
-                                                                 (assert (equal (send x method) data))))))))
+  (format *error-output* "fixedarray~%")
+  (ros::subscribe "fixedarray" roseus::FixedArray #'subscribe-and-check-array-msg)
+  (format *error-output* "variablearray~%")
+  (ros::subscribe "variablearray" roseus::VariableArray #'subscribe-and-check-array-msg)
+
+
   (ros::rate 10)
   (dotimes (i 25)
     (ros::spin-once)
