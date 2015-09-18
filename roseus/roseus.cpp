@@ -57,6 +57,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <ros/init.h>
 #include <ros/time.h>
@@ -1386,6 +1387,52 @@ pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
   return(NIL);
 }
 
+pointer ROSEUS_ROSPACK_PLUGINS(register context *ctx,int n,pointer *argv)
+{
+  // (ros::rospack-plugins package-name attibute-name)
+  ckarg(2);
+  string pkg, attrib;
+  numunion nu;
+  pointer ret, first;
+  if (isstring(argv[0])) pkg.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+  if (isstring(argv[1])) attrib.assign((char *)get_string(argv[1]));
+  else error(E_NOSTRING);
+  try {
+      rospack::Rospack rp;
+      std::vector<std::string> search_path;
+      rp.getSearchPathFromEnv(search_path);
+      rp.crawl(search_path, 1);
+      std::vector<std::string> flags;
+      if (rp.plugins(pkg, attrib, "", flags)) {
+          ret = cons(ctx, NIL, NIL);
+          first = ret;
+          vpush(ret);
+          for (size_t i = 0; i < flags.size(); i++) {
+            // flags[i] = laser_proc /opt/ros/hydro/share/laser_proc/nodelets.xml
+            std::vector<std::string> parsed_string;
+            boost::algorithm::split(parsed_string, flags[i], boost::is_any_of(" "));
+            std::string package = parsed_string[0];
+            std::string value = parsed_string[1];
+            pointer tmp = cons(ctx, cons(ctx,
+                                         makestring((char*)package.c_str(), package.length()),
+                                         makestring((char*)value.c_str(), value.length())),
+                               NIL);
+            ccdr(ret) = tmp;
+            ret = tmp;
+          }
+          vpop();            // ret
+          return ccdr(first);
+      }
+      else {
+          return(NIL);
+      }
+  }
+  catch (runtime_error &e) {
+  }
+  return(NIL);
+}
+
 pointer ROSEUS_RESOLVE_NAME(register context *ctx,int n,pointer *argv)
 {
   ckarg(1);
@@ -1742,6 +1789,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   _defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM, "Check whether a parameter exists on the parameter server.");
 
   _defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND, "Returns ros package path");
+  _defun(ctx,"ROSPACK-PLUGINS",argv[0],(pointer (*)())ROSEUS_ROSPACK_PLUGINS, "Returns plugins of ros packages");
   _defun(ctx,"RESOLVE-NAME",argv[0],(pointer (*)())ROSEUS_RESOLVE_NAME, "Returns ros resolved name");
   _defun(ctx,"GET-NAME",argv[0],(pointer (*)())ROSEUS_GETNAME, "Returns current node name");
   _defun(ctx,"GET-NAMESPACE",argv[0],(pointer (*)())ROSEUS_GETNAMESPACE, "Returns current node name space");

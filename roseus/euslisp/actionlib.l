@@ -125,6 +125,9 @@
 		       cancel-topic (ros::get-num-subscribers cancel-topic))
        (send self :spin-once)
        (ros::sleep)
+       (when (and (> count 0)  (= 0 (mod count 50)))
+         (ros::ros-warn "Still waiting for [~A] action server. ~A seconds have passed." name-space (/ count 10))
+         )
        (when (and timeout (>= count (* timeout 10)))
          (ros::ros-warn "[~A] action server is not found" name-space)
          (ros::ros-warn "     goal=~d, cancel=~d, feedback=~d, result=~d"
