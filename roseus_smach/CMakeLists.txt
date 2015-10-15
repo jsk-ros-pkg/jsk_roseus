@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_smach)
 
-find_package(catkin REQUIRED COMPONENTS euslisp rostest std_msgs actionlib smach smach_ros smach_msgs actionlib_tutorials message_generation roseus)
+find_package(catkin REQUIRED COMPONENTS euslisp std_msgs actionlib smach smach_ros smach_msgs actionlib_tutorials message_generation roseus)
 
 add_action_files(
   DIRECTORY action
@@ -23,6 +23,10 @@ install(DIRECTORY sample src test
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
         USE_SOURCE_PERMISSIONS)
 
-add_rostest(test/test-samples.launch)
-add_rostest(test/test_async_join_state_machine_actionlib.launch)
-#add_rostest(test/test_parallel_state_machine_sample.launch)
+if(CATKIN_ENABLE_TESTING)
+  find_package(catkin REQUIRED COMPONENTS rostest)
+  add_rostest(test/test_samples.test)
+  add_rostest(test/test_async_join_state_machine_actionlib.test)
+  #add_rostest(test/test_parallel_state_machine_sample.test)
+endif()
+
