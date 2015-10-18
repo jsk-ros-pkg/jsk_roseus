@@ -188,3 +188,25 @@ macro(generate_eusdoc _lispfile)
     add_dependencies(${PROJECT_NAME}_${_name}_generate_eusdoc ${${PROJECT_NAME}_generate_messages_eus_all_target})
   endif()
 endmacro()
+
+
+include(CMakeParseArguments)
+
+macro(catkin_eus_setup)
+  cmake_parse_arguments(ARG "NOINSTALL" "PACKAGE_DIR" "_" ${ARGN})
+  if(ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "catkin_eus_setup_package() called with unused arguments: ${ARG_UNPARSED_ARGUMENTS}")
+  endif()
+
+  message(STATUS "[roseus.cmake] setup eusdir: ${PACKAGE}")
+  if(EXISTS ${roseus_SOURCE_PREFIX}/cmake/setup_eus.py)
+    set(SETUP_EUS_PY ${roseus_SOURCE_PREFIX}/cmake/setup_eus.py)
+  else()
+    set(SETUP_EUS_PY ${roseus_PREFIX}/share/roseus/cmake/setup_eus.py)
+  endif()
+  safe_execute_process(COMMAND ${PYTHON_EXECUTABLE}
+    ${SETUP_EUS_PY}
+    ${PROJECT_NAME}
+    ${PROJECT_SOURCE_DIR}/${ARG_PACKAGE_DIR}
+    ${roseus_PREFIX}/share/roseus/ros/${PROJECT_NAME})
+endmacro()

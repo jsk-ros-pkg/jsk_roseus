@@ -361,6 +361,20 @@ always the rank of list is 2"
     (ros::ros-error "Could not find roseus messages for ~A under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" pkg dirs pkg)
     nil))
 
+(defun ros::req (expr)
+  "@param expr: like :jsk_2015_05_baxter_apc/util"
+  (let* ((str (intern (string-upcase expr)))
+         (pkg (string-downcase (elt (pathname-directory str) 0)))
+         to-file file)
+    (if (> (length (pathname-directory str)) 1)
+        (setq file (send (make-pathname :directory (subseq (pathname-directory str) 1) :name (pathname-name str)) :namestring))
+        (setq file (pathname-name str)))
+    (require (format nil "~A/setup.l" (ros::find-load-msg-path pkg)))
+    (require (format nil "~a/~a"
+                     (eval (find-symbol "EUSDIR" (string-upcase pkg)))
+                     file))
+    ))
+
 (defun ros::load-ros-manifest (pkg)
   (let ((manifest (format nil "~A/manifest.l" (ros::find-load-msg-path pkg))))
     (if (probe-file manifest)
