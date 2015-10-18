@@ -1141,6 +1141,27 @@ with the same timestamp"
       ))
   )
 
+(defclass topic-listener
+  :super propertied-object
+  :slots (topic msg-type lockedp value)
+  :documentation "Utility class to write program in procedual manner
+ rather than event-driven manner.")
+
+(defmethod topic-listener
+  (:init (atopic amsg-type)
+    (setq topic atopic)
+    (setq msg-type amsg-type)
+    (ros::subscribe topic amsg-type #'send self :callback))
+  (:callback (msg)
+    (unless lockedp
+      (setq value msg)))
+  (:lock ()
+    (setq lockedp t))
+  (:unlock ()
+    (setq lockedp nil))
+  (:value () value)
+  )
+
 #|
 ;; sample
 (defclass image-caminfo-synchronizer
