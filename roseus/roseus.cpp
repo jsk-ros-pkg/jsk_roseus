@@ -835,12 +835,6 @@ pointer ROSEUS_GETNUMPUBLISHERS(register context *ctx,int n,pointer *argv)
     bSuccess = true;
   }
 
-  if ( ! bSuccess ) {
-    ROS_ERROR("attempted to getNumPublishers to topic %s, which was not " \
-              "previously subscribed. call (ros::subscribe \"%s\") first.",
-              topicname.c_str(), topicname.c_str());
-  }
-
   return (bSuccess?(makeint(ret)):NIL);
 }
 
