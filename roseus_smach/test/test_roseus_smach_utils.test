@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="test_roseus_smach_utils" pkg="roseus" type="roseus"
+        args="$(find roseus_smach)/test/test-roseus-smach-utils.l" />
+</launch>

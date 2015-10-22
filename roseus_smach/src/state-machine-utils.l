@@ -43,18 +43,13 @@
      )
     ))
 
-(defun get-alist (key alist)
-  (if (assoc key alist)
-    (cadr (assoc key alist)) nil))
-
-(defun remove-seq (subseq seq &key (test #'eq))
-  (if subseq (remove-seq (cdr subseq) (remove (car subseq) seq :test test) :test test) seq))
-
 (defun make-state-machine (graph-list func-map initial-state goal-states
-                           &key (exec-result t) (parallel-exec-result t))
+                           &key (exec-result t) (exec-failure-result nil) (parallel-exec-result t))
   "This is utility function to make state machine
 e.g. (make-state-machine '((:a -> :b)
                            (:b -> :c)
+                           (:b !-> :b_f)
+                           (:b_f -> :fail)
                            (:c -> (:d1 :d2))
                            (:d1 -> :end)
                            (:d2 -> :end))
@@ -64,10 +59,11 @@ e.g. (make-state-machine '((:a -> :b)
                            (:d1 #'action-d1)
                            (:d2 #'action-d2))
                           '(:a)
-                          '(:end))
+                          '(:end :fail))
     This makes state machine like:
       :a -> :b -> :c -> :d1 -> :end
-                   \ -> :d2 /
+             |  t  \ -> :d2 /
+         nil  -> :b_f -> :fail
     Each actions are assumed to implement like below:
     ```
     (defun action-a (&rest args)
@@ -77,41 +73,64 @@ e.g. (make-state-machine '((:a -> :b)
     By default, if `action-a` returns value t, then state transits as defined above.
     You can specify return value as `exec-result` key.
 "
-  (let ((sm (instance state-machine :init))
-        (all-nodes (unique
-                    (flatten
-                     (mapcar #'(lambda (connection)
-                                 (append (list (car connection))
-                                         (list (caddr connection))))
-                             graph-list)))))
-    (warning-message 2 "~A nodes are defined~%" (length all-nodes))
+  (labels ((unique-graph (gr)
+             (unique
+              (flatten
+               (mapcar #'(lambda (conn)
+                           (append (list (car conn))
+                                   (list (caddr conn)))) gr))))
+           (get-alist (key alist)
+                      (if (assoc key alist)
+                          (cadr (assoc key alist)) nil)))
+    (let ((sm (instance state-machine :init))
+          (all-nodes (unique-graph graph-list)))
+      (warning-message 2 "~A nodes are defined~%" (length all-nodes))
 
-    ;; add all action states to state machine
-    (dolist (node (remove-seq goal-states all-nodes))
-      (warning-message 2 "mapped function: ~A -> ~A~%" node (eval (get-alist node func-map)))
-      (send sm :add-node (instance state :init node
-                                   (eval (get-alist node func-map)))))
+      ;; add all action states to state machine
+      (dolist (node (set-difference all-nodes goal-states))
+        (cond
+         ((functionp (eval (get-alist node func-map)))
+          (warning-message 2 "mapped function: ~A -> ~A~%" node (eval (get-alist node func-map)))
+          (send sm :add-node (instance state :init node
+                                       (eval (get-alist node func-map)))))
+         ((subclassp (class (eval (get-alist node func-map))) state-machine)
+          (warning-message 2 "mapped sub state machine: ~A -> ~A~%" node (eval (get-alist node func-map)))
+          (send sm :add-node (instance state :init node
+                                       (eval (get-alist node func-map)))))
+         ((subclassp (class (eval (get-alist node func-map))) state)
+          (unless (eq (send (eval (get-alist node func-map)) :name) node)
+            (error "node name(~A) and name of given state(~A) must be same!~%"
+                   node (send (eval (get-alist node func-map) :name))))
+          (warning-message 2 "mapped state passthrough: ^A -> ~A" node (eval (get-alist node func-map)))
+          (send sm :add-node (eval (get-alist node func-map))))
+         (t
+          (error "illegal type of func-map element: ~A~%" (eval (get-alist node func-map))))))
 
-    ;; add goal states
-    (send sm :goal-state goal-states)
+      ;; add goal states
+      (send sm :goal-state goal-states)
 
-    ;; create connection between nodes
-    (dolist (connection graph-list)
-      (let ((from-nodes (flatten (list (car connection))))
-            (to-nodes (flatten (list (caddr connection)))))
-        (warning-message 2 "~A -> ~A~%" from-nodes to-nodes)
-        (dolist (from-node from-nodes)
-          (dolist (to-node to-nodes)
-            (send sm :add-transition
-                  (send sm :node from-node)
-                  (send sm :node to-node)
-                  (case (length to-nodes)
-                    (1 exec-result)
-                    (t parallel-exec-result)))))))
-    (send sm :parallel-exec-result parallel-exec-result)
+      ;; set parallel execution result
+      (send sm :parallel-exec-result parallel-exec-result)
 
-    ;; set initial states
-    (send sm :start-state initial-state)
-    sm))
+      ;; set initial states
+      (send sm :start-state initial-state)
+
+      ;; create connection between nodes
+      (dolist (connection graph-list)
+        (let ((from-nodes (flatten (list (car connection))))
+              (edge (cadr connection))
+              (to-nodes (flatten (list (caddr connection)))))
+              (warning-message 2 "~A ~A ~A~%" from-nodes edge to-nodes)
+          (dolist (from-node from-nodes)
+            (dolist (to-node to-nodes)
+              (send sm :add-transition
+                    (send sm :node from-node)
+                    (send sm :node to-node)
+                    (cond
+                     ((> (length to-nodes) 1) parallel-exec-result)
+                     ((eq edge '->) exec-result)
+                     ((eq edge '!->) exec-failure-result)
+                     (t (error "invalid connection ~A ~A ~A" from-node edge to-node))))))))
+      sm)))
 
 (provide :state-machine-utils) ;; end of state-machine-utils.l
