@@ -44,13 +44,15 @@
 (defun plist->ros-query (plist)
   (apply-to-ros-query #'json::encode-plist plist))
 
-(defun query (msg-type &key single query meta sort (encoder #'json::encode-alist) msg-only)
+(defun query (msg-type &key query meta sort
+                            single limit (encoder #'json::encode-alist) msg-only)
   (let ((req (instance mongodb_store_msgs::MongoQueryMsgRequest :init))
         res)
     (send req :database user::*mongo-database*)
     (send req :collection user::*mongo-collection*)
     (send req :type (get msg-type :datatype-))
     (send req :single single)
+    (send req :limit limit)
     (when query
       (send req :message_query (apply-to-ros-query encoder query)))
     (when meta

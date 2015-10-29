@@ -20,6 +20,11 @@
 (mongo::query geometry_msgs::Pose
               :sort '((:$natural . -1)))
 
+;; find latest 10 messages whose type is geometry_msgs/Pose
+(mongo::query geometry_msgs::Pose
+              :sort '((:$natural . -1))
+              :limit 10)
+
 ;; find all geometry_msgs/Pose which were inserted after 2015/7/17 with ascending order
 (mongo::query geometry_msgs::Pose
               :sort '((:$natural . 1))
