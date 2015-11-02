@@ -58,7 +58,7 @@ macro(generate_all_roseus_messages)
   # 2) does not have <package>_SOURCE_PREFIX (it is source compiled so geneus will works for this packages)
   # 3) does not have <package>_generate_messages_eus (it is not create target before)
   string(REGEX MATCH "catkin" need_catkin "$ENV{_}")
-  if(need_catkin OR ${target_pkg} STREQUAL "roseus") # do not run upstream message generation on buildfirm
+  if(need_catkin OR ${target_pkg} STREQUAL "roseus" OR ${target_pkg} STREQUAL "pr2eus") # do not run upstream message generation on buildfirm
     _package_depends_impl(${target_pkg} ${CMAKE_CURRENT_BINARY_DIR}/roseus_generated)
     foreach(_pkg ${${target_pkg}_ALL_RUN_DEPENDS})
       if(NOT ${_pkg}_SOURCE_PREFIX AND NOT TARGET ${_pkg}_generate_messages_eus)
