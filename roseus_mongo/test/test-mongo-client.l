@@ -41,7 +41,15 @@
 
   (setq res-many (mongo::query geometry_msgs::Pose :sort '((:natural . 1 )) :msg-only t))
   (dotimes (i 10)
-    (assert (eq (float i) (send (elt res-many i) :position :x)))))
+    (assert (eq (float i) (send (elt res-many i) :position :x))))
+
+  ;; test below is for indigo and later only
+  (when (>= (elt (unix::getenv "ROS_DISTRO") 0) (elt "indigo" 0))
+    (setq assume-5-msgs (mongo::query geometry_msgs::Pose :sort '((:natural . 1)) :msg-only t :limit 5))
+    (assert (= (length assume-5-msgs) 5))
+    (dotimes (i 5)
+      (assert (eq (float i) (send (elt assume-5-msgs i) :position :x)))))
+)
 
 (run-all-tests)
 (exit)

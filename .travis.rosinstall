@@ -8,3 +8,6 @@
 - git:
     uri: http://github.com/tork-a/euslisp-release
     local-name: euslisp
+- git:
+    uri: https://github.com/strands-project/mongodb_store
+    local-name: hydro-devel
