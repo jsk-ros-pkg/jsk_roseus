@@ -2,6 +2,13 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus_mongo/README.md] update readme for setting params
+* [roseus_mongo/euslisp/mongo-client.l] fix param name for *mongo-database*
+* [roseus_mongo] support timezone
+* Contributors: Yuki Furuta
+
 1.3.9 (2015-09-14)
 ------------------
 

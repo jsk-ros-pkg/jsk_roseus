@@ -2,6 +2,14 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus_smach] warning message for :goal-state
+* [roseus_smach] add failure nodes addition feature for state-machine generation utils
+* [roseus_smach/sample/parallel-state-machine-sample.l] fix: https://github.com/jsk-ros-pkg/jsk_roseus/issues/324
+* [roseus_smach] fix test launch file extension .launch -> .test; test only required
+* Contributors: Kamada Hitoshi, Yuki Furuta
+
 1.3.9 (2015-09-14)
 ------------------
 

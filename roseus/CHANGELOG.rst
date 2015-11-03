@@ -2,6 +2,37 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix bugs in bool array (https://github.com/jsk-ros-pkg/geneus/issues/38)
+
+  * [test/test-geneus.l] use list for bool array
+  * [test/test-geneus.l] add test for time/duration/object array
+  * [tes/test-geneus.ll] Add test for VariableArray. Currently, bool_data fails because of bug reported in https://github.com/jsk-ros-pkg/geneus/issues/38
+  * [test/test-geneus.l, roseus/test/test_geneus_send_msgs.py] Add test for FixedArray.msg and this test will pass currently.
+  * [roseus/msg/FixedArray.msg, roseus/msg/VariableArray.msg] Add VariableArray msg and add bool field to Fixedarray.msg
+
+* New Features
+
+  * [roseus] Add ros::rospack-plugins function. It is equivalent to
+  `rospack plugins ...`
+  ```lisp
+  (ros::rospack-plugins "nodelet" "plugin")
+  =>
+  (("laser_proc" . "/opt/ros/hydro/share/laser_proc/nodelets.xml") ("velodyne_driver" . "/opt/ros/hydro/share/velodyne_driver/nodelet_velodyne.xml") ("yocs_velocity_smoother" . "/opt/ros/hydro/share/yocs_velocity_smoother/plugins/nodelets.xml") ("jsk_perception" . "/home/lueda/ros/hydro/src/jsk-ros-pkg/jsk_recognition/jsk_perception/jsk_perception_nodelets.xml") ("image_rotate" . "/home/lueda/ros/hydro/src/image_pipeline/image_rotate/nodelet_plugins.xml") ("stereo_image_proc" . "/home/lueda/ros/hydro/src/image_pipeline/stereo_image_proc/nodelet_plugins.xml") ("depth_image_proc" . "/home/lueda/ros/hydro/src/image_pipeline/depth_image_proc/nodelet_plugins.xml") ("kobuki_bumper2pc" . "/opt/ros/hydro/share/kobuki_bumper2pc/plugins/nodelet_plugins.xml") ("kobuki_safety_controller" . "/opt/ros/hydro/share/kobuki_safety_controller/plugins/nodelet_plugins.xml") ("naoqi_sensors" . "/home/lueda/ros/hydro/src/ros_naoqi/naoqi_bridge/naoqi_sensors/naoqicamera_nodelet.xml") ("velodyne_pointcloud" . "/opt/ros/hydro/share/velodyne_pointcloud/nodelets.xml") ("pointcloud_to_laserscan" . "/home/lueda/ros/hydro/src/perception_pcl/pointcloud_to_laserscan/nodelets.xml") ("openni2_camera" . "/opt/ros/hydro/share/openni2_camera/openni2_nodelets.xml") ("resized_image_transport" . "/home/lueda/ros/hydro/src/jsk-ros-pkg/jsk_recognition/resized_image_transport/nodelet.xml") ("image_proc" . "/home/lueda/ros/hydro/src/image_pipeline/image_proc/nodelet_plugins.xml") ("uvc_camera" . "/opt/ros/hydro/share/uvc_camera/nodelet_uvc_camera.xml") ("openni_camera" . "/opt/ros/hydro/share/openni_camera/openni_nodelets.xml") ("yocs_cmd_vel_mux" . "/opt/ros/hydro/share/yocs_cmd_vel_mux/plugins/nodelets.xml") ("pcl_ros" . "/home/lueda/ros/hydro/src/perception_pcl/pcl_ros/pcl_nodelets.xml") ("prosilica_camera" . "/home/lueda/ros/hydro/src/prosilica_driver/prosilica_camera/plugins/nodelet_plugins.xml") ("jsk_topic_tools" . "/home/lueda/ros/hydro/src/jsk-ros-pkg/jsk_common/jsk_topic_tools/jsk_topic_tools_nodelet.xml") ("jsk_pcl_ros" . "/home/lueda/ros/hydro/src/jsk-ros-pkg/jsk_recognition/jsk_pcl_ros/jsk_pcl_nodelets.xml") ("image_view" . "/home/lueda/ros/hydro/src/image_pipeline/image_view/nodelet_plugins.xml") ("nodelet_tutorial_math" . "/opt/ros/hydro/share/nodelet_tutorial_math/nodelet_math.xml") ("imagesift" . "/home/lueda/ros/hydro/src/jsk-ros-pkg/jsk_recognition/imagesift/nodelet.xml"))
+  ```
+* Warning Message
+
+  * [roseus/roseus.cpp] remove trivial error message from get-num-publishers
+  * [roseus/euslisp/actionlib.l: add warning message when action server is not found
+
+* Misc
+
+  * [roseus/cmake/roseus.cmake] run message generation at build form for pr2eus
+  * [roseus] Not import no used module in get_all_depends.py (#337)
+
+* Contributors: Yuki Furuta, Kamada Hitoshi, Kei Okada, Kentaro Wada, Ryohei Ueda, Shunichi Nozawa
+
 1.3.9 (2015-09-14)
 ------------------
 * roseus.cpp: add ros::create-timer function
