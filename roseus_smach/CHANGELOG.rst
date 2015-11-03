@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2015-11-03)
+------------------
 * [roseus_smach] warning message for :goal-state
 * [roseus_smach] add failure nodes addition feature for state-machine generation utils
 * [roseus_smach/sample/parallel-state-machine-sample.l] fix: https://github.com/jsk-ros-pkg/jsk_roseus/issues/324

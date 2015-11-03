@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2015-11-03)
+------------------
 * Fix bugs in bool array (https://github.com/jsk-ros-pkg/geneus/issues/38)
 
   * [test/test-geneus.l] use list for bool array
