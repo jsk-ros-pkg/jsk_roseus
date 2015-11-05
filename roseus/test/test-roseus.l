@@ -82,6 +82,35 @@
   (assert (not (ros::resolve-ros-path "package://not_existing_package")))
   )
 
+(deftest test-image-conversion ()
+  (when (and
+         (assoc :create-viewer (send camera-model :methods))
+         (probe-file (format nil "~A/irteus/demo/sample-camera-model.l" *eusdir*)))
+    (load "irteus/demo/sample-camera-model.l")
+    (sample-get-camera-image-2)
+    (setq sndimg (send *camera-model* :get-image))
+    (setq rcvimg nil)
+    (setq seq 0)
+    (ros::advertise "test_image" sensor_msgs::Image 5)
+    (unix:sleep 2)
+    (ros::rate 1)
+
+    (ros::subscribe "test_image" sensor_msgs::Image
+                    #'(lambda (m)
+                        (setq rcvimg (ros::sensor_msgs/Image->image m))))
+
+    (while (and (ros::ok) (null rcvimg))
+      (setq msg (ros::image->sensor_msgs/Image sndimg :seq (inc seq) :frame_id "hoge"))
+      (ros::publish "test_image" msg)
+      (ros::spin-once)
+      (ros::sleep))
+
+    (assert rcvimg "received image")
+    (assert (eq (send rcvimg :width) (send sndimg :width)) "eq image :width")
+    (assert (eq (send rcvimg :height) (send sndimg :height)) "eq image :height")
+    (assert (string= (send rcvimg :entity) (send sndimg :entity)) "eq image :entity")
+    ))
+
 (run-all-tests)
 
 (exit)
