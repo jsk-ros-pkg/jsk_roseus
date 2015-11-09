@@ -1,0 +1,14 @@
+<launch>
+  <param name="robot/database" value="test_database" />
+  <param name="robot/name" value="test_collection" />
+
+  <node pkg="roseus_mongo" type="make_temp_database_dir.sh" name="make_temp_database_dir" />
+  <include file="$(find mongodb_store)/launch/mongodb_store.launch">
+    <arg name="db_path" value="/tmp/mongodb_store" />
+    <arg name="port" value="62345" />
+    <arg name="use_machine" value="false" />
+  </include>
+
+  <test test-name="test_mongo_client" pkg="roseus" type="roseus"
+        args="$(find roseus_mongo)/test/test-mongo-client.l" />
+</launch>
