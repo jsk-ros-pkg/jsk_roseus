@@ -19,7 +19,7 @@ catkin_package(
 #    LIBRARIES # TODO
 )
 
-install(DIRECTORY sample src test
+install(DIRECTORY sample src
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
         USE_SOURCE_PERMISSIONS)
 
