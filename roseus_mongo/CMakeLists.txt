@@ -6,7 +6,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(roseus_mongo)
 
 find_package(catkin REQUIRED COMPONENTS
-  rostest
   mongodb_store
   mongodb_store_msgs
   roseus
@@ -24,6 +23,14 @@ install(DIRECTORY euslisp
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
 
-add_rostest(test/test_json_encode.test)
-add_rostest(test/test_json_decode.test)
-add_rostest(test/test_mongo_client.test)
+if(CATKIN_ENABLE_TESTING)
+  find_package(catkin REQUIRED COMPONENTS rostest)
+  add_rostest(test/test_json_encode.test)
+  add_rostest(test/test_json_decode.test)
+  if(${mongodb_store_VERSION} VERSION_LESS "0.1.17")
+    message(WARNING "detected old mongodb_store. Testing with old launch file")
+    add_rostest(test/test_mongo_client_hydro.test)
+  else()
+    add_rostest(test/test_mongo_client.test)
+  endif()
+endif()
