@@ -1,6 +1,6 @@
 <launch>
 <node name="fibonacci" pkg="roseus" type="roseus" args="$(find roseus)/test/fibonacci-server.l"  output="screen"
       launch-prefix="xterm -T server -geometry 80x10 -e " />
-<node name="fibonacci_client" pkg="actionlib_tutorials" type="fibonacci_client.py" output="screen"
+<node name="fibonacci_client" pkg="actionlib_tutorials" type="fibonacci_client" output="screen"
       launch-prefix="xterm -T client -geometry 80x10 -e " />
 </launch>
