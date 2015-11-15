@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="roseus" type="ref_simple_server.py" name="ref_simple_server_500" output="screen" />
+  <param name="reference_simple_action/status_frequency" value="500.0" />
+  <test test-name="simple_client_test_500" pkg="roseus" type="roseus" args="$(find roseus)/test/simple-client-test.l" />
+</launch>
+
