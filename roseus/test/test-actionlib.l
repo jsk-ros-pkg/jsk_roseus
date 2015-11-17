@@ -40,6 +40,28 @@
     (assert (= (elt result (1- (length result))) 55) "(fib 10) -> ~A" result)
     ))
 
+(deftest send-and-wait-for-result-twice
+  (let (c goal result)
+    (dotimes (i 2)
+      (setq c (instance ros::simple-action-client :init
+                        "fibonacci" actionlib_tutorials::FibonacciAction))
+      (warning-message 2 ";; ~A wait-for-server~%" (unix::getpid))
+      (send c :wait-for-server)
+      (setq goal (instance actionlib_tutorials::FibonacciActionGoal :init))
+      (send goal :goal :order 10)
+      (send c :send-goal goal)
+      (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
+      (assert (setq result (send c :wait-for-result)) "wait-for-result -> ~A" result)
+      (setq result (send (send c :get-result) :sequence))
+      (warning-message 2 ";; ~A result -> ~A~%" (unix::getpid) result)
+      (assert (= (elt result (1- (length result))) 55) "(fib 10) -> ~A" result)
+
+      (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
+      (assert (setq result (send c :wait-for-result)) "wait-for-result -> ~A" result) ;; note that wait-for-result returns t
+      (setq result (send (send c :get-result) :sequence))
+      (warning-message 2 ";; ~A result -> ~A~%" (unix::getpid) result)
+      (assert (= (elt result (1- (length result))) 55) "(fib 10) -> ~A" result)
+    )))
 
 (deftest wait-for-result-without-send-goal
   (let ()
