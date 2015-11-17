@@ -93,14 +93,14 @@
    (cond
     (groupname
      (ros::subscribe (format nil "~A/status" name-space)
-                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 0 :groupname groupname)
+                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 200 :groupname groupname)
      (ros::subscribe (format nil "~A/result" name-space)
                      action-result-class #'send self :action-result-cb 0 :groupname groupname)
      (ros::subscribe (format nil "~A/feedback" name-space)
                      action-feedback-class #'send self :action-feedback-cb 0 :groupname groupname))
     (t
      (ros::subscribe (format nil "~A/status" name-space)
-                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 0)
+                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 200)
      (ros::subscribe (format nil "~A/result" name-space)
                      action-result-class #'send self :action-result-cb 0)
      (ros::subscribe (format nil "~A/feedback" name-space)
