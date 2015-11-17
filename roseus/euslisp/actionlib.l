@@ -145,7 +145,7 @@
 	 (ros::ros-warn "goal_id's id is already set in goal instance. But :send-goal will overwrite")
        )
      (setq goal_id (instance actionlib_msgs::GoalID :init
-                             :id (format nil "~A_~A_~A_~A" (ros::get-name) (unix::getpid) name-space seq-count)))
+                             :id (format nil "~A_~A_~A_~A_~A" (send (ros::time-now) :to-nsec) (ros::get-name) (unix::getpid) name-space seq-count)))
      (incf seq-count)
      (send goal :goal_id goal_id)
      (setq simple-state ros::*simple-goal-state-pending*)
