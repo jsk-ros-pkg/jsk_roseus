@@ -52,9 +52,10 @@
     (send req :collection user::*mongo-collection*)
     (send req :type (get msg-type :datatype-))
     (send req :single single)
-    (if (and limit (>= (elt (unix::getenv "ROS_DISTRO") 0) (elt "indigo" 0)))
-        (send req :limit limit) ;; valid on ROS indigo and later
-        (ros::ros-warn "feature :limit is provided only indigo and later"))
+    (when limit
+      (if (memq :limit (send req :methods))
+           (send req :limit limit) ;; valid on ROS indigo and later
+        (ros::ros-warn "feature :limit is provided only indigo and later")))
     (when query
       (send req :message_query (apply-to-ros-query encoder query)))
     (when meta
