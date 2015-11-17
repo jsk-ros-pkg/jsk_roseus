@@ -21,14 +21,17 @@
 
   <run_depend>uvc_camera</run_depend>
   <run_depend>ar_track_alvar</run_depend>
+  <run_depend>opencv_apps</run_depend>
   <!-- <run_depend>saliency_tracking<run_depend> -->
   <!-- <depend package="cmvision" /> -->
   <!-- <run_depend>checkerboard_pose</run_depend> -->
   <!-- <run_depend>face_detector_mono<run_depend> -->
   <!-- <depend package="aques_talk" /> -->
-  <!-- <run_depend>checkerboard_detector<run_depend> -->
+  <run_depend>checkerboard_detector</run_depend>
+  <run_depend>pr2eus</run_depend>
   <run_depend>image_proc</run_depend>
   <run_depend>image_view2</run_depend>
+  <run_depend>posedetection_msgs</run_depend>
   <!-- <run_depend>jsk_perception</run_depend> -->
   <run_depend>visualization_msgs</run_depend>
   <!-- <run_depend>tabletop_object_detector<run_depend> -->

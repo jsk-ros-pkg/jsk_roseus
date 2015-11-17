@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_tutorials)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED roseus)
 
 catkin_package(
 #    DEPENDS
