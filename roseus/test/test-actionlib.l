@@ -19,9 +19,8 @@
 
 (deftest wait-for-result-twice
   (let (goal result)
-    (if (not (boundp '*c*))
-        (setq *c* (instance ros::simple-action-client :init
-                            "fibonacci" actionlib_tutorials::FibonacciAction)))
+    (setq *c* (instance ros::simple-action-client :init
+                        "fibonacci" actionlib_tutorials::FibonacciAction))
     (warning-message 2 ";; ~A wait-for-server~%" (unix::getpid))
     (send *c* :wait-for-server)
     (setq goal (instance actionlib_tutorials::FibonacciActionGoal :init))
@@ -65,9 +64,8 @@
 
 (deftest wait-for-result-without-send-goal
   (let ()
-    (if (not (boundp '*c*))
-        (setq *c* (instance ros::simple-action-client :init
-                            "fibonacci" actionlib_tutorials::FibonacciAction)))
+    (setq *c* (instance ros::simple-action-client :init
+                        "fibonacci" actionlib_tutorials::FibonacciAction))
     (warning-message 2 ";; ~A wait-for-server~%" (unix::getpid))
     (send *c* :wait-for-server)
     (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
