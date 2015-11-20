@@ -69,7 +69,7 @@
     (warning-message 2 ";; ~A wait-for-server~%" (unix::getpid))
     (send *c* :wait-for-server)
     (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
-    (assert (send *c* :wait-for-result)) ;; note that :wait-for-results returns t even if no goal has need sent
+    (assert (null (send *c* :wait-for-result))) ;; note that :wait-for-results returns nil when no goal has been sent
     ))
 
 (defun fibonacci (n)
