@@ -41,6 +41,18 @@ from geneus.geneus_main import package_depends
 import geneus.geneus_main
 if geneus.geneus_main.pkg_map is None:
     geneus.geneus_main.pkg_map = geneus.geneus_main.get_pkg_map()
+# we need this for geneus <= 2.2.4
+def get_pkg_map():
+    from catkin_pkg import packages, workspaces
+    pkg_map = {}
+    for ws in workspaces.get_spaces():
+        pkgs = packages.find_packages(ws)
+        for pkg in pkgs.values():
+            if not pkg_map.has_key(pkg.name):
+                pkg_map[pkg.name] = pkg
+    return pkg_map
+geneus.geneus_main.pkg_map = get_pkg_map()
+
 
 def _get_output(package):
     depends = package_depends(package)
