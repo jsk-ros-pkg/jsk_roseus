@@ -145,7 +145,7 @@
 	 (ros::ros-warn "goal_id's id is already set in goal instance. But :send-goal will overwrite")
        )
      (setq goal_id (instance actionlib_msgs::GoalID :init
-                             :id (format nil "~A_~A_~A_~A" (ros::get-name) (unix::getpid) name-space seq-count)))
+                             :id (format nil "~A_~A_~A_~A_~A" (send (ros::time-now) :to-nsec) (ros::get-name) (unix::getpid) name-space seq-count)))
      (incf seq-count)
      (send goal :goal_id goal_id)
      (setq simple-state ros::*simple-goal-state-pending*)
@@ -169,6 +169,10 @@
    (let ((start (ros::time-now))
 	 (result-topic (format nil "~A/result" name-space)))
      (ros::ros-debug "[~A] :wait-for-result ~A, timeout=~A" name-space (if goal_id (send goal_id :id)) timeout)
+     (unless goal_id
+       ;; https://github.com/ros/actionlib/blob/285c60265f18b683b1439accc9603c1e8be30a23/src/actionlib/simple_action_client.py#L128
+       (ros::ros-error "[~A] :wait-for-result (return nil when no goal exists)" name-space)
+       (return-from :wait-for-result nil))
      (ros::rate 10)
      (while (ros::ok)
        (ros::ros-debug "[~A] :wait-for-result ~A ~A" name-space (simple-goal-states-to-string simple-state) (send comm-state :state))
