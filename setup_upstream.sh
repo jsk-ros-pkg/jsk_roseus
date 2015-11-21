@@ -53,7 +53,7 @@ EOF
 
 wstool merge /tmp/rosinstall.$$ -t $WORKSPACE/src
 wstool info -t $WORKSPACE/src
-wstool update --abort-changed-uris -t $WORKSPACE/src $PACKAGE
+wstool update --abort-changed-uris -t $WORKSPACE/src $PACKAGE 2> /dev/null
 
 if [ "$ROS_DISTRO" == "" ] ; then
     export ROS_DISTRO=indigo
