@@ -49,6 +49,14 @@ while [ $# -gt 0 ]; do
 done
 
 CATKIN_DIR=/tmp/test_genmsg_$$
+
+>&2 echo -e "\e[1;32mRunning test-genmsg.sh $ARGV\e[m"
+>&2 echo -e "\e[1;32m - WORKSPACE_TYPE=${WORKSPACE_TYPE}\e[m"
+>&2 echo -e "\e[1;32m - PACKAGE=${PACKAGE}\e[m"
+>&2 echo -e "\e[1;32m - REMOVE_MSG=${REMOVE_MSG}\e[m"
+>&2 echo -e "\e[1;32m - OUTPUT=${OUTPUT}\e[m"
+>&2 echo -e "\e[1;32m - CATKIN_DIR=${CATKIN_DIR}\e[m"
+
 GENEUS_DEP1=${CATKIN_DIR}/src/geneus_dep1
 GENEUS_DEP2=${CATKIN_DIR}/src/geneus_dep2
 ROSEUS_DEP1=${CATKIN_DIR}/src/roseus_dep1
