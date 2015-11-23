@@ -7,7 +7,7 @@
 ;;;
 (defun add-two-ints (req)
   (let ((m (send req :response)))
-    (format *error-output* "Returning [~d + ~d = ~d]~%"
+    (ros::ros-info "Returning [~d + ~d = ~d]"
             (send req :a) (send req :b)
             (+ (send req :a) (send req :b)))
     (send m :sum  (+ (send req :a) (send req :b)))

@@ -1,6 +1,6 @@
 <launch>
   <node type="roseus" pkg="roseus" name="test_timer"
-        args="$(find roseus)/test/test-timer.l" output="screen"
+        args="$(find roseus)/test/test-timer.l"
         required="true" />
 
   <param name="hz_timer1/topic" value="chatter1" />  

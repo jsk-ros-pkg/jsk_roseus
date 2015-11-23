@@ -12,7 +12,7 @@
 
 (defun cb1 (event)
   (let (msg)
-    (print event)
+    (ros::ros-info "~A" event)
     (setq msg (instance std_msgs::string :init))
     (send msg :data (format nil "hello world ~a" (send (ros::time-now) :sec-nsec)))
     (ros::publish "chatter1" msg)

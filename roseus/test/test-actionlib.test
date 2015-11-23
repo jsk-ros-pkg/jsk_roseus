@@ -1,6 +1,6 @@
 <launch>
-  <node name="fibonacci_server" pkg="roseus" type="roseus" args="$(find roseus)/test/fibonacci-server.l" output="screen" />
-  <node name="fibonacci_client" pkg="roseus" type="roseus" args="$(find roseus)/test/fibonacci-client.l" output="screen" />
+  <node name="fibonacci_server" pkg="roseus" type="roseus" args="$(find roseus)/test/fibonacci-server.l" />
+  <node name="fibonacci_client" pkg="roseus" type="roseus" args="$(find roseus)/test/fibonacci-client.l" />
   <test test-name="test_actionlib_client" pkg="roseus" type="roseus" args="$(find roseus)/test/test-actionlib.l"
 	time-limit="600" />
 </launch>
