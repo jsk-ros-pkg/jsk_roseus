@@ -3,7 +3,7 @@
 ;;; euslisp version of ros_tutorials/rospy_tutorials/test_add_two_ints.py
 ;;;
 
-(setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
+(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
 
 (require :unittest "lib/llib/unittest.l")
 (ros::load-ros-manifest "roseus")
@@ -39,7 +39,9 @@
   (ros::wait-for-service "add_two_ints")
   (dotimes (i 1000)
     (let ((a i) (b (random 100000000)))
-      (warning-message 2 "Requesting ~A(~A) + ~A(~A) -> ~A(~A)~%" a (class a) b (class b) (+ a b) (class (+ a b)))
+      (if (= (mod i 100) 0)
+          (warning-message 2 "Requesting ~A(~A) + ~A(~A) -> ~A(~A)~%" a (class a) b (class b) (+ a b) (class (+ a b))))
+      (ros::ros-info "Requesting ~A(~A) + ~A(~A) -> ~A(~A)" a (class a) b (class b) (+ a b) (class (+ a b)))
       (setq req (instance roseus::AddTwoIntsRequest :init :a a :b b))
       (setq res (ros::service-call "add_two_ints" req))
       (assert (= (+ (send req :a) (send req :b)) (send res :sum))
