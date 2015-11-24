@@ -1,12 +1,25 @@
 #!/bin/bash
 set -e
 
+# use -v to show debug message
+while getopts q OPT
+do
+    case $OPT in
+        q)  QUIET=1;;
+    esac
+done
+shift $((OPTIND - 1))
+
 EUSLISP_EXE=`find -L $EUSDIR -type f -name irteusgl`
 ROSEUS_DIR=`rospack find roseus`
 ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
         roseus.l eustf.l actionlib.l roseus-utils.l)
 # echo "rosrun euslisp irteusgl ${ARG_STR[@]} $@"
-exec ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
+if (( QUIET )) ; then
+    exec ${EUSLISP_EXE} </dev/null "${ARG_STR[@]}" "$@"
+else
+    exec ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
+fi
 
 # if you want to run in gdb, please use lines below
 # CMD_NAME=/tmp/roseus_$$
