@@ -1,6 +1,8 @@
 jsk_roseus [![Build Status](https://travis-ci.org/jsk-ros-pkg/jsk_roseus.png?branch=master)](https://travis-ci.org/jsk-ros-pkg/jsk_roseus) [![Documentation Status](https://readthedocs.org/projects/euslisp-docs/badge/?version=latest)](http://euslisp-docs.readthedocs.org/en/latest/roseus/)
 ----------
 
+[![Join the chat at https://gitter.im/jsk-ros-pkg/jsk_roseus](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jsk-ros-pkg/jsk_roseus?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 euslisp
 
 - indigo
