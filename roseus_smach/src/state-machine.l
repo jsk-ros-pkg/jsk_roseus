@@ -78,16 +78,14 @@
   ;;                must be {number,string,symbol} or list of these
   (:add-transition
    (from to exec-result &key (test #'equal))
-   (if (not (derivedp from state))
-       (setq from (or (send self :node from)
-                      (progn
-                        (ros::ros-warn "add-transition: Couldn't find ~A state." from)
-                        from))))
-   (if (not (derivedp to state))
-       (setq to (or (send self :node to)
-                    (progn
-                      (ros::ros-warn "add-transition: Couldn't find ~A state." to)
-                      to))))
+   (when (not (derivedp from state))
+     (if (send self :node from)
+      (setq from (send self :node from))
+      (ros::ros-warn "add-transition: state ~A is not yet added. created new node with this name." from)))
+   (when (not (derivedp to state))
+     (if (send self :node to)
+      (setq to (send self :node to))
+      (ros::ros-warn "add-transition: state ~A is not yet added. created new node with this name." to)))
    (if (and from to)
        (send self :add-arc from to exec-result test)))
   (:add-arc (from to val test)
