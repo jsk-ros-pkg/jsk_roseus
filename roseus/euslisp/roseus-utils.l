@@ -67,7 +67,7 @@
     (mapcar #'(lambda (p pt)
 		(send p :x (/ (elt pt 0) 1000.0))
 		(send p :y (/ (elt pt 1) 1000.0))
-		(send p :a (/ (elt pt 2) 1000.0)))
+		(send p :z (/ (elt pt 2) 1000.0)))
 	    points points-list)
     ;;
     (setq hdr (instance std_msgs::header :init
