@@ -2,6 +2,40 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* euslisp/actionlib.l
+
+  * euslisp/actionlib.l: set queue_size following to action_server_imp.h and action_client_imp.h `#396 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/396>`_ (https://github.com/ros/actionlib/blob/indigo-devel/include/actionlib/server/action_server_imp.h#L121, https://github.com/ros/actionlib/blob/indigo-devel/include/actionlib/client/action_client.h#L210)
+  * euslisp/actionlib.l : wait-for-goal: returns nil when no goal is found (https://github.com/jsk-ros-pkg/jsk_roseus/pull/410)
+  * euslisp/actionlib.l : goal_id must be unique : set goal_id to use current nsec
+
+* roseus/utils
+
+  * [roseus/euslisp/roseus-utils.l] fix typo message type
+
+* cmake/get_all_depends.py
+
+  * hot fix until https://github.com/jsk-ros-pkg/geneus/pull/42 has released
+
+* test
+
+  * test-simple-client-*500.test: add test to run simple-client with high-speed status
+  * test/test-timer.l: surpress output message
+  * test/test-tf.l: surpress output message
+  * test/test-actionlib.l: surpress output message
+  * test/test-add-two-ints.l use ros-info instead of warning-message to suppress message
+  * test/add-two-ints-{client,server}.l use ros-info instead of warning-message to suppress the message
+  * 00x-fibonacci-test-{1,2}.launch: fibonacci\_{server,client}.py is not longer avilable, use fibonacci\_{server,client}
+  * test/test-genmsg.catkin.test: disable --remove-message test, which does not work on paralllel execution
+  * test/test-genmsg: add debug message
+  * test/test-actionlib.l: :wait-for-results returns nil when no goal has been sent
+  * test/test-actionlib.l: simple-action-client must be a global variable
+  * test/test-actionlib.l: add test to run send-goal twice with difference client instance
+  * roseus/test/test-actionlib.test: re-enable test-actionlib.test, which is disabled since groovy
+
+* Contributors: Yuki Furuta, Kamada Hitoshi, Kei Okada, Kentaro Wada, Ryohei Ueda, Shunichi Nozawa
+
 1.4.0 (2015-11-03)
 ------------------
 * Fix bugs in bool array (https://github.com/jsk-ros-pkg/geneus/issues/38)

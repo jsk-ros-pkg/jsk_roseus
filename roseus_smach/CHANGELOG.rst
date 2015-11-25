@@ -2,6 +2,11 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus_smach/src/state-machine.l] another impl for `#383 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/383>`_
+* Contributors: Yuki Furuta
+
 1.4.0 (2015-11-03)
 ------------------
 * [roseus_smach] warning message for :goal-state

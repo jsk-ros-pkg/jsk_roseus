@@ -2,6 +2,17 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus_mongo/test/test_mongo_client.test] add missing machine tag for localhost
+* [roseus_mongo] test with new mongodb_store; more loose condition to enable limit option
+* [roseus_mongo/test/temp_mongodb_store.xml] update launch file path with fix https://github.com/strands-project/mongodb_store/pull/151
+  [roseus_mongo/test/test_mongo_client_hydro.test] moved deprecated test launch file for hydro
+  [roseus_mongo/CMakeLists.txt] updated to test only CATKIN_ENABLE_TESTING; check mongodb_store version and switch test launch file
+* [roseus_mongo/test/test-mongo-client.l] limit test for indigo later only
+  [roseus_mongo/euslisp/mongo-client.l] limit ':limit' option only for indigo and later
+* Contributors: Kei Okada, Yuki Furuta
+
 1.4.0 (2015-11-03)
 ------------------
 * [roseus_mongo/README.md] update readme for setting params
