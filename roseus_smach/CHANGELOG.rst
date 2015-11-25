@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.1 (2015-11-25)
+------------------
 * [roseus_smach/src/state-machine.l] another impl for `#383 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/383>`_
 * Contributors: Yuki Furuta
 

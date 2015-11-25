@@ -2,8 +2,8 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.1 (2015-11-25)
+------------------
 * [roseus_mongo/test/test_mongo_client.test] add missing machine tag for localhost
 * [roseus_mongo] test with new mongodb_store; more loose condition to enable limit option
 * [roseus_mongo/test/temp_mongodb_store.xml] update launch file path with fix https://github.com/strands-project/mongodb_store/pull/151

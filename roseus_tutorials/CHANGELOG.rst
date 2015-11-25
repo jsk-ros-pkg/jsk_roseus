@@ -2,8 +2,8 @@
 Changelog for package roseus_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.1 (2015-11-25)
+------------------
 * add more depends
 * roseus_tutorials : use face_detection in opencv_apps
 * Contributors: Kei Okada

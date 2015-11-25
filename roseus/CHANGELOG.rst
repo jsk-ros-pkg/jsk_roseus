@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.1 (2015-11-25)
+------------------
 * euslisp/actionlib.l
 
   * euslisp/actionlib.l: set queue_size following to action_server_imp.h and action_client_imp.h `#396 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/396>`_ (https://github.com/ros/actionlib/blob/indigo-devel/include/actionlib/server/action_server_imp.h#L121, https://github.com/ros/actionlib/blob/indigo-devel/include/actionlib/client/action_client.h#L210)
