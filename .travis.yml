@@ -45,6 +45,7 @@ before_script:
   - if [ "${TRAVIS_SECURE_ENV_VARS}" == "true" ]; then openssl aes-256-cbc -K $encrypted_b79fc5843df3_key -iv $encrypted_b79fc5843df3_iv -in .secrets.tar.enc -out .secrets.tar -d; tar -C ~/ -xvf .secrets.tar; export INSTALL_SRC="$INSTALL_SRC $INSTALL_SRC_SECURE"; export TEST_PKGS="$TEST_PKGS $TEST_PKGS_SECURE"; fi
   - export REPOSITORY_NAME=`basename $PWD`
   - if [ "${INSTALL_SRC}" != "" ] ;then sudo apt-get install python-yaml; rm .travis.rosinstall; for src in $INSTALL_SRC; do name=`basename $src`; python -c "import yaml;print yaml.dump([{'git':{'uri':'$src','local-name':'$name'}}], default_flow_style=False)" >> .travis.rosinstall; done; cat .travis.rosinstall; export USE_DEB=false; fi; # set USE_DEB false to enable .travis.rosinstall
+  - sudo apt-get install xvfb
 script:
   - .travis/travis.sh
 after_success:

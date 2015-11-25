@@ -55,6 +55,35 @@
     ;; FIXME:: add coordinates of camera
     (make-camera-from-ros-camera-info-aux pwidth pheight p nil)))
 
+;; Image
+(when (and
+       (assoc :create-viewer (send camera-model :methods))
+       (probe-file (format nil "~A/irteus/demo/sample-camera-model.l" *eusdir*)))
+(defun ros::image->sensor_msgs/Image (img &key header (seq 0) (stamp (ros::time-now)) (frame_id ""))
+  (let ((img24 (swap-rgb (send (send img :copy) :to24)))
+        (msg (instance sensor_msgs::Image :init)))
+    (if header
+        (send msg :header header)
+      (send msg :header
+            (instance std_msgs::header :init
+                      :seq seq :stamp stamp :frame_id frame_id)))
+    (send msg :height (send img24 :height))
+    (send msg :width (send img24 :width))
+    (send msg :step (* (send img24 :width)
+                       (send img24 :components)))
+    (send msg :encoding "bgr8")
+    (send msg :data (send img24 :entity))
+    msg))
+
+(defun ros::sensor_msgs/Image->image (msg)
+  (let ((img24 (instance color-image24 :init
+                         (send msg :width)
+                         (send msg :height)
+                         (copy-object (send msg :data)))))
+    (when (string= (send msg :encoding) "bgr8")
+      (swap-rgb img24))
+    img24)))
+) ;; end of when
 ;;
 ;; 3dpoint cloud
 ;;
