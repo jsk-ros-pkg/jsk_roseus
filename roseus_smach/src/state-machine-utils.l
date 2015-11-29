@@ -104,7 +104,7 @@ e.g. (make-state-machine '((:a -> :b)
           (warning-message 2 "mapped state passthrough: ^A -> ~A" node (eval (get-alist node func-map)))
           (send sm :add-node (eval (get-alist node func-map))))
          (t
-          (error "illegal type of func-map element: ~A~%" (eval (get-alist node func-map))))))
+          (error "illegal type of func-map element: ~A[~A]~%" (eval (get-alist node func-map)) node))))
 
       ;; add goal states
       (send sm :goal-state goal-states)
@@ -120,7 +120,9 @@ e.g. (make-state-machine '((:a -> :b)
         (let ((from-nodes (flatten (list (car connection))))
               (edge (cadr connection))
               (to-nodes (flatten (list (caddr connection)))))
-              (warning-message 2 "~A ~A ~A~%" from-nodes edge to-nodes)
+          (unless from-nodes (setq from-nodes '(nil)))
+          (unless to-nodes (setq to-nodes '(nil)))
+          (warning-message 2 "~A ~A ~A~%" from-nodes edge to-nodes)
           (dolist (from-node from-nodes)
             (dolist (to-node to-nodes)
               (send sm :add-transition
