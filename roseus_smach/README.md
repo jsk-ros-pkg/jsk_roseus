@@ -1,5 +1,5 @@
-#roseus_smach
-- - -
+roseus_smach
+============
 
 This package includes euslisp imprementation of state machine and [smach](http://wiki.ros.org/smach).
 
