@@ -1,7 +1,7 @@
 roseus_mongo
----
+============
 
-# parameters
+## parameters
 
 ### mongodb related parameters
 
@@ -18,6 +18,6 @@ roseus_mongo
 - `*json-parse-key-function*`: destination type of key when evaluation json object (`#'identity`, `#'string->keyword` or possible other functions, default: `#'string->keyword`)
 
 
-# How to use
+## How to use
 
 see [euslisp/mongo-client-sample.l](euslisp/mongo-client-sample.l)
