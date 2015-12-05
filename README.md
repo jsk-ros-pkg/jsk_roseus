@@ -1,6 +1,17 @@
 jsk_roseus [![Build Status](https://travis-ci.org/jsk-ros-pkg/jsk_roseus.png?branch=master)](https://travis-ci.org/jsk-ros-pkg/jsk_roseus) [![Documentation Status](https://readthedocs.org/projects/euslisp-docs/badge/?version=latest)](http://euslisp-docs.readthedocs.org/en/latest/roseus/)
 ----------
 
+Tips
+====
+
+### Run roseus on gdb
+```
+gdb --args bash roseus foo.l
+```
+
+Deb Status
+==========
+
 euslisp
 
 - indigo
@@ -54,4 +65,3 @@ roseus
  - binarydeb vivid amd64 [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-roseus_binarydeb_vivid_amd64)](http://jenkins.ros.org/job/ros-jade-roseus_binarydeb_vivid_amd64/)
  - binarydeb vivid i386 [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=ros-jade-roseus_binarydeb_vivid_i386)](http://jenkins.ros.org/job/ros-jade-roseus_binarydeb_vivid_i386/)
  - binarydeb trusty armhf [![Build Status](http://54.183.26.131:8080/buildStatus/icon?job=Jbin_arm_uThf__roseus__ubuntu_trusty_armhf__binary)](http://54.183.26.131:8080/job/Jbin_arm_uThf__roseus__ubuntu_trusty_armhf__binary/)
-
