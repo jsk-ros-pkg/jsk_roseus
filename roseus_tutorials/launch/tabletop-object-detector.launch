@@ -8,7 +8,7 @@
 
   <node if="$(arg run_rviz)"
         pkg="rviz" type="rviz" name="rviz"
-        args="-d $(find roseus_tutorials)/launch/tabletop-object-detector.vcg" />
+        args="-d $(find roseus_tutorials)/config/tabletop-object-detector.vcg" />
 
   <node if="$(arg run_roseus)"
         pkg="roseus" type="roseus" name="eus_tabletop_detector"
