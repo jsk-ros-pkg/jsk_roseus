@@ -20,18 +20,22 @@
   (ros::roseus "param_test")
   (assert (ros::has-param "~test") "[~test] (ros::has-param) failed")
   (let ((ret (ros::get-param "~test")))
+    (ros::ros-info "~test ~A" ret)
     (assert (string= "test_private" (setq as ret)) "[~test] test_private != ~A" as))
 
   (assert (ros::has-param "test")  "[test] (ros::has-param) failed")
   (let ((ret (ros::get-param "test")))
+    (ros::ros-info "test ~A" ret)
     (assert (string= "test_ns" (setq as ret)) "[test] test_ns != ~A" as))
 
   (assert (ros::has-param "/test") "[/test] (ros::has-param) failed")
   (let ((ret (ros::get-param "/test")))
+    (ros::ros-info "/test ~A" ret)
     (assert (string= "test_global" (setq as ret)) "[/test] test_global != ~A" as))
 
   (assert (ros::has-param "/test_dictionary") "[/test_dictionary] (ros::has-param) failed")
   (let ((ret (ros::get-param "/test_dictionary")))
+    (ros::ros-info "/test_dictionary ~A" ret)
     (let ((val (assoc "str_value" ret :test #'string=)))
       (assert val "str_value not found")
       (assert (string= (setq as (cdr val)) "00000") "\"00000\" != ~S" as))
