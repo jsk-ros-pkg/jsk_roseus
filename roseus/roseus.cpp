@@ -1282,7 +1282,7 @@ pointer XmlRpcToEusValue(register context *ctx, XmlRpc::XmlRpcValue rpc_value)
     vpop(); // vpush(ret);
     return ccdr(first);
   } else {
-    ROS_FATAL("unkown rosparam type!");
+    ROS_FATAL("unknown rosparam type!");
     return NIL;
   }
   return NIL;
@@ -1324,7 +1324,7 @@ pointer XmlRpcToEusList(register context *ctx, XmlRpc::XmlRpcValue param_list)
                 ret = ccdr(ret);
             }
             else {
-                ROS_FATAL("unkown rosparam type!");
+                ROS_FATAL("unknown rosparam type!");
                 vpop();         // remove vpush(ret)
                 return NIL;
             }
