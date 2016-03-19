@@ -1152,10 +1152,10 @@ void EusValueToXmlRpc(register context *ctx, pointer argp, XmlRpc::XmlRpcValue& 
           boost::algorithm::to_lower(skey);
           stringstream << "<member><name>" << skey << "</name><value><boolean>0</boolean></value></member>";
         }else{
-          ROS_ERROR("EusValueToXmlRpc: assuming symbol");prinx(ctx,ccar(v),ERROUT);flushstream(ERROUT);terpri(ERROUT);
+          ROS_ERROR("ROSEUS_SET_PARAM: EusValueToXmlRpc: assuming symbol");prinx(ctx,ccar(v),ERROUT);flushstream(ERROUT);terpri(ERROUT);
         }
       }else{
-        ROS_ERROR("EusValueToXmlRpc: assuming alist");prinx(ctx,v,ERROUT);flushstream(ERROUT);terpri(ERROUT);
+        ROS_ERROR("ROSEUS_SET_PARAM: EusValueToXmlRpc: assuming alist");prinx(ctx,argp,ERROUT);flushstream(ERROUT);terpri(ERROUT);
       }
       a=ccdr(a);
     }
@@ -1172,11 +1172,7 @@ void EusValueToXmlRpc(register context *ctx, pointer argp, XmlRpc::XmlRpcValue& 
           XmlRpc::XmlRpcValue p;
           EusValueToXmlRpc(ctx, ccdr(v), p);
           rpc_value[skey] = p;
-        }else{
-          ROS_ERROR("EusValueToXmlRpc: assuming symbol 2");prinx(ctx,ccar(v),ERROUT);flushstream(ERROUT);terpri(ERROUT);
         }
-      }else{
-        ROS_ERROR("EusValueToXmlRpc: assuming alist 2");prinx(ctx,v,ERROUT);flushstream(ERROUT);terpri(ERROUT);
       }
       a=ccdr(a);
     }
