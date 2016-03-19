@@ -85,7 +85,7 @@ macro(generate_all_roseus_messages)
   set(ALL_GEN_OUTPUT_FILES_eus)
   foreach(_pkg ${_${target_pkg}_generate_roseus_message_packages})
     if(NOT ${_pkg}_PREFIX)
-      find_package(${_pkg})
+      find_package(${_pkg} QUIET) ## this may fail
     endif()
     set(_msg_path "-I${_pkg}:${${_pkg}_PREFIX}/share/${_pkg}/msg")
     find_all_msg_dependences(${_pkg} _msg_path)
