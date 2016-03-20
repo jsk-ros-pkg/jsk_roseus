@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2016-03-20)
+------------------
 * {roseus_smach, roseus_mongo}/README.md: fix section/subsection
 * [roseus_smach/src/state-machine-utils.l] fix: smach connection from/to nil state
 * Contributors: Kei Okada, Yuki Furuta

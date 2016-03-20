@@ -2,8 +2,8 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2016-03-20)
+------------------
 * {roseus_smach, roseus_mongo}/README.md: fix section/subsection
 * Contributors: Kei Okada
 
