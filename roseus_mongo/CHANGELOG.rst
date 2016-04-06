@@ -2,6 +2,11 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.0 (2016-03-20)
+------------------
+* {roseus_smach, roseus_mongo}/README.md: fix section/subsection
+* Contributors: Kei Okada
+
 1.4.1 (2015-11-25)
 ------------------
 * [roseus_mongo/test/test_mongo_client.test] add missing machine tag for localhost

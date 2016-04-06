@@ -2,6 +2,32 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.0 (2016-03-20)
+------------------
+
+* support dictionary for set-param
+
+  * roseus.cpp: SET_ROS_PARAM clean up error message
+  * roseus.cpp: fix typo, unkown -> unknown
+  * roseus.cpp: (ros::set-param): support to set directory
+  * test/param-test.l : add test for set-param
+  * test/param-test.l: display parameters
+
+* misc updates
+
+  * cmake/roseus.cmake: quiet find_pakcage, this may fail for the first time
+  * test/test-genmsg.sh: add include_directories(${catkin_INCLUDE_DIRS})
+  * [roseus] Retry 3 times actionlib test
+
+* image conversion
+
+  * [roseus/euslisp/roseus-utils.l] add image conversion to ros msg
+    [roseus/test/test-roseus.l] add test for image conversion
+    [roseus/test/test-roseus.test] use virtual display for test with viewer
+    [.travis.yml] install xvfb before_install to launch X server on test
+
+* Contributors: Furushchev, Kei Okada, Ryohei Ueda
+
 1.4.1 (2015-11-25)
 ------------------
 * euslisp/actionlib.l

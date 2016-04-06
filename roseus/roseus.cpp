@@ -58,6 +58,8 @@
 #include <boost/thread/condition.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/variant.hpp>
+#include <boost/foreach.hpp>
 
 #include <ros/init.h>
 #include <ros/time.h>
@@ -1131,6 +1133,86 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   return (bSuccess?T:NIL);
 }
 
+void EusValueToXmlRpc(register context *ctx, pointer argp, XmlRpc::XmlRpcValue& rpc_value)
+{
+  numunion nu;
+
+  if ( islist(argp) && islist(ccar(argp))) { // alist
+    pointer a;
+    int j;
+    // set keys
+    std::ostringstream stringstream;
+    stringstream << "<value><struct>";
+    a = argp;
+    while(islist(a)){
+      pointer v = ccar(a);
+      if ( iscons(v) ) { // is alist
+        if ( issymbol(ccar(v)) ) {
+          string skey = string((char *)get_string(ccar(v)->c.sym.pname));
+          boost::algorithm::to_lower(skey);
+          stringstream << "<member><name>" << skey << "</name><value><boolean>0</boolean></value></member>";
+        }else{
+          ROS_ERROR("ROSEUS_SET_PARAM: EusValueToXmlRpc: assuming symbol");prinx(ctx,ccar(v),ERROUT);flushstream(ERROUT);terpri(ERROUT);
+        }
+      }else{
+        ROS_ERROR("ROSEUS_SET_PARAM: EusValueToXmlRpc: assuming alist");prinx(ctx,argp,ERROUT);flushstream(ERROUT);terpri(ERROUT);
+      }
+      a=ccdr(a);
+    }
+    stringstream << "</struct></value>";
+    j=0; rpc_value.fromXml(stringstream.str(), &j);
+    // set values
+    a = argp;
+    while(islist(a)){
+      pointer v = ccar(a);
+      if ( iscons(v) ) {
+        if ( issymbol(ccar(v)) ) {
+          string skey = string((char *)get_string(ccar(v)->c.sym.pname));
+          boost::algorithm::to_lower(skey);
+          XmlRpc::XmlRpcValue p;
+          EusValueToXmlRpc(ctx, ccdr(v), p);
+          rpc_value[skey] = p;
+        }
+      }
+      a=ccdr(a);
+    }
+  } else if ( islist(argp) ) { // list
+    pointer a;
+    int i;
+    // get size
+    a = argp;
+    i = 0; while ( islist(a) ) { a=ccdr(a); i++; }
+    rpc_value.setSize(i);
+    // fill items
+    a = argp;
+    i = 0;
+    while ( islist(a) ) {
+      XmlRpc::XmlRpcValue p;
+      EusValueToXmlRpc(ctx, ccar(a), p);
+      rpc_value[i] = p;
+      a=ccdr(a);
+      i++;
+    }
+  } else if ( isstring(argp) ) {
+    rpc_value = (char *)get_string(argp);
+  } else if ( isint(argp) ) {
+    rpc_value = (int)(intval(argp));
+  } else if  ( isflt(argp) ) {
+    rpc_value = (double)(fltval(argp));
+  } else if (argp == T) {
+    rpc_value = XmlRpc::XmlRpcValue((bool)true);
+  } else if (argp == NIL) {
+    rpc_value = XmlRpc::XmlRpcValue((bool)false);
+  } else if ( issymbol(argp) ) {
+    string s((char *)get_string(argp->c.sym.pname));
+    boost::algorithm::to_lower(s);
+    rpc_value = s.c_str();
+  } else {
+    ROS_ERROR("EusValueToXmlRpc: unknown parameters");prinx(ctx,argp,ERROUT);flushstream(ERROUT);terpri(ERROUT);
+    error(E_MISMATCHARG);
+  }
+}
+
 pointer ROSEUS_SET_PARAM(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
@@ -1142,24 +1224,10 @@ pointer ROSEUS_SET_PARAM(register context *ctx,int n,pointer *argv)
   ckarg(2);
   if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
-  if ( isstring(argv[1]) ) {
-    s.assign((char *)get_string(argv[1]));
-    ros::param::set(key,s);
-  } else if (isint(argv[1])) {
-    i = intval(argv[1]);
-    ros::param::set(key,i);
-  } else if (isflt(argv[1])) {
-    d = fltval(argv[1]);
-    ros::param::set(key,d);
-  } else if (argv[1] == T) {
-    bool b = true;
-    ros::param::set(key, b);
-  } else if (argv[1] == NIL) {
-    bool b = false;
-    ros::param::set(key, b);
-  } else {
-    error(E_MISMATCHARG);
-  }
+  XmlRpc::XmlRpcValue param;
+  EusValueToXmlRpc(ctx, argv[1], param);
+  ros::param::set(key,param);
+
   return (T);
 }
 
@@ -1210,7 +1278,7 @@ pointer XmlRpcToEusValue(register context *ctx, XmlRpc::XmlRpcValue rpc_value)
     vpop(); // vpush(ret);
     return ccdr(first);
   } else {
-    ROS_FATAL("unkown rosparam type!");
+    ROS_FATAL("unknown rosparam type!");
     return NIL;
   }
   return NIL;
@@ -1252,7 +1320,7 @@ pointer XmlRpcToEusList(register context *ctx, XmlRpc::XmlRpcValue param_list)
                 ret = ccdr(ret);
             }
             else {
-                ROS_FATAL("unkown rosparam type!");
+                ROS_FATAL("unknown rosparam type!");
                 vpop();         // remove vpush(ret)
                 return NIL;
             }
