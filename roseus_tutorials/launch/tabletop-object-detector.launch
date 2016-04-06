@@ -22,7 +22,7 @@
   <!-- copy from tabletop_object_detector/launch/tabletop_segmentation.launch -->
   <!-- remap targets -->
   <arg name="tabletop_segmentation_points_in"
-       default="/openni/depth_registered/points_throttle" />
+       default="/camera/depth_registered/points" />
   <arg name="tabletop_segmentation_service"
        default="tabletop_segmentation" />
   <arg name="tabletop_segmentation_markers"
