@@ -10,7 +10,7 @@ catkin_package(
 #    LIBRARIES # TODO
 )
 
-install(DIRECTORY launch src img
+install(DIRECTORY launch src img config
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
         USE_SOURCE_PERMISSIONS)
 
