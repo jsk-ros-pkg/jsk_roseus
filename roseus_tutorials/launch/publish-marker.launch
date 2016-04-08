@@ -8,6 +8,6 @@
 	pkg="rviz"
 	type="rviz"
 	output="screen"
-	args="-d $(find roseus_tutorials)/launch/publish-marker.rviz">
+	args="-d $(find roseus_tutorials)/config/publish-marker.rviz">
   </node>
 </launch>
