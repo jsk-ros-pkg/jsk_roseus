@@ -1,0 +1,14 @@
+<launch>
+  <node name="publish_scenario" pkg="roseus" type="roseus"
+        args="$(find roseus_tutorials)/test/publish-tabletop-scenario.l">
+    <remap from="cloud_out" to="/camera/depth_registered/points" />
+  </node>
+  <include file="$(find roseus_tutorials)/launch/tabletop-object-detector.launch">
+    <arg name="run_rviz" value="false" />
+    <arg name="tabletop_segmentation_points_in"
+         value="/camera/depth_registered/points" />
+  </include>
+  <test test-name="test_tabletop_object_detector" pkg="roseus" type="roseus"
+             args="$(find roseus_tutorials)/test/test-tabletop-object-detector.l"
+             time-limit="20" />
+</launch>
