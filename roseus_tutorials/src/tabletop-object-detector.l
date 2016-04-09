@@ -11,6 +11,8 @@
 (ros::roseus "roseus_tabletop_object_detector")
 
 (ros::defrosparam *transform-table* "~transform_table" t)
+(ros::defrosparam *always-publish* "~always_publish" nil)
+(ros::defrosparam *publish-tf* "~publish_tf" t)
 
 (ros::advertise *result-topic* posedetection_msgs::ObjectDetection 5)
 (ros::advertise *visualize-topic* visualization_msgs::MarkerArray 5)
@@ -44,7 +46,6 @@
           (send *tfb* :send-transform
                 cds (send pose :header :frame_id) "/table"
                 (send pose :header :stamp))
-
           (setq hdr (instance std_msgs::Header :init
                               :stamp (send pose :header :stamp)
                               :frame_id "/table"))
@@ -108,25 +109,39 @@
                            (instance posedetection_msgs::Object6DPose :init
                                      :pose (ros::coords->tf-pose
                                             (make-coords :pos (send (send p :box) :center)))
-                                     :type (format nil "tabletop~D" (inc cntr))))
+                                     :type (format nil "tabletop_object~D" (inc cntr))))
                        pc-lst)))
     (instance posedetection_msgs::ObjectDetection :init
               :header (get (car pc-lst) :header)
               :objects objs)))
 
+(defun publish-objects-tf (pc-lst)
+  (let ((cntr 0))
+    (dolist (p pc-lst)
+      (send *tfb* :send-transform
+            (make-coords :pos (send (send p :box) :center))
+            (send (get p :header) :frame_id) (format nil "tabletop_object~D" (inc cntr))
+            (send (get p :header) :stamp)))))
+
+(defun check-subscriber ()
+  (or
+   (> (ros::get-num-subscribers *result-topic*) 0)
+   (> (ros::get-num-subscribers *visualize-topic*) 0)
+   (> (ros::get-num-subscribers *bounding-box-array-topic*) 0)))
+
 (defun main ()
-  (ros::rate 3)
+  (ros::rate 10)
   (ros::wait-for-service "/tabletop_segmentation")
   (while (ros::ok)
     (ros::spin-once)
+    (ros::sleep)
     (if x::*display* (x::window-main-one))
-    (when (> (ros::get-num-subscribers *result-topic*) 0)
+    (when (or *always-publish* (check-subscriber))
       (let ((plst (tabletop-detect)))
         (when plst
           (sort plst #'(lambda (a b) (<= (elt (send a :centroid) 0) (elt (send b :centroid) 0))))
+          (when *publish-tf* (publish-objects-tf plst))
           (ros::publish *result-topic* (make-object-detection-msg plst))
           (ros::publish *visualize-topic* (make-bounding-box-marker-array-msg plst))
-          (ros::publish *bounding-box-array-topic* (make-bounding-box-array-msg plst))))
-      (ros::sleep))))
-
+          (ros::publish *bounding-box-array-topic* (make-bounding-box-array-msg plst)))))))
 (main)
