@@ -9,5 +9,5 @@
     uri: http://github.com/tork-a/euslisp-release
     local-name: euslisp
 - git:
-  url: https://github.com/ros-interactive-manipulation/tabletop_object_perception
-  version: master
+  url: https://github.com/furushchev/tabletop_object_perception
+  version: fix-eigen
