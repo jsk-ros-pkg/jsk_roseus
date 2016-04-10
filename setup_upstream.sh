@@ -22,15 +22,20 @@ if [ $? != 0 ]; then
 fi
 
 eval set -- $OPT
+PACKAGES=""
 while [ -n "$1" ] ; do
     case $1 in
         -h|--help) usage ;;
         -w|--workspace) WORKSPACE=$2; shift 2;;
-	-p|--package) PACKAGE=$2; shift 2;;
+        -p|--package) PACKAGES="$PACKAGES $2"; shift 2;;
         --) shift; break;;
         *) echo "Unknown option($1)"; usage;;
     esac
 done
+
+if [ "$PACKAGES" = "" ]; then
+  PACKAGES="jsk-ros-pkg/geneus Euslisp/euslisp Euslisp/jskeus"
+fi
 
 if [ ! -e $WORKSPACE/src/.rosinstall ]; then
     echo "Your workspace is not initialized yet, please run
@@ -39,27 +44,24 @@ mkdir -p $WORKSPACE/src; wstool init $WORKSPACE/src
     exit 1
 fi
 
-cat <<EOF >> /tmp/rosinstall.$$
-- git:
-    uri: http://github.com/jsk-ros-pkg/geneus
-    local-name: geneus
-- git:
-    uri: http://github.com/euslisp/EusLisp
-    local-name: euslisp
-- git:
-    uri: http://github.com/euslisp/jskeus
-    local-name: jskeus
+for repo_slug in $PACKAGES; do
+  cat <<EOF >> /tmp/rosinstall.$$
+  - git:
+      uri: https://github.com/${repo_slug}.git
+      local-name: ${repo_slug}
+      version: master
 EOF
+done
 
 wstool merge /tmp/rosinstall.$$ -t $WORKSPACE/src
 wstool info -t $WORKSPACE/src
-wstool update --abort-changed-uris -t $WORKSPACE/src $PACKAGE 2> /dev/null
+wstool update --abort-changed-uris -t $WORKSPACE/src $PACKAGES -j3 2> /dev/null
 
 if [ "$ROS_DISTRO" == "" ] ; then
     export ROS_DISTRO=indigo
 fi
 (
-cd $WORKSPACE/src;
+cd $WORKSPACE/src/Euslisp;
 if [ -e euslisp ]; then
     mkdir -p euslisp/cmake euslisp/env-hooks
     echo "Adding package.xml to euslisp"
