@@ -34,7 +34,7 @@ while [ -n "$1" ] ; do
 done
 
 if [ "$PACKAGES" = "" ]; then
-  PACKAGES="jsk-ros-pkg/geneus Euslisp/euslisp Euslisp/jskeus"
+  PACKAGES="jsk-ros-pkg/geneus euslisp/Euslisp euslisp/jskeus"
 fi
 
 if [ ! -e $WORKSPACE/src/.rosinstall ]; then
@@ -61,14 +61,14 @@ if [ "$ROS_DISTRO" == "" ] ; then
     export ROS_DISTRO=indigo
 fi
 (
-cd $WORKSPACE/src/Euslisp;
-if [ -e euslisp ]; then
-    mkdir -p euslisp/cmake euslisp/env-hooks
-    echo "Adding package.xml to euslisp"
-    wget https://raw.githubusercontent.com/tork-a/euslisp-release/release/$ROS_DISTRO/euslisp/package.xml -O euslisp/package.xml
+cd $WORKSPACE/src/euslisp;
+if [ -e Euslisp ]; then
+    mkdir -p Euslisp/cmake Euslisp/env-hooks
+    echo "Adding package.xml to Euslisp"
+    wget https://raw.githubusercontent.com/tork-a/euslisp-release/release/$ROS_DISTRO/euslisp/package.xml -O Euslisp/package.xml
     for file in CMakeLists.txt cmake/euslisp-extras.cmake.in env-hooks/99.euslisp.sh.in; do
-        echo "Adding $file to euslisp"
-        wget https://raw.githubusercontent.com/tork-a/euslisp-release/master/patches/${file} -O euslisp/${file}
+        echo "Adding $file to Euslisp"
+        wget https://raw.githubusercontent.com/tork-a/euslisp-release/master/patches/${file} -O Euslisp/${file}
     done
 fi
 if [ -e jskeus ]; then
