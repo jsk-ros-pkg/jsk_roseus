@@ -65,4 +65,6 @@
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>actionlib_tutorials</run_depend>
 
+  <test_depend>xvfb</test_depend>
+
 </package>
