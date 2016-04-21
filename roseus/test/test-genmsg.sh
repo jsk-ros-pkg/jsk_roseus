@@ -370,10 +370,10 @@ add_${MANIFEST} ${ROSEUS_DEP4} roseus_dep4 roseus geneus_dep2 geneus_dep1
 # makeup cmake files [pkg_path find_package message_depends]
 add_cmake ${GENEUS_DEP1} 
 add_cmake ${GENEUS_DEP2} "geneus_dep1" "geneus_dep1"
-add_cmake ${ROSEUS_DEP1} "geneus_dep1 roseus geneus_dep2" "geneus_dep1 roseus geneus_dep2"
-add_cmake ${ROSEUS_DEP2} "geneus_dep1 roseus geneus_dep2 roseus_dep1" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
-add_cmake ${ROSEUS_DEP3} "geneus_dep2 geneus_dep1 roseus roseus_dep2 roseus_dep1" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
-add_cmake_only_action ${ROSEUS_DEP4} "geneus_dep1 roseus geneus_dep2" "geneus_dep1 roseus geneus_dep2"
+add_cmake ${ROSEUS_DEP1} "geneus_dep1 geneus_dep2 roseus" "geneus_dep1 roseus geneus_dep2"
+add_cmake ${ROSEUS_DEP2} "geneus_dep1 geneus_dep2 roseus_dep1 roseus" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
+add_cmake ${ROSEUS_DEP3} "geneus_dep2 geneus_dep1 roseus_dep2 roseus_dep1 roseus" "geneus_dep1 roseus geneus_dep2 roseus_dep1"
+add_cmake_only_action ${ROSEUS_DEP4} "geneus_dep1 geneus_dep2 roseus" "geneus_dep1 roseus geneus_dep2"
 
 add_cpp ${GENEUS_DEP1} geneus_dep1
 add_cpp ${GENEUS_DEP2} geneus_dep2
