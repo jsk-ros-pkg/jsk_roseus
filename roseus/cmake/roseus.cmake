@@ -87,6 +87,7 @@ macro(generate_all_roseus_messages)
     if(NOT ${_pkg}_PREFIX)
       find_package(${_pkg} QUIET) ## this may fail
     endif()
+    # https://github.com/jsk-ros-pkg/geneus/issues/47
     if(EXISTS ${${_pkg}_SOURCE_PREFIX}/msg)
       set(_msg_path "-I${_pkg}:${${_pkg}_SOURCE_PREFIX}/msg")
     else()
