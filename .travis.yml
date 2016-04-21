@@ -59,6 +59,8 @@ after_success:
   # end hot fix
   - if [ "$TRAVIS_JOB_SUBNUMBER" == 1 -a "$TRAVIS_BRANCH" == "master" ]; then .travis/upload-docs.sh; fi
 after_failure:
-  - source /home/travis/ros/ws_jsk_roseus/devel/setup.bash
-  - rostest -t roseus test-genmsg.catkin.test
-  - rostest -t roseus test-genmsg-oneworkspace.catkin.launch
+  - if [ "$ROS_DISTRO" = "hydro" -a "$USE_JENKINS" != "true" ]; then
+      source /home/travis/ros/ws_jsk_roseus/devel/setup.bash
+      rostest -t roseus test-genmsg.catkin.test
+      rostest -t roseus test-genmsg-oneworkspace.catkin.launch
+    fi
