@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.1 (2016-04-22)
+------------------
 * Fix generating Euslisp ROS message with catkin_tools 0.4.x
   Modified:
   - roseus/cmake/roseus.cmake

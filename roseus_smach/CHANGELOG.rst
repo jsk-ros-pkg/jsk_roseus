@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.1 (2016-04-22)
+------------------
 * [roseus_smach/README.md] update to use github official image link
 * Contributors: Furushchev
 
