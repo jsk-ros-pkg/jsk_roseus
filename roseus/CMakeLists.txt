@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospac
 
 configure_file(${PROJECT_SOURCE_DIR}/bin/roseus.in ${PROJECT_SOURCE_DIR}/bin/roseus @ONLY)
 
-find_package(euslisp REQUIRED)
 add_definitions(-Wall)
 #
 execute_process(COMMAND rosversion tf2_ros OUTPUT_VARIABLE TF2_ROS_VERSION RESULT_VARIABLE TF2_ROS_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -40,14 +39,22 @@ message (STATUS "Build repo revision: ${REPOVERSION}")
 # CATKIN_MIGRATION: removed during catkin migration
 # rosbuild_add_boost_directories()
 
-if(NOT euslisp_INCLUDE_DIRS)
-  if(EXISTS ${euslisp_SOURCE_DIR}/jskeus)
-    set(euslisp_PACKAGE_PATH ${euslisp_SOURCE_DIR})
-  else()
-    set(euslisp_PACKAGE_PATH ${euslisp_PREFIX}/share/euslisp)
+if(APPLE)
+  if(NOT EXISTS /usr/local/opt/jskeus/eus)  # $EUSDIR in OS X
+    message(FATAL_ERROR "jskeus is not installed via Homebrew, Please run `brew install homebrew/x11/jskeus`")
   endif()
-  message("-- Set euslisp_PACKAGE_PATH to ${euslisp_PACKAGE_PATH}")
-  set(euslisp_INCLUDE_DIRS ${euslisp_PACKAGE_PATH}/jskeus/eus/include)
+  set(euslisp_INCLUDE_DIRS /usr/local/opt/jskeus/eus/include)
+else()
+  find_package(euslisp REQUIRED)
+  if(NOT euslisp_INCLUDE_DIRS)
+    if(EXISTS ${euslisp_SOURCE_DIR}/jskeus)
+      set(euslisp_PACKAGE_PATH ${euslisp_SOURCE_DIR})
+    else()
+      set(euslisp_PACKAGE_PATH ${euslisp_PREFIX}/share/euslisp)
+    endif()
+    message("-- Set euslisp_PACKAGE_PATH to ${euslisp_PACKAGE_PATH}")
+    set(euslisp_INCLUDE_DIRS ${euslisp_PACKAGE_PATH}/jskeus/eus/include)
+  endif()
 endif()
 message("-- Set euslisp_INCLUDE_DIRS to ${euslisp_INCLUDE_DIRS}")
 include_directories(/usr/include /usr/X11R6/include ${euslisp_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
