@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e
 
-EUSLISP_EXE=`find -L $EUSDIR -type f -name irteusgl`
+if [ "@APPLE@" = "1" ]; then
+  EUSLISP_EXE=/usr/local/bin/irteusgl  # osx
+else
+  EUSLISP_EXE=`find -L $EUSDIR -type f -name irteusgl`  # linux
+fi
 ROSEUS_DIR=`rospack find roseus`
 ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
         roseus.l eustf.l actionlib.l roseus-utils.l)
