@@ -2,6 +2,9 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2016-04-22)
+------------------
+
 1.5.0 (2016-03-20)
 ------------------
 * {roseus_smach, roseus_mongo}/README.md: fix section/subsection

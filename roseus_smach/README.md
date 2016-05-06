@@ -15,7 +15,7 @@ Sample codes are available on `sample` directory.
 
 - `rosrun roseus_smach state-machine-ros-sample.l`
   - simple state machine
-  ![](http://bl.ocks.org/furushchev/raw/9b1ed0aa57b47537cd2d/smach-simple.gif)
+  ![](http://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/smach-simple.gif)
   ```
   rosrun smach_viewer smach_viewer.py
   ```
@@ -24,7 +24,7 @@ Sample codes are available on `sample` directory.
   (smach-exec-simple)
   ```
   - nested state machine
-  ![](http://bl.ocks.org/furushchev/raw/9b1ed0aa57b47537cd2d/smach-nested.gif)
+  ![](http://gist.github.com/furushchev/raw/9b1ed0aa57b47537cd2d/smach-nested.gif)
   ```
   rosrun smach_viewer smach_viewer.py
   ```
@@ -33,7 +33,7 @@ Sample codes are available on `sample` directory.
   (smach-exec-nested)
   ```
   - state machine with userdata
-  ![](http://bl.ocks.org/furushchev/raw/9b1ed0aa57b47537cd2d/smach-userdata.gif)
+  ![](http://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/smach-userdata.gif)
   ```
   rosrun smach_viewer smach_viewer.py
   ```
@@ -45,7 +45,7 @@ Sample codes are available on `sample` directory.
 - `sample/parallel-state-machine-sample.l`
 
   - state machine with parallel action execution
-  ![](http://bl.ocks.org/furushchev/raw/9b1ed0aa57b47537cd2d/smach-parallel.gif)
+  ![](http://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/smach-parallel.gif)
   ```
   rosrun smach_viewer smach_viewer.py
   ```

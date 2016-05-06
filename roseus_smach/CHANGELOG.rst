@@ -2,6 +2,11 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2016-04-22)
+------------------
+* [roseus_smach/README.md] update to use github official image link
+* Contributors: Furushchev
+
 1.5.0 (2016-03-20)
 ------------------
 * {roseus_smach, roseus_mongo}/README.md: fix section/subsection
