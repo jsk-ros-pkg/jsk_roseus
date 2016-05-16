@@ -193,9 +193,9 @@ macro(generate_eusdoc _lispfile)
   set(ColourReset "${Esc}[m")
   set(ColourBold  "${Esc}[1m")
   set(Red         "${Esc}[31m")
-  message("running ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} $ENV{EUSDIR}/lib/llib/documentation.l ${_generate_eusdoc_command_list}")
+  message("running ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} lib/llib/documentation.l ${_generate_eusdoc_command_list}")
   add_custom_command(OUTPUT ${_mdfile}
-    COMMAND DISPLAY= ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} $ENV{EUSDIR}/lib/llib/documentation.l ${_generate_eusdoc_command_list} || echo "${Red}Failed to generate ${_lispfile}, but do not raise error${ColourReset}"
+    COMMAND DISPLAY= ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} lib/llib/documentation.l ${_generate_eusdoc_command_list} || echo "${Red}Failed to generate ${_lispfile}, but do not raise error${ColourReset}"
     DEPENDS ${_lispfile})
   add_custom_target(${PROJECT_NAME}_${_name}_generate_eusdoc ALL DEPENDS ${_mdfile} install_roseus)
   if(TARGET ${PROJECT_NAME}_generate_messages_eus)
