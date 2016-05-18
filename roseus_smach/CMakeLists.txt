@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_smach)
 
-find_package(catkin REQUIRED COMPONENTS euslisp std_msgs actionlib smach smach_ros smach_msgs actionlib_tutorials message_generation roseus)
+find_package(catkin REQUIRED COMPONENTS std_msgs actionlib smach smach_ros smach_msgs actionlib_tutorials message_generation roseus)
 
 add_action_files(
   DIRECTORY action
