@@ -138,6 +138,21 @@
   "check if given ros::time is less the or equal to the others"
   (not (ros::time> a b)))
 
+(defclass ros::duration
+  :super ros::time
+  :slots ())
+(defmethod ros::duration
+  (:init (&optional sec nsec)
+         (cond
+          ((and (null sec) (null nsec))
+           (setq sec 0 nsec 0))
+          ((and sec (null nsec))
+           (setq nsec (round (* (mod sec 1) 1000000000)))
+           (setq sec  (floor sec))))
+         (send-super :init :sec sec :nsec nsec))
+  (:sleep () (ros::duration-sleep (send self :to-sec)))
+  )
+
 ;;
 (defclass timer-event
   :super propertied-object
