@@ -18,6 +18,24 @@
     (assert (< vmrss 300000) "check memory leak")
     ))
 
+(deftest test-sleep ()
+  (let (d tm0 tm1)
+    (setq tm0 (ros::time-now))
+    (send (instance ros::duration :init 1.5) :sleep)
+    (setq tm1 (ros::time-now))
+    (assert (eps= (send (ros::time- tm1 tm0) :to-sec) 1.5 0.2))
+
+    (setq tm0 (ros::time-now))
+    (send (instance ros::duration :init 2 500000000) :sleep)
+    (setq tm1 (ros::time-now))
+    (assert (eps= (send (ros::time- tm1 tm0) :to-sec) 2.5 0.2))
+
+    (setq tm0 (ros::time-now))
+    (ros::duration-sleep 0.5)
+    (setq tm1 (ros::time-now))
+    (assert (eps= (send (ros::time- tm1 tm0) :to-sec) 0.5 0.2))
+    ))
+
 (deftest test-master ()
 
   (ros::ros-info "get-host ~A" (ros::get-host))
