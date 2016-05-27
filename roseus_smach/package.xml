@@ -19,7 +19,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>euslisp</build_depend>
   <build_depend>roseus</build_depend>
   <build_depend>rostest</build_depend>
   <build_depend>std_msgs</build_depend>
