@@ -2,6 +2,9 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.2 (2016-05-28)
 ------------------
 * Support OSX (again..)

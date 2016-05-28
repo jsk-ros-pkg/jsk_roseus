@@ -2,6 +2,9 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.2 (2016-05-28)
 ------------------
 * [roseus_smach/src/state-machine-utils.l] fix: return after goal reached on exec-smach-with-spin `#460 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/460>`_
