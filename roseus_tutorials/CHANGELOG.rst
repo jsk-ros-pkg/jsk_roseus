@@ -2,8 +2,8 @@
 Changelog for package roseus_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.3 (2016-05-28)
+------------------
 * Merge pull request `#436 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/436>`_ from furushchev/roseus-tutorials
   refactor roseus_tutorials
 * Merge branch 'master' into roseus-tutorials
