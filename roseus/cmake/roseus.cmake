@@ -16,9 +16,11 @@ macro(find_all_msg_dependences _pkg _msg_path)
       endif()
       if(EXISTS ${${_msg}_PREFIX}/share/${_msg}/msg)
         list(APPEND _msg_path "-I${_msg}:${${_msg}_PREFIX}/share/${_msg}/msg")
-      elseif(EXISTS ${${_msg}_SOURCE_PREFIX}/msg)
+      endif()
+      if(EXISTS ${${_msg}_SOURCE_PREFIX}/msg)
         list(APPEND _msg_path "-I${_msg}:${${_msg}_SOURCE_PREFIX}/msg")
-      else()
+      endif()
+      if(NOT EXISTS ${${_msg}_PREFIX}/share/${_msg}/msg AND NOT EXISTS ${${_msg}_SOURCE_PREFIX}/msg)
         message(WARNING "path to ${_msg} is not found. ${${_msg}_PREFIX}/share/${_msg}/msg nor ${${_msg}_SOURCE_PREFIX}/msg not exists")
       endif()
       find_all_msg_dependences(${_msg} _msg_path)
@@ -87,17 +89,32 @@ macro(generate_all_roseus_messages)
     if(NOT ${_pkg}_PREFIX)
       find_package(${_pkg} QUIET) ## this may fail
     endif()
-    set(_msg_path "-I${_pkg}:${${_pkg}_PREFIX}/share/${_pkg}/msg")
+    # https://github.com/jsk-ros-pkg/geneus/issues/47
+    set(_msg_path "")
+    if(EXISTS ${${_pkg}_SOURCE_PREFIX}/msg)
+      list(APPEND _msg_path "-I${_pkg}:${${_pkg}_SOURCE_PREFIX}/msg")
+    endif()
+    if(EXISTS ${${_pkg}_PREFIX}/share/${_pkg}/msg)
+      list(APPEND _msg_path "-I${_pkg}:${${_pkg}_PREFIX}/share/${_pkg}/msg")
+    endif()
     find_all_msg_dependences(${_pkg} _msg_path)
     foreach(_msg ${${_pkg}_MESSAGE_FILES})
+      # https://github.com/jsk-ros-pkg/geneus/issues/47
       if(EXISTS ${_msg})
-        set(_msg_prefix "")
-      else()
-        set(_msg_prefix "${${_pkg}_PREFIX}/share/${_pkg}/")
+        get_filename_component(_msg_prefix ${_msg} PATH)  # Legacy alias for DIRECTORY (use for CMake <= 2.8.11) (precise uses 2.8.7)
+        get_filename_component(_msg ${_msg} NAME)
+      elseif(EXISTS ${${_pkg}_SOURCE_PREFIX}/${_msg})
+        set(_msg_prefix "${${_pkg}_SOURCE_PREFIX}/msg")
+        get_filename_component(_msg ${_msg} NAME)
+      elseif(EXISTS ${${_pkg}_PREFIX}/share/${_pkg}/${_msg})
+        set(_msg_prefix "${${_pkg}_PREFIX}/share/${_pkg}/msg")
+        get_filename_component(_msg ${_msg} NAME)
       endif()
+      set(_msg_path_tmp ${_msg_path})
+      list(APPEND _msg_path_tmp "-I${_pkg}:${_msg_prefix}")
       _generate_msg_eus(${_pkg}
 	"${_msg_prefix}/${_msg}"
-	"${_msg_path}"
+	"${_msg_path_tmp}"
 	""
 	${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}
 	)
@@ -176,9 +193,9 @@ macro(generate_eusdoc _lispfile)
   set(ColourReset "${Esc}[m")
   set(ColourBold  "${Esc}[1m")
   set(Red         "${Esc}[31m")
-  message("running ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} $ENV{EUSDIR}/lib/llib/documentation.l ${_generate_eusdoc_command_list}")
+  message("running ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} lib/llib/documentation.l ${_generate_eusdoc_command_list}")
   add_custom_command(OUTPUT ${_mdfile}
-    COMMAND DISPLAY= ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} $ENV{EUSDIR}/lib/llib/documentation.l ${_generate_eusdoc_command_list} || echo "${Red}Failed to generate ${_lispfile}, but do not raise error${ColourReset}"
+    COMMAND DISPLAY= ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} lib/llib/documentation.l ${_generate_eusdoc_command_list} || echo "${Red}Failed to generate ${_lispfile}, but do not raise error${ColourReset}"
     DEPENDS ${_lispfile})
   add_custom_target(${PROJECT_NAME}_${_name}_generate_eusdoc ALL DEPENDS ${_mdfile} install_roseus)
   if(TARGET ${PROJECT_NAME}_generate_messages_eus)

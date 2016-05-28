@@ -1,6 +1,6 @@
 <package>
   <name>roseus</name>
-  <version>1.5.0</version>
+  <version>1.5.1</version>
   <description>EusLisp client for ROs Robot Operating System.</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
 
@@ -64,5 +64,7 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>actionlib_tutorials</run_depend>
+
+  <test_depend>xvfb</test_depend>
 
 </package>

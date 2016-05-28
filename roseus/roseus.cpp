@@ -85,6 +85,12 @@ extern "C" {
   void register_roseus(){
     char modname[] = "___roseus";
     return add_module_initializer(modname, (pointer (*)())___roseus);}
+  /* get_string is originally defined in lisp/c/makes.c, but it is also defined in Python.so linked from rospack.so
+     to avoid confusion, we have to explictly re-define this method, specially for OSX */
+  byte *get_string(register pointer s){
+    if (isstring(s)) return(s->c.str.chars);
+    if (issymbol(s)) return(s->c.sym.pname->c.str.chars);
+    else error(E_NOSTRING);}
 }
 
 #undef class
