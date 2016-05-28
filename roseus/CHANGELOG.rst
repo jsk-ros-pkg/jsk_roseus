@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.2 (2016-05-28)
+------------------
 * Support OSX (again..)
 
   * Do not use EUSDIR env in generate_eusdoc cmake macro for osx (`#448 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/448>`_)
