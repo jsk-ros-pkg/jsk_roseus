@@ -34,9 +34,10 @@
   <run_depend>posedetection_msgs</run_depend>
   <!-- <run_depend>jsk_perception</run_depend> -->
   <run_depend>visualization_msgs</run_depend>
-  <!-- <run_depend>tabletop_object_detector<run_depend> -->
+  <run_depend>jsk_recognition_msgs</run_depend>
+  <!-- <run_depend>tabletop_object_detector</run_depend> -->
 
+  <test_depend>rostest</test_depend>
   <export>
-
   </export>
 </package>

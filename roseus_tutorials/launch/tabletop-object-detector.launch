@@ -5,15 +5,20 @@
   <arg name="run_rviz" default="true" />
   <arg name="launch_tabletop_detector" default="true" />
   <arg name="convert_to_base_link" default="false" />
+  <arg name="publish_objects_tf" default="true" />
+  <arg name="always_publish" default="false" />
 
   <node if="$(arg run_rviz)"
         pkg="rviz" type="rviz" name="rviz"
-        args="-d $(find roseus_tutorials)/launch/tabletop-object-detector.vcg" />
+        args="-d $(find roseus_tutorials)/config/tabletop-object-detector.vcg" />
 
   <node if="$(arg run_roseus)"
         pkg="roseus" type="roseus" name="eus_tabletop_detector"
         output="screen"
-        args="&quot;$(find roseus_tutorials)/src/tabletop-object-detector.l&quot;" />
+        args="&quot;$(find roseus_tutorials)/src/tabletop-object-detector.l&quot;">
+    <param name="publish_tf" value="$(arg publish_objects_tf)" />
+    <param name="always_publish" value="$(arg always_publish)" />
+  </node>
 
   <node if="$(arg playbag)"
         pkg="rosbag" type="play" name="tabletop_bag_play"
@@ -22,7 +27,7 @@
   <!-- copy from tabletop_object_detector/launch/tabletop_segmentation.launch -->
   <!-- remap targets -->
   <arg name="tabletop_segmentation_points_in"
-       default="/openni/depth_registered/points_throttle" />
+       default="/camera/depth_registered/points" />
   <arg name="tabletop_segmentation_service"
        default="tabletop_segmentation" />
   <arg name="tabletop_segmentation_markers"

@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find roseus_tutorials)/launch/all-robot.vcg" />
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find roseus_tutorials)/config/all-robot.vcg" />
   <node pkg="roseus_tutorials" type="robot-publisher.l" name="$(anon robot_publisher)" output="screen" >
     <param name="robot" value="((ape) (ape3) (hanzou) (miharu))" />
     <param name="x" value="0" />
