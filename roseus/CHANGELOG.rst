@@ -2,6 +2,22 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Support OSX (again..)
+
+  * Do not use EUSDIR env in generate_eusdoc cmake macro for osx (`#448 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/448>`_)
+  * Find euslisp include directories on OS X (`#448 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/448>`_)
+  * re-define get_string for osx (`#455 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/455>`_)
+  * Set correct EUSDIR for roseus exe on OS X (`#449 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/449>`_)
+
+* Set xvfb as test_depend and stop installing it before_script (`#443 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/443>`_)
+  Modified:
+  - .travis.yml
+  - roseus/package.xml
+
+* Contributors: Kei Okada, Kentaro Wada
+
 1.5.1 (2016-04-22)
 ------------------
 * Fix generating Euslisp ROS message with catkin_tools 0.4.x

@@ -2,6 +2,12 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [roseus_smach/src/state-machine-utils.l] fix: return after goal reached on exec-smach-with-spin `#460 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/460>`_
+* Remove no need euslisp from build_depend and find_package  `#456 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/456>`_
+* Contributors: Kentaro Wada, Yuki Furuta
+
 1.5.1 (2016-04-22)
 ------------------
 * [roseus_smach/README.md] update to use github official image link
