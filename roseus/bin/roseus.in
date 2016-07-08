@@ -8,7 +8,7 @@ else
 fi
 ROSEUS_DIR=`rospack find roseus`
 ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
-        roseus.l eustf.l actionlib.l roseus-utils.l)
+        roseus.l eustf.l actionlib.l dynamic-reconfigure.l roseus-utils.l)
 # echo "rosrun euslisp irteusgl ${ARG_STR[@]} $@"
 exec ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
 
