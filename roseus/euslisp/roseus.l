@@ -56,7 +56,8 @@
       (ros::set-logger-level logger level)
       )))
 
-(setq ros::*compile-message* nil)
+;; see https://github.com/jsk-ros-pkg/jsk_roseus/pull/464 for discussion
+(defparameter ros::*compile* nil)         ;; files start with package://
 
 (shadow 'object *package*)
 (defclass ros::object
@@ -185,23 +186,16 @@
     (dolist (file (directory dir))
       (when (and (string= (pathname-type file) "l")
 		 (not (= #\. (elt (pathname-name file) 0))))
-	(let ((dirfile (concatenate string dir file))
-              (modname (intern (string-upcase (format nil "~A/~A" pkg (pathname-name file))) *keyword-package*)))
-	  (require modname dirfile)
-          (when ros::*compile-message*
-	    (in-package "ROS")
-	    (let* ((fname (pathname-name dirfile))
-		   (old-module (find (format nil "~A_~A" pkg fname)
-				     *loaded-modules*
-				     :key #'lisp::load-module-file-name
-				     :test #'equal)))
-              (unless old-module
-                (comp::compile-file-if-src-newer dirfile (format nil "~A/~A_~A" dir pkg fname))
-                (load (format nil "~A/~A_~A.so" dir pkg fname)
-                      :entry (format nil "___~A" fname))
-                ))
-	    (in-package "USER"))
-	    )))))
+	(let* ((fullname (concatenate string dir file))
+               (modname (intern (string-upcase (format nil "~A/~A" pkg (pathname-name file))) *keyword-package*)))
+          ;;(print (list modname fullname pkg (format nil "~A/~A" type file)))
+          (require modname fullname)
+          (when ros::*compile*
+            (in-package "ROS")
+            (ros::load-compile-file fullname pkg (format nil "~A/~A" type file))
+            (in-package "USER")
+            ))));; dolist
+    )) ;; let
 
 (defun ros::roseus-add-msgs (pkg) (ros::roseus-add-files pkg "msg"))
 (defun ros::roseus-add-srvs (pkg) (ros::roseus-add-files pkg "srv"))
@@ -221,25 +215,39 @@
 	(format nil "~A/~A" package-path path-name)
       (progn (warning-message 1 ";; could not find pacakge [~a]~%" package-name) nil))))
 
+(defun ros::load-compile-file (fullname pkg fname)
+  "fullname : full path to the file to be compiled
+   pkg      : pkg where compiled code is located
+   fname    : path relative to pkg, the is used for output filename"
+  (let* ((path-name (substitute #\_ #\/ (concatenate string (directory-namestring fname) (pathname-name fname))))
+         (ppath (unix::getenv "CMAKE_PREFIX_PATH"))
+         (prefix-path (subseq ppath 0 (position #\: ppath)))
+         (dir (format nil "~A/share/roseus/ros/~A" prefix-path pkg))
+         (old-module (find path-name
+                           *loaded-modules*
+                           :key #'lisp::load-module-file-name
+                           :test #'equal)))
+    (when (or (not old-module)
+              (file-newer fullname (format nil "~A/~A.so" dir path-name)))
+      (unless (probe-file (format nil "~A/share" prefix-path)) (unix:mkdir (format nil "~A/share" prefix-path)))
+      (unless (probe-file (format nil "~A/share/roseus" prefix-path)) (unix:mkdir (format nil "~A/share/roseus" prefix-path)))
+      (unless (probe-file (format nil "~A/share/roseus/ros" prefix-path)) (unix:mkdir (format nil "~A/share/roseus/ros" prefix-path)))
+      (unless (probe-file dir) (unix:mkdir dir))
+      (comp::compile-file-if-src-newer fullname (format nil "~A/~A" dir path-name))
+      (format *error-output* "loading ~A/~A.so~%" dir path-name)
+      (load-org-for-ros (format nil "~A/~A.so" dir path-name)
+                        :entry (format nil "___~A" (pathname-name fname))))
+    ))
+
 (defun load (fname &rest args)
   (let ((fullname fname))
     (when (substringp "package://" fname)
       (setq fullname (ros::resolve-ros-path fname))
-      (when ros::*compile-message*
+      (when ros::*compile*
         (let* ((urlname (url-pathname fname))
                (package-name (send urlname :host))
-               (path-name (format nil "~A_~A" package-name (substitute #\_ #\/ (concatenate string (subseq (send urlname :directory-string) 1) (send urlname :name)))))
-               (old-module (find path-name
-                                 *loaded-modules*
-                                 :key #'lisp::load-module-file-name
-                                 :test #'equal)))
-          (unless old-module
-            (let* ((ppath (unix::getenv "CMAKE_PREFIX_PATH"))
-                   (dir (format nil "~A/share/roseus/ros/~A" (subseq ppath 0 (position #\: ppath)) package-name)))
-              (unless (probe-file dir) (unix:mkdir dir))
-              (comp::compile-file-if-src-newer fullname (format nil "~A/~A" dir path-name))
-              (return-from load (load (format nil "~A/~A.so" dir path-name)
-                                      :entry (format nil "___~A" path-name)))))
+               (fname (concatenate string (subseq (send urlname :directory-string) 1) (send urlname :name)))) ;; remove package:// from fname
+          (return-from load (ros::load-compile-file fullname package-name fname))
           )))
     (if (null fullname) ;; when ros::resolve-ros-patch is failed to load
         (error "file ~s not found" fname))
