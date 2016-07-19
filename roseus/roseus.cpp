@@ -1429,6 +1429,17 @@ pointer ROSEUS_HAS_PARAM(register context *ctx,int n,pointer *argv)
   return((ros::param::has(key))?(T):(NIL));
 }
 
+pointer ROSEUS_DELETE_PARAM(register context *ctx,int n,pointer *argv)
+{
+  string key;
+
+  ckarg(1);
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  return((ros::param::del(key))?(T):(NIL));
+}
+
 pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
 {
   ckarg(1);
@@ -1855,6 +1866,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   _defun(ctx,"GET-PARAM",argv[0],(pointer (*)())ROSEUS_GET_PARAM, "key\n\n""Get parameter");
   _defun(ctx,"GET-PARAM-CASHED",argv[0],(pointer (*)())ROSEUS_GET_PARAM_CASHED, "Get chached parameter");
   _defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM, "Check whether a parameter exists on the parameter server.");
+  _defun(ctx,"DELETE-PARAM",argv[0],(pointer (*)())ROSEUS_DELETE_PARAM, "key\n\n""Delete parameter from server");
 
   _defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND, "Returns ros package path");
   _defun(ctx,"ROSPACK-PLUGINS",argv[0],(pointer (*)())ROSEUS_ROSPACK_PLUGINS, "Returns plugins of ros packages");
