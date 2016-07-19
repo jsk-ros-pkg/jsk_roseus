@@ -1379,7 +1379,7 @@ pointer ROSEUS_GET_PARAM(register context *ctx,int n,pointer *argv)
   return (ret);
 }
 
-pointer ROSEUS_GET_PARAM_CASHED(register context *ctx,int n,pointer *argv)
+pointer ROSEUS_GET_PARAM_CACHED(register context *ctx,int n,pointer *argv)
 {
   numunion nu;
   string key;
@@ -1864,7 +1864,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   _defun(ctx,"SET-PARAM",argv[0],(pointer (*)())ROSEUS_SET_PARAM, "key value\n\n""Set parameter");
   _defun(ctx,"GET-PARAM",argv[0],(pointer (*)())ROSEUS_GET_PARAM, "key\n\n""Get parameter");
-  _defun(ctx,"GET-PARAM-CASHED",argv[0],(pointer (*)())ROSEUS_GET_PARAM_CASHED, "Get chached parameter");
+  _defun(ctx,"GET-PARAM-CACHED",argv[0],(pointer (*)())ROSEUS_GET_PARAM_CACHED, "Get chached parameter");
   _defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM, "Check whether a parameter exists on the parameter server.");
   _defun(ctx,"DELETE-PARAM",argv[0],(pointer (*)())ROSEUS_DELETE_PARAM, "key\n\n""Delete parameter from server");
 
