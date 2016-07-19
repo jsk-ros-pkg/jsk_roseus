@@ -4,7 +4,7 @@ project(roseus)
 
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack rostest topic_tools actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros dynamic_reconfigure actionlib_tutorials geneus)
+find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack topic_tools actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros dynamic_reconfigure actionlib_tutorials geneus)
 
 configure_file(${PROJECT_SOURCE_DIR}/bin/roseus.in ${PROJECT_SOURCE_DIR}/bin/roseus @ONLY)
 
@@ -97,32 +97,6 @@ add_message_files(
   FILES String.msg StringStamped.msg FixedArray.msg VariableArray.msg
 )
 
-# CATKIN_MIGRATION: removed during catkin migration
-#file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib/${PROJECT_NAME}/test)
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
-add_executable(simple_execute_ref_server test/simple_execute_ref_server.cpp)
-target_link_libraries(simple_execute_ref_server ${roscpp_LIBRARIES} ${actionlib_LIBRARIES})
-set_target_properties(simple_execute_ref_server PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
-add_rostest(test/test-talker-listener.test)
-add_rostest(test/test-add-two-ints.test)
-add_rostest(test/test-simple-client.test)
-add_rostest(test/test-simple-client-wait.test)
-add_rostest(test/test-simple-client-500.test)
-add_rostest(test/test-simple-client-wait-500.test)
-add_rostest(test/test-actionlib.test)
-add_rostest(test/test-roseus.test)
-add_rostest(test/test-tf.test)
-add_rostest(test/test-disconnect.test)
-add_rostest(test/test-multi-queue.test)
-add_rostest(test/test-parameter.test)
-add_rostest(test/test-anonymous.test)
-add_rostest(test/test-timer.test)
-add_rostest(test/test-genmsg.catkin.test)
-# this will not ok on running from run_tests, may be running test within launch file may not good.
-#add_rostest(test/test-genmsg-oneworkspace.catkin.launch) # use launch not to run on travis/catkin
-add_rostest(test/test-geneus.test)
-add_rostest(test/test-compile-message.test)
-
 generate_messages(
   DEPENDENCIES geometry_msgs std_msgs
 )
@@ -162,3 +136,31 @@ generate_eusdoc(euslisp/roseus-utils.l)
 generate_eusdoc(euslisp/eustf.l)
 generate_eusdoc(euslisp/actionlib.l)
 
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  # CATKIN_MIGRATION: removed during catkin migration
+  #file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib/${PROJECT_NAME}/test)
+  #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
+  add_executable(simple_execute_ref_server test/simple_execute_ref_server.cpp)
+  target_link_libraries(simple_execute_ref_server ${roscpp_LIBRARIES} ${actionlib_LIBRARIES})
+  set_target_properties(simple_execute_ref_server PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
+  add_rostest(test/test-talker-listener.test)
+  add_rostest(test/test-add-two-ints.test)
+  add_rostest(test/test-simple-client.test)
+  add_rostest(test/test-simple-client-wait.test)
+  add_rostest(test/test-simple-client-500.test)
+  add_rostest(test/test-simple-client-wait-500.test)
+  add_rostest(test/test-actionlib.test)
+  add_rostest(test/test-roseus.test)
+  add_rostest(test/test-tf.test)
+  add_rostest(test/test-disconnect.test)
+  add_rostest(test/test-multi-queue.test)
+  add_rostest(test/test-parameter.test)
+  add_rostest(test/test-anonymous.test)
+  add_rostest(test/test-timer.test)
+  add_rostest(test/test-genmsg.catkin.test)
+  # this will not ok on running from run_tests, may be running test within launch file may not good.
+  #add_rostest(test/test-genmsg-oneworkspace.catkin.launch) # use launch not to run on travis/catkin
+  add_rostest(test/test-geneus.test)
+  add_rostest(test/test-compile-message.test)
+endif()
