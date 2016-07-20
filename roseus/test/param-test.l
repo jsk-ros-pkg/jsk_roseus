@@ -167,6 +167,17 @@
     )
   )
 
+(deftest test-delete-param ()
+  (dolist (prefix '("" "/" "~"))
+    (let ((key (format nil "~Adel_param_test" prefix)))
+      (assert (not (ros::has-param key)) "(ros::has-param \"~A\") returns value" key)
+      (assert (ros::set-param key "test_param_value") "(ros::set-param \"~A\") returns nil" key)
+      (assert (ros::has-param key) "(ros::has-param \"~A\") returns nil" key)
+      (assert (ros::delete-param key) "(ros::delete-param \"~A\") returns nil" key)
+      (assert (not (ros::has-param key)) "(ros::has-param \"~A\") returns value after delete-param" key)))
+  (assert (not (ros::has-param "param_not_exists")) "(ros::has-param param_not_exists) returns value")
+  (assert (not (ros::delete-param "param_not_exists")) "(ros::delete-param param_not_exists) returns value even if param does not exists"))
+
 (run-all-tests)
 
 (exit)
