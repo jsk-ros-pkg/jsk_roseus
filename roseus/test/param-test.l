@@ -4,18 +4,6 @@
 
 (init-unit-test)
 
-(deftest test-param-cache ()
-  (assert (not (ros::has-param "~test")) "[cached ~test] (ros::has-param ~test) returns value")
-
-  (assert (ros::has-param "test")  "[cached] (ros::has-parm test) failed")
-  (let ((ret (ros::get-param "test")))
-    (assert (string= "test_global" (setq as ret)) "[test] test_global != ~A" as))
-
-  (assert (ros::has-param "/test") "[cached, /test] (ros::has-param /test) failed")
-  (let ((ret (ros::get-param "/test")))
-    (assert (string= "test_global" (setq as ret)) "[/test] test_global != ~A" as))
-  )
-
 (deftest test-get-param ()
   (ros::roseus "param_test")
   (assert (ros::has-param "~test") "[~test] (ros::has-param) failed")
@@ -177,6 +165,13 @@
       (assert (not (ros::has-param key)) "(ros::has-param \"~A\") returns value after delete-param" key)))
   (assert (not (ros::has-param "param_not_exists")) "(ros::has-param param_not_exists) returns value")
   (assert (not (ros::delete-param "param_not_exists")) "(ros::delete-param param_not_exists) returns value even if param does not exists"))
+
+(deftest test-param-cache ()
+  (assert (ros::has-param "test")  "[cached] (ros::has-parm test) failed")
+  (assert (string= (ros::get-param "test") (ros::get-param-cached "test")) "(ros::get-param-cached test) has different value from (ros::get-param test): ~A" (ros::get-param-cached "test"))
+  (assert (< (bench2 (dotimes (i 100) (ros::get-param-cached "test")))
+             (bench2 (dotimes (i 100) (ros::get-param "test"))))
+          "(ros::get-param-cached test) has less performance than (ros::get-param test)"))
 
 (run-all-tests)
 
