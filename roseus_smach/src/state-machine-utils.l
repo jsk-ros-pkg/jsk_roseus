@@ -21,6 +21,15 @@
 ;; when it occures an error, stop and return the initial state
 ;; the loop is do-until-key type
 (defun exec-smach-with-spin (sm &optional mydata &key (hz 1) iterate)
+"execute the state-machine with spining
+when it occures an error, stop and return the initial state
+the loop is do-until-key type
+
+sm (state-machine): state machine
+mydata (alist): userdata for smach
+hz (integer): rate of execution loop
+iterate (t or function): Enable asking [Y/N] on each action execution if given t, if function is given, then it is called before execution. If function returns nil, next action is not executed. Otherwise the action is executed"
+
   (let ((insp (instance state-machine-inspector :init sm)))
     (unix::sleep 2)
     (send sm :reset-state)
