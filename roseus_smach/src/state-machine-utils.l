@@ -21,28 +21,41 @@
 ;; when it occures an error, stop and return the initial state
 ;; the loop is do-until-key type
 (defun exec-smach-with-spin (sm &optional mydata &key (hz 1) iterate)
+"execute the state-machine with spining
+when it occures an error, stop and return the initial state
+the loop is do-until-key type
+
+sm (state-machine): state machine
+mydata (alist): userdata for smach
+hz (integer): rate of execution loop
+iterate (t or function): Enable asking [Y/N] on each action execution if given t, if function is given, then it is called before execution. If function returns nil, next action is not executed. Otherwise the action is executed"
+
   (let ((insp (instance state-machine-inspector :init sm)))
     (unix::sleep 2)
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
 
-    (unwind-protect
-     ;; try block
-     (do-until-key
-      (when (not (ros::ok)) (return))
+    (while (ros::ok)
       (ros::spin-once)
       (send insp :publish-status mydata)
+      (when iterate
+        (cond
+          ((functionp iterate)
+           (unless (funcall iterate (send sm :active-state))
+             (ros::ros-warn "set abort in iteration")
+             (return-from exec-smach-with-spin nil)))
+          (iterate
+           (unless (y-or-n-p (format nil "Execute ~A ? "
+                                     (send (send sm :active-state) :name)))
+             (ros::ros-warn "aborting...")
+             (return exec-smach-with-spin nil)))
+          (t (error "value of key :iterate must be t or function"))))
       (if (send sm :goal-reached)
-          (return)
+          (return-from exec-smach-with-spin t)
         (send sm :execute mydata :step -1))
-       (when iterate (read-char))
       (unix::usleep (round (/ 1e6 hz))))
-     ;; finally block
-     (progn
-       (send sm :reset-state)
-       (print "exit (exec-smach-with-spin)"))
-     )
-    ))
+    )
+  )
 
 (defun make-state-machine (graph-list func-map initial-state goal-states
                            &key (exec-result t) (exec-failure-result nil) (parallel-exec-result t))
