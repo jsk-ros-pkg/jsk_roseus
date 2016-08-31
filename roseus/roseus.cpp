@@ -769,8 +769,12 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
 
   // ;; arguments ;;
   // topicname message_type callbackfunc args0 ... argsN [ queuesize ] [ :groupname groupname ]
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname.assign((char *)get_string(argv[0]));
+    topicname = ros::names::resolve(topicname);
+  } else {
+    error(E_NOSTRING);
+  }
 
   if (n > 1 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
     if (argv[n-2] == K_ROSEUS_GROUPNAME) {
@@ -818,8 +822,12 @@ pointer ROSEUS_UNSUBSCRIBE(register context *ctx,int n,pointer *argv)
   string topicname;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname.assign((char *)get_string(argv[0]));
+    topicname = ros::names::resolve(topicname);
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = s_mapSubscribed.erase(topicname)>0;
 
@@ -832,8 +840,12 @@ pointer ROSEUS_GETNUMPUBLISHERS(register context *ctx,int n,pointer *argv)
   int ret;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname.assign((char *)get_string(argv[0]));
+    topicname = ros::names::resolve(topicname);
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = false;
   map<string, boost::shared_ptr<Subscriber> >::iterator it = s_mapSubscribed.find(topicname);
@@ -852,8 +864,12 @@ pointer ROSEUS_GETTOPICSUBSCRIBER(register context *ctx,int n,pointer *argv)
   string ret;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname.assign((char *)get_string(argv[0]));
+    topicname = ros::names::resolve(topicname);
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = false;
   map<string, boost::shared_ptr<Subscriber> >::iterator it = s_mapSubscribed.find(topicname);
@@ -875,8 +891,12 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   bool latch = false;
 
   ckarg2(2,4);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname.assign((char *)get_string(argv[0]));
+    topicname = ros::names::resolve(topicname);
+  } else {
+    error(E_NOSTRING);
+  }
   message = argv[1];
   if ( n > 2 ) {
     queuesize = ckintval(argv[2]);
@@ -909,8 +929,13 @@ pointer ROSEUS_UNADVERTISE(register context *ctx,int n,pointer *argv)
   string topicname;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname.assign((char *)get_string(argv[0]));
+    topicname = ros::names::resolve(topicname);
+  } else {
+    error(E_NOSTRING);
+  }
+  topicname = ros::names::resolve(topicname);
 
   bool bSuccess = s_mapAdvertised.erase(topicname)>0;
 
@@ -924,8 +949,12 @@ pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
   pointer emessage;
 
   ckarg(2);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname.assign((char *)get_string(argv[0]));
+    topicname = ros::names::resolve(topicname);
+  } else {
+    error(E_NOSTRING);
+  }
   emessage = argv[1];
 
   bool bSuccess = false;
@@ -952,8 +981,12 @@ pointer ROSEUS_GETNUMSUBSCRIBERS(register context *ctx,int n,pointer *argv)
   int ret;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname.assign((char *)get_string(argv[0]));
+    topicname = ros::names::resolve(topicname);
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = false;
   map<string, boost::shared_ptr<Publisher> >::iterator it = s_mapAdvertised.find(topicname);
@@ -978,8 +1011,12 @@ pointer ROSEUS_GETTOPICPUBLISHER(register context *ctx,int n,pointer *argv)
   string ret;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname.assign((char *)get_string(argv[0]));
+    topicname = ros::names::resolve(topicname);
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = false;
   map<string, boost::shared_ptr<Publisher> >::iterator it = s_mapAdvertised.find(topicname);
