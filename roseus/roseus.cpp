@@ -1029,8 +1029,7 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
 
   ckarg2(1,2);
   if (isstring(argv[0])) {
-    service.assign((char *)(argv[0]->c.str.chars));
-    service = ros::names::resolve(service);
+    service = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -1052,8 +1051,7 @@ pointer ROSEUS_SERVICE_EXISTS(register context *ctx,int n,pointer *argv)
 
   ckarg(1);
   if (isstring(argv[0])) {
-    service.assign((char *)(argv[0]->c.str.chars));
-    service = ros::names::resolve(service);
+    service = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -1071,8 +1069,7 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   bool persist = false;
   ckarg2(2,3);
   if (isstring(argv[0])) {
-    service.assign((char *)(argv[0]->c.str.chars));
-    service = ros::names::resolve(service);
+    service = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -1126,8 +1123,7 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   pointer fncallback, args;
 
   if (isstring(argv[0])) {
-    service.assign((char *)get_string(argv[0]));
-    service = ros::names::resolve(service);
+    service = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -1173,8 +1169,7 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
 
   ckarg(1);
   if (isstring(argv[0])) {
-    service.assign((char *)get_string(argv[0]));
-    service = ros::names::resolve(service);
+    service = ros::names::resolve((char *)(argv[0]));
   } else {
     error(E_NOSTRING);
   }
