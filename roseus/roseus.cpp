@@ -770,8 +770,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   // ;; arguments ;;
   // topicname message_type callbackfunc args0 ... argsN [ queuesize ] [ :groupname groupname ]
   if (isstring(argv[0])) {
-    topicname.assign((char *)get_string(argv[0]));
-    topicname = ros::names::resolve(topicname);
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -823,8 +822,7 @@ pointer ROSEUS_UNSUBSCRIBE(register context *ctx,int n,pointer *argv)
 
   ckarg(1);
   if (isstring(argv[0])) {
-    topicname.assign((char *)get_string(argv[0]));
-    topicname = ros::names::resolve(topicname);
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -841,8 +839,7 @@ pointer ROSEUS_GETNUMPUBLISHERS(register context *ctx,int n,pointer *argv)
 
   ckarg(1);
   if (isstring(argv[0])) {
-    topicname.assign((char *)get_string(argv[0]));
-    topicname = ros::names::resolve(topicname);
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -865,8 +862,7 @@ pointer ROSEUS_GETTOPICSUBSCRIBER(register context *ctx,int n,pointer *argv)
 
   ckarg(1);
   if (isstring(argv[0])) {
-    topicname.assign((char *)get_string(argv[0]));
-    topicname = ros::names::resolve(topicname);
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -892,8 +888,7 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
 
   ckarg2(2,4);
   if (isstring(argv[0])) {
-    topicname.assign((char *)get_string(argv[0]));
-    topicname = ros::names::resolve(topicname);
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -930,12 +925,10 @@ pointer ROSEUS_UNADVERTISE(register context *ctx,int n,pointer *argv)
 
   ckarg(1);
   if (isstring(argv[0])) {
-    topicname.assign((char *)get_string(argv[0]));
-    topicname = ros::names::resolve(topicname);
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
-  topicname = ros::names::resolve(topicname);
 
   bool bSuccess = s_mapAdvertised.erase(topicname)>0;
 
@@ -950,8 +943,7 @@ pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
 
   ckarg(2);
   if (isstring(argv[0])) {
-    topicname.assign((char *)get_string(argv[0]));
-    topicname = ros::names::resolve(topicname);
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -982,8 +974,7 @@ pointer ROSEUS_GETNUMSUBSCRIBERS(register context *ctx,int n,pointer *argv)
 
   ckarg(1);
   if (isstring(argv[0])) {
-    topicname.assign((char *)get_string(argv[0]));
-    topicname = ros::names::resolve(topicname);
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
@@ -1012,8 +1003,7 @@ pointer ROSEUS_GETTOPICPUBLISHER(register context *ctx,int n,pointer *argv)
 
   ckarg(1);
   if (isstring(argv[0])) {
-    topicname.assign((char *)get_string(argv[0]));
-    topicname = ros::names::resolve(topicname);
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
   } else {
     error(E_NOSTRING);
   }
