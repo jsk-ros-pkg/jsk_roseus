@@ -1221,11 +1221,8 @@ void EusValueToXmlRpc(register context *ctx, pointer argp, XmlRpc::XmlRpcValue& 
 
 pointer ROSEUS_SET_PARAM(register context *ctx,int n,pointer *argv)
 {
-  numunion nu;
   string key;
   string s;
-  double d;
-  int i;
 
   ckarg(2);
   if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
@@ -1471,7 +1468,6 @@ pointer ROSEUS_ROSPACK_PLUGINS(register context *ctx,int n,pointer *argv)
   // (ros::rospack-plugins package-name attibute-name)
   ckarg(2);
   string pkg, attrib;
-  numunion nu;
   pointer ret, first;
   if (isstring(argv[0])) pkg.assign((char *)get_string(argv[0]));
   else error(E_NOSTRING);
@@ -1650,7 +1646,7 @@ class TimerFunction
   pointer _scb, _args;
 public:
   TimerFunction(pointer scb, pointer args) : _scb(scb), _args(args) {
-    context *ctx = current_ctx;
+    //context *ctx = current_ctx;
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
   }
@@ -1658,7 +1654,6 @@ public:
   {
     mutex_trylock(&mark_lock);
     context *ctx = current_ctx;
-    numunion nu;
     pointer argp=_args;
     int argc=0;
 
