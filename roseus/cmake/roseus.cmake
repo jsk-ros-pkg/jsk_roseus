@@ -87,7 +87,11 @@ macro(generate_all_roseus_messages)
   set(ALL_GEN_OUTPUT_FILES_eus)
   foreach(_pkg ${_${target_pkg}_generate_roseus_message_packages})
     if(NOT ${_pkg}_PREFIX)
-      find_package(${_pkg} QUIET) ## this may fail
+      if("${_pkg}" STREQUAL "${target_pkg}") # when pkg is target package do not need to find_package, just to set SOURCE_PREFIX, this will solve https://github.com/jsk-ros-pkg/jsk_robot/issues/597
+        set(${_pkg}_SOURCE_PREFIX ${PROJECT_SOURCE_DIR})
+      else()
+        find_package(${_pkg} QUIET) ## this may fail
+      endif()
     endif()
     # https://github.com/jsk-ros-pkg/geneus/issues/47
     set(_msg_path "")
