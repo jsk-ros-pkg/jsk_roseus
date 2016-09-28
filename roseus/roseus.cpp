@@ -769,8 +769,11 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
 
   // ;; arguments ;;
   // topicname message_type callbackfunc args0 ... argsN [ queuesize ] [ :groupname groupname ]
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
   if (n > 1 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
     if (argv[n-2] == K_ROSEUS_GROUPNAME) {
@@ -818,8 +821,11 @@ pointer ROSEUS_UNSUBSCRIBE(register context *ctx,int n,pointer *argv)
   string topicname;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = s_mapSubscribed.erase(topicname)>0;
 
@@ -832,8 +838,11 @@ pointer ROSEUS_GETNUMPUBLISHERS(register context *ctx,int n,pointer *argv)
   int ret;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = false;
   map<string, boost::shared_ptr<Subscriber> >::iterator it = s_mapSubscribed.find(topicname);
@@ -852,8 +861,11 @@ pointer ROSEUS_GETTOPICSUBSCRIBER(register context *ctx,int n,pointer *argv)
   string ret;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = false;
   map<string, boost::shared_ptr<Subscriber> >::iterator it = s_mapSubscribed.find(topicname);
@@ -875,8 +887,11 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   bool latch = false;
 
   ckarg2(2,4);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
   message = argv[1];
   if ( n > 2 ) {
     queuesize = ckintval(argv[2]);
@@ -909,8 +924,11 @@ pointer ROSEUS_UNADVERTISE(register context *ctx,int n,pointer *argv)
   string topicname;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = s_mapAdvertised.erase(topicname)>0;
 
@@ -924,8 +942,11 @@ pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
   pointer emessage;
 
   ckarg(2);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
   emessage = argv[1];
 
   bool bSuccess = false;
@@ -952,8 +973,11 @@ pointer ROSEUS_GETNUMSUBSCRIBERS(register context *ctx,int n,pointer *argv)
   int ret;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = false;
   map<string, boost::shared_ptr<Publisher> >::iterator it = s_mapAdvertised.find(topicname);
@@ -978,8 +1002,11 @@ pointer ROSEUS_GETTOPICPUBLISHER(register context *ctx,int n,pointer *argv)
   string ret;
 
   ckarg(1);
-  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    topicname = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
   bool bSuccess = false;
   map<string, boost::shared_ptr<Publisher> >::iterator it = s_mapAdvertised.find(topicname);
@@ -1001,15 +1028,18 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
   string service;
 
   ckarg2(1,2);
-  if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    service = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
   int32_t timeout = -1;
 
   if( n > 1 )
     timeout = (int32_t)ckintval(argv[1]);
 
-  bool bSuccess = service::waitForService(ros::names::resolve(service), ros::Duration(timeout));
+  bool bSuccess = service::waitForService(service, ros::Duration(timeout));
 
   return (bSuccess?T:NIL);
 }
@@ -1020,10 +1050,13 @@ pointer ROSEUS_SERVICE_EXISTS(register context *ctx,int n,pointer *argv)
   string service;
 
   ckarg(1);
-  if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    service = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
-  bool bSuccess = service::exists(ros::names::resolve(service), true);
+  bool bSuccess = service::exists(service, true);
 
   return (bSuccess?T:NIL);
 }
@@ -1035,33 +1068,35 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   pointer emessage;
   bool persist = false;
   ckarg2(2,3);
-  if (isstring(argv[0])) service.assign((char *)(argv[0]->c.str.chars));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    service = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
   emessage = argv[1];
   if ( n > 2 ) {
       persist = (argv[2] != NIL ? true : false);
   }
   static std::map<std::string, ros::ServiceClient> service_cache;
-  std::string service_name = ros::names::resolve(service);
   ServiceClient client;
   EuslispMessage request(emessage);
   vpush(request._message);      // to avoid GC, it may not be required...
   EuslispMessage response(csend(ctx,emessage,K_ROSEUS_RESPONSE,0));
   vpush(response._message);     // to avoid GC, its important
   if (persist == false) {
-    ServiceClientOptions sco(service_name, request.__getMD5Sum(), false, M_string());
+    ServiceClientOptions sco(service, request.__getMD5Sum(), false, M_string());
     client = s_node->serviceClient(sco);
   }
   else {
     // check the instance of client
     
-    if (service_cache.find(service_name) != service_cache.end()) {
-      client = service_cache[service_name];
+    if (service_cache.find(service) != service_cache.end()) {
+      client = service_cache[service];
     }
     else {
-      ServiceClientOptions sco(service_name, request.__getMD5Sum(), true, M_string());
+      ServiceClientOptions sco(service, request.__getMD5Sum(), true, M_string());
       client = s_node->serviceClient(sco);
-      service_cache[service_name] = client;
+      service_cache[service] = client;
     }
   }
     // NEED FIX
@@ -1073,7 +1108,7 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
               ros::names::resolve(service).c_str());
     if (persist) {
       // cleanup service_cache
-      service_cache.erase(service_cache.find(service_name));
+      service_cache.erase(service_cache.find(service));
     }
   }
 
@@ -1087,8 +1122,11 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   pointer emessage;
   pointer fncallback, args;
 
-  if (isstring(argv[0])) service.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    service = ros::names::resolve((char *)get_string(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
   emessage = argv[1];
   fncallback = argv[2];
   args=NIL;
@@ -1130,8 +1168,11 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   string service;
 
   ckarg(1);
-  if (isstring(argv[0])) service.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
+  if (isstring(argv[0])) {
+    service = ros::names::resolve((char *)(argv[0]));
+  } else {
+    error(E_NOSTRING);
+  }
 
   ROS_DEBUG("unadvertise %s", service.c_str());
   bool bSuccess = s_mapServiced.erase(service)>0;
