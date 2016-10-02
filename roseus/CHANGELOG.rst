@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2016-10-02)
+------------------
 * Support private/under-namespace topic name in roseus client
   Node            nRelative (default)      Global          Private
   /node1          bar -> /bar             /bar -> /bar    ~bar -> /node1/bar
