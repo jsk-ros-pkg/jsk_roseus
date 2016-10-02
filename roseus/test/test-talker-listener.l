@@ -15,11 +15,15 @@
 ;; method call
 (defclass string-cb-class
   :super propertied-object
-  :slots ())
+  :slots (msg-camep))
 (defmethod string-cb-class
-  (:init () (ros::subscribe "chatter" std_msgs::string #'send self :string-cb))
+  (:init
+    ()
+    (setq msg-camep nil)
+    (ros::subscribe "chatter" std_msgs::string #'send self :string-cb))
   (:string-cb
    (msg)
+   (setq msg-camep t)
    (print (list 'cb self (send msg :data)) *error-output*)
    (assert (substringp "hello world" (send msg :data))))
   )
@@ -33,7 +37,9 @@
     (ros::spin-once)
     (ros::sleep)
     (sys::gc)
-    ))
+    )
+  (assert (send m :get-val 'msg-camep))
+  )
 
 (run-all-tests)
 (exit)
