@@ -32,7 +32,3 @@
  (send s :worker)
  (ros::spin-once)
  (ros::sleep))
-
-
-
-
