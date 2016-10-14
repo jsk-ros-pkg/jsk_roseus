@@ -51,5 +51,3 @@
        (assert  (= (elt fib (1- (length fib))) ans) "(fib 10) -> ~A" fib))
   (exit 0)
   ))
-
-
