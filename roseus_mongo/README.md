@@ -31,8 +31,8 @@ roseus_mongo
   
 - `*mongo-service-timeout*` (int, default: param `~timeout` or 30)
 
-  Seconds to wait for database server. Setting this value to `0` means waiting forever.
-  On euslisp only simulation without mongodb, it is recommended to set this value to `1` to avoid stuck.
+  Seconds to wait for database server. Setting this value to `-1` means waiting forever.
+  On euslisp only simulation without mongodb, it is recommended to set this value to `0` to avoid stuck.
 
 ### json(bson) related parameters
 
