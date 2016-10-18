@@ -14,18 +14,22 @@
 (defvar *mongo-service-query* "/message_store/query_messages")
 (defvar *mongo-service-insert* "/message_store/insert")
 (defvar *mongo-service-delete* "/message_store/delete")
+(defvar *mongo-service-timeout* (ros::get-param "~timeout" 30))
 
 (unless (find-package "MONGO") (make-package "MONGO"))
 (in-package "MONGO")
 
 (defun wait-for-server ()
-  (ros::wait-for-service "/datacentre/wait_ready")
+  (unless (ros::wait-for-service "/datacentre/wait_ready" user::*mongo-service-timeout*)
+    (ros::ros-warn "timeout. mongodb server is not ready.")
+    (return-from wait-for-server nil))
   (user::call-empty-service "/datacentre/wait_ready")
   (unix:sleep 2))
 
 (defun shutdown-server ()
-  (ros::wait-for-service "/datacentre/shutdown")
-  (user::call-empty-service "/datacentre/shutdown"))
+  (when (ros::wait-for-service "/datacentre/shutdown")
+    (user::call-empty-service "/datacentre/shutdown")
+    (ros::ros-info "send shutdown signal to mongodb server")))
 
 (defun apply-to-ros-query (encoder lst)
   (let ((ss (make-string-output-stream user::*mongo-query-default-buffer-size*)))
@@ -62,7 +66,10 @@
       (send req :meta_query (apply-to-ros-query encoder meta)))
     (when sort
       (send req :sort_query (apply-to-ros-query encoder sort)))
-    (ros::wait-for-service user::*mongo-service-query*)
+    (unless
+        (ros::wait-for-service user::*mongo-service-query* user::*mongo-service-timeout*)
+      (ros::ros-warn "wait-for-service ~A timeout." user::*mongo-service-query*)
+      (return-from query nil))
     (setq res (ros::service-call user::*mongo-service-query* req))
     (mapcar #'(lambda (message meta-pair)
                 (let ((msg (instance msg-type :init))
@@ -82,7 +89,10 @@
                                  :msg (send msg :serialize)))
     (when meta
       (send req :meta (apply-to-ros-query encoder meta)))
-    (ros::wait-for-service user::*mongo-service-insert*)
+    (unless
+        (ros::wait-for-service user::*mongo-service-insert* user::*mongo-service-timeout*)
+      (ros::ros-warn "wait-for-service ~A timeout." user::*mongo-service-insert*)
+      (return-from insert nil))
     (setq res (ros::service-call user::*mongo-service-insert* req))
     (send res :id)))
 
@@ -92,7 +102,10 @@
     (send req :database user::*mongo-database*)
     (send req :collection user::*mongo-collection*)
     (send req :document_id id)
-    (ros::wait-for-service user::*mongo-service-delete*)
+    (unless
+        (ros::wait-for-service user::*mongo-service-delete* user::*mongo-service-timeout*)
+      (ros::ros-warn "wait-for-service ~A timeout." user::*mongo-service-delete*)
+      (return-from delete-by-id nil))
     (setq res (ros::service-call user::*mongo-service-delete* req))
     (send res :success)))
 
@@ -112,8 +125,8 @@
                                                :data collections)
                         :move_before move-before
                         :delete_after_move delete-after-move))))
-    (when (not (send c :wait-for-server 30))
-      (ros::ros-error "no response from server..")
+    (unless (send c :wait-for-server user::*mongo-service-timeout*)
+      (ros::ros-warn "wait-for-server /move_mongodb_entries timeout")
       (return-from replicate nil))
     (send c :send-goal-and-wait goal))
   t)
