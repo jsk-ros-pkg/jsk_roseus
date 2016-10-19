@@ -5,8 +5,8 @@
 
 (ros::load-ros-manifest "mongodb_store_msgs")
 
-(require :json-encode "json/json-encode.l")
-(require :json-decode "json/json-decode.l")
+(require :json-encode "package://roseus_mongo/euslisp/json/json-encode.l")
+(require :json-decode "package://roseus_mongo/euslisp/json/json-decode.l")
 
 (defvar *mongo-database* (ros::get-param "robot/database" "test"))
 (defvar *mongo-collection* (ros::get-param "robot/name" "test"))
