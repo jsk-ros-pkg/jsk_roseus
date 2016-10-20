@@ -32,6 +32,7 @@ env:
     - ROS_DISTRO=jade USE_DEB=true       ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
     - ROS_DISTRO=jade USE_DEB=false      NOT_TEST_INSTALL=true TEST_PKGS="roseus roseus_smach"
     - ROS_DISTRO=jade USE_DEB=source     TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
+    - ROS_DISTRO=kinetic USE_DEB=true       TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
 matrix:
   allow_failures:
     - env: ROS_DISTRO=hydro  USE_DEB=true CATKIN_TOOLS_BUILD_OPTIONS="-iv --summarize --no-status"      ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
