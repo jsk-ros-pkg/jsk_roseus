@@ -770,8 +770,8 @@
     (incf cnt 3)
     (if cmat (case rgb
                (:r-g-b (format f " F F F") (incf cnt 3))
-               (:rgb (format f " F") (incf cnt 3))
-               (t (format f " U") (incf cnt 3))))
+               (:rgb (format f " F") (incf cnt 1))
+               (t (format f " U") (incf cnt 1))))
     (when nmat (format f " F F F F") (incf cnt 4))
     (format f "~%COUNT")
     (dotimes (i cnt) (format f " 1"))

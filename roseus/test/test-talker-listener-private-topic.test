@@ -1,0 +1,14 @@
+<launch>
+
+  <node name="talker"
+        pkg="roseus" type="roseus"
+        args="$(find roseus)/test/talker-private-topic.l">
+  </node>
+
+  <test test-name="talker_listener_test"
+        pkg="roseus" type="roseus"
+        args="$(find roseus)/test/test-talker-listener.l">
+    <remap from="chatter" to="talker/chatter" />
+  </test>
+
+</launch>

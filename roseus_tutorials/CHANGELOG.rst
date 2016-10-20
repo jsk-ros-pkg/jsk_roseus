@@ -2,24 +2,21 @@
 Changelog for package roseus_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2016-10-02)
+------------------
+
 1.5.3 (2016-05-28)
 ------------------
-* Merge pull request `#436 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/436>`_ from furushchev/roseus-tutorials
-  refactor roseus_tutorials
-* Merge branch 'master' into roseus-tutorials
-* [roseus_tutorials] revert "add tabletop_object_perception" to dependency
-* [roseus_tutorials/package.xml] add tabletop_object_detector to build_depend temporally
-* [roseus_tutorials/src/tabletop-object-detector.l] publish objects tf; add param to switch if publish objects tf
-* [roseus_tutorials/package.xml] add tabletop_object_detector to build_depend temporally
-* [roseus_tutorials/src/tabletop-object-detector.l] publish objects tf; add param to switch if publish objects tf
-* [roseus_tutorials] add test for tabletop object detection
-* [roseus_tutorials] add config directory to install
-* [roseus_tutorials/launch/tabletop-object-detector.launch] fix camera namespace
-* [roseus_tutorials/package.xml] add tabletop_object_detector to run_depend
-* [roseus_tutorials/src/tabletop-object-detector.l] enable on recentversion
-* [roseus_tutorials/CMakeLists.txt] fix typo
-* [roseus_tutorials] move rviz config files to config directory
-* Contributors: Furushchev, Kei Okada, Yuki Furuta
+* refactor roseus_tutorials (`#436 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/436>`_)
+
+  * [roseus_tutorials/launch/tabletop-object-detector.launch] fix camera namespace
+  * [roseus_tutorials/src/tabletop-object-detector.l] enable on recentversion
+  * [roseus_tutorials/src/tabletop-object-detector.l] publish objects tf; add param to switch if publish objects tf
+  * [roseus_tutorials/CMakeLists.txt] fix typo
+  * [roseus_tutorials] add test for tabletop object detection
+  * [roseus_tutorials] add config directory to install
+  * [roseus_tutorials] move rviz config files to config directory
+  * Contributors: Kei Okada, Yuki Furuta
 
 1.5.2 (2016-05-28)
 ------------------

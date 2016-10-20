@@ -18,6 +18,11 @@
       n
     (+ (fibonacci (- n 1)) (fibonacci (- n 2)))))
 
+(defun feedback-cb
+  (msg)
+  (format t "feedback sequence: ~a~%" (send msg :feedback :sequence))
+  )
+
 (defun fibonacci-client (&optional (order 10))
   (let (goal)
     (if (not (boundp '*c*))
@@ -27,7 +32,7 @@
     (send *c* :wait-for-server)
     (setq goal (instance actionlib_tutorials::FibonacciActionGoal :init))
     (send goal :goal :order order)
-    (send *c* :send-goal goal)
+    (send *c* :send-goal goal :feedback-cb #'feedback-cb)
 
     (warning-message 2 ";; ~A wait-for-result~%" (unix::getpid))
     (send *c* :wait-for-result)
@@ -45,6 +50,4 @@
    (if (> (length fib) 0)
        (assert  (= (elt fib (1- (length fib))) ans) "(fib 10) -> ~A" fib))
   (exit 0)
-  )
-
-
+  ))

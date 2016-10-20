@@ -15,7 +15,10 @@
   (let ((order (send goal :goal :order))
         (sequence (list 1 0)) msg)
     (dotimes (i (1- order))
-      (push (+ (car sequence) (cadr sequence)) sequence))
+      (push (+ (car sequence) (cadr sequence)) sequence)
+      (setq msg (send server :feedback :sequence (reverse sequence)))
+      (send server :publish-feedback msg)
+      )
     (setq msg (send server :result :sequence (nreverse sequence)))
     (send server :set-succeeded msg)
     ))
@@ -29,7 +32,3 @@
  (send s :worker)
  (ros::spin-once)
  (ros::sleep))
-
-
-
-

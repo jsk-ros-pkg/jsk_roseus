@@ -2,6 +2,26 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2016-10-02)
+------------------
+* Support private/under-namespace topic name in roseus client
+  Node            nRelative (default)      Global          Private
+  /node1          bar -> /bar             /bar -> /bar    ~bar -> /node1/bar
+  /wg/node2       bar -> /wg/bar          /bar -> /bar    ~bar -> /wg/node2/bar
+  /wg/node3       foo/bar -> /wg/foo/bar  /foo/bar -> /foo/bar    ~foo/bar -> /wg/node3/foo/bar
+* Fix test to fail when no message came
+* when pkg is target package do not need to find_package, just to set SOURCE_PREFIX, this will solve https://github.com/jsk-ros-pkg/jsk_robot/issues/597
+* Remove definition of unused variables
+* [roseus-utils.l] fix dump-pointcloud-to-pcd-file file
+* [roseus/test/param-test.l] fix: param test for cache
+* [roseus/roseus.cpp] fix typo: ros::get-param-cashed -> ros::get-param-cached
+* [roseus/roseus.cpp] add ros::delete-param
+  [roseus/test/param-test.l] add test for ros::delete-param
+* [roseus/CMakeLists.txt] remove coreutils from DEPENDS
+* [roseus/package.xml] add coreutils to build_depend
+* [roseus/CMakeLists.txt] add CATKIN_ENABLE_TESTING section for testing
+* Contributors: Kei Okada, Kentaro Wada, Yohei Kakiuchi, Yuki Furuta
+
 1.5.3 (2016-05-28)
 ------------------
 

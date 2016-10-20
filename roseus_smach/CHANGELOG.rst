@@ -2,6 +2,12 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2016-10-02)
+------------------
+* [roseus/src/state-machine-utils.l] add document string for exec-smach-with-spin
+* [roseus_smach/src/state-machine-utils.l] support y-or-n-p when iterate mode
+* Contributors: Yuki Furuta
+
 1.5.3 (2016-05-28)
 ------------------
 
