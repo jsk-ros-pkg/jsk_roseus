@@ -1,4 +1,4 @@
-if ("$ENV{ROS_DISTRO}" STREQUAL "jade")
+if ("$ENV{ROS_DISTRO}" STRGREATER "indigo")
   return()
 endif()
 
