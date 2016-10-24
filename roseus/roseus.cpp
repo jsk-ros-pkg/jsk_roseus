@@ -499,7 +499,7 @@ public:
     vpop(); // _res._message, _req._message, eus_msg._message
     vpop(); // _res._message, _req._message,
     vpop(); // _res._message
-    return(T);
+    return true;
   }
 };
 
