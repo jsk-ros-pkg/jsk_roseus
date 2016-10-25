@@ -1,0 +1,5 @@
+<launch>
+  <node name="a2i_client" pkg="roseus" type="roseus" args="$(find roseus)/test/add-two-ints-client.l" />
+  <test test-name="add_two_ints_without_response" pkg="roseus" type="roseus"
+        args="$(find roseus)/test/test-service-callback.l" />
+</launch>
