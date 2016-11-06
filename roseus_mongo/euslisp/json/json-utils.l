@@ -10,10 +10,12 @@
   (plist-hash (cddr plist) hash))
 
 (defmacro with-blacket (stream opening-char closing-char &rest body)
-  `(progn
-     (write-byte ,opening-char ,stream)
-     ,@body
-     (write-byte ,closing-char ,stream)))
+  (user::with-gensyms (ret)
+    `(let (,ret)
+       (write-byte ,opening-char ,stream)
+       (setq ,ret (progn ,@body))
+       (write-byte ,closing-char ,stream)
+       ,ret)))
 
 (defun get-utc-epoch-time (ctime &key (tzoffset *tzoffset*))
   (let ((utc-time (send ctime :subtract (instance interval-time :make :hour tzoffset))))
