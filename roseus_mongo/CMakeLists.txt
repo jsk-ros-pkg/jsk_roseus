@@ -19,7 +19,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-install(DIRECTORY euslisp
+install(DIRECTORY euslisp test
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
 
@@ -29,7 +29,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test_json_decode.test)
   if(${mongodb_store_VERSION} VERSION_LESS "0.1.17")
     message(WARNING "detected old mongodb_store. Testing with old launch file")
-    add_rostest(test/test_mongo_client_hydro.test)
+    add_rostest(test/test_mongo_client.test.hydro)
   else()
     add_rostest(test/test_mongo_client.test)
   endif()
