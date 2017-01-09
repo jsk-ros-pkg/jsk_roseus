@@ -466,9 +466,15 @@ public:
     eus_res.replaceContents(r);
     // check return value is valid
     pointer ret_serialize_method, ret_class;
-    ret_serialize_method = (pointer)findmethod(ctx,K_ROSEUS_SERIALIZATION_LENGTH,classof(r),&ret_class);
-    if (ret_serialize_method == NIL) {
+    if (ispointer(r)) {
+      ret_serialize_method = (pointer)findmethod(ctx,K_ROSEUS_SERIALIZATION_LENGTH,classof(r),&ret_class); }
+    if (!ispointer(r) || ret_serialize_method == NIL) {
       ROS_ERROR("you may not return valid value in service callback");
+      vpop(); // _res._message, _req._message, eus_msg._message, r
+      vpop(); // _res._message, _req._message, eus_msg._message
+      vpop(); // _res._message, _req._message,
+      vpop(); // _res._message
+      return false;
     }
     vpush(eus_res._message);    // _res._message, _req._message, eus_msg._message, r, eus_res._message
     uint32_t serialized_length = eus_res.serializationLength();
@@ -498,7 +504,7 @@ public:
     vpop(); // _res._message, _req._message, eus_msg._message
     vpop(); // _res._message, _req._message,
     vpop(); // _res._message
-    return(T);
+    return true;
   }
 };
 

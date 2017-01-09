@@ -4,9 +4,12 @@
   <machine name="localhost" address="localhost" default="true" unless="$(arg use_machine)" />
   <param name="robot/database" value="test_database" />
   <param name="robot/name" value="test_collection" />
-  <include file="$(find roseus_mongo)/test/temp_mongodb_store.xml">
+
+  <include file="$(find mongodb_store)/launch/mongodb_store_inc.launch">
+    <arg name="test_mode" value="true" />
     <arg name="machine" value="$(arg machine)" />
   </include>
+
   <test test-name="test_mongo_client" pkg="roseus" type="roseus"
         args="$(find roseus_mongo)/test/test-mongo-client.l" />
 </launch>

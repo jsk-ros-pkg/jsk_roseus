@@ -67,12 +67,20 @@
      (format os "true"))
     ((derivedp elem calendar-time)
      (encode-time (eval elem) os))
+    ((derivedp elem ros::time)
+     (encode-ros-time (eval elem) os))
     (t
      (encode-element (eval elem) os))))
 
 (defun encode-time (ctime &optional (os *standard-output*))
   (with-blacket os #\{ #\}
     (encode-key-value "$date" (get-utc-epoch-time ctime) os)))
+
+(defun encode-ros-time (rtime &optional (os *standard-output*))
+  (with-blacket os #\{ #\}
+    (encode-key-value "$date"
+                      (+ (* 1000 (send rtime :sec))
+                         (/ (send rtime :nsec) 1000 1000)) os)))
 
 (defun encode-list (l &optional (os *standard-output*))
   (with-blacket os #\[ #\]

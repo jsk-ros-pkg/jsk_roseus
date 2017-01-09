@@ -56,9 +56,9 @@
                  (if use-userdata
                      (setq func
                            `(lambda-closure nil 0 0 (userdata)
-                                            (apply ',(car sym) userdata ',(cdr sym))))
+                                            (apply #',(car sym) userdata ',(cdr sym))))
                    (setq func
-                         `(lambda-closure nil 0 0 (x) (apply ',(car sym) ',(cdr sym)))))
+                         `(lambda-closure nil 0 0 (x) (apply #',(car sym) ',(cdr sym)))))
                  (cond
                   (readable
                    (if use-sub-machine

@@ -1,9 +1,0 @@
-<launch>
-  <arg name="machine" default="localhost" />
-  <node pkg="roseus_mongo" type="make_temp_database_dir.sh" name="make_temp_database_dir" />
-  <include file="$(find mongodb_store)/launch/mongodb_store_inc.launch">
-    <arg name="db_path" value="/tmp/mongodb_store" />
-    <arg name="port" value="62345" />
-    <arg name="machine" value="$(arg machine)" />
-  </include>
-</launch>
