@@ -80,14 +80,14 @@
     (let ((str (get-output-stream-string os)))
       (cond
        ((string= str "true")
-        t)
+        (return-from parse-constant t))
        ((string= str "null")
-        nil)
+        (return-from parse-constant nil))
        ((and (peek-char is nil nil)
              (string= "false"
                       (concatenate string str
                        (format nil "~c" (read-char is)))))
-        nil)
+        (return-from parse-constant nil))
        (t
         (error "~A is not a constant" str))))))
 
@@ -96,7 +96,7 @@
    (while (position (peek-char is nil nil) ".0123456789+-Ee")
      (write-byte (read-char is) os))
    (let ((num? (read-from-string (get-output-stream-string os))))
-     (if (numberp num?) num?
+     (if (numberp num?) (return-from parse-number num?)
        (error "~A is not a number" num?)))))
 
 (defun parse-array (is)
