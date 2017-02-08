@@ -11,5 +11,7 @@
   </include>
 
   <test test-name="test_mongo_client" pkg="roseus" type="roseus"
-        args="$(find roseus_mongo)/test/test-mongo-client.l" />
+        args="$(find roseus_mongo)/test/test-mongo-client.l">
+    <param name="timeout" value="10"/>
+  </test>
 </launch>

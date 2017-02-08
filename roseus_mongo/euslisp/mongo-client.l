@@ -14,7 +14,7 @@
 (defvar *mongo-service-query* "/message_store/query_messages")
 (defvar *mongo-service-insert* "/message_store/insert")
 (defvar *mongo-service-delete* "/message_store/delete")
-(defvar *mongo-service-timeout* (ros::get-param "~timeout" 30))
+(defvar *mongo-service-timeout* (floor (ros::get-param "~timeout" 30)))
 
 (unless (find-package "MONGO") (make-package "MONGO"))
 (in-package "MONGO")
