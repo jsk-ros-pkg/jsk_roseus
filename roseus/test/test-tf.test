@@ -5,5 +5,5 @@
     <param name="buffer_size" value="1200.0"/>
   </node>
   <test test-name="eustf" pkg="roseus" type="roseus" args="$(find roseus)/test/test-tf.l"
-	time-limit="600" />
+	time-limit="600" retry="3" />
 </launch>
