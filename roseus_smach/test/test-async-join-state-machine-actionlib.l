@@ -13,7 +13,7 @@
   (setq *answer* nil)
   (setq *randint* nil)
   (setq *sm* (make-async-join-state-machine))
-  (assert (eq (send (smach-exec *sm*) :name) :success)
+  (assert (eq (send (exec-state-machine *sm* '((random-int-value . 0))) :name) :success)
           "exec state machine with async join node")
   (assert (eq *answer* (+ (* *randint* 10) (- *randint* 5)))
           "check answer of computation"))
