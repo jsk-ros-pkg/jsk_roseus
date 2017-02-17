@@ -1,18 +1,20 @@
-if ("$ENV{ROS_DISTRO}" STREQUAL "jade")
+if ("$ENV{ROS_DISTRO}" STRGREATER "indigo")
   return()
 endif()
-
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_mongo)
 
+if ("$ENV{ROS_DISTRO}" STRLESS "jade") # up to indigo we need to compile msg fiel
+  set(COMPILE_PACKAGES mongodb_store_msgs)
+endif()
+
 find_package(catkin REQUIRED COMPONENTS
-  mongodb_store
-  mongodb_store_msgs
+  mongodb_store ${COMPILE_PACKAGES}
   roseus
 )
 
 catkin_package(
-  CATKIN_DEPENDS mongodb_store mongodb_store_msgs roseus
+  CATKIN_DEPENDS mongodb_store_msgs roseus
 )
 
 include_directories(
