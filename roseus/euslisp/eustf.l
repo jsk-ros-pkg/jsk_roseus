@@ -362,8 +362,13 @@ $ (send tr :lookup-transform \"child\"  \"this_frame\" (ros::time))
 (defmethod ros::buffer-client
   (:init (&key (namespace "tf2_buffer_server") (check-frequency 10.0)
                (timeout-padding 2.0))
-         "Construct tf2 buffer object"
-   (setq cobject (ros::eustf-buffer-client))
+   "Construct tf2 buffer client object.
+Keyword Args:
+    namespace (str): The namespace in which to look for a tf2_ros::BufferServer (default: tf2_buffer_server)
+    check-frequency (float): The frequency in Hz to check whether the BufferServer has completed a request (default: 10.0)
+    timeout-padding (float): The amount of time to allow passed the desired timeout on the client side of communication lag (default: 2.0)
+"
+   (setq cobject (ros::eustf-buffer-client namespace check-frequency timeout-padding))
    self)
   (:wait-for-server (&optional (timeout 5.0))
    "Wait for tf2 buffer server"
