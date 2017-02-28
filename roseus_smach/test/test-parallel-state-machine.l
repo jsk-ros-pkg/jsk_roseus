@@ -12,7 +12,7 @@
 (make-sample-parallel-state-machine)
 
 (deftest test-parallel-state-machine
-  (assert (eq (send (smach-exec *sm*) :name) :success)
+  (assert (eq (send (exec-state-machine *sm*) :name) :success)
           "test parallel state machine sample"))
 
 (run-all-tests)

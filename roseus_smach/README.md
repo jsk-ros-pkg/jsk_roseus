@@ -21,7 +21,7 @@ Sample codes are available on `sample` directory.
   ```
   ```lisp
   rosrun roseus_smach state-machine-ros-sample.l
-  (smach-exec-simple)
+  (exec-smach-simple)
   ```
   - nested state machine
   ![](http://gist.github.com/furushchev/raw/9b1ed0aa57b47537cd2d/smach-nested.gif)
@@ -30,7 +30,7 @@ Sample codes are available on `sample` directory.
   ```
   ```lisp
   rosrun roseus_smach state-machine-ros-sample.l
-  (smach-exec-nested)
+  (exec-smach-nested)
   ```
   - state machine with userdata
   ![](http://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/smach-userdata.gif)
@@ -39,7 +39,7 @@ Sample codes are available on `sample` directory.
   ```
   ```lisp
   rosrun roseus_smach state-machine-ros-sample.l
-  (smach-exec-userdata)
+  (exec-smach-userdata)
   ```
 
 - `sample/parallel-state-machine-sample.l`
@@ -53,5 +53,3 @@ Sample codes are available on `sample` directory.
   rosrun roseus_smach parallel-state-machine-sample.l
   (demo)
   ```
-  
-  

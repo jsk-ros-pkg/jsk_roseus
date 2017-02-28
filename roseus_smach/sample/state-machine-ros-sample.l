@@ -42,8 +42,8 @@
 
     sm ))
 
-(defun smach-exec-simple () (setq count 0) (smach-exec (smach-simple)))
-(defun smach-exec-nested () (setq count 0) (smach-exec (smach-nested)))
-(defun smach-exec-userdata () (smach-exec (smach-userdata)))
+(defun exec-smach-simple () (setq count 0) (exec-state-machine (smach-simple)))
+(defun exec-smach-nested () (setq count 0) (exec-state-machine (smach-nested)))
+(defun exec-smach-userdata () (exec-state-machine (smach-userdata) '((count . 1))))
 
-(warn ";;(smach-exec-simple)~%;;(smach-exec-nested)~%;;(smach-exec-userdata)~%")
+(warn ";;(exec-smach-simple)~%;;(exec-smach-nested)~%;;(exec-smach-userdata)~%")

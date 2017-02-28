@@ -1,61 +1,55 @@
 ;; state-machine-utils.l
 
-;; execute state-machine and publish every step
-(defun smach-exec (sm)
-  (let ((insp (instance state-machine-inspector :init sm))
-	(mydata (list (cons 'count 0) (cons 'hoge (list 1 2 3)))))
-    (unix:sleep 1) ;; for advertize topics successfully
-    (send sm :reset-state)
-    (send insp :publish-structure)
-    (send insp :publish-status mydata)
-    (while (not (send sm :goal-reached))
-      (unix:sleep 1)
-      (ros::spin-once)
-      (send insp :publish-status mydata)
-      ;; you can execute state-machine step by step
-      (send sm :execute mydata :step -1))
-    (send sm :active-state) ;; return reached goal state
-    ))
+(defun exec-state-machine (sm &optional mydata
+                           &key (spin t) (hz 1) iterate)
+  "Execute state machine
 
-;; execute the state-machine with spining
-;; when it occures an error, stop and return the initial state
-;; the loop is do-until-key type
-(defun exec-smach-with-spin (sm &optional mydata &key (hz 1) iterate)
-"execute the state-machine with spining
-when it occures an error, stop and return the initial state
-the loop is do-until-key type
+Args:
+  sm (state-machine): state machine
+  mydata (alist): userdata for smach
+  :spin (bool, default: t): call (ros::spin-once) every time before executing state if T, call nothing otherwise.
+  :hz (integer, default: 1): rate of execution loop
+  :iterate (t or function): Enable asking [Y/N] on each action execution if given t, if function is given, then it is called before execution. If function returns nil, next action is not executed. Otherwise the action is executed
 
-sm (state-machine): state machine
-mydata (alist): userdata for smach
-hz (integer): rate of execution loop
-iterate (t or function): Enable asking [Y/N] on each action execution if given t, if function is given, then it is called before execution. If function returns nil, next action is not executed. Otherwise the action is executed"
-
+Returns:
+  the last active state
+"
   (let ((insp (instance state-machine-inspector :init sm)))
     (unix::sleep 2)
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
 
     (while (ros::ok)
-      (ros::spin-once)
+      (when spin
+        (ros::spin-once)
+        (if (boundp '*ri*) (send *ri* :spin-once)))
       (send insp :publish-status mydata)
+      (when (send sm :goal-reached)
+        (return))
       (when iterate
         (cond
           ((functionp iterate)
            (unless (funcall iterate (send sm :active-state))
              (ros::ros-warn "set abort in iteration")
-             (return-from exec-smach-with-spin nil)))
+             (return))
           (iterate
            (unless (y-or-n-p (format nil "Execute ~A ? "
                                      (send (send sm :active-state) :name)))
              (ros::ros-warn "aborting...")
-             (return exec-smach-with-spin nil)))
-          (t (error "value of key :iterate must be t or function"))))
-      (if (send sm :goal-reached)
-          (return-from exec-smach-with-spin t)
-        (send sm :execute mydata :step -1))
+             (return))
+          (t (error "value of key :iterate must be t or function"))))))
+      (send sm :execute mydata :step -1)
       (unix::usleep (round (/ 1e6 hz))))
-    )
-  )
+    (send sm :active-state)))
+
+(defun smach-exec (sm)
+  "Deprecated function"
+  (ros::ros-warn "This function is deprecated and will be removed. Use exec-state-machine")
+  (exec-state-machine sm))
+(defun exec-smach-with-spin (sm &optional mydata &key (hz 1) iterate)
+  "Deprecated function"
+  (ros::ros-warn "This function is deprecated and will be removed. Use exec-state-machine")
+  (exec-state-machine sm mydata :hz hz :iterate iterate))
 
 (defun make-state-machine (graph-list func-map initial-state goal-states
                            &key (exec-result t) (exec-failure-result nil) (parallel-exec-result t))
