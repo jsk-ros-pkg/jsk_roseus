@@ -90,7 +90,7 @@ extern "C" {
   byte *get_string(register pointer s){
     if (isstring(s)) return(s->c.str.chars);
     if (issymbol(s)) return(s->c.sym.pname->c.str.chars);
-    else error(E_NOSTRING);}
+    else error(E_NOSTRING); return NULL; }
 }
 
 #undef class
@@ -285,7 +285,8 @@ public:
     a = (pointer)findmethod(ctx,K_ROSEUS_DESERIALIZE,classof(_message),&curclass);
     ROS_ASSERT(a!=NIL);
     pointer p = makestring((char *)readPtr, sz);
-    pointer r = csend(ctx,_message,K_ROSEUS_DESERIALIZE,1,p);
+    pointer r;
+    r = csend(ctx,_message,K_ROSEUS_DESERIALIZE,1,p);
     ROS_ASSERT(r!=NIL);
     //ROS_INFO("deserialize %d", __serialized_length);
     vpop(); // pop _message
@@ -1702,7 +1703,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   isInstalledCheck;
   numunion nu;
   bool oneshot = false;
-  pointer fncallback, args;
+  pointer fncallback = NIL, args;
   NodeHandle *lnode = s_node.get();
   string fncallname;
   float period=ckfltval(argv[0]);

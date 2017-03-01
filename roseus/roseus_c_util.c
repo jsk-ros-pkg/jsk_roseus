@@ -10,8 +10,8 @@
 #include "eus.h"
 
 extern pointer ___roseus_c_util();
-static void register_roseus_c_util()
-  { add_module_initializer("___roseus_c_util", ___roseus_c_util);}
+//static void register_roseus_c_util()
+//  { add_module_initializer("___roseus_c_util", ___roseus_c_util);}
 
 #define colsize(p) (intval(p->c.ary.dim[1]))
 #define rowsize(p) (intval(p->c.ary.dim[0]))
