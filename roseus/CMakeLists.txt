@@ -68,7 +68,7 @@ set_target_properties(eustf PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE
 set_target_properties(roseus_c_util PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/euslisp)
 
 # compile flags
-add_definitions(-O2 -DNDEBUG -Wno-write-strings -Wdelete-non-virtual-dtor -Wno-unused-but-set-variable -Wno-comment)
+add_definitions(-O2 -DNDEBUG -Wno-write-strings -Wno-unused-but-set-variable -Wno-comment)
 add_definitions(-Di486 -DLinux -D_REENTRANT -DVERSION='\"9.00\"' -DTHREADED -DPTHREAD -DX11R6_1)
 add_definitions('-DREPOVERSION="\\"${REPOVERSION}\\""')
 if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "amd64(.*)" OR
