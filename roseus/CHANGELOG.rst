@@ -2,6 +2,30 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove compiler warning from roseus.cpp (`#510 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/510>`_)
+  * [hydro] do not eliminate -> warning: deleting object of polymorphic class type ‘tf2_ros::BufferClient’ which has non-virtual destructor might cause undefined behaviour [-Wdelete-non-virtual-dtor]
+* [roseus][eustf.l] fix: pass :init args (`#506 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/506>`_)
+* add kinetic test (`#505 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/505>`_)
+  * test-geneus.test : use rosrun roseus roseus to run test code
+  * roseus/CMakeLists.txt : add -DNDEBUG option, see https://github.com/jsk-ros-pkg/jsk_planning/pull/49#issuecomment-280302156
+* test/test-tf.test: not sure why but test-tf fails within travis, but works in droplet 2G/2CPU (`#499 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/499>`_)
+* default queue size of subscribe/advertise is 1, add this information to documentation (`#493 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/493>`_)
+* Fix `#417 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/417>`_ (`#486 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/486>`_)
+  * [roseus/roseus.cpp] fix: segfault when no response is returned on service callback
+  * [roseus] add test-service-callback.test
+  * [roseus/roseus.cpp] return false when service callback returns invalid response
+  * [roseus/roseus.cpp] use C++ bool for return value
+* add aarch64 for arm processors (`#484 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/484>`_)
+* [roseus] add example of actionlib feedback (`#479 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/479>`_)
+  * [roseus/test/fibonacci-client.l] remove unnecessary new lines.
+  * [roseus/test/fibonacci-client.l] add feedback callback.
+  * [roseus/test/fibonacci-server.l] remove unnecessary new lines.
+  * [roseus/test/fibonacci-client.l] fix correspondence of brackets.
+  * [roseus/test/fibonacci-server.l] publish feedback of fibonacci action in loop.
+* Contributors: Kei Okada, Masaki Murooka, Yuki Furuta
+
 1.6.0 (2016-10-02)
 ------------------
 * Support private/under-namespace topic name in roseus client

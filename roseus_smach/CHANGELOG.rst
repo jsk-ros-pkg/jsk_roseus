@@ -2,6 +2,13 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge smach exec (`#507 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/507>`_)
+  * [roseus_smach] rename smach-exec-with-spin -> exec-state-machine
+  * [roseus_smach/src/pddl2smach.l] use function namespace to call
+* Contributors: Yuki Furuta
+
 1.6.0 (2016-10-02)
 ------------------
 * [roseus/src/state-machine-utils.l] add document string for exec-smach-with-spin

@@ -2,6 +2,26 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add kinetic test (`#505 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/505>`_)
+  * msg generation is only required unil indigo
+  * mongo is only released from indigo
+* [roseus_mongo] fix: timeout must be integer (`#498 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/498>`_)
+  * ros::get-param always returns numerial value as double instead *mongo-service-timeout* assumes parameter as integer.
+* [roseus_mongo][json-decode.l] fix: parse-number / parse-constant return only string (`#496 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/496>`_)
+* [roseus_mongo][test] use randomized mongod instance for testing (`#492 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/492>`_)
+* [roseus_mongo] support json encode for ros::Time (`#488 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/488>`_)
+  * [roseus_mongo] test ros::time
+  * [roseus_mongo][json-encode.l] support ros::time for json::encode
+  * [roseus_mongo][json-utils.l] fix: with-blacket return value
+* [roseus_mongo/euslisp/mongo-client.l] use absolute path for json-encode / decode scripts (`#481 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/481>`_ )
+* [roseus_mongo] query mongo server with timeout option (`#480 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/480>`_ )
+  * [README.md] fix: wrong description of parameter for timeout
+  * [roseus_mongo/test/test-mongo-client.l] add test for mongodb query with timeout
+  * [roseus_mongo] add timeout option for querying mongodb server
+* Contributors: Kei Okada, Yuki Furuta
+
 1.6.0 (2016-10-02)
 ------------------
 
