@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.1 (2017-03-15)
+------------------
 * remove compiler warning from roseus.cpp (`#510 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/510>`_)
   * [hydro] do not eliminate -> warning: deleting object of polymorphic class type ‘tf2_ros::BufferClient’ which has non-virtual destructor might cause undefined behaviour [-Wdelete-non-virtual-dtor]
 * [roseus][eustf.l] fix: pass :init args (`#506 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/506>`_)
