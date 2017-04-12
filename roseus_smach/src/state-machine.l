@@ -43,6 +43,47 @@
   (:next-arc-list
    (&optional state)
    (send state :arc-list))
+
+  (:check-if-transition-is-possible
+   (tr)
+   (let ((next-state (send tr :to))
+         (send-all nodes :arc-list)
+         (transition-class-arcs-list (remove-if-not #'(lambda(tr) (derivedp (car tr) transition)) (send-all nodes :arc-list)))
+         reverse-nodes
+         )
+     ;; (ros::ros-info "transition-class-arcs-list:~A" transition-class-arcs-list)
+     (dolist (transition-class-arcs transition-class-arcs-list nil)
+       ;; (ros::ros-info "transition-class-arcs:~A" transition-class-arcs)
+       (dolist (transition-class-arc transition-class-arcs nil)
+         ;; (ros::ros-info "transition-class-arc:~A" transition-class-arc)
+         (setq *trr* transition-class-arc)
+         (if (eq (send transition-class-arc :to) next-state)
+             (progn
+               ;; (ros::ros-info "to-state is same with the handling next-state: ~A" next-state)
+               (cond
+                ((send (send transition-class-arc :from) :has-been-activated)
+                 ;; (ros::ros-info "from-state has been active")
+                 (cond
+                  ((send transition-class-arc :check (send (send transition-class-arc :from) :executed-result))
+                   (ros::ros-info "~A's executed result matched with the transition condition." (send (send transition-class-arc :from) :name))
+                   )
+                  (t
+                   (ros::ros-info "~A's executed result [~A] didn't matched with the transition condition. Return-from :check-if-transition-is-possible nil."
+                                  (send (send transition-class-arc :from) :name)
+                                  (send (send transition-class-arc :from) :executed-result))
+                   (return-from :check-if-transition-is-possible nil)
+                   )))
+                (t
+                 (ros::ros-info "from-state: ~A isn't activated yet. Return-from :check-if-transition-is-possible nil."
+                                (send (send transition-class-arc :from) :name))
+                 (return-from :check-if-transition-is-possible nil)
+                 )
+                )))))
+     (ros::ros-info "transition to ~A is possible. Return-from :check-if-transition-is-possible t." (send next-state :name))
+     t
+     )
+   )
+
   (:parallel-exec-result
    (&optional res)
    (cond ((null res) parallel-exec-result)
@@ -127,8 +168,10 @@
               (exec-result  (send last-state :execute userdata)))
          (ros::ros-info "trans: ~A" trans)
          (setq trans (remove-if-not #'(lambda(tr)(send tr :check exec-result)) trans))
+         (setq trans (remove-if-not #'(lambda(tr)
+                                        (send self :check-if-transition-is-possible tr)) trans))
          (case (length trans)
-           (0 (error "undefined transition ~A from ~A~%" exec-result last-state))
+           (0 (ros::ros-warn "transition ~A from ~A is  impossible." exec-result last-state))
            (1 t) ;; OK
            (t
             (case (length active-state)
@@ -171,7 +214,7 @@
 ;; action is function or state-machine instance
 (defclass state
   :super node
-  :slots (action remap-list))
+  :slots (action remap-list has-been-activated executed-result))
 (defmethod state
   (:init
    (name act &key ((:remap-list rlst) nil))
@@ -180,6 +223,12 @@
   ;; check if this state is state-machine, then return it
   (:submachine () (if (derivedp action state-machine) action nil))
   ;; remap userdata names
+  (:has-been-activated (&rest is-ac)
+   (if is-ac (setq has-been-activated is-ac))
+   has-been-activated)
+  (:executed-result
+   ()
+   executed-result)
   (:remap-list
    (&rest args)
    (if (car args) (setq remap-list (car args))) remap-list)
@@ -193,6 +242,7 @@
   ;;
   (:execute
    (userdata &key (step nil))
+   (send self :has-been-activated t)
    (let (res)
      (send self :remap userdata :invert nil) ;; remap
      (setq res
@@ -201,6 +251,7 @@
                  ((functionp action) (funcall action userdata))
                  (t (send self :name))))
      (send self :remap userdata :invert t) ;; unremap
+     (setq executed-result res)
      res ))
   )
 
