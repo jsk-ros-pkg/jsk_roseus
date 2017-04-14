@@ -151,6 +151,20 @@ macro(generate_all_roseus_messages)
     list(APPEND ${target_pkg}_generate_messages_eus_all_target ${_pkg}_generate_messages_eus)
     install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/share/roseus/ros/${_pkg}/)
   endforeach()
+  if(1)
+    set(_generate_eus_compile_messaege_command "\\\"(setq ros::*compile-message* t)\\\" \\\"(ros::load-ros-manifest \\\\\\\"${target_pkg}\\\\\\\")\\\" \\\"(exit)\\\" ")
+    separate_arguments(_generate_eus_compile_messaege_command  WINDOWS_COMMAND "${_generate_eus_compile_messaege_command}")
+    find_program(_roseus_exe roseus)
+    set(_ROS_PACKAGE_PATH ${PROJECT_SOURCE_DIR}:${roseus_SOURCE_PREFIX}:$ENV{ROS_PACKAGE_PATH})
+    string(REPLACE ";" ":" _CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+    set(_CMAKE_PREFIX_PATH ${CATKIN_DEVEL_PREFIX}:${_CMAKE_PREFIX_PATH})
+    if(${PROJECT_NAME} STREQUAL "roseus") # this is only for roseus package
+      set(_roseus_exe ${PROJECT_SOURCE_DIR}/bin/roseus)
+    endif()
+    add_custom_target(${target_pkg}_generate_messages_eus_compile_message ALL
+      COMMAND DISPLAY= ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} ${_generate_eus_compile_messaege_command}
+      DEPENDS ${target_pkg}_generate_messages_eus)
+  endif()
 endmacro()
 
 # run generate_all_roseus_messages() if this is invoked from catkin_* command and genmsg does not depends on geneus
