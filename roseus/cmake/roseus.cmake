@@ -152,7 +152,7 @@ macro(generate_all_roseus_messages)
     install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/${_pkg}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/share/roseus/ros/${_pkg}/)
   endforeach()
   if(1)
-    set(_generate_eus_compile_messaege_command "\\\"(setq ros::*compile-message* t)\\\" \\\"(ros::load-ros-manifest \\\\\\\"${target_pkg}\\\\\\\")\\\" \\\"(exit)\\\" ")
+    set(_generate_eus_compile_messaege_command "\\\"(setq ros::*compile* t)\\\" \\\"(ros::load-ros-manifest \\\\\\\"${target_pkg}\\\\\\\")\\\" \\\"(exit)\\\" ")
     separate_arguments(_generate_eus_compile_messaege_command  WINDOWS_COMMAND "${_generate_eus_compile_messaege_command}")
     find_program(_roseus_exe roseus)
     set(_ROS_PACKAGE_PATH ${PROJECT_SOURCE_DIR}:${roseus_SOURCE_PREFIX}:$ENV{ROS_PACKAGE_PATH})
@@ -161,7 +161,12 @@ macro(generate_all_roseus_messages)
     if(${PROJECT_NAME} STREQUAL "roseus") # this is only for roseus package
       set(_roseus_exe ${PROJECT_SOURCE_DIR}/bin/roseus)
     endif()
+    string(ASCII 27 Esc)
+    set(ColourReset "${Esc}[m")
+    set(ColourBold  "${Esc}[1m")
+    set(Green       "${Esc}[32m")
     add_custom_target(${target_pkg}_generate_messages_eus_compile_message ALL
+      COMMAND echo "${Green}compile message file ${target_pkg}${ColourReset}"
       COMMAND DISPLAY= ROS_PACKAGE_PATH=${_ROS_PACKAGE_PATH} CMAKE_PREFIX_PATH=${_CMAKE_PREFIX_PATH} ${_roseus_exe} ${_generate_eus_compile_messaege_command}
       DEPENDS ${target_pkg}_generate_messages_eus)
   endif()
