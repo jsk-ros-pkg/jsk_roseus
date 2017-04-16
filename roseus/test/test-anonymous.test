@@ -5,6 +5,8 @@
   <node type="roseus" pkg="roseus" name="test_anonymous2"
         args="$(find roseus)/test/test-anonymous.l" output="screen"
         required="true" />
+  <node type="roseus" pkg="roseus" name="test_261"  args="(terpri)"
+        output="screen" required="true" launch-prefix="xterm -hold -e"/>
   <param name="hztest1/topic" value="chatter" />  
   <param name="hztest1/hz" value="20.0" /> <!-- for two nodes -->
   <param name="hztest1/hzerror" value="0.5" />
