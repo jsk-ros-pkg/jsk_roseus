@@ -1046,6 +1046,8 @@
   "Publish message just for once"
   (ros::advertise topic-name (class msg))
   (unix::usleep (round (* wait 1000)))
+  (unless (> wait 1500)
+    (ros::ros-warn "[one-shot-publish] consider about waiting more time for publisher to be composed"))
   (while after-stamp
     (let ((tm (ros::time-now)))
       (if (< (send (ros::time- after-stamp tm) :tosec) 0)
