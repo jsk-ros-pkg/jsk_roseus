@@ -364,7 +364,9 @@ always the rank of list is 2"
     (setq dirs (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s)))))
     ;;
     (dolist (dir dirs)
-      (if (probe-file (format nil "~A/~A/" dir pkg))
+      (if (or (probe-file (format nil "~A/~A/manifest.l" dir pkg))
+              (probe-file (format nil "~A/~A/msg" dir pkg))
+              (probe-file (format nil "~A/~A/srv" dir pkg)))
           (return-from ros::find-load-msg-path (format nil "~A/~A" dir pkg))))
     (ros::ros-error "Could not find roseus messages for ~A under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" pkg dirs pkg)
     nil))
