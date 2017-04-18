@@ -111,6 +111,11 @@
     (assert (string= (send rcvimg :entity) (send sndimg :entity)) "eq image :entity")
     ))
 
+(deftest test-compile-message ()
+  (ros::ros-info "std_msgs::String ~A" (describe std_msgs::String))
+  (assert (derivedp (cadr (assoc :init (send std_msgs::String :methods))) compiled-code) "compiled-code")
+  )
+
 (run-all-tests)
 
 (exit)
