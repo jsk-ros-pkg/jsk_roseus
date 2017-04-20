@@ -29,10 +29,16 @@ endif()
 
 
 set(ENV{LANG} "C")
-execute_process (COMMAND git rev-parse --short HEAD
+execute_process (COMMAND git describe --tags HEAD
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   OUTPUT_VARIABLE REPOVERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT REPOVERSION)
+  execute_process(COMMAND grep version ${PROJECT_SOURCE_DIR}/package.xml
+    COMMAND sed -e s/[^0-9.]//g
+    OUTPUT_VARIABLE REPOVERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
 message (STATUS "Build repo revision: ${REPOVERSION}")
 
 #
