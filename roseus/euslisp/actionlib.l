@@ -216,6 +216,8 @@
                             :id (send (send comm-state :action-goal) :goal_id :id)))
      (ros::publish (format nil "~A/cancel" name-space) cancel)
      (send comm-state :state 'ros::*comm-state-waiting-for-cancel-ack*)))
+  ;;
+  (:name-space () name-space)
   (:spin-once ()
    (cond
     (groupname (ros::spin-once groupname))
