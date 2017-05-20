@@ -11,6 +11,7 @@
 
 (load "actionlib-commstate.l")
 
+(defvar ros::*simple-action-client-list* nil)
 (defclass ros::simple-action-client
   :super ros::object
   :slots (name-space action-spec simple-state comm-state status-stamp
@@ -56,7 +57,15 @@
    (msg)
    (let (dummy-msg)
      (ros::ros-debug "[~A] reuslt-cb ~A ~A" name-space (send msg :status :goal_id :id) (goal-status-to-string (send msg :status :status)))
-     (send comm-state :update-result msg)
+     (unless (send comm-state :update-result msg)
+       (ros::ros-warn "[~A] action-result-cb may recieved old client's goal" name-space)
+       (ros::ros-warn "     expected goal id ~A" (send (send comm-state :action-goal) :goal_id :id))
+       (ros::ros-warn "     recieved goal id ~A" (send msg :status :goal_id :id))
+       ;; look for exiting objects make from simple-goal-client
+       (dolist (c ros::*simple-action-client-list*)
+         (if (string= (send msg :status :goal_id :id)
+                      (send (send (send c :comm-state) :action-goal) :goal_id :id))
+             (send c :action-result-cb msg))))
      (ros::ros-debug "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send comm-state :state))
      ;; transition to goal state
      (setq dummy-msg (instance actionlib_msgs::GoalStatusArray :init))
@@ -93,20 +102,24 @@
    (cond
     (groupname
      (ros::subscribe (format nil "~A/status" name-space)
-                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 1 :groupname groupname)
+                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 8 :groupname groupname)
      (ros::subscribe (format nil "~A/result" name-space)
-                     action-result-class #'send self :action-result-cb 1 :groupname groupname)
+                     action-result-class #'send self :action-result-cb 8 :groupname groupname)
      (ros::subscribe (format nil "~A/feedback" name-space)
-                     action-feedback-class #'send self :action-feedback-cb 1 :groupname groupname))
+                     action-feedback-class #'send self :action-feedback-cb 8 :groupname groupname))
     (t
      (ros::subscribe (format nil "~A/status" name-space)
-                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 1)
+                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 8)
      (ros::subscribe (format nil "~A/result" name-space)
-                     action-result-class #'send self :action-result-cb 1)
+                     action-result-class #'send self :action-result-cb 8)
      (ros::subscribe (format nil "~A/feedback" name-space)
-                     action-feedback-class #'send self :action-feedback-cb 1)))
+                     action-feedback-class #'send self :action-feedback-cb 8)))
    (setq simple-state ros::*simple-goal-state-done*)
+   (push self ros::*simple-action-client-list*)
    self)
+  (:dispose
+   ()
+   (setq ros::*simple-action-client-list* (remove self ros::*simple-action-client-list*)))
   (:wait-for-server
    (&optional (timeout nil))
    (let ((goal-topic (format nil "~A/goal" name-space))
@@ -220,6 +233,7 @@
      (send comm-state :state 'ros::*comm-state-waiting-for-cancel-ack*)))
   ;;
   (:name-space () name-space)
+  (:comm-state () comm-state)
   (:spin-once ()
    (cond
     (groupname (ros::spin-once groupname))
