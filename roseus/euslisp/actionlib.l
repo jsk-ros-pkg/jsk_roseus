@@ -191,6 +191,8 @@
        (send self :spin-once)
        (ros::sleep))
      (ros::ros-debug "[~A] :wait-for-result finished ~A" name-space (goal-status-to-string (send self :get-state)))
+     (if (eq (send self :get-state) actionlib_msgs::GoalStatus::*preempted*)
+         (ros::ros-warn "[~A] :wait-for-result finished with preempted status" name-space))
      (eq (send self :get-state) actionlib_msgs::GoalStatus::*succeeded*)))
   (:get-result () (send (send comm-state :latest-result) :result))
   (:get-state ()
