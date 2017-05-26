@@ -59,12 +59,13 @@
      (ros::ros-debug "[~A] reuslt-cb ~A ~A" name-space (send msg :status :goal_id :id) (goal-status-to-string (send msg :status :status)))
      (unless (send comm-state :update-result msg)
        (ros::ros-warn "[~A] action-result-cb may recieved old client's goal" name-space)
-       (ros::ros-warn "     expected goal id ~A" (send (send comm-state :action-goal) :goal_id :id))
+       (ros::ros-warn "     expected goal id ~A" (and (send comm-state :action-goal) (send (send comm-state :action-goal) :goal_id :id)))
        (ros::ros-warn "     recieved goal id ~A" (send msg :status :goal_id :id))
        ;; look for exiting objects make from simple-goal-client
        (dolist (c ros::*simple-action-client-list*)
-         (if (string= (send msg :status :goal_id :id)
-                      (send (send (send c :comm-state) :action-goal) :goal_id :id))
+         (if (and (send (send c :comm-state) :action-goal)
+                  (string= (send msg :status :goal_id :id)
+                           (send (send (send c :comm-state) :action-goal) :goal_id :id)))
              (send c :action-result-cb msg))))
      (ros::ros-debug "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send comm-state :state))
      ;; transition to goal state
