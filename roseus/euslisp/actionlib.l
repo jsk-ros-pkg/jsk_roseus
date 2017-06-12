@@ -11,7 +11,8 @@
 
 (load "actionlib-commstate.l")
 
-(defvar ros::*simple-action-client-list* nil)
+;; for https://github.com/jsk-ros-pkg/jsk_roseus/pull/519
+(unless (find-package "ROSACTIONLIB") (make-package "ROSACTIONLIB"))
 (defclass ros::simple-action-client
   :super ros::object
   :slots (name-space action-spec simple-state comm-state status-stamp
@@ -61,12 +62,17 @@
        (ros::ros-warn "[~A] action-result-cb may recieved old client's goal" name-space)
        (ros::ros-warn "     expected goal id ~A" (and (send comm-state :action-goal) (send (send comm-state :action-goal) :goal_id :id)))
        (ros::ros-warn "     recieved goal id ~A" (send msg :status :goal_id :id))
+       ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/519
        ;; look for exiting objects make from simple-goal-client
-       (dolist (c ros::*simple-action-client-list*)
-         (if (and (send (send c :comm-state) :action-goal)
-                  (string= (send msg :status :goal_id :id)
-                           (send (send (send c :comm-state) :action-goal) :goal_id :id)))
-             (send c :action-result-cb msg))))
+       (do-symbols (s (find-package "ROSACTIONLIB"))
+         (let ((c (eval s)))
+           (when (and (send (send c :comm-state) :action-goal)
+                      (string= (send msg :status :goal_id :id)
+                               (send (send (send c :comm-state) :action-goal) :goal_id :id)))
+             (send c :action-result-cb msg)
+             (ros::ros-warn "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send (send c :comm-state) :state))
+             )))
+       (return-from :action-result-cb nil))
      (ros::ros-debug "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send comm-state :state))
      ;; transition to goal state
      (setq dummy-msg (instance actionlib_msgs::GoalStatusArray :init))
@@ -116,11 +122,14 @@
      (ros::subscribe (format nil "~A/feedback" name-space)
                      action-feedback-class #'send self :action-feedback-cb 8)))
    (setq simple-state ros::*simple-goal-state-done*)
-   (push self ros::*simple-action-client-list*)
+   ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/519
+   (set (gentemp "ACTIONLIBCLIENT" (find-package "ROSACTIONLIB")) self)
+   (sys::dispose-hook self t)
    self)
-  (:dispose
+  (:dispose ;; dispose is set but never called due to gentemp and subscribe ( ;; avoid gc line in EuslispSubscriptionCallbackHelper)
    ()
-   (setq ros::*simple-action-client-list* (remove self ros::*simple-action-client-list*)))
+   (format *error-output* "~C[3~Cm[ WARN] dispose ~A~%~C[0m" #x1b 51 name-space #x1b)
+   )
   (:wait-for-server
    (&optional (timeout nil))
    (let ((goal-topic (format nil "~A/goal" name-space))
