@@ -15,10 +15,11 @@
 (defclass state-machine
   :super graph
   :slots (active-state arg-keys
-          parallel-action-p parallel-exec-result parallel-trans-test))
+          parallel-action-p parallel-exec-result parallel-trans-test print-trans-info-p))
 (defmethod state-machine
-  (:init (&key (parallel nil))
+  (:init (&key (parallel nil) (print-trans-info t))
      (setq parallel-action-p parallel)
+     (setq print-trans-info-p print-trasn-info)
      self)
   (:active-state
    (&rest args)
@@ -125,7 +126,7 @@
        (let* ((last-state astate)
               (trans (send self :next-arc-list astate))
               (exec-result  (send last-state :execute userdata)))
-         (ros::ros-info "trans: ~A" trans)
+         (when print-trans-info-p (ros::ros-info "trans: ~A" trans))
          (setq trans (remove-if-not #'(lambda(tr)(send tr :check exec-result)) trans))
          (case (length trans)
            (0 (error "undefined transition ~A from ~A~%" exec-result last-state))

@@ -52,7 +52,7 @@ Returns:
   (exec-state-machine sm mydata :hz hz :iterate iterate))
 
 (defun make-state-machine (graph-list func-map initial-state goal-states
-                           &key (exec-result t) (exec-failure-result nil) (parallel-exec-result t))
+                           &key (exec-result t) (exec-failure-result nil) (parallel-exec-result t) (print-trans-info t))
   "This is utility function to make state machine
 e.g. (make-state-machine '((:a -> :b)
                            (:b -> :c)
@@ -90,7 +90,7 @@ e.g. (make-state-machine '((:a -> :b)
            (get-alist (key alist)
                       (if (assoc key alist)
                           (cadr (assoc key alist)) nil)))
-    (let ((sm (instance state-machine :init))
+    (let ((sm (instance state-machine :init :print-trans-info print-trans-info))
           (all-nodes (unique-graph graph-list)))
       (warning-message 2 "~A nodes are defined~%" (length all-nodes))
 
