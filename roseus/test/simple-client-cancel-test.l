@@ -155,6 +155,47 @@
       (assert nil "Goal 2 didn't finish~%"))
     ))
 
+(setq *dispose* nil)
+(defclass ros::simple-action-client-dispose
+  :super ros::simple-action-client)
+(defmethod ros::simple-action-client-dispose
+  (:dispose
+   ()
+   (setq *dispose* t)
+   (format *error-output* "~C[3~Cm[ WARN] dispose~%~C[0m" #x1b 51 #x1b)
+   ))
+
+(deftest test-client-dispose ()
+  (let (c1 g1)
+    (dotimes (i 4)
+      (setq c1 (instance ros::simple-action-client-dispose :init
+                         "reference_action" actionlib::TestAction))
+
+      (warning-message 1 "wait-for-server ~A ~A~%" i c1)
+      (send c1 :wait-for-server)
+
+      (setq g1 (instance actionlib::TestActionGoal :init))
+      (warning-message 1 "send-goal ~A~%" i)
+      (send g1 :goal :goal 1) ;; 1 sec goal
+      (send c1 :send-goal g1)
+      (warning-message 1 "sent goal ~A (~A)~%" i (send g1 :goal_id :id))
+      )
+    (warning-message 1 "wait-for-result~%")
+
+    (warning-message 1 "wait-for-result (~A)~%" (send g1 :goal_id :id))
+    (unless (send c1 :wait-for-result :timeout 10)
+      (warning-message 1 "wail-for-result failed...~%")
+      (assert nil "Goal 2 didn't finish~%"))
+
+    (dotimes (i 10)
+      (warning-message 1 "wait-for-result ~A~%" i)
+      (sys::gc)
+      (unix:usleep (* 500 1000)))
+    (warning-message 1 ";;; :dispose is not called ~A~%" *dispose*)
+    (warning-message 1 ";;; because of (set (gentemp \"ACTIONLIBCLIENT\" (find-package \"ROSACTIONLIB\")) self) and https://github.com/jsk-ros-pkg/jsk_roseus/pull/525~%")
+    ;; (assert *dispose*) ;; this failed because of (set (gentemp "ACTIONLIBCLIENT" (find-package "ROSACTIONLIB")) self) and #525
+    ))
+
 (ros::roseus "simple_action_client_cancel_test" :anonymous nil)
 
 ;(ros::service-call "~set_logger_level"
