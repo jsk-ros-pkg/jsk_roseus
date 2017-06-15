@@ -49,11 +49,25 @@
 
 (defun make-camera-from-ros-camera-info (msg)
   "Make camera model from ros sensor_msgs::CameraInfo message"
-  (let ((pwidth (send msg :width))
-        (pheight (send msg :height))
-        (p (send msg :P)))
-    ;; FIXME:: add coordinates of camera
-    (make-camera-from-ros-camera-info-aux pwidth pheight p nil)))
+  (let* ((pwidth (send msg :width))
+         (pheight (send msg :height))
+         (frame-id (send msg :header :frame_id))
+         (p (send msg :P))
+         c parent)
+    (if (and (> (length frame-id) 0) (eq (elt frame-id 0) #\/))
+        (setq frame-id (subseq frame-id 1)))
+    (if (not (boundp '*l*))
+        (setq *l* (instance ros::transform-listener :init)))
+    (setq parent (send *l* :get-parent frame-id (ros::time)))
+    (unless parent (return-from make-camera-from-ros-camera-info nil))
+    (setq c (send *l* :lookup-transform parent frame-id (ros::time)))
+    (unless c (return-from make-camera-from-ros-camera-info nil))
+    (format t "(setq ~A-coords (make-coords :pos ~A :rpy ~A))~%" frame-id (send c :pos) (coerce (car (send c :rpy-angle)) float-vector))
+    (format t "(send ~A-coords :transform ~A)~%" frame-id parent)
+    (format t "(send ~A :assoc ~A-coords)~%" parent frame-id)
+    (format t "(make-camera-from-ros-camera-info-aux ~A ~A ~A ~A-coords :name \"~A\")~%"
+            pwidth pheight p frame-id frame-id)
+    (make-camera-from-ros-camera-info-aux pwidth pheight p nil :name frame-id)))
 
 ;; Image
 (when (and
