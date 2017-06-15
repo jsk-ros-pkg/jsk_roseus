@@ -153,6 +153,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-simple-client-wait.test)
   add_rostest(test/test-simple-client-500.test)
   add_rostest(test/test-simple-client-wait-500.test)
+  add_rostest(test/test-simple-client-cancel.test)
   add_rostest(test/test-actionlib.test)
   add_rostest(test/test-roseus.test)
   add_rostest(test/test-tf.test)
@@ -161,7 +162,8 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-parameter.test)
   add_rostest(test/test-anonymous.test)
   add_rostest(test/test-timer.test)
-  add_rostest(test/test-genmsg.catkin.test)
+  # this seems to run other process and need pkill ... https://travis-ci.org/jsk-ros-pkg/jsk_roseus/jobs/233858193
+  #add_rostest(test/test-genmsg.catkin.test)
   # this will not ok on running from run_tests, may be running test within launch file may not good.
   #add_rostest(test/test-genmsg-oneworkspace.catkin.launch) # use launch not to run on travis/catkin
   add_rostest(test/test-geneus.test)
