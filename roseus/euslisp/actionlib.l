@@ -11,6 +11,8 @@
 
 (load "actionlib-commstate.l")
 
+;; for https://github.com/jsk-ros-pkg/jsk_roseus/pull/519
+(unless (find-package "ROSACTIONLIB") (make-package "ROSACTIONLIB"))
 (defclass ros::simple-action-client
   :super ros::object
   :slots (name-space action-spec simple-state comm-state status-stamp
@@ -56,7 +58,21 @@
    (msg)
    (let (dummy-msg)
      (ros::ros-debug "[~A] reuslt-cb ~A ~A" name-space (send msg :status :goal_id :id) (goal-status-to-string (send msg :status :status)))
-     (send comm-state :update-result msg)
+     (unless (send comm-state :update-result msg)
+       (ros::ros-warn "[~A] action-result-cb may recieved old client's goal" name-space)
+       (ros::ros-warn "     expected goal id ~A" (and (send comm-state :action-goal) (send (send comm-state :action-goal) :goal_id :id)))
+       (ros::ros-warn "     recieved goal id ~A" (send msg :status :goal_id :id))
+       ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/519
+       ;; look for exiting objects make from simple-goal-client
+       (do-symbols (s (find-package "ROSACTIONLIB"))
+         (let ((c (eval s)))
+           (when (and (send (send c :comm-state) :action-goal)
+                      (string= (send msg :status :goal_id :id)
+                               (send (send (send c :comm-state) :action-goal) :goal_id :id)))
+             (send c :action-result-cb msg)
+             (ros::ros-warn "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send (send c :comm-state) :state))
+             )))
+       (return-from :action-result-cb nil))
      (ros::ros-debug "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send comm-state :state))
      ;; transition to goal state
      (setq dummy-msg (instance actionlib_msgs::GoalStatusArray :init))
@@ -93,20 +109,27 @@
    (cond
     (groupname
      (ros::subscribe (format nil "~A/status" name-space)
-                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 1 :groupname groupname)
+                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 8 :groupname groupname)
      (ros::subscribe (format nil "~A/result" name-space)
-                     action-result-class #'send self :action-result-cb 1 :groupname groupname)
+                     action-result-class #'send self :action-result-cb 8 :groupname groupname)
      (ros::subscribe (format nil "~A/feedback" name-space)
-                     action-feedback-class #'send self :action-feedback-cb 1 :groupname groupname))
+                     action-feedback-class #'send self :action-feedback-cb 8 :groupname groupname))
     (t
      (ros::subscribe (format nil "~A/status" name-space)
-                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 1)
+                     actionlib_msgs::GoalStatusArray #'send self :goal-status-cb 8)
      (ros::subscribe (format nil "~A/result" name-space)
-                     action-result-class #'send self :action-result-cb 1)
+                     action-result-class #'send self :action-result-cb 8)
      (ros::subscribe (format nil "~A/feedback" name-space)
-                     action-feedback-class #'send self :action-feedback-cb 1)))
+                     action-feedback-class #'send self :action-feedback-cb 8)))
    (setq simple-state ros::*simple-goal-state-done*)
+   ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/519
+   (set (gentemp "ACTIONLIBCLIENT" (find-package "ROSACTIONLIB")) self)
+   (sys::dispose-hook self t)
    self)
+  (:dispose ;; dispose is set but never called due to gentemp and subscribe ( ;; avoid gc line in EuslispSubscriptionCallbackHelper)
+   ()
+   (format *error-output* "~C[3~Cm[ WARN] dispose ~A~%~C[0m" #x1b 51 name-space #x1b)
+   )
   (:wait-for-server
    (&optional (timeout nil))
    (let ((goal-topic (format nil "~A/goal" name-space))
@@ -191,6 +214,8 @@
        (send self :spin-once)
        (ros::sleep))
      (ros::ros-debug "[~A] :wait-for-result finished ~A" name-space (goal-status-to-string (send self :get-state)))
+     (if (eq (send self :get-state) actionlib_msgs::GoalStatus::*preempted*)
+         (ros::ros-warn "[~A] :wait-for-result finished with preempted status" name-space))
      (eq (send self :get-state) actionlib_msgs::GoalStatus::*succeeded*)))
   (:get-result () (send (send comm-state :latest-result) :result))
   (:get-state ()
@@ -216,6 +241,9 @@
                             :id (send (send comm-state :action-goal) :goal_id :id)))
      (ros::publish (format nil "~A/cancel" name-space) cancel)
      (send comm-state :state 'ros::*comm-state-waiting-for-cancel-ack*)))
+  ;;
+  (:name-space () name-space)
+  (:comm-state () comm-state)
   (:spin-once ()
    (cond
     (groupname (ros::spin-once groupname))
