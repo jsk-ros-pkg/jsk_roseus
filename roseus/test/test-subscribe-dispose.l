@@ -46,7 +46,7 @@
 
   (sys::gc) ;; not dipose
   (warning-message 1 "dispose = ~A~%" *dispose*)
-  (assert (>= *dispose* 2)) ;; this is expected
+  ;;;(assert (>= *dispose* 2)) ;; this is expected
   )
 
 (ros::roseus-add-msgs "std_msgs")
