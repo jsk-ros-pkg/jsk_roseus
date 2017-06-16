@@ -47,7 +47,9 @@ before_script:
 script:
   - .travis/travis.sh
 after_script:
+  - sudo pkill -KILL Xorg
   - sudo apt-get remove --purge xvfb
+  - sudo apt-get remove --purge mesa-utils x11-xserver-utils xserver-xorg-video-dummy
 after_success:
   - TRAVIS_JOB_SUBNUMBER="${TRAVIS_JOB_NUMBER##*.}"
   # begin hot fix
