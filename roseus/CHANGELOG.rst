@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.2 (2017-06-21)
+------------------
 * CMakeLists.txt: find_package jskeus and add euslisp/jskeus to DEPENDS in CMakeLists.txt to get euslisp/jskeus version (`#514 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/514>`_)
 * [roseus_utils.l] fix make-camera-from-ros-camera-info-aux (`#526 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/526>`_)
 * skip test/test-genmsg.catkin.test (`#518 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/518>`_)
