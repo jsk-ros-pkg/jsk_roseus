@@ -2,6 +2,9 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.6.1 (2017-03-15)
 ------------------
 * add kinetic test (`#505 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/505>`_)

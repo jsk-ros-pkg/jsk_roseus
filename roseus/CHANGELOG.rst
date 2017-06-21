@@ -2,6 +2,26 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* CMakeLists.txt: find_package jskeus and add euslisp/jskeus to DEPENDS in CMakeLists.txt to get euslisp/jskeus version (`#514 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/514>`_)
+* [roseus_utils.l] fix make-camera-from-ros-camera-info-aux (`#526 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/526>`_)
+* skip test/test-genmsg.catkin.test (`#518 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/518>`_)
+* if goal is overridden from different instance in same roseus process, actionlib do not return from :wait-for-result. (updated
+  version of #519) (`#521 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/521>`_)
+  * actinlib.l : add :name-space method to simple-action-server
+  * print warn if :wait-for-result ends with preempted
+  * add test-simple-client-cancel.test for https://github.com/start-jsk/jsk_apc/issues/2106
+  * set queue of status/result/feedback cb from 1 to 8, to get old results, also keep action-client to global list and if result is not yours, look client from list
+  * actionlib.l : fix error when (send comm-state :action-goal) do not exists
+  * use gentemp to bound object, to find from do-symbols
+  * add test-client-dispose
+* roseus/euslisp/roseus-utils.l: update make-camera-from-ros-camera-info (`#517 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/517>`_)
+* CMakeLists.txt: use grep package.xml when git --tags did not retun any message (it happens in build farm) (`#516 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/516>`_)
+* tell full path of roseus diretory when load roseus.l ... (`#515 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/515>`_)
+* CMakeLists.txt: find_package jskeus and add euslisp/jskeus to DEPENDS in CMakeLists.txt to get euslisp/jskeus version (`#514 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/514>`_)
+* Contributors: Kei Okada, YoheiKakiuchi
+
 1.6.1 (2017-03-15)
 ------------------
 * remove compiler warning from roseus.cpp (`#510 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/510>`_)
