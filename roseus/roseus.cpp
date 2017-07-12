@@ -652,6 +652,7 @@ pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
   while (ctx->intsig==0) {
+    if ( ! ros::ok() ) { error(E_USER,"Shutdown requested"); }
     ros::spinOnce();
     s_rate->sleep();
   }
