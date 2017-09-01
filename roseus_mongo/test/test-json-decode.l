@@ -49,8 +49,9 @@
                          (json::parse-string is))))
   (assert (string= "fuga" (json::parse-from-string "\"fuga\"")))
   (assert (string= "    fuga  " (json::parse-from-string "\"    fuga  \"")))
-  (assert (string= "\t\r\n\/\\ fuga" (json::parse-from-string "\"\t\r\n\/\\ fuga\"")))
+  (assert (string= "\t\r\n\/\\ fuga" (json::parse-from-string "\"\t\r\n\/\\\\ fuga\"")))
   (assert (string= "ほげ" (json::parse-from-string "\"ほげ\"")))
+  (assert (string= "{\"Samples\": [1]}" (json::parse-from-string "\"{\\\"Samples\\\": [1]}\"")))
   )
 
 (deftest test-json-decode-array ()

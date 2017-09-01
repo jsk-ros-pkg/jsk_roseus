@@ -64,6 +64,7 @@
         (return-from parse-string
           (get-output-stream-string os)))
        ((lisp::char= (peek-char is nil #\0) #\\) ;; #\0 is dummy
+        (read-char is) ;; skip
         (parse-escape-char is os))
        ((and (not (lisp::char= start-symbol #\"))
              (or (eq :eof (peek-char is nil :eof))
