@@ -6,6 +6,14 @@
 (require :unittest "lib/llib/unittest.l")
 
 (ros::load-ros-manifest "roseus")
+;; check if package without msgs is ok
+;; ros::eus-error is error
+(unless (fboundp 'ros::ros-error-org)
+  (setf (symbol-function 'ros::ros-error-org) (symbol-function 'ros::ros-error)))
+(defun ros::ros-error (&rest args)
+  (apply #'ros::ros-error-org args)
+  (error (apply #'format nil args)))
+(ros::load-ros-manifest "euslisp")
 
 ;;;
 ;;;
