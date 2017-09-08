@@ -1,0 +1,23 @@
+<launch>
+  <test test-name="namespace" pkg="roseus" type="test-namespace.l" >
+    <param name="namespace" value="" />
+  </test>
+
+  <group ns="ns">
+    <test test-name="namespace_ns_0" pkg="roseus" type="test-namespace.l" >
+      <param name="namespace" value="/ns" />
+    </test>
+  </group>
+
+  <group ns="/ns">
+    <test test-name="namespace_ns_1" pkg="roseus" type="test-namespace.l" >
+      <param name="namespace" value="/ns" />
+    </test>
+  </group>
+
+  <group ns="//ns//">
+    <test test-name="namespace_ns_2" pkg="roseus" type="test-namespace.l" >
+      <param name="namespace" value="/ns" />
+    </test>
+  </group>
+</launch>

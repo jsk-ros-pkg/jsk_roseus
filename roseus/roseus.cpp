@@ -1536,8 +1536,10 @@ pointer ROSEUS_GETNAME(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_GETNAMESPACE(register context *ctx,int n,pointer *argv)
 {
   ckarg(0);
-  return(makestring((char *)ros::this_node::getNamespace().c_str(),
-		    ros::this_node::getNamespace().length()));
+  // https://github.com/ros/ros_comm/pull/1100
+  // Clean the namespace to get rid of double or trailing forward slashes
+  std::string ns  = ros::names::clean(ros::this_node::getNamespace()).c_str();
+  return(makestring((char *)ns.c_str(), ns.length()));
 }
 
 pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
