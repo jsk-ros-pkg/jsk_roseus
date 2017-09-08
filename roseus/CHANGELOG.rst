@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.3 (2017-09-08)
+------------------
 * Fix ros::get-namesapce (`#533 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/533>`_)
   * use ros::names::clean to get sanitized namespace string
   * add test for ros::get-namesapce
