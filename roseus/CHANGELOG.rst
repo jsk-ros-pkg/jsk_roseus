@@ -2,6 +2,19 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix ros::get-namesapce (`#533 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/533>`_)
+  * use ros::names::clean to get sanitized namespace string
+  * add test for ros::get-namesapce
+
+* package without msg does not have manifest.l, so skip loading that without  ros::ros-error (`#539 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/539>`_)
+  * on jade/kinetic, package without msg does not have manifest.l, so users need to change (load-ros-manifest) target
+  * add test to check https://github.com/jsk-ros-pkg/jsk_roseus/pull/537 / https://github.com/jsk-ros-pkg/jsk_robot/issues/823
+* [roseus][roseus.cpp] check ros::ok() in ros::spin (`#531 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/531>`_ )
+* [roseus/euslisp/actionlib.l] fix :wait-for-result is too slow (`#528 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/528>`_)
+* Contributors: Kei Okada, Yohei Kakiuchi
+
 1.6.2 (2017-06-21)
 ------------------
 * CMakeLists.txt: find_package jskeus and add euslisp/jskeus to DEPENDS in CMakeLists.txt to get euslisp/jskeus version (`#514 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/514>`_)

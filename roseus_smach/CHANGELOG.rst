@@ -2,6 +2,9 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.6.2 (2017-06-21)
 ------------------
 * replace ros-info by ros-debug in state-machine.l (`#523 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/523>`_)
