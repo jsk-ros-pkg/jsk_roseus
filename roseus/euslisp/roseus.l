@@ -61,11 +61,12 @@
 (shadow 'object *package*)
 (defclass ros::object
   :super propertied-object
-  :slots ())
+  :slots (_connection-header)))
 (defmethod ros::object
   (:init () self)
   (:md5sum- () (get (class self) :md5sum-))
   (:datatype- ()  (get (class self) :datatype-))
+  (:connection-header () _connection-header))
   )
 
 (shadow 'time *package*)

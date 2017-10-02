@@ -68,6 +68,9 @@
 #include <ros/this_node.h>
 #include <ros/node_handle.h>
 #include <ros/service.h>
+#include <ros/service_server_link.h>
+#include <ros/service_manager.h>
+#include <ros/connection.h>
 #include <rospack/rospack.h>
 #include <ros/param.h>
 #include <ros/callback_queue.h>
@@ -141,7 +144,7 @@ static bool s_bInstalled = false;
 #define s_mapTimered s_staticdata.mapTimered
 #define s_mapHandle s_staticdata.mapHandle
 
-pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,K_ROSEUS_ONESHOT,K_ROSEUS_LAST_EXPECTED,K_ROSEUS_LAST_REAL,K_ROSEUS_CURRENT_EXPECTED,K_ROSEUS_CURRENT_REAL,K_ROSEUS_LAST_DURATION,K_ROSEUS_SEC,K_ROSEUS_NSEC,QANON,QNOOUT,QREPOVERSION,QROSDEBUG,QROSINFO,QROSWARN,QROSERROR,QROSFATAL;
+pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_CONNECTION_HEADER,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,K_ROSEUS_ONESHOT,K_ROSEUS_LAST_EXPECTED,K_ROSEUS_LAST_REAL,K_ROSEUS_CURRENT_EXPECTED,K_ROSEUS_CURRENT_REAL,K_ROSEUS_LAST_DURATION,K_ROSEUS_SEC,K_ROSEUS_NSEC,QANON,QNOOUT,QREPOVERSION,QROSDEBUG,QROSINFO,QROSWARN,QROSERROR,QROSFATAL;
 extern pointer LAMCLOSURE;
 
 /***********************************************************
@@ -203,6 +206,7 @@ class EuslispMessage
 {
 public:
   pointer _message;
+  boost::shared_ptr<map<string, string> > _connection_header;
 
   EuslispMessage(pointer message) : _message(message) {
   }
@@ -295,6 +299,28 @@ public:
   }
 };
 
+void StoreConnectionHeader(EuslispMessage *eus_msg) {
+  if ( eus_msg->_connection_header == NULL ||
+       eus_msg->_connection_header->size() == 0 ) {
+    return;
+  }
+  context *ctx = current_ctx;
+  // store conection headers
+  register pointer ret, header;
+  ret = cons(ctx, NIL, NIL);
+  header = ret;
+  vpush(ret);
+  for(map<string, string>::iterator it = eus_msg->_connection_header->begin(); it != eus_msg->_connection_header->end(); it++){
+    ccdr(ret) = cons(ctx,cons(ctx,makestring((char *)it->first.c_str(), it->first.length()),
+                              makestring((char *)it->second.c_str(), it->second.length())),NIL);
+    ret = ccdr(ret);
+  }
+  /* (setslot obj class index newval) */
+  pointer slot_args[4] = {eus_msg->_message, classof(eus_msg->_message), K_ROSEUS_CONNECTION_HEADER, ccdr(header)};
+  SETSLOT(ctx, 4, slot_args);
+  vpop();
+}
+
 namespace ros{
   namespace serialization{
 template<> struct Serializer<EuslispMessage> {
@@ -352,11 +378,15 @@ public:
     cerr << "param.length = " << param.length << endl;
     cerr << "param.buffer = " << (param.buffer + 4) << endl;
     cerr << "c_header == " << param.connection_header << endl;
+    for(map<string, string>::iterator it = param.connection_header->begin(); it != param.connection_header->end(); it++){
+      cerr << "            " << it->first << " : " << it->second << endl;
+    }
 #endif
     ros::VoidConstPtr ptr(new EuslispMessage(_msg));
     EuslispMessage *eus_msg = (EuslispMessage *)(ptr.get());
     eus_msg->deserialize(param.buffer, param.length);
 
+    eus_msg->_connection_header = param.connection_header;
     return ptr;
   }
   virtual void call(ros::SubscriptionCallbackHelperCallParams& param) {
@@ -370,6 +400,9 @@ public:
     if ( ! ( issymbol(_scb) || piscode(_scb) || ccar(_scb)==LAMCLOSURE ) ) {
       ROS_ERROR("%s : can't find callback function", __PRETTY_FUNCTION__);
     }
+
+    // store connection header
+    StoreConnectionHeader(eus_msg);
     
     while(argp!=NIL){ ckpush(ccar(argp)); argp=ccdr(argp); argc++;}
     vpush((pointer)(eus_msg->_message));argc++;
@@ -439,6 +472,15 @@ public:
   virtual std::string getResponseMessageDefinition() { return responseMessageDefinition; }
 
   virtual bool call(ros::ServiceCallbackHelperCallParams& params) {
+#if DEBUG
+    cerr << __PRETTY_FUNCTION__ << endl;
+    cerr << "param.length = " << params.request.num_bytes << endl;
+    cerr << "param.buffer = " << (params.request.message_start + 4) << endl;
+    cerr << "c_header == " << params.connection_header << endl;
+    for(map<string, string>::iterator it = params.connection_header->begin(); it != params.connection_header->end(); it++){
+      cerr << "            " << it->first << " : " << it->second << endl;
+    }
+#endif
     context *ctx = current_ctx;
     pointer r, argp=_args;
     int argc=0;
@@ -453,6 +495,10 @@ public:
     EuslispMessage eus_msg(_req);
     vpush(eus_msg._message);    // _res._message, _req._message, eus_msg._message
     eus_msg.deserialize(params.request.message_start, params.request.num_bytes);
+
+    // store connection header
+    eus_msg._connection_header = params.connection_header;
+    StoreConnectionHeader(&eus_msg);
 
     while(argp!=NIL){ ckpush(ccar(argp)); argp=ccdr(argp); argc++;}
     vpush((pointer) eus_msg._message);argc++;
@@ -491,6 +537,9 @@ public:
     *tmp++ = (uint8_t)((serialized_length >> 16) & 0xFF);
     *tmp++ = (uint8_t)((serialized_length >> 24) & 0xFF);
     eus_res.serialize(tmp, 0);
+    // store connection header
+    eus_res._connection_header = params.connection_header;
+    StoreConnectionHeader(&eus_res);
 #if DEBUG
     cerr << "num bytes = " << params.response.num_bytes << endl;
     ROS_INFO("message_start =  %X",params.response.message_start);
@@ -552,6 +601,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   K_ROSEUS_MD5SUM   = defkeyword(ctx,"MD5SUM-");
   K_ROSEUS_DATATYPE = defkeyword(ctx,"DATATYPE-");
   K_ROSEUS_DEFINITION = defkeyword(ctx,"DEFINITION-");
+  K_ROSEUS_CONNECTION_HEADER = intern(ctx,"_CONNECTION-HEADER",18,findpkg(makestring("ROS",3)));
   K_ROSEUS_SERIALIZATION_LENGTH = defkeyword(ctx,"SERIALIZATION-LENGTH");
   K_ROSEUS_SERIALIZE   = defkeyword(ctx,"SERIALIZE");
   K_ROSEUS_DESERIALIZE = defkeyword(ctx,"DESERIALIZE");
@@ -1073,7 +1123,35 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
     }
   }
     // NEED FIX
-  bool bSuccess =  client.call(request, response, request.__getMD5Sum());
+  //bool bSuccess =  client.call(request, response, request.__getMD5Sum());
+  ros::ServiceServerLinkPtr link;
+  link = ros::ServiceManager::instance()->createServiceServerLink(client.getService(), client.isPersistent(), request.__getMD5Sum(), request.__getMD5Sum(), M_string());
+  ros::SerializedMessage ser_req = ros::serialization::serializeMessage(request);
+  ros::SerializedMessage ser_resp;
+  bool bSuccess = link->call(ser_req, ser_resp);
+  if ( bSuccess ) {
+    try {
+      ros::serialization::deserializeMessage(ser_resp, response);
+    } catch (std::exception& e) {
+      ROS_ERROR("Exception thrown while while deserializing service call: %s", e.what());
+      bSuccess = false;
+    }
+    boost::shared_ptr<map<string, string> >connection_header = link->getConnection()->getHeader().getValues();
+#if DEBUG
+    cerr << __PRETTY_FUNCTION__ << endl;
+    cerr << "c_header == " << connection_header << endl;
+    for(map<string, string>::iterator it = connection_header->begin(); it != connection_header->end(); it++){
+      cerr << "            " << it->first << " : " << it->second << endl;
+    }
+#endif
+    response._connection_header = connection_header;
+    StoreConnectionHeader(&response);
+    link.reset();
+    // If we're shutting down but the node haven't finished yet, wait until we do
+    while (ros::isShuttingDown() && ros::ok()) {
+      ros::WallDuration(0.001).sleep();
+    }
+  }
   vpop();                       // pop response._message
   vpop();                       // pop request._message
   if ( ! bSuccess ) {
