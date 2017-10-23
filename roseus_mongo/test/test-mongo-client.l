@@ -43,6 +43,11 @@
   (dotimes (i 10)
     (assert (eq (float i) (send (elt res-many i) :position :x))))
 
+  ;; test non wait insertion
+  (mongo::insert (instance std_msgs::String :init :data "non wait") :wait nil)
+  (unix:sleep 1)
+  (assert (mongo::query std_msgs::String :query '((:data . "non wait")) :msg-only t))
+
   ;; test if installed latest mongodb_store
   (setq amsg (instance mongodb_store_msgs::MongoQueryMsgRequest :init))
   (when (memq :limit (send amsg :methods))

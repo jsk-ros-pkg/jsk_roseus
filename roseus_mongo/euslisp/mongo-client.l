@@ -79,22 +79,44 @@
                       (cons msg (json::parse-from-string meta-raw-string)))))
             (send res :messages) (send res :metas))))
 
-(defun insert (msg &key meta (encoder #'json::encode-alist))
-  (let ((req (instance mongodb_store_msgs::MongoInsertMsgRequest :init))
-        res)
-    (send req :database user::*mongo-database*)
-    (send req :collection user::*mongo-collection*)
-    (send req :message (instance mongodb_store_msgs::SerialisedMessage :init
-                                 :type (send msg :datatype-)
-                                 :msg (send msg :serialize)))
-    (when meta
-      (send req :meta (apply-to-ros-query encoder meta)))
-    (unless
-        (ros::wait-for-service user::*mongo-service-insert* user::*mongo-service-timeout*)
+(defun insert (msg &key meta (encoder #'json::encode-alist) (wait t))
+  "Inserts message into mongo database.
+
+   Returns: Document id of inserted data if `:wait` is enabled (by default), otherwise returns T.
+
+   Arguments:
+     msg: message to be inserted
+     meta: additional meta fields
+           e.g. `(mongo::insert msg :meta '((:memo . \"my awesome pose\")))`
+     wait: waits for server to insert data if enabled."
+  (let ((data (instance mongodb_store_msgs::SerialisedMessage :init
+                        :type (send msg :datatype-)
+                        :msg (send msg :serialize)))
+        (meta-data (apply-to-ros-query encoder meta)))
+    (unless wait
+      (unless (ros::get-topic-publisher user::*mongo-service-insert*)
+        (ros::advertise user::*mongo-service-insert* mongodb_store_msgs::Insert 10)
+        (unix:sleep 1))
+      (ros::publish
+       user::*mongo-service-insert*
+       (instance mongodb_store_msgs::Insert :init
+                 :database user::*mongo-database*
+                 :collection user::*mongo-collection*
+                 :message data
+                 :meta meta-data))
+      (return-from insert t))
+    ;; :wait == t
+    (let ((req (instance mongodb_store_msgs::MongoInsertMsgRequest :init
+                         :database user::*mongo-database*
+                         :collection user::*mongo-collection*
+                         :message data
+                         :meta meta-data))
+          res)
+    (unless (ros::wait-for-service user::*mongo-service-insert* user::*mongo-service-timeout*)
       (ros::ros-warn "wait-for-service ~A timeout." user::*mongo-service-insert*)
       (return-from insert nil))
     (setq res (ros::service-call user::*mongo-service-insert* req))
-    (send res :id)))
+    (send res :id))))
 
 (defun delete-by-id (id)
   (let ((req (instance mongodb_store_msgs::MongoDeleteMsgRequest :init))
