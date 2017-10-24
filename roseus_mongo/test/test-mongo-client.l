@@ -48,6 +48,12 @@
   (unix:sleep 1)
   (assert (mongo::query std_msgs::String :query '((:data . "non wait")) :msg-only t))
 
+  ;; test update
+  (setq msg-id (mongo::insert (instance std_msgs::UInt32 :init :data 2)))
+  (assert (mongo::update-by-id msg-id (instance std_msgs::UInt32 :init :data 3)))
+  (setq msg (mongo::query-by-id std_msgs::UInt32 msg-id :msg-only t))
+  (assert (eq 3 (send msg :data)))
+
   ;; test if installed latest mongodb_store
   (setq amsg (instance mongodb_store_msgs::MongoQueryMsgRequest :init))
   (when (memq :limit (send amsg :methods))

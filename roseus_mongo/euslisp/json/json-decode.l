@@ -61,7 +61,6 @@
              (format nil "Error: string '~C~A' must start with ' or \"~%"
                      start-symbol (read-line is nil "")))
      (loop
-      (format t "~C~%" (peek-char is nil #\0))
       (cond
        ((lisp::char= (peek-char is nil #\0) start-symbol) ;; #\0 is dummy
         (read-char is)

@@ -16,6 +16,7 @@
 (defvar *mongo-query-default-buffer-size* 4096)
 (defvar *mongo-service-query* "/message_store/query_messages")
 (defvar *mongo-service-insert* "/message_store/insert")
+(defvar *mongo-service-update* "/message_store/update")
 (defvar *mongo-service-delete* "/message_store/delete")
 (defvar *mongo-service-timeout* (floor (ros::get-param "~mongodb_timeout" 1)))
 
@@ -164,6 +165,45 @@
       (return-from insert nil))
     (setq res (ros::service-call *mongo-service-insert* req))
     (send res :id))))
+
+(defun update (msg &key meta query meta-query upsert (encoder #'json::encode-alist))
+  "Updates a message.
+
+   Returns:
+     A ID of updated message.
+
+   Arguments:
+     msg: message to be inserted.
+     meta: additional meta fields. If empty, leaves meta unchanged. If empty on upsert is true, uses meta-query.
+     query: conditions on message content to be updated.
+     meta-query: conditions on meta content to be updated.
+     upsert: do `insert` if no matching message found."
+  (let ((req (instance mongodb_store_msgs::MongoUpdateMsgRequest :init))
+        res)
+    (send req :database *mongo-database*)
+    (send req :collection *mongo-collection*)
+
+    (when query
+      (send req :message_query (apply-to-ros-query encoder query)))
+    (when meta-query
+      (send req :meta_query (apply-to-ros-query encoder meta-query)))
+    (send req :upsert upsert)
+
+    (send req :message (instance mongodb_store_msgs::SerialisedMessage :init
+                                 :type (send msg :datatype-)
+                                 :msg (send msg :serialize)))
+    (when meta
+      (send req :meta (apply-to-ros-query encoder meta)))
+
+    (unless (ros::wait-for-service *mongo-service-update* *mongo-service-timeout*)
+      (ros::ros-error "wait-for-service ~A timedout." *mongo-service-update*)
+      (return-from update nil))
+    (setq res (ros::service-call *mongo-service-update* req))
+    (send res :id)))
+
+(defun update-by-id (id msg &key meta upsert (encoder #'json::encode-alist))
+  "Updates a message by object ID."
+  (update msg :query `((:_id (:$oid . ,id))) :meta meta :upsert upsert))
 
 (defun delete-by-id (id)
   "Deletes data from server"
