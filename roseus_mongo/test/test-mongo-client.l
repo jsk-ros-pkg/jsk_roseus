@@ -7,8 +7,8 @@
 (init-unit-test)
 
 (deftest mongo-client-param ()
-  (assert (string= *mongo-database* "test_database"))
-  (assert (string= *mongo-collection* "test_collection")))
+  (assert (string= mongo::*mongo-database* "test_database"))
+  (assert (string= mongo::*mongo-collection* "test_collection")))
 
 (deftest mongo-client ()
 
@@ -58,8 +58,8 @@
 )
 
 (deftest mongo-client-timeout ()
-  (setq *mongo-service-timeout* 1)
-  (setq *mongo-service-insert* "/dummy/insert")
+  (setq mongo::*mongo-service-timeout* 1)
+  (setq mongo::*mongo-service-insert* "/dummy/insert")
 
   (setq start-time (ros::time-now))
   (setq msg (instance geometry_msgs::Pose :init

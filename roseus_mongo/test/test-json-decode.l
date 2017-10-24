@@ -41,12 +41,6 @@
   )
 
 (deftest test-json-decode-string ()
-  (assert (string= "1" (with-input-from-string (is "1")
-                         (json::parse-string is))))
-  (assert (string= "1" (with-input-from-string (is "1:")
-                         (json::parse-string is))))
-  (assert (string= "1" (with-input-from-string (is "1   : ")
-                         (json::parse-string is))))
   (assert (string= "fuga" (json::parse-from-string "\"fuga\"")))
   (assert (string= "    fuga  " (json::parse-from-string "\"    fuga  \"")))
   (assert (string= "\t\r\n\/\\ fuga" (json::parse-from-string "\"\t\r\n\/\\\\ fuga\"")))
@@ -72,33 +66,33 @@
 (deftest test-json-decode-object ()
   (assert (equal
            '((:1 . 2))
-           (with-input-from-string (is "{1:2}")
+           (with-input-from-string (is "{'1':2}")
                          (json::parse-object is))))
   (assert (equal
            '((:1 . "abc"))
-           (with-input-from-string (is "{1:\"abc\"}")
+           (with-input-from-string (is "{'1':\"abc\"}")
                          (json::parse-object is))))
   (assert (equal
            '((:1 . 2) (:2 . t))
-           (with-input-from-string (is "{1:2,  \"2\": true}")
+           (with-input-from-string (is "{\"1\":2,  \"2\": true}")
                          (json::parse-object is))))
   (assert (equal
            '((:1 (:abc . 2)))
-           (with-input-from-string (is "{1:{\"abc\":2}}")
+           (with-input-from-string (is "{'1':{\"abc\":2}}")
                          (json::parse-object is))))
   (assert (equal
            '((:1 (:abc 2 t)))
-           (with-input-from-string (is "{1:{\"abc\":[2,true]}}")
+           (with-input-from-string (is "{'1':{\"abc\":[2,true]}}")
                          (json::parse-object is))))
   (assert (equal
            '((:1 ((:2 . 3)) ((:4 . t))))
-           (with-input-from-string (is "{1:[{2:3},{4:true}]}")
+           (with-input-from-string (is "{'1':[{'2':3},{'4':true}]}")
                          (json::parse-object is))))
   )
 
 (deftest test-json-decode-date ()
   (setq json::*tzoffset* 0)
-  (setq res1 (json::parse-from-string "{$date: 1437900513823}"))
+  (setq res1 (json::parse-from-string "{'$date': 1437900513823}"))
   (assert (and
            (eq (send res1 :year) 2015)
            (eq (send res1 :month) 7)
@@ -109,7 +103,7 @@
            (eq (send res1 :micro) 823)))
 
   (setq json::*tzoffset* 9)
-  (setq res2 (json::parse-from-string "{$date: 1437900513823}"))
+  (setq res2 (json::parse-from-string "{'$date': 1437900513823}"))
   (assert (and
            (eq (send res2 :year) 2015)
            (eq (send res2 :month) 7)

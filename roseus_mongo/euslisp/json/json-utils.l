@@ -1,6 +1,9 @@
 ;; json-utils.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(unless (find-package "JSON") (make-package "JSON"))
+(in-package "JSON")
+
 (defvar *tzoffset* 9) ;; japanese standard time is 9 hours earlier than UTC.
 
 (defun plist-hash (plist &optional (hash (make-hash-table)))

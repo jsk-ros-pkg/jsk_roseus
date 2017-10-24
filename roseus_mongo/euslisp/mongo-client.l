@@ -8,6 +8,9 @@
 (require :json-encode "package://roseus_mongo/euslisp/json/json-encode.l")
 (require :json-decode "package://roseus_mongo/euslisp/json/json-decode.l")
 
+(unless (find-package "MONGO") (make-package "MONGO"))
+(in-package "MONGO")
+
 (defvar *mongo-database* (ros::get-param "robot/database" "test"))
 (defvar *mongo-collection* (ros::get-param "robot/name" "test"))
 (defvar *mongo-query-default-buffer-size* 4096)
@@ -16,13 +19,10 @@
 (defvar *mongo-service-delete* "/message_store/delete")
 (defvar *mongo-service-timeout* (floor (ros::get-param "~mongodb_timeout" 1)))
 
-(unless (find-package "MONGO") (make-package "MONGO"))
-(in-package "MONGO")
-
 (defun wait-for-server (&optional (timeout 30))
   "Wait for mongodb server to be ready"
   (when (ros::get-param "/mongodb_use_daemon" nil)
-    (if (ros::wait-for-service user::*mongo-service-query* timeout)
+    (if (ros::wait-for-service *mongo-service-query* timeout)
         (return-from wait-for-server t))
     (ros::ros-warn "timedout. mongodb daemon server is not ready.")
     (return-from wait-for-server nil))
@@ -47,7 +47,7 @@
   t)
 
 (defun apply-to-ros-query (encoder lst)
-  (let ((ss (make-string-output-stream user::*mongo-query-default-buffer-size*))
+  (let ((ss (make-string-output-stream *mongo-query-default-buffer-size*))
         (msg (instance mongodb_store_msgs::StringPairList :init)))
     (when lst
       (funcall encoder lst ss)
@@ -95,8 +95,8 @@
 
   (let ((req (instance mongodb_store_msgs::MongoQueryMsgRequest :init))
         res)
-    (send req :database user::*mongo-database*)
-    (send req :collection user::*mongo-collection*)
+    (send req :database *mongo-database*)
+    (send req :collection *mongo-collection*)
     (send req :type (get msg-type :datatype-))
     (send req :single single)
     (when limit
@@ -109,11 +109,10 @@
       (send req :meta_query (apply-to-ros-query encoder meta)))
     (when sort
       (send req :sort_query (apply-to-ros-query encoder sort)))
-    (unless
-        (ros::wait-for-service user::*mongo-service-query* user::*mongo-service-timeout*)
-      (ros::ros-warn "wait-for-service ~A timeout." user::*mongo-service-query*)
+    (unless (ros::wait-for-service *mongo-service-query* *mongo-service-timeout*)
+      (ros::ros-warn "wait-for-service ~A timeout." *mongo-service-query*)
       (return-from query nil))
-    (setq res (ros::service-call user::*mongo-service-query* req))
+    (setq res (ros::service-call *mongo-service-query* req))
     (mapcar #'(lambda (message meta-pair)
                 (let ((msg (instance msg-type :init))
                       (meta-raw-string (send (car (send meta-pair :pairs)) :second)))
@@ -122,10 +121,15 @@
                       (cons msg (json::parse-from-string meta-raw-string)))))
             (send res :messages) (send res :metas))))
 
+(defun query-by-id (msg-type id &key msg-only)
+  "Find message by message id from server."
+  (car (query msg-type :query `((:_id (:$oid . ,id))) :single t :msg-only msg-only)))
+
 (defun insert (msg &key meta (encoder #'json::encode-alist) (wait t))
   "Inserts message into mongo database.
 
-   Returns: Document id of inserted data if `:wait` is enabled (by default), otherwise returns T.
+   Returns:
+     A document id of inserted data if `:wait` is enabled (by default), otherwise returns T.
 
    Arguments:
      msg: message to be inserted
@@ -137,47 +141,47 @@
                         :msg (send msg :serialize)))
         (meta-data (apply-to-ros-query encoder meta)))
     (unless wait
-      (unless (ros::get-topic-publisher user::*mongo-service-insert*)
-        (ros::advertise user::*mongo-service-insert* mongodb_store_msgs::Insert 10)
+      (unless (ros::get-topic-publisher *mongo-service-insert*)
+        (ros::advertise *mongo-service-insert* mongodb_store_msgs::Insert 10)
         (unix:sleep 1))
       (ros::publish
-       user::*mongo-service-insert*
+       *mongo-service-insert*
        (instance mongodb_store_msgs::Insert :init
-                 :database user::*mongo-database*
-                 :collection user::*mongo-collection*
+                 :database *mongo-database*
+                 :collection *mongo-collection*
                  :message data
                  :meta meta-data))
       (return-from insert t))
     ;; :wait == t
     (let ((req (instance mongodb_store_msgs::MongoInsertMsgRequest :init
-                         :database user::*mongo-database*
-                         :collection user::*mongo-collection*
+                         :database *mongo-database*
+                         :collection *mongo-collection*
                          :message data
                          :meta meta-data))
           res)
-    (unless (ros::wait-for-service user::*mongo-service-insert* user::*mongo-service-timeout*)
-      (ros::ros-warn "wait-for-service ~A timeout." user::*mongo-service-insert*)
+    (unless (ros::wait-for-service *mongo-service-insert* *mongo-service-timeout*)
+      (ros::ros-warn "wait-for-service ~A timeout." *mongo-service-insert*)
       (return-from insert nil))
-    (setq res (ros::service-call user::*mongo-service-insert* req))
+    (setq res (ros::service-call *mongo-service-insert* req))
     (send res :id))))
 
 (defun delete-by-id (id)
   "Deletes data from server"
   (let ((req (instance mongodb_store_msgs::MongoDeleteMsgRequest :init))
         res)
-    (send req :database user::*mongo-database*)
-    (send req :collection user::*mongo-collection*)
+    (send req :database *mongo-database*)
+    (send req :collection *mongo-collection*)
     (send req :document_id id)
     (unless
-        (ros::wait-for-service user::*mongo-service-delete* user::*mongo-service-timeout*)
-      (ros::ros-warn "wait-for-service ~A timeout." user::*mongo-service-delete*)
+        (ros::wait-for-service *mongo-service-delete* *mongo-service-timeout*)
+      (ros::ros-warn "wait-for-service ~A timeout." *mongo-service-delete*)
       (return-from delete-by-id nil))
-    (setq res (ros::service-call user::*mongo-service-delete* req))
+    (setq res (ros::service-call *mongo-service-delete* req))
     (send res :success)))
 
 (defun replicate (&key
-                    (database user::*mongo-database*)
-                    (collections (list user::*mongo-collection*))
+                    (database *mongo-database*)
+                    (collections (list *mongo-collection*))
                     (move-before (ros::time (* 60 60 24)))
                     (delete-after-move nil))
   (let ((c (instance ros::simple-action-client :init
@@ -191,7 +195,7 @@
                                                :data collections)
                         :move_before move-before
                         :delete_after_move delete-after-move))))
-    (unless (send c :wait-for-server user::*mongo-service-timeout*)
+    (unless (send c :wait-for-server *mongo-service-timeout*)
       (ros::ros-warn "wait-for-server /move_mongodb_entries timeout")
       (return-from replicate nil))
     (send c :send-goal-and-wait goal))
