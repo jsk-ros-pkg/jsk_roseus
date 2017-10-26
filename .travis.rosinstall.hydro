@@ -1,4 +1,0 @@
-- git:
-    local-name: mongodb_store
-    uri: https://github.com/strands-project/mongodb_store.git
-    version: indigo-0.1.30
