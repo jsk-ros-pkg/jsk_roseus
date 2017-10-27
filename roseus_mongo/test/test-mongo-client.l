@@ -44,9 +44,11 @@
     (assert (eq (float i) (send (elt res-many i) :position :x))))
 
   ;; test non wait insertion
-  (mongo::insert (instance std_msgs::String :init :data "non wait") :wait nil)
-  (unix:sleep 1)
-  (assert (mongo::query std_msgs::String :query '((:data . "non wait")) :msg-only t))
+  ;; skips on hydro
+  (unless (string= "hydro" (unix::getenv "ROS_DISTRO"))
+    (mongo::insert (instance std_msgs::String :init :data "non wait") :wait nil)
+    (unix:sleep 1)
+    (assert (mongo::query std_msgs::String :query '((:data . "non wait")) :msg-only t)))
 
   ;; test update
   (setq msg-id (mongo::insert (instance std_msgs::UInt32 :init :data 2)))
