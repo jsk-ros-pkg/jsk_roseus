@@ -1,20 +1,21 @@
 ;; json-decode.l
 ;; Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
+(unless (find-package "JSON") (make-package "JSON"))
+(in-package "JSON")
+
 (defun string->keyword (str)
-  (intern (string-upcase str) *keyword-package*))
+  (intern (string-upcase str) user::*keyword-package*))
 
 (defvar *json-parse-object-as* :alist)
 (defvar *json-parse-key-function* #'string->keyword)
-
-(unless (find-package "JSON") (make-package "JSON"))
-(in-package "JSON")
 
 (require :json-utils "json-utils.l")
 
 (defparameter *inverse-char-table*
   (plist-hash
    '(#\" #\"
+     #\' #\'
      #\\ #\\
      #\/ #\/
      #\b #\Backspace
@@ -55,23 +56,19 @@
 (defun parse-string (is)
   (with-output-to-string (os)
    (let ((start-symbol (read-char is)))
-     (unless (lisp::char= start-symbol #\")
-       (write-byte start-symbol os))
+     ;; assert string begins with ' or "
+     (assert (find start-symbol (list #\' #\"))
+             (format nil "Error: string '~C~A' must start with ' or \"~%"
+                     start-symbol (read-line is nil "")))
      (loop
       (cond
-       ((lisp::char= (peek-char is nil #\0) #\") ;; #\0 is dummy
+       ((lisp::char= (peek-char is nil #\0) start-symbol) ;; #\0 is dummy
         (read-char is)
         (return-from parse-string
           (get-output-stream-string os)))
        ((lisp::char= (peek-char is nil #\0) #\\) ;; #\0 is dummy
         (read-char is) ;; skip
         (parse-escape-char is os))
-       ((and (not (lisp::char= start-symbol #\"))
-             (or (eq :eof (peek-char is nil :eof))
-                 (space-p (peek-char is nil))
-                 (lisp::char= (peek-char is nil) #\:)))
-        (return-from parse-string
-          (get-output-stream-string os)))
        (t (write-byte (read-char is) os)))))))
 
 (defun parse-constant (is)
@@ -114,23 +111,23 @@
        (push (parse is) ret))))))
 
 (defun add-attribute (to k v)
-  (case user::*json-parse-object-as*
+  (case *json-parse-object-as*
     (:plist
      (append to (list k v)))
     (:alist
      (append to (list (cons k v))))
     (t
-     (error "~A is not valid, use :alist or :plist" user::*json-parse-object-as*))))
+     (error "~A is not valid, use :alist or :plist" *json-parse-object-as*))))
 
 (defun convertable-to-date-p (obj)
-  (case user::*json-parse-object-as*
+  (case *json-parse-object-as*
     (:alist
      (string= (string-downcase (string (caar obj))) "$date"))
     (:plist
      (string= (string-downcase (string (car obj))) "$date"))))
 
 (defun datetime-from-object (obj)
-  (case user::*json-parse-object-as*
+  (case *json-parse-object-as*
     (:alist
      (datetime-from-utc-epoch-time (cdar obj)))
     (:plist
@@ -144,7 +141,7 @@
             (add-attribute ret
              (let ((key-str (parse-string is)))
                (prog1
-                   (or (funcall user::*json-parse-key-function* key-str)
+                   (or (funcall *json-parse-key-function* key-str)
                        (error "cannot convert key ~A" key-str))
                  (unless (eql #\: (read-char-skipping-space is))
                    (error "expected colon not found at key ~A" key-str))
@@ -158,7 +155,7 @@
 
 (defun parse (is)
   (case (peek-char-skipping-space is)
-    (#\"
+    ((#\" #\')
      (parse-string is))
     ((#\- #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)
      (parse-number is))
@@ -172,7 +169,7 @@
     ((#\t #\f #\n)
      (parse-constant is))
     (t
-     (error 'invalid-json-string))))
+     (error (format nil "Invalid JSON: ~c at ~a" (peek-char is) (read-line is nil ""))))))
 
 (defun parse-from-string (s)
   (let ((is (make-string-input-stream s)))
