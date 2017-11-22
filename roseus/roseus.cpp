@@ -546,8 +546,9 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
     }
   } else error(E_NOSEQ);
 
+  // convert invalid node name charactors to _, we assume it is '-'
   for (unsigned int i=0; i < strlen(name); i++)
-    if ( ! isalpha(name[i]) ) name[i] = '_';
+    if ( ! (isalpha(name[i]) || isdigit(name[i])) ) name[i] = '_';
 
   K_ROSEUS_MD5SUM   = defkeyword(ctx,"MD5SUM-");
   K_ROSEUS_DATATYPE = defkeyword(ctx,"DATATYPE-");
