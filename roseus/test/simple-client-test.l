@@ -62,6 +62,23 @@
     (send c :cancel-all-goals)
     ))
 
+(deftest test-simple-client-send-simple-goal ()
+  (let (c goal)
+    (setq c (instance ros::simple-action-client :init
+                      "reference_simple_action" actionlib::TestAction))
+    (warning-message 1 "wait-for-server~%")
+    (send c :wait-for-server)
+    (setq goal (instance actionlib::TestGoal :init))
+    (send goal :goal 1)
+    (send c :send-goal goal)
+    (warning-message 1 "wait-for-result~%")
+    (unless (send c :wait-for-result)
+      (warning-message 1 "Goal didn't finish (1: successed)~%")
+      (assert nil "The ref server did not returns result"))
+    (assert (equal (send c :get-state) actionlib_msgs::GoalStatus::*succeeded*))
+    (assert (string= (send c :get-goal-status-text)
+                          "The ref server has succeeded"))
+    ))
 (ros::roseus "simple_action_client")
 
 (run-all-tests)
