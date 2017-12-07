@@ -140,6 +140,7 @@ e.g. (make-state-machine '((:a -> :b)
                      ((> (length to-nodes) 1) parallel-exec-result)
                      ((eq edge '->) exec-result)
                      ((eq edge '!->) exec-failure-result)
+                     ((or (numberp edge) (stringp edge) (symbolp edge)) edge)
                      (t (error "invalid connection ~A ~A ~A" from-node edge to-node))))))))
       sm)))
 
