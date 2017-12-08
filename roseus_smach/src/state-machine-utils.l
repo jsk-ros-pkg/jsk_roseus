@@ -18,6 +18,7 @@ Returns:
     (unix::sleep 2)
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
+    (apply #'send sm :arg-keys (union (send sm :arg-keys) (mapcar #'car mydata)))
 
     (while (ros::ok)
       (when spin
