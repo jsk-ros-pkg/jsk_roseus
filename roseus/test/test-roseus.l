@@ -26,10 +26,11 @@
   (ros::ros-info "get-uri ~A" (ros::get-uri))
   (ros::ros-info "get-topics ~A" (ros::get-topics))
 
-  (assert (equal (ros::get-nodes) '("/eusroseus" "/rosout"))) ;; test-roseus.test's test-name
-  (assert (equal (ros::get-uri) (format nil "http://~A:~A/" (ros::get-host) (ros::get-port))))
-  (assert (equal (ros::get-topics) '(("/rosout" . "rosgraph_msgs/Log") ("/rosout_agg" . "rosgraph_msgs/Log"))))
-
+  (assert (equal (ros::get-nodes) '("/eusroseus" "/rosout")) (format nil "(ros::get-nodes): ~A~%" (ros::get-nodes))) ;; test-roseus.test's test-name
+  (assert (equal (ros::get-uri) (format nil "http://~A:~A/" (ros::get-host) (ros::get-port)))
+          (format nil "(ros::get-uri): ~A, (ros::get-host): ~A, (ros::get-port): ~A~%" (ros::get-uri) (ros::get-host) (ros::get-port)))
+  (assert (equal (ros::get-topics) '(("/rosout" . "rosgraph_msgs/Log") ("/rosout_agg" . "rosgraph_msgs/Log")))
+          (format nil "(ros::get-topics): ~A~%" (ros::get-topics)))
   )
 
 (ros::load-ros-manifest "std_msgs")
