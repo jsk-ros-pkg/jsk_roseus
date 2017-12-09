@@ -26,9 +26,9 @@
   (ros::ros-info "get-uri ~A" (ros::get-uri))
   (ros::ros-info "get-topics ~A" (ros::get-topics))
 
-  (assert (equal (ros::get-nodes) '("/eusroseus" "/rosout"))) ;; test-roseus.test's test-name
-  (assert (equal (ros::get-uri) (format nil "http://~A:~A/" (ros::get-host) (ros::get-port))))
-  (assert (equal (ros::get-topics) '(("/rosout" . "rosgraph_msgs/Log") ("/rosout_agg" . "rosgraph_msgs/Log"))))
+  (assert (set-exclusive-or (ros::get-nodes) '("/eusroseus" "/rosout") :test #'equal)) ;; test-roseus.test's test-name
+  (assert (substringp (ros::get-uri) (format nil "http://~A:~A/" (ros::get-host) (ros::get-port))))
+  (assert (set-exclusive-or (ros::get-topics) '(("/rosout" . "rosgraph_msgs/Log") ("/rosout_agg" . "rosgraph_msgs/Log")) :test #'equal))
 
   )
 
