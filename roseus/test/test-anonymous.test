@@ -7,7 +7,7 @@
         required="true" />
   <param name="hztest1/topic" value="chatter" />  
   <param name="hztest1/hz" value="20.0" /> <!-- for two nodes -->
-  <param name="hztest1/hzerror" value="0.5" />
+  <param name="hztest1/hzerror" value="1.5" />
   <param name="hztest1/test_duration" value="5.0" />    
   <test test-name="test_anonymous" pkg="rostest" type="hztest"
         name="hztest1" />
