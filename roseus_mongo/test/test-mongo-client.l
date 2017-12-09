@@ -7,8 +7,8 @@
 (init-unit-test)
 
 (deftest mongo-client-param ()
-  (assert (string= *mongo-database* "test_database"))
-  (assert (string= *mongo-collection* "test_collection")))
+  (assert (string= mongo::*mongo-database* "test_database"))
+  (assert (string= mongo::*mongo-collection* "test_collection")))
 
 (deftest mongo-client ()
 
@@ -43,6 +43,19 @@
   (dotimes (i 10)
     (assert (eq (float i) (send (elt res-many i) :position :x))))
 
+  ;; test non wait insertion
+  ;; skips on hydro
+  (unless (string= "hydro" (unix::getenv "ROS_DISTRO"))
+    (mongo::insert (instance std_msgs::String :init :data "non wait") :wait nil)
+    (unix:sleep 1)
+    (assert (mongo::query std_msgs::String :query '((:data . "non wait")) :msg-only t)))
+
+  ;; test update
+  (setq msg-id (mongo::insert (instance std_msgs::UInt32 :init :data 2)))
+  (assert (mongo::update-by-id msg-id (instance std_msgs::UInt32 :init :data 3)))
+  (setq msg (mongo::query-by-id std_msgs::UInt32 msg-id :msg-only t))
+  (assert (eq 3 (send msg :data)))
+
   ;; test if installed latest mongodb_store
   (setq amsg (instance mongodb_store_msgs::MongoQueryMsgRequest :init))
   (when (memq :limit (send amsg :methods))
@@ -53,8 +66,8 @@
 )
 
 (deftest mongo-client-timeout ()
-  (setq *mongo-service-timeout* 1)
-  (setq *mongo-service-insert* "/dummy/insert")
+  (setq mongo::*mongo-service-timeout* 1)
+  (setq mongo::*mongo-service-insert* "/dummy/insert")
 
   (setq start-time (ros::time-now))
   (setq msg (instance geometry_msgs::Pose :init

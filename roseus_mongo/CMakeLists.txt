@@ -26,7 +26,7 @@ install(DIRECTORY euslisp
   USE_SOURCE_PERMISSIONS)
 
 if(CATKIN_ENABLE_TESTING)
-  find_package(catkin REQUIRED COMPONENTS rostest)
+  find_package(rostest REQUIRED)
   add_rostest(test/test_json_encode.test)
   add_rostest(test/test_json_decode.test)
   if(${mongodb_store_VERSION} VERSION_LESS "0.1.17")

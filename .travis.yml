@@ -34,8 +34,15 @@ env:
     - ROS_DISTRO=kinetic USE_DEB=true     TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
     - ROS_DISTRO=kinetic USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
 matrix:
+  fast_finish: true
   allow_failures:
+    - env: ROS_DISTRO=hydro  USE_DEB=true
     - env: ROS_DISTRO=hydro  USE_DEB=true  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - env: ROS_DISTRO=hydro  USE_DEB=false NOT_TEST_INSTALL=true
+    - env: ROS_DISTRO=hydro  USE_DEB=true  NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_pr2eus" TEST_PKGS="pr2eus"
+    - env: ROS_DISTRO=hydro  USE_DEB=true  NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_planning" TEST_PKGS="task_compiler" EXTRA_DEB="gawk"
+    - env: ROS_DISTRO=hydro  USE_DEB=true  NOT_TEST_INSTALL=true BEFORE_SCRIPT="git clone -b hydro-devel http://github.com/ros/geometry; git clone -b hydro-devel http://github.com/ros/geometry-experimental; touch jsk_roseus/roseus_tutorials/CATKIN_IGNORE; touch geometry-experimental/test_tf2/CATKIN_IGNORE" # need to ignore roseus_tutorials which depends on image_view2 and that install deb version of tf/tf2
+    - env: ROS_DISTRO=hydro  USE_DEB=source
     - env: ROS_DISTRO=jade USE_DEB=true     TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
     - env: ROS_DISTRO=jade USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
 before_script:

@@ -32,14 +32,17 @@
                        ((:$gt . (send (instance calendar-time :init)
                                   :make :year 2015 :month 7 :day 17))))))
 
-;; inserting message to database
 (setq msg (instance geometry_msgs::Pose :init))
-(setq document-id (mongo::insert msg))
+;; insert message to database and wait for server to be inserted
+(setq document-id (mongo::insert msg)) ;; => returns document id
+
+;; you can also insert data without blocking
+(mongo::insert msg :wait nil) ;; => returns t
 
 ;; you can also insert with annotating meta data
 (mongo::insert msg :meta '((:memo . "my awesome pose")))
 
-;; deleting message from database
+;; delete message from database
 (setq success-p (mongo::delete-by-id document-id))
 
 (provide :mongo-client-sample) ;; end of mongo-client-sample.l
