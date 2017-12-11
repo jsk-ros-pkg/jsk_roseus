@@ -58,12 +58,16 @@ Returns:
 e.g. (make-state-machine '((:a -> :b)
                            (:b -> :c)
                            (:b !-> :b_f)
+                           (:b :skip :b_s)
                            (:b_f -> :fail)
+                           (:b_s -> :end)
                            (:c -> (:d1 :d2))
                            (:d1 -> :end)
                            (:d2 -> :end))
                          '((:a #'action-a)
                            (:b #'action-b)
+                           (:b_f #'action-b-f)
+                           (:b_s #'action-b-s)
                            (:c #'action-c)
                            (:d1 #'action-d1)
                            (:d2 #'action-d2))
@@ -71,8 +75,10 @@ e.g. (make-state-machine '((:a -> :b)
                           '(:end :fail))
     This makes state machine like:
       :a -> :b -> :c -> :d1 -> :end
-             |  t  \ -> :d2 /
-         nil  -> :b_f -> :fail
+             |  t  \ -> :d2 /    ^
+         nil  -> :b_f -> :fail   |
+             |                   |
+        :skip -> :b_s ------------
     Each actions are assumed to implement like below:
     ```
     (defun action-a (&rest args)
@@ -81,6 +87,7 @@ e.g. (make-state-machine '((:a -> :b)
     ```
     By default, if `action-a` returns value t, then state transits as defined above.
     You can specify return value as `exec-result` key.
+    Also, you can speficy edges with symbol, number and string as `(:b :skip :b_s)`.
 "
   (labels ((unique-graph (gr)
              (unique
@@ -128,7 +135,8 @@ e.g. (make-state-machine '((:a -> :b)
       (dolist (connection graph-list)
         (let ((from-nodes (flatten (list (car connection))))
               (edge (cadr connection))
-              (to-nodes (flatten (list (caddr connection)))))
+              (to-nodes (flatten (list (caddr connection))))
+              (test (cadr (memq :test connection))))
           (unless from-nodes (setq from-nodes '(nil)))
           (unless to-nodes (setq to-nodes '(nil)))
           (warning-message 2 "~A ~A ~A~%" from-nodes edge to-nodes)
@@ -141,7 +149,9 @@ e.g. (make-state-machine '((:a -> :b)
                      ((> (length to-nodes) 1) parallel-exec-result)
                      ((eq edge '->) exec-result)
                      ((eq edge '!->) exec-failure-result)
-                     (t (error "invalid connection ~A ~A ~A" from-node edge to-node))))))))
+                     ((or (numberp edge) (stringp edge) (symbolp edge)) edge)
+                     (t (error "invalid connection ~A ~A ~A" from-node edge to-node)))
+                    :test (if test test #'equal))))))
       sm)))
 
 (provide :state-machine-utils) ;; end of state-machine-utils.l
