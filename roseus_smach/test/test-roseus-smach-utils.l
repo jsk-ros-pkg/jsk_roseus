@@ -12,16 +12,30 @@
               (:b -> :c)
               (:b !-> :b-fail)
               (:b-fail -> :b-recover)
+              (:b-fail !-> :failed)
               (:b-recover !-> :failed)
               (:b-recover -> :b)
               (:c -> :d)
               (:d -> :end))
-            '((:a '(lambda (&optional args) (ros::ros-info "called :a") :success))
-              (:b '(lambda (&optional args) (ros::ros-info "called :b") :fail))
-              (:b-fail '(lambda (&optional args) (ros::ros-info "called :b-fail") :fail))
-              (:b-recover '(lambda (&optional args) (ros::ros-info "called :b-recover") :fail))
-              (:c '(lambda (&optional args) (ros::ros-info "called :c") :fail))
-              (:d '(lambda (&optional args) (ros::ros-info "called :d") :success)))
+            '((:a '(lambda (userdata) (ros::ros-info "called :a") :success))
+              (:b
+                '(lambda (userdata)
+                   (assert (eq (cdr (assoc 'count userdata)) 0))
+                   (incf (cdr (assoc 'count userdata)))
+                   (assert (eq (cdr (assoc 'count userdata)) 1))
+                   (ros::ros-info "userdata: ~A" userdata)
+                   (ros::ros-info "called :b")
+                   :fail))
+              (:b-fail
+                '(lambda (userdata)
+                   (incf (cdr (assoc 'count userdata)))
+                   (assert (eq (cdr (assoc 'count userdata)) 2))
+                   (ros::ros-info "userdata: ~A" userdata)
+                   (ros::ros-info "called :b-fail")
+                   :fail))
+              (:b-recover '(lambda (userdata) (ros::ros-info "called :b-recover") :fail))
+              (:c '(lambda (userdata) (ros::ros-info "called :c") :fail))
+              (:d '(lambda (userdata) (ros::ros-info "called :d") :success)))
             '(:a)
             '(:end :failed)
             :exec-result :success
@@ -35,10 +49,11 @@
 (init-unit-test)
 
 (deftest test-methods
-  (setq userdata nil)
+  (setq userdata '((count . 0)))
   (assert (eq (send (send *sm* :start-state) :name) :a))
   (assert (equal (send-all (send *sm* :goal-state) :name) '(:end :failed)))
   (send *sm* :reset-state)
+  (send *sm* :arg-keys 'count)
   (assert (not (send *sm* :goal-reached)))
 
 
@@ -58,6 +73,8 @@
   (send *sm* :execute userdata :step 1)
   (assert (eq (send *sm* :active-state) (send *sm* :node :end))))
 
+(deftest test-exec-state-machine
+  (exec-state-machine *sm* '((count . 0)) :spin t :hz 0.5 :root-name "SM_ROOT"))
 
 (run-all-tests)
 (exit)
