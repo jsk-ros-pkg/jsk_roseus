@@ -56,7 +56,8 @@
       (ros::set-logger-level logger level)
       )))
 
-(setq ros::*compile-message* nil)
+(defparameter ros::*compile-message* nil)
+(defparameter ros::*compile* nil)
 
 (shadow 'object *package*)
 (defclass ros::object
@@ -188,7 +189,7 @@
 	(let ((dirfile (concatenate string dir file))
               (modname (intern (string-upcase (format nil "~A/~A" pkg (pathname-name file))) *keyword-package*)))
 	  (require modname dirfile)
-          (when ros::*compile-message*
+          (when (or ros::*compile-message* ros::*compile*)
 	    (in-package "ROS")
 	    (let* ((fname (pathname-name dirfile))
 		   (old-module (find (format nil "~A_~A" pkg fname)
@@ -197,8 +198,8 @@
 				     :test #'equal)))
               (unless old-module
                 (comp::compile-file-if-src-newer dirfile (format nil "~A/~A_~A" dir pkg fname))
-                (load (format nil "~A/~A_~A.so" dir pkg fname)
-                      :entry (format nil "___~A" fname))
+                (load-org-for-ros (format nil "~A/~A_~A.so" dir pkg fname)
+                                  :entry (format nil "___~A" fname))
                 ))
 	    (in-package "USER"))
 	    )))))
@@ -225,7 +226,7 @@
   (let ((fullname fname))
     (when (substringp "package://" fname)
       (setq fullname (ros::resolve-ros-path fname))
-      (when ros::*compile-message*
+      (when ros::*compile*
         (let* ((urlname (url-pathname fname))
                (package-name (send urlname :host))
                (path-name (format nil "~A_~A" package-name (substitute #\_ #\/ (concatenate string (subseq (send urlname :directory-string) 1) (send urlname :name)))))
@@ -238,8 +239,8 @@
                    (dir (format nil "~A/share/roseus/ros/~A" (subseq ppath 0 (position #\: ppath)) package-name)))
               (unless (probe-file dir) (unix:mkdir dir))
               (comp::compile-file-if-src-newer fullname (format nil "~A/~A" dir path-name))
-              (return-from load (load (format nil "~A/~A.so" dir path-name)
-                                      :entry (format nil "___~A" path-name)))))
+              (return-from load (load-org-for-ros (format nil "~A/~A.so" dir path-name)
+                                                  :entry (format nil "___~A" path-name)))))
           )))
     (if (null fullname) ;; when ros::resolve-ros-patch is failed to load
         (error "file ~s not found" fname))
