@@ -351,13 +351,12 @@ always the rank of list is 2"
         (ppath (unix::getenv "CMAKE_PREFIX_PATH"))
         (s 0) i)
     (while (setq i (position #\: ppath :start s))
-      (setq dirs (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s i)))))
+      (setq dirs (nconc dirs (list (format nil "~A/share" (subseq ppath s i)))))
       (setq s (1+ i)))
-    (setq dirs (nconc dirs (list (format nil "~A/share/roseus/ros" (subseq ppath s)))))
-    ;;
+    (setq dirs (nconc dirs (list (format nil "~A/share" (subseq ppath s)))))
     (dolist (dir dirs)
-      (if (probe-file (format nil "~A/~A/" dir pkg))
-          (return-from ros::find-load-msg-path (format nil "~A/~A" dir pkg))))
+      (if (probe-file (format nil "~A/roseus/ros/~A/" dir pkg))
+	  (return-from ros::find-load-msg-path (format nil "~A/roseus/ros/~A" dir pkg))))
     ;; on jade/kinetic, package without msg does not have manifest.l
     (let ((package-path (ros::rospack-find pkg)))
       (if (not (or (probe-file (format nil "~A/msg" package-path))
