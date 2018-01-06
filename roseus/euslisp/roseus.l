@@ -354,14 +354,17 @@ always the rank of list is 2"
       (setq dirs (nconc dirs (list (format nil "~A/share" (subseq ppath s i)))))
       (setq s (1+ i)))
     (setq dirs (nconc dirs (list (format nil "~A/share" (subseq ppath s)))))
+    ;;
+    ;; INDIGO: https://github.com/jsk-ros-pkg/jsk_roseus/issues/554
+    ;;          if pkg without msg, need to return no-msg-package
+    ;; JADE/KINETIC: https://github.com/jsk-ros-pkg/jsk_robot/issues/823
+    ;;          package without msg does not have manifest.l
     (dolist (dir dirs)
+      (if (and (probe-file (format nil "~A/~A/" dir pkg)) ;; package is in source tree
+	       (not (probe-file (format nil "~A/roseus/ros/~A/" dir pkg)))) ;; but does not have manifest.l
+	  (return-from ros::find-load-msg-path :no-msg-package))
       (if (probe-file (format nil "~A/roseus/ros/~A/" dir pkg))
 	  (return-from ros::find-load-msg-path (format nil "~A/roseus/ros/~A" dir pkg))))
-    ;; on jade/kinetic, package without msg does not have manifest.l
-    (let ((package-path (ros::rospack-find pkg)))
-      (if (not (or (probe-file (format nil "~A/msg" package-path))
-		   (probe-file (format nil "~A/srv" package-path))))
-	  (return-from ros::find-load-msg-path :no-msg-package)))
     (ros::ros-error "Could not find roseus messages for ~A under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" pkg dirs pkg)
     nil))
 
