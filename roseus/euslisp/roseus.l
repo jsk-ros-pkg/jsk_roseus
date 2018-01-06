@@ -361,7 +361,8 @@ always the rank of list is 2"
     ;; JADE/KINETIC: https://github.com/jsk-ros-pkg/jsk_robot/issues/823
     ;;          package without msg does not have manifest.l
     (dolist (dir dirs)
-      (if (and (probe-file (format nil "~A/~A/" dir pkg)) ;; package is in source tree
+      (if (and (not (string= pkg "roseus"))
+	       (probe-file (format nil "~A/~A/" dir pkg)) ;; package is in source tree
 	       (not (probe-file (format nil "~A/roseus/ros/~A/" dir pkg)))) ;; but does not have manifest.l
 	  (return-from ros::find-load-msg-path :no-msg-package))
       (if (probe-file (format nil "~A/roseus/ros/~A/" dir pkg))
