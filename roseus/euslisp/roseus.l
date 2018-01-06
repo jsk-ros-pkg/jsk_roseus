@@ -180,6 +180,7 @@
       (warning-message
        1 (format nil ";; can not find ~A directory for [~A] packages~%" dir pkg))
       (exit 1))
+    (ros::ros-debug "Loading ~A" dir)
     (unless (find-package (string-upcase pkg))
       (make-package (string-upcase pkg)))
     (dolist (file (directory dir))
@@ -373,8 +374,12 @@ always the rank of list is 2"
 	 (manifest (format nil "~A/manifest.l" msg-path)))
     (cond ((eq msg-path :no-msg-package)
 	  ;; on jade/kinetic, package without msg does not have manifest.l
-	   (ros::ros-warn "Calling (load-ros-manifest ~A) for the package without msg/srv will be deprecated" pkg))
+	   (ros::ros-warn "Calling (load-ros-manifest ~A) for the package without msg/srv will be deprecated" pkg)
+	   (ros::ros-warn "ACTION REQUIRED")
+	   (ros::ros-warn " Use (load-ros-{package,msg,srv} pkg) for the dependent packages with msg/srv" pkg)
+	   (ros::ros-warn " See https://github.com/jsk-ros-pkg/jsk_robot/issues/823"))
 	  ((probe-file manifest)
+	   (ros::ros-debug "Loading ~A" manifest)
 	   (load-org-for-ros manifest))
 	  (t
 	   (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg)))))
