@@ -374,11 +374,14 @@ always the rank of list is 2"
   (let* ((msg-path (ros::find-load-msg-path pkg))
 	 (manifest (format nil "~A/manifest.l" msg-path)))
     (cond ((eq msg-path :no-msg-package)
-	  ;; on jade/kinetic, package without msg does not have manifest.l
+           ;; on jade/kinetic, package without msg does not have manifest.l
 	   (ros::ros-warn "Calling (load-ros-manifest ~A) for the package without msg/srv will be deprecated" pkg)
 	   (ros::ros-warn "ACTION REQUIRED")
 	   (ros::ros-warn " Use (load-ros-{package,msg,srv} pkg) for the dependent packages with msg/srv" pkg)
-	   (ros::ros-warn " See https://github.com/jsk-ros-pkg/jsk_robot/issues/823"))
+	   (ros::ros-warn " See https://github.com/jsk-ros-pkg/jsk_robot/issues/823")
+           (dolist (dep (ros::rospack-depends pkg))
+             (ros::load-ros-package dep))
+           )
 	  ((probe-file manifest)
 	   (ros::ros-debug "Loading ~A" manifest)
 	   (load-org-for-ros manifest))
