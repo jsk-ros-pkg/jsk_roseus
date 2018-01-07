@@ -81,6 +81,11 @@
 
 #include "eus.h"
 extern "C" {
+#ifdef ROSPACK_EXPORT
+  rospack::ROSPack rp;
+#else
+  rospack::Rospack rp;
+#endif
   pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env);
   void register_roseus(){
     char modname[] = "___roseus";
@@ -1456,17 +1461,47 @@ pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
 
   try {
 #ifdef ROSPACK_EXPORT
-      rospack::ROSPack rp;
       rospack::Package *p = rp.get_pkg(pkg);
       if (p!=NULL) return(makestring((char *)p->path.c_str(),p->path.length()));
 #else
-      rospack::Rospack rp;
-      std::vector<std::string> search_path;
-      rp.getSearchPathFromEnv(search_path);
-      rp.crawl(search_path, 1);
       std::string path;
       if (rp.find(pkg,path)==true) return(makestring((char *)path.c_str(),path.length()));
 #endif
+  } catch (runtime_error &e) {
+  }
+  return(NIL);
+}
+
+pointer ROSEUS_ROSPACK_DEPENDS(register context *ctx,int n,pointer *argv)
+{
+  // (ros::rospack-depends package-name)
+  ckarg(1);
+
+  string pkg;
+  if (isstring(argv[0])) pkg.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  try {
+      // not sure why need this, otherwise failed in ImportError: /usr/lib/python2.7/lib-dynload/_elementtree.x86_64-linux-gnu.so: undefined symbol: PyExc_RuntimeError
+      std::vector<std::string> flags;
+      std::vector<rospack::Stackage*> stackages;
+      if(!rp.depsOnDetail(pkg, true, stackages, true))
+        return (NIL);
+      //
+      std::vector<std::string> deps;
+      if (rp.deps(pkg,false,deps)) {
+        register pointer ret, first;
+        ret=cons(ctx, NIL, NIL);
+        first = ret;
+        vpush(ret);
+        for (std::vector<std::string>::iterator it = deps.begin() ; it != deps.end(); it++) {
+          const std::string& dep = *it;
+          ccdr(ret) = cons(ctx, makestring((char *)dep.c_str(), dep.length()), NIL);
+          ret = ccdr(ret);
+        }
+        vpop(); // vpush(ret)
+        return ccdr(first);
+      }
   } catch (runtime_error &e) {
   }
   return(NIL);
@@ -1483,10 +1518,6 @@ pointer ROSEUS_ROSPACK_PLUGINS(register context *ctx,int n,pointer *argv)
   if (isstring(argv[1])) attrib.assign((char *)get_string(argv[1]));
   else error(E_NOSTRING);
   try {
-      rospack::Rospack rp;
-      std::vector<std::string> search_path;
-      rp.getSearchPathFromEnv(search_path);
-      rp.crawl(search_path, 1);
       std::vector<std::string> flags;
       if (rp.plugins(pkg, attrib, "", flags)) {
           ret = cons(ctx, NIL, NIL);
@@ -1773,6 +1804,13 @@ pointer _defun(context *ctx, char *name, pointer mod, pointer (*f)(), char *doc)
 
 pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 {
+#ifdef ROSPACK_EXPORT
+#else
+  std::vector<std::string> search_path;
+  rp.getSearchPathFromEnv(search_path);
+  rp.crawl(search_path, 1);
+#endif
+
   pointer rospkg,p=Spevalof(PACKAGE);
   rospkg=findpkg(makestring("ROS",3));
   if (rospkg == 0) rospkg=makepkg(ctx,makestring("ROS", 3),NIL,NIL);
@@ -1876,6 +1914,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
 
   _defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND, "Returns ros package path");
   _defun(ctx,"ROSPACK-PLUGINS",argv[0],(pointer (*)())ROSEUS_ROSPACK_PLUGINS, "Returns plugins of ros packages");
+  _defun(ctx,"ROSPACK-DEPENDS",argv[0],(pointer (*)())ROSEUS_ROSPACK_DEPENDS, "Returns ros package dependencies list");
   _defun(ctx,"RESOLVE-NAME",argv[0],(pointer (*)())ROSEUS_RESOLVE_NAME, "Returns ros resolved name");
   _defun(ctx,"GET-NAME",argv[0],(pointer (*)())ROSEUS_GETNAME, "Returns current node name");
   _defun(ctx,"GET-NAMESPACE",argv[0],(pointer (*)())ROSEUS_GETNAMESPACE, "Returns current node name space");
