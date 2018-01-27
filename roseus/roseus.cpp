@@ -926,6 +926,19 @@ pointer ROSEUS_UNADVERTISE(register context *ctx,int n,pointer *argv)
   return (bSuccess?T:NIL);
 }
 
+pointer ROSEUS_ADVERTISEDP(register context *ctx,int n,pointer *argv)
+{
+  string topicname;
+
+  ckarg(1);
+  if (isstring(argv[0])) topicname.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  bool bSuccess = s_mapAdvertised.find(topicname) != s_mapAdvertised.end();
+
+  return (bSuccess?T:NIL);
+}
+
 pointer ROSEUS_PUBLISH(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
@@ -1836,6 +1849,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "This call connects to the master to publicize that the node will be publishing messages on the given topic. This method returns a Publisher that allows you to publish a message on this topic.\n"
          "	(ros::advertise \"chatter\" std_msgs::string 1)");
   _defun(ctx,"UNADVERTISE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE, "Unadvertise topic");
+  _defun(ctx,"ADVERTISEDP",argv[0],(pointer (*)())ROSEUS_ADVERTISEDP, "Check a topic is already advertised or not");
   _defun(ctx,"PUBLISH",argv[0],(pointer (*)())ROSEUS_PUBLISH,
          "topic message\n\n"
          "Publish a message on the topic\n"
