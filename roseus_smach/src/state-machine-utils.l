@@ -1,6 +1,6 @@
 ;; state-machine-utils.l
 
-(defun exec-state-machine (sm &optional mydata
+(defun exec-state-machine (sm &optional (mydata '(nil))
                            &key (spin t) (hz 1) (root-name "SM_ROOT") iterate)
   "Execute state machine
 
