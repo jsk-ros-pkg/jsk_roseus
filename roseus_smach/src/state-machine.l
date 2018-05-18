@@ -186,7 +186,7 @@
   (:remap (userdata &key (invert nil))
    (dolist (ft remap-list)
      (when (and (not invert) (not (assoc (cdr ft) userdata)))
-       (nconc (list (cons (cdr ft) nil)) userdata))
+       (nconc userdata (list (cons (cdr ft) nil))))
      (if invert
          (setf (car (assoc (car ft) userdata)) (cdr ft))
          (setf (car (assoc (cdr ft) userdata)) (car ft)))))
