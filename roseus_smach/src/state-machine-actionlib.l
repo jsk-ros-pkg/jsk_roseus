@@ -1,5 +1,19 @@
 (load "state-machine-ros.l")
 
+;; binary state object
+(defclass binary-state-object
+  :super propertied-object
+  :slots (enabled))
+(defmethod binary-state-object
+  (:init (&optional (initial-value nil))
+   (setq enabled (not (null initial-value))))
+  (:enable ()
+   (setq enabled t))
+  (:disable ()
+   (setq enabled nil))
+  (:enabled-p ()
+   enabled))
+
 ;; execute state machine as action server
 
 (defclass state-machine-action-server
@@ -27,13 +41,14 @@
   ;;
   (:accept-cb
    (msg)
+   (set-alist :cancel (instance binary-state-object :init) userdata)
    (set-alist :goal (send msg :goal) userdata)
    (set-alist :result (send (send as :result) :result) userdata)
    (set-alist :feedback (send (send as :feedback) :feedback) userdata)
    (send sm :reset-state))
   (:preempt-cb
    (msg)
-   (set-alist :cancel t userdata))
+   (send (cdr (assoc :cancel userdata)) :enable))
   (:execute-cb
    ()
    (cond
@@ -76,6 +91,9 @@
    ;; main loop
    `(lambda (userdata)
       (let ((start (ros::time-now)) async-clients)
+        (when (or (null (cdr (assoc :cancel userdata)))
+                  (not (derivedp (cdr (assoc :cancel userdata)) binary-state-object)))
+          (ros::ros-warn "userdata :cancel is empty or not binary-state-object. Cancellation may not work."))
         (send ,client :send-goal
               (funcall (quote ,key) (cdr (assoc :goal userdata))))
         (if ,async
@@ -87,6 +105,7 @@
               ,return-async) ;; async end
             (while (ros::ok)
               (ros::sleep)
+              (ros::spin-once) ;; spin to update user cancel state
               (send ,client :spin-once)
               ;;
               (cond
@@ -111,8 +130,10 @@
                          (list actionlib_msgs::GoalStatus::*ACTIVE*
                                actionlib_msgs::GoalStatus::*PENDING*))
                  ;; user cancel
-                 (if (eq t (cdr (assoc :cancel userdata)))
-                     (send ,client :cancel-goal))
+                 (when (and (cdr (assoc :cancel userdata))
+                            (derivedp (cdr (assoc :cancel userdata)) binary-state-object)
+                            (send (cdr (assoc :cancel userdata)) :enabled-p))
+                   (send ,client :cancel-goal))
                  ;; time out
                  (if (and (numberp ,timeout)
                           (< ,timeout (send (ros::time- (ros::time-now) start) :to-sec)))
