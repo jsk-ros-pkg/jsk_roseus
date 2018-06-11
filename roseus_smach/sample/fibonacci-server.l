@@ -12,7 +12,7 @@
          (feedback (cdr (assoc :feedback userdata)))
          (cancel (cdr (assoc :cancel userdata)))
          (seq (send result :sequence)) (next 0))
-    (when cancel (return-from func-fibonacci))
+    (when (send cancel :enabled-p) (return-from func-fibonacci))
     (when (/= (length seq) (send goal :order))
       (setq seq (make-array (send goal :order) :element-type :integer))
       (send result :sequence seq)
