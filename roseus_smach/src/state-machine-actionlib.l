@@ -56,15 +56,17 @@
      ((send as :is-active)
       (let ((result-msg (send as :result)))
         (cond
+          ((send as :is-preempt-requested)
+           ;; send incomplete data as result
+           (ros::ros-info "Preempt requested")
+           (send result-msg :result (cdr (assoc :result userdata)))
+           (send as :set-preempted result-msg))
           ((send sm :goal-reached)
+           (ros::ros-debug "Goal reached")
            (send result-msg :result (cdr (assoc :result userdata)))
            (if (member (send (send sm :active-state) :name) successes)
                (send as :set-succeeded result-msg)
                (send as :set-aborted result-msg)))
-          ((send as :is-preempt-requested)
-           ;; send incomplete data as result
-           (send result-msg :result (cdr (assoc :result userdata)))
-           (send as :set-preempted result-msg))
           (t
            (send inspector :publish-structure)
            (send inspector :publish-status userdata)
@@ -90,7 +92,7 @@
   (instance state :init name
    ;; main loop
    `(lambda (userdata)
-      (let ((start (ros::time-now)) async-clients)
+      (let ((start (ros::time-now)) async-clients (last-warn (ros::time 0)))
         (when (or (null (cdr (assoc :cancel userdata)))
                   (not (derivedp (cdr (assoc :cancel userdata)) binary-state-object)))
           (ros::ros-warn "userdata :cancel is empty or not binary-state-object. Cancellation may not work."))
@@ -123,9 +125,16 @@
                          (list actionlib_msgs::GoalStatus::*PREEMPTED*
                                actionlib_msgs::GoalStatus::*RECALLED*
                                actionlib_msgs::GoalStatus::*REJECTED*))
+                 (ros::ros-info "~A was canceled" (send ,client :name))
                  (set-alist :cancel t userdata)
                  (set-alist :result (send ,client :get-result) userdata)
                  (return ,return-fail))
+                ((member (send ,client :get-state)
+                         (list actionlib_msgs::GoalStatus::*PREEMPTING*
+                               actionlib_msgs::GoalStatus::*RECALLING*))
+                 (when (> (send (ros::time- (ros::time-now) last-warn) :to-sec) 1.0)
+                   (ros::ros-info "Waiting for cancellation of ~A" (send ,client :name))
+                   (setq last-warn (ros::time-now))))
                 ((member (send ,client :get-state)
                          (list actionlib_msgs::GoalStatus::*ACTIVE*
                                actionlib_msgs::GoalStatus::*PENDING*))
@@ -133,10 +142,12 @@
                  (when (and (cdr (assoc :cancel userdata))
                             (derivedp (cdr (assoc :cancel userdata)) binary-state-object)
                             (send (cdr (assoc :cancel userdata)) :enabled-p))
+                   (ros::ros-info "Sending cancel to ~A" (send ,client :name))
                    (send ,client :cancel-goal))
                  ;; time out
-                 (if (and (numberp ,timeout)
-                          (< ,timeout (send (ros::time- (ros::time-now) start) :to-sec)))
+                 (when (and (numberp ,timeout)
+                            (< ,timeout (send (ros::time- (ros::time-now) start) :to-sec)))
+                     (ros::ros-info "Timed out. Sending cancel to ~A" (send ,client :name))
                      (send ,client :cancel-goal))))
               )))))
   )
