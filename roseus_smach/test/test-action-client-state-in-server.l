@@ -53,16 +53,20 @@
 
   (unix:sleep 3)
   (send *ac* :cancel-goal)
+  (warning-message 2 ":cancel-goal is sent~%")
   (send *ac* :wait-for-result :timeout 30)
   (send *ac* :spin-once)
   (warning-message 2 "get-state: ~A~%" (send *ac* :get-state))
+  ;; see http://wiki.ros.org/actionlib/DetailedDescription
   (assert (memq (send *ac* :get-state)
-                (list actionlib_msgs::GoalStatus::*preempted*
-                      actionlib_msgs::GoalStatus::*preempting*))
+                (list
+                 actionlib_msgs::GoalStatus::*aborted*
+                 actionlib_msgs::GoalStatus::*preempted*
+                 actionlib_msgs::GoalStatus::*preempting*))
           (format nil "/fibonacci_test action state ~A is *preempted* or *preempting*"
            (send *ac* :get-state)))
   (print-ros-msg (send *ac* :get-result))
-  (assert (> (length (send (send *ac* :get-result) :sequence)) 0)
+  (assert (integer-vector-p (send (send *ac* :get-result) :sequence))
           "/fibonnaci_test action returns result")
   )
 
