@@ -1,0 +1,19 @@
+<launch>
+  <!-- Valid characters are a-z,  A-Z, 0-9, / and _. -->
+
+  <!-- check normal name -->
+  <test type="roseus" pkg="roseus" test-name="test_nodename"
+        args="$(find roseus)/test/test-nodename.l" />
+
+  <!-- check name with -, only for roseus -->  
+  <test type="roseus" pkg="roseus" test-name="test-nodename"
+        args="$(find roseus)/test/test-nodename.l" />
+
+  <!-- check name contins number -->  
+  <test type="roseus" pkg="roseus" test-name="test_nodename123"
+        args="$(find roseus)/test/test-nodename.l" />
+
+  <!-- check name contins number -->  
+  <test type="roseus" pkg="roseus" test-name="test_nodenameABC"
+        args="$(find roseus)/test/test-nodename.l" />
+</launch>

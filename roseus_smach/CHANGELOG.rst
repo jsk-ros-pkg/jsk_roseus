@@ -2,6 +2,19 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.3 (2017-09-08)
+------------------
+
+1.6.2 (2017-06-21)
+------------------
+* replace ros-info by ros-debug in state-machine.l (`#523 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/523>`_)
+* add root-name key in exec-state-machine (`#523 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/523>`_)
+  * use exex-state-machine in sample program
+    exec-smach-with-spin is deprecated.
+  * add exec-state-machine with :root-name key test
+  * add root-name key in exec-state-machine
+* Contributors: Shingo Kitagawa
+
 1.6.1 (2017-03-15)
 ------------------
 * Merge smach exec (`#507 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/507>`_)

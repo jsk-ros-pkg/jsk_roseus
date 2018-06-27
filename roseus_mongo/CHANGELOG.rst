@@ -2,6 +2,14 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.3 (2017-09-08)
+------------------
+* roseus_mongo: fix decode escaped string (`#538 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/538>`_)
+* Contributors: Yuki Furuta
+
+1.6.2 (2017-06-21)
+------------------
+
 1.6.1 (2017-03-15)
 ------------------
 * add kinetic test (`#505 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/505>`_)

@@ -18,6 +18,24 @@
     (assert (< vmrss 300000) "check memory leak")
     ))
 
+(deftest test-sleep ()
+  (let (d tm0 tm1)
+    (setq tm0 (ros::time-now))
+    (send (instance ros::duration :init 1.5) :sleep)
+    (setq tm1 (ros::time-now))
+    (assert (eps= (send (ros::time- tm1 tm0) :to-sec) 1.5 0.2))
+
+    (setq tm0 (ros::time-now))
+    (send (instance ros::duration :init 2 500000000) :sleep)
+    (setq tm1 (ros::time-now))
+    (assert (eps= (send (ros::time- tm1 tm0) :to-sec) 2.5 0.2))
+
+    (setq tm0 (ros::time-now))
+    (ros::duration-sleep 0.5)
+    (setq tm1 (ros::time-now))
+    (assert (eps= (send (ros::time- tm1 tm0) :to-sec) 0.5 0.2))
+    ))
+
 (deftest test-master ()
 
   (ros::ros-info "get-host ~A" (ros::get-host))
@@ -26,9 +44,20 @@
   (ros::ros-info "get-uri ~A" (ros::get-uri))
   (ros::ros-info "get-topics ~A" (ros::get-topics))
 
-  (assert (equal (ros::get-nodes) '("/eusroseus" "/rosout"))) ;; test-roseus.test's test-name
-  (assert (equal (ros::get-uri) (format nil "http://~A:~A/" (ros::get-host) (ros::get-port))))
-  (assert (equal (ros::get-topics) '(("/rosout" . "rosgraph_msgs/Log") ("/rosout_agg" . "rosgraph_msgs/Log"))))
+  (format *error-output* "get-nodes : ~A~%" (ros::get-nodes))
+  (format *error-output* "get-uri : ~A, get-host : ~A, get-port : ~A~%" (ros::get-uri) (ros::get-host) (ros::get-port))
+  (format *error-output* "get-topics ~A~%~%" (ros::get-topics))
+
+  ;; from roslaunch 1.12.8 https://github.com/ros/ros_comm/issues/1097, rosout node is not launched
+  ;; order or (get-nodes) is not determined
+  (assert (member "/eusroseus" (ros::get-nodes) :test #'string=)
+          "get-nodes : ~A" (ros::get-nodes)) ;; test-roseus.test's test-name
+  ;; setup.sh sets http://host:port but rostest sets http://host:port/, remove tailing /
+  (assert (string= (string-right-trim "/" (ros::get-uri)) (format nil "http://~A:~A" (ros::get-host) (ros::get-port)))
+          "get-uri : ~A, get-host : ~A, get-port : ~A" (ros::get-uri) (ros::get-host) (ros::get-port))
+  ;; order or (get-topics) is not determined
+  (assert (member '("/rosout" . "rosgraph_msgs/Log") (ros::get-topics) :test #'equal)
+          "get-topics : ~A" (ros::get-topics))
 
   )
 

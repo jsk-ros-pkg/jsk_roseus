@@ -75,7 +75,7 @@
   (:sub-sm-node () (remove-if-not #'(lambda(n)(send n :submachine)) nodes))
   ;; @ from,to: state instance or its name
   ;; @ exec-result: trans state when execution at from-state returns this.
-  ;;                must be {number,string,symbol} or list of these
+  ;;                must be {number,string,symbol}.
   (:add-transition
    (from to exec-result &key (test #'equal))
    (when (not (derivedp from state))
@@ -125,7 +125,7 @@
        (let* ((last-state astate)
               (trans (send self :next-arc-list astate))
               (exec-result  (send last-state :execute userdata)))
-         (ros::ros-info "trans: ~A" trans)
+         (ros::ros-debug "trans: ~A" trans)
          (setq trans (remove-if-not #'(lambda(tr)(send tr :check exec-result)) trans))
          (case (length trans)
            (0 (error "undefined transition ~A from ~A~%" exec-result last-state))

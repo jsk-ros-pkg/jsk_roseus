@@ -139,6 +139,21 @@
   "check if given ros::time is less the or equal to the others"
   (not (ros::time> a b)))
 
+(defclass ros::duration
+  :super ros::time
+  :slots ())
+(defmethod ros::duration
+  (:init (&optional sec nsec)
+         (cond
+          ((and (null sec) (null nsec))
+           (setq sec 0 nsec 0))
+          ((and sec (null nsec))
+           (setq nsec (round (* (mod sec 1) 1000000000)))
+           (setq sec  (floor sec))))
+         (send-super :init :sec sec :nsec nsec))
+  (:sleep () (ros::duration-sleep (send self :to-sec)))
+  )
+
 ;;
 (defclass timer-event
   :super propertied-object
@@ -368,14 +383,24 @@ always the rank of list is 2"
               (probe-file (format nil "~A/~A/msg" dir pkg))
               (probe-file (format nil "~A/~A/srv" dir pkg)))
           (return-from ros::find-load-msg-path (format nil "~A/~A" dir pkg))))
+    ;; on jade/kinetic, package without msg does not have manifest.l
+    (let ((package-path (ros::rospack-find pkg)))
+      (if (not (or (probe-file (format nil "~A/msg" package-path))
+		   (probe-file (format nil "~A/srv" package-path))))
+	  (return-from ros::find-load-msg-path :no-msg-package)))
     (ros::ros-error "Could not find roseus messages for ~A under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" pkg dirs pkg)
     nil))
 
 (defun ros::load-ros-manifest (pkg)
-  (let ((manifest (format nil "~A/manifest.l" (ros::find-load-msg-path pkg))))
-    (if (probe-file manifest)
-	(load-org-for-ros manifest)
-      (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg))))
+  (let* ((msg-path (ros::find-load-msg-path pkg))
+	 (manifest (format nil "~A/manifest.l" msg-path)))
+    (cond ((eq msg-path :no-msg-package)
+	  ;; on jade/kinetic, package without msg does not have manifest.l
+	   (ros::ros-warn "Calling (load-ros-manifest ~A) for the package without msg/srv will be deprecated" pkg))
+	  ((probe-file manifest)
+	   (load-org-for-ros manifest))
+	  (t
+	   (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg)))))
 
 (defun ros::load-ros-package (pkg)
   "load reqruied roseus files for given package"

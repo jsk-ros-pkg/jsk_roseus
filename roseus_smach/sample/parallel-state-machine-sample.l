@@ -70,7 +70,7 @@
 (defun demo ()
   (when (or (not (boundp '*sm*)) (not (boundp '*wash*)))
     (init))
-  (exec-smach-with-spin *sm*))
+  (exec-state-machine *sm*))
 
 (warning-message 3 ";; (demo)~%")
 

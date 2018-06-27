@@ -29,10 +29,16 @@ endif()
 
 
 set(ENV{LANG} "C")
-execute_process (COMMAND git rev-parse --short HEAD
+execute_process (COMMAND git describe --tags HEAD
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   OUTPUT_VARIABLE REPOVERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT REPOVERSION)
+  execute_process(COMMAND grep version ${PROJECT_SOURCE_DIR}/package.xml
+    COMMAND sed -e s/[^0-9.]//g
+    OUTPUT_VARIABLE REPOVERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
 message (STATUS "Build repo revision: ${REPOVERSION}")
 
 #
@@ -46,6 +52,7 @@ if(APPLE)
   set(euslisp_INCLUDE_DIRS /usr/local/opt/jskeus/eus/include)
 else()
   find_package(euslisp REQUIRED)
+  find_package(jskeus REQUIRED)
   if(NOT euslisp_INCLUDE_DIRS)
     if(EXISTS ${euslisp_SOURCE_DIR}/jskeus)
       set(euslisp_PACKAGE_PATH ${euslisp_SOURCE_DIR})
@@ -95,7 +102,7 @@ add_service_files(
   FILES AddTwoInts.srv StringString.srv
 )
 add_message_files(
-  FILES String.msg StringStamped.msg FixedArray.msg VariableArray.msg
+  FILES String.msg StringStamped.msg FixedArray.msg VariableArray.msg TestName.msg
 )
 
 generate_messages(
@@ -112,8 +119,8 @@ add_custom_target(install_roseus ALL DEPENDS ${CATKIN_DEVEL_PREFIX}/bin/roseus r
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-    DEPENDS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs actionlib_tutorials tf2_ros
-    CATKIN_DEPENDS message_runtime # euslisp TODO
+    DEPENDS euslisp jskeus
+    CATKIN_DEPENDS roslang roscpp rospack actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs actionlib_tutorials tf2_ros message_runtime
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
     EXPORTED_TARGETS install_roseus
@@ -153,15 +160,19 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-simple-client-wait.test)
   add_rostest(test/test-simple-client-500.test)
   add_rostest(test/test-simple-client-wait-500.test)
+  add_rostest(test/test-simple-client-cancel.test)
   add_rostest(test/test-actionlib.test)
   add_rostest(test/test-roseus.test)
   add_rostest(test/test-tf.test)
   add_rostest(test/test-disconnect.test)
   add_rostest(test/test-multi-queue.test)
+  add_rostest(test/test-namespace.test)
+  add_rostest(test/test-nodename.test)
   add_rostest(test/test-parameter.test)
   add_rostest(test/test-anonymous.test)
   add_rostest(test/test-timer.test)
-  add_rostest(test/test-genmsg.catkin.test)
+  # this seems to run other process and need pkill ... https://travis-ci.org/jsk-ros-pkg/jsk_roseus/jobs/233858193
+  #add_rostest(test/test-genmsg.catkin.test)
   # this will not ok on running from run_tests, may be running test within launch file may not good.
   #add_rostest(test/test-genmsg-oneworkspace.catkin.launch) # use launch not to run on travis/catkin
   add_rostest(test/test-geneus.test)

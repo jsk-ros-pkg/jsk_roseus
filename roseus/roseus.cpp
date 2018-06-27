@@ -122,7 +122,7 @@ public:
   ~RoseusStaticData() {
   }
   boost::shared_ptr<ros::NodeHandle> node;
-  ros::Rate *rate;
+  boost::shared_ptr<ros::Rate> rate;
   map<string, boost::shared_ptr<Publisher> > mapAdvertised; ///< advertised topics
   map<string, boost::shared_ptr<Subscriber> > mapSubscribed; ///< subscribed topics
   map<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
@@ -546,8 +546,9 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
     }
   } else error(E_NOSEQ);
 
+  // convert invalid node name charactors to _, we assume it is '-'
   for (unsigned int i=0; i < strlen(name); i++)
-    if ( ! isalpha(name[i]) ) name[i] = '_';
+    if ( ! (isalpha(name[i]) || isdigit(name[i])) ) name[i] = '_';
 
   K_ROSEUS_MD5SUM   = defkeyword(ctx,"MD5SUM-");
   K_ROSEUS_DATATYPE = defkeyword(ctx,"DATATYPE-");
@@ -602,7 +603,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   }
 
   s_node.reset(new ros::NodeHandle());
-  s_rate = new ros::Rate(50);
+  s_rate.reset(new ros::Rate(50));
 
   s_bInstalled = true;
 
@@ -651,7 +652,7 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
-  while (ctx->intsig==0) {
+  while (ctx->intsig==0 && ros::ok()) {
     ros::spinOnce();
     s_rate->sleep();
   }
@@ -706,7 +707,7 @@ pointer ROSEUS_RATE(register context *ctx,int n,pointer *argv)
   numunion nu;
   ckarg(1);
   float timeout=ckfltval(argv[0]);
-  s_rate = new ros::Rate(timeout);
+  s_rate.reset(new ros::Rate(timeout));
   return(T);
 }
 
@@ -715,6 +716,16 @@ pointer ROSEUS_SLEEP(register context *ctx,int n,pointer *argv)
   isInstalledCheck;
   s_rate->sleep();
   return (T);
+}
+
+pointer ROSEUS_DURATION_SLEEP(register context *ctx,int n,pointer *argv)
+{
+  isInstalledCheck;
+  numunion nu;
+  ckarg(1);
+  float sleep=ckfltval(argv[0]);
+  ros::Duration(sleep).sleep();
+  return(T);
 }
 
 pointer ROSEUS_OK(register context *ctx,int n,pointer *argv)
@@ -1536,8 +1547,10 @@ pointer ROSEUS_GETNAME(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_GETNAMESPACE(register context *ctx,int n,pointer *argv)
 {
   ckarg(0);
-  return(makestring((char *)ros::this_node::getNamespace().c_str(),
-		    ros::this_node::getNamespace().length()));
+  // https://github.com/ros/ros_comm/pull/1100
+  // Clean the namespace to get rid of double or trailing forward slashes
+  std::string ns  = ros::names::clean(ros::this_node::getNamespace()).c_str();
+  return(makestring((char *)ns.c_str(), ns.length()));
 }
 
 pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
@@ -1790,6 +1803,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   _defun(ctx,"TIME-NOW-RAW",argv[0],(pointer (*)())ROSEUS_TIME_NOW, "");
   _defun(ctx,"RATE",argv[0],(pointer (*)())ROSEUS_RATE, "frequency\n\n" "Construct ros timer for periodic sleeps");
   _defun(ctx,"SLEEP",argv[0],(pointer (*)())ROSEUS_SLEEP, "Sleeps for any leftover time in a cycle. Calculated from the last time sleep, reset, or the constructor was called.");
+  _defun(ctx,"DURATION-SLEEP",argv[0],(pointer (*)())ROSEUS_DURATION_SLEEP, "second\n\nSleeps for amount of the time specified by this duration.");
   _defun(ctx,"OK",argv[0],(pointer (*)())ROSEUS_OK, "Check whether it's time to exit. ");
 
   _defun(ctx,"ROS-DEBUG",argv[0],(pointer (*)())ROSEUS_ROSDEBUG,

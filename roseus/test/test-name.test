@@ -1,0 +1,6 @@
+<launch>
+  <node name="test_name_pub" pkg="roseus" type="test-name-pub.l"
+        output="screen" />
+  <node name="test_name_sub" pkg="roseus" type="test-name-sub.l"
+        output="screen" />
+</launch>
