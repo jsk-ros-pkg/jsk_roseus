@@ -102,7 +102,7 @@ add_service_files(
   FILES AddTwoInts.srv StringString.srv
 )
 add_message_files(
-  FILES String.msg StringStamped.msg FixedArray.msg VariableArray.msg
+  FILES String.msg StringStamped.msg FixedArray.msg VariableArray.msg TestName.msg
 )
 
 generate_messages(
