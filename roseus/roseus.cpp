@@ -122,7 +122,7 @@ public:
   ~RoseusStaticData() {
   }
   boost::shared_ptr<ros::NodeHandle> node;
-  ros::Rate *rate;
+  boost::shared_ptr<ros::Rate> rate;
   map<string, boost::shared_ptr<Publisher> > mapAdvertised; ///< advertised topics
   map<string, boost::shared_ptr<Subscriber> > mapSubscribed; ///< subscribed topics
   map<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
@@ -603,7 +603,7 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   }
 
   s_node.reset(new ros::NodeHandle());
-  s_rate = new ros::Rate(50);
+  s_rate.reset(new ros::Rate(50));
 
   s_bInstalled = true;
 
@@ -707,7 +707,7 @@ pointer ROSEUS_RATE(register context *ctx,int n,pointer *argv)
   numunion nu;
   ckarg(1);
   float timeout=ckfltval(argv[0]);
-  s_rate = new ros::Rate(timeout);
+  s_rate.reset(new ros::Rate(timeout));
   return(T);
 }
 
