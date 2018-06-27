@@ -718,6 +718,16 @@ pointer ROSEUS_SLEEP(register context *ctx,int n,pointer *argv)
   return (T);
 }
 
+pointer ROSEUS_DURATION_SLEEP(register context *ctx,int n,pointer *argv)
+{
+  isInstalledCheck;
+  numunion nu;
+  ckarg(1);
+  float sleep=ckfltval(argv[0]);
+  ros::Duration(sleep).sleep();
+  return(T);
+}
+
 pointer ROSEUS_OK(register context *ctx,int n,pointer *argv)
 {
   if (ros::ok()) {
@@ -1793,6 +1803,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   _defun(ctx,"TIME-NOW-RAW",argv[0],(pointer (*)())ROSEUS_TIME_NOW, "");
   _defun(ctx,"RATE",argv[0],(pointer (*)())ROSEUS_RATE, "frequency\n\n" "Construct ros timer for periodic sleeps");
   _defun(ctx,"SLEEP",argv[0],(pointer (*)())ROSEUS_SLEEP, "Sleeps for any leftover time in a cycle. Calculated from the last time sleep, reset, or the constructor was called.");
+  _defun(ctx,"DURATION-SLEEP",argv[0],(pointer (*)())ROSEUS_DURATION_SLEEP, "second\n\nSleeps for amount of the time specified by this duration.");
   _defun(ctx,"OK",argv[0],(pointer (*)())ROSEUS_OK, "Check whether it's time to exit. ");
 
   _defun(ctx,"ROS-DEBUG",argv[0],(pointer (*)())ROSEUS_ROSDEBUG,
