@@ -164,6 +164,10 @@
   (:send-goal
    (goal &key done-cb active-cb feedback-cb)
    (let ((now (ros::time-now)))
+     ;; send-goal accepts both ActionGoal and Goal, where Python and C only takes Goal, but original roseus takes ActionGoal, here we make ActionGoal when Goal is passed as python/c client
+     (if (not (and (assoc 'ros::_goal_id (send goal :slots)) (assoc 'ros::_header (send goal :slots))))
+         (setq goal (send self :make-goal-instance goal)))
+     ;;
      (if (not (equal (send goal :goal_id :id) ""))
 	 (ros::ros-warn "goal_id's id is already set in goal instance. But :send-goal will overwrite")
        )
