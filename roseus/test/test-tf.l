@@ -12,6 +12,23 @@
 
 (init-unit-test)
 
+(deftest test-tf->coords ()
+  (let (m c)
+    ;; test tf->transform -> coords
+    (setq m (instance geometry_msgs::Transform :init))
+    (send m :translation :y 5.0)
+    (send m :rotation (ros::rot->tf-quaternion (unit-matrix 3)))
+    (setq c (ros::tf-transform->coords m))
+    (assert (v= (send c :worldpos) #f(0 5000 0)))
+    (assert (v= (array-entity (send c :worldrot)) #f(1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0)))
+    (setq m (instance geometry_msgs::TransformStamped :init))
+    (send m :transform :translation :y 5.0)
+    (send m :transform :rotation (ros::rot->tf-quaternion (unit-matrix 3)))
+    (setq c (ros::tf-transform-stamped->coords m))
+    (assert (v= (send c :worldpos) #f(0 5000 0)))
+    (assert (v= (array-entity (send c :worldrot)) #f(1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0)))
+    ))
+
 (deftest test-common ()
   (setq m (instance geometry_msgs::TransformStamped :init))
   (send m :header :frame_id "PARENT")
