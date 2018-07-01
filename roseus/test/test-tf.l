@@ -13,6 +13,10 @@
 (init-unit-test)
 
 (deftest test-common ()
+  (setq m (instance geometry_msgs::Transform :init))
+  (send m :transform :translation :y 5.0)
+  (send m :transform :rotation (ros::rot->tf-quaternion (unit-matrix 3)))
+  (setq c (ros::tf-transform->coords m))
   (setq m (instance geometry_msgs::TransformStamped :init))
   (send m :header :frame_id "PARENT")
   (send m :child_frame_id "THISFRAME")
