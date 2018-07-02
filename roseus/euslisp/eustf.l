@@ -105,8 +105,10 @@
 
 (defun ros::tf-transform->coords (trans)
   "Convert geoometry_msgs::Transform to euslisp coordinates"
-  (make-coords :pos (ros::tf-point->pos (send trans :translation))
-               :rot (ros::tf-quaternion->rot (send trans :rotation))))
+  (instance tf-cascaded-coords
+            :init
+            :pos (ros::tf-point->pos (send trans :translation))
+            :rot (ros::tf-quaternion->rot (send trans :rotation))))
 
 (defun ros::tf-transform-stamped->coords (trans)
   "Convert geoometry_msgs::TransformStamped to euslisp coordinates"
