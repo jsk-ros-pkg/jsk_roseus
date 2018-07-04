@@ -102,7 +102,7 @@ add_service_files(
   FILES AddTwoInts.srv StringString.srv
 )
 add_message_files(
-  FILES String.msg StringStamped.msg FixedArray.msg VariableArray.msg
+  FILES String.msg StringStamped.msg FixedArray.msg VariableArray.msg TestName.msg
 )
 
 generate_messages(
@@ -155,6 +155,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-talker-listener.test)
   add_rostest(test/test-talker-listener-private-topic.test)
   add_rostest(test/test-add-two-ints.test)
+  add_rostest(test/test-add-two-ints-server.test)
   add_rostest(test/test-service-callback.test)
   add_rostest(test/test-simple-client.test)
   add_rostest(test/test-simple-client-wait.test)
@@ -163,6 +164,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-simple-client-cancel.test)
   add_rostest(test/test-actionlib.test)
   add_rostest(test/test-roseus.test)
+  add_rostest(test/test-mark-lock.test)
   add_rostest(test/test-tf.test)
   add_rostest(test/test-disconnect.test)
   add_rostest(test/test-multi-queue.test)
