@@ -10,6 +10,8 @@
 (defun test-timer-cb (event)
   (ros::ros-info "timer callback")
   (setq *timer-callback-param* (ros::get-param "timer_param" t))
+  (superequal t t) ;; function using mark_lock
+  (setq *print-circle* t) (print 0) (setq *print-circle* nil) ;; function using mark_lock
   (ros::ros-info "timer callback end"))
 
 (deftest test-mark-lock ()
