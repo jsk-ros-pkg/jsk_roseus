@@ -41,6 +41,18 @@
   (assert (send m :get-val 'msg-camep))
   )
 
+(deftest test-talker-listener-connection-header
+  (ros::roseus "listener-conection-header")
+  ;; callback function
+  (defun string-cb (msg) (print (list 'cb (send msg :data) (send msg :connection-header)) *error-output*) (assert (send msg :connection-header)))
+  (ros::subscribe "chatter" std_msgs::string #'string-cb)
+
+  (ros::rate 10)
+  (dotimes (i 25)
+    (ros::spin-once)
+    (ros::sleep))
+  )
+
 (run-all-tests)
 (exit)
 
