@@ -355,6 +355,7 @@ public:
 
   EuslispSubscriptionCallbackHelper(pointer scb, pointer args,pointer tmpl) :  _args(args), _msg(tmpl) {
     context *ctx = current_ctx;
+    mutex_trylock(&mark_lock);
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     if (piscode(scb)) { // compiled code
@@ -371,6 +372,7 @@ public:
     // avoid gc
     pointer p=gensym(ctx);
     setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    mutex_unlock(&mark_lock);
   }
   ~EuslispSubscriptionCallbackHelper() {
       ROS_ERROR("subscription gc");
@@ -437,6 +439,7 @@ public:
 
   EuslispServiceCallbackHelper(pointer scb, pointer args, string smd5, string sdatatype, pointer reqclass, pointer resclass) : _args(args), _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype) {
     context *ctx = current_ctx;
+    mutex_trylock(&mark_lock);
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
 
@@ -459,6 +462,7 @@ public:
     responseDataType = _res.__getDataType();
     requestMessageDefinition = _req.__getMessageDefinition();
     responseMessageDefinition = _res.__getMessageDefinition();
+    mutex_unlock(&mark_lock);
   }
   ~EuslispServiceCallbackHelper() { }
 
@@ -1778,6 +1782,7 @@ public:
   }
   void operator()(const ros::TimerEvent& event)
   {
+    mutex_trylock(&mark_lock);
     context *ctx = current_ctx;
     pointer argp=_args;
     int argc=0;
@@ -1811,6 +1816,7 @@ public:
     ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_scb,(pointer)(ctx->vsp-argc),NULL,argc);
     while(argc-->0)vpop();
 
+    mutex_unlock(&mark_lock);
   }
 };
 
@@ -1824,6 +1830,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   string fncallname;
   float period=ckfltval(argv[0]);
 
+  mutex_trylock(&mark_lock);
   // period callbackfunc args0 ... argsN [ oneshot ]
   // ;; oneshot ;;
   if (n > 1 && issymbol(argv[n-2]) && issymbol(argv[n-1])) {
@@ -1868,6 +1875,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   ROS_DEBUG("create timer %s at %f (oneshot=%d)", fncallname.c_str(), period, oneshot);
   s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), TimerFunction(fncallback, args), oneshot);
 
+  mutex_unlock(&mark_lock);
   return (T);
 }
 
