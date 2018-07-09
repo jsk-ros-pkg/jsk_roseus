@@ -9,28 +9,29 @@
 
 (ros::roseus "smach_sample")
 
-;; sample for 
+;; sample for
 (ros::roseus-add-msgs "actionlib_tutorials")
 (load "package://roseus_smach/src/state-machine-actionlib.l")
-(defun smach-action-server ()
+(defun smach-action-client-state ()
   (let* ((client (instance ros::simple-action-client :init "/fibonacci" actionlib_tutorials::FibonacciAction))
-	 (sm (instance state-machine :init)))
-    (send sm :arg-keys :goal :cancel)
+         (sm (instance state-machine :init)))
+    (send sm :arg-keys :goal :cancel :result :feedback)
 
     (send sm :add-node
-	  (instance state :init :INITIAL
-		    '(lambda (arg)
-		       (let ((goal (instance actionlib_tutorials::FibonacciActionGoal :init)))
-			 (send goal :goal :order 10)
-			 (set-alist :goal goal arg))
-		       (print 'initialized) t)
-		    ))
+          (instance state :init :INITIAL
+                    '(lambda (arg)
+                      (let ((goal (instance actionlib_tutorials::FibonacciActionGoal :init)))
+                        (send goal :goal :order 10)
+                        (set-alist :goal goal arg))
+                      (print 'initialized) t)
+                    ))
     (send sm :add-node (actionlib-client-state :FIB client))
     (send sm :add-node
-	  (instance state :init :BAR
-		    '(lambda (arg)
-		       (print 'succeded) t)
-		    ))
+          (instance state :init :BAR
+                    '(lambda (arg)
+                      (warn "result: ~A~%" (cdr (assoc :result arg)))
+                      (print 'succeded) t)
+                    ))
     (send sm :start-state :INITIAL)
     (send sm :goal-state (list :SUCCEED-STATE :FAIL-STATE))
 
