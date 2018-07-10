@@ -69,6 +69,9 @@
 ;;
 (defun func-foo-data (args)
   (format t "Execute state FOO~%")
+  (unless (cdr (assoc 'foo-count args))
+    (warn "foo-count is not set. Setting 0~%")
+    (set-alist 'foo-count 0 args))
   (cond ((< (cdr (assoc 'foo-count args)) 3)
 	 (incf (cdr (assoc 'foo-count args))) :outcome1)
 	(t :outcome2)))

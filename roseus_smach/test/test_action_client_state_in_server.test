@@ -1,0 +1,8 @@
+<launch>
+  <node name="fibonacci" pkg="actionlib_tutorials" type="fibonacci_server"
+        output="screen"/>
+  <node name="fibonacci_test" pkg="roseus_smach" type="smach-action-client-state-in-server.l"
+        output="screen"/>
+  <test test-name="test_action_client_state_in_server"
+        pkg="roseus_smach" type="test-action-client-state-in-server.l"/>
+</launch>
