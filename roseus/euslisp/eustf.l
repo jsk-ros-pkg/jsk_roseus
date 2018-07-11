@@ -105,6 +105,14 @@
 
 (defun ros::tf-transform->coords (trans)
   "Convert geoometry_msgs::Transform to euslisp coordinates"
+  ;; check if trans class is geometry_msgs::TransformStamped
+  ;; ros::tf-transform->coords was wrongly implemented to take TransformStamped as argument from electric to kinetic
+  ;; Thus, to keep backward compatibility, we should allow users to pass both Transform and TransformStamped
+  (if (derivedp trans geometry_msgs::Transform)
+      (instance tf-cascaded-coords
+                :init
+                :pos (ros::tf-point->pos (send trans :translation))
+                :rot (ros::tf-quaternion->rot (send trans :rotation)))
   (instance tf-cascaded-coords
             :init
             :pos (ros::tf-point->pos (send trans :transform :translation))
@@ -112,6 +120,7 @@
             :frame-id (send trans :header :frame_id)
             :child-frame-id (send trans :child_frame_id)
             :stamp (send (send trans :header :stamp) :sec-nsec)))
+  )
 
 (defun ros::tf-transform-stamped->coords (trans)
   "Convert geoometry_msgs::TransformStamped to euslisp coordinates"
