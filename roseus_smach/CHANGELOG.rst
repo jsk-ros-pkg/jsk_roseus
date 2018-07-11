@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-07-11)
+------------------
 * Bugfixes and test codes for roseus_smach (`#566 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/566>`_)
   * roseus_smach: add log messages on state transition
   * roseus_smach: fix: pass :cancel state to action-client-state

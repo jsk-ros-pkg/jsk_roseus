@@ -2,8 +2,8 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-07-11)
+------------------
 * roseus_mongo: support non blocking insertion & update docstring (`#541 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/541>`_)
   * roseus_mongo: skip non wait insertion test on hydro
   * roseus_mongo: minor fix in CMakeLists.txt

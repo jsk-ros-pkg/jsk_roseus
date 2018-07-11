@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-07-11)
+------------------
 * (ros::tf-transform->coords) failed with with geometry_msgs::Transform (`#563 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/563>`_)
   * fix when tf-transform->coords receives geometry_msgs::Transform
   * [test/eustf.l] Add test to check (ros::tf-transform->coords) with geometry_msgs::Transform
