@@ -33,6 +33,8 @@ env:
     - ROS_DISTRO=jade USE_DEB=source   TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
     - ROS_DISTRO=kinetic USE_DEB=true     TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
     - ROS_DISTRO=kinetic USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
+    - ROS_DISTRO=melodic USE_DEB=true     TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
+    - ROS_DISTRO=melodic USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
 matrix:
   fast_finish: true
   allow_failures:
