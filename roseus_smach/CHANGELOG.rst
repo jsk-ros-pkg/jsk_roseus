@@ -2,6 +2,29 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bugfixes and test codes for roseus_smach (`#566 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/566>`_)
+  * roseus_smach: add log messages on state transition
+  * roseus_smach: fix: pass :cancel state to action-client-state
+  * roseus_smach: fix test
+  * roseus_smach: add test code for smach-actionlib
+  * - Fix: indentations
+    - Fix: [bug] userdata is not kept if not given as arguments
+    - Add: Test code for action-client-state class
+    - Add: action-client-state sets action result/feedback to userdata for key :result/:feedback
+* [roseus_smach] func: make-state-machine accepts various edges (`#548 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/548>`_)
+  * correct doc of :add-transition
+    :add-transition do not accept list as exec-result
+  * update make-state-machine docstring
+  * set testfunc for transition in make-state-machine
+  * func: make-state-machine accepts various edges
+
+* [roseus_smach] pass userdata keys to state-machine in execution (`#549 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/549>`_)
+  * add exec-state-machine test
+  * pass userdata keys to state-machine in execution
+* Contributors: Shingo Kitagawa, Yuki Furuta
+
 1.6.3 (2017-09-08)
 ------------------
 

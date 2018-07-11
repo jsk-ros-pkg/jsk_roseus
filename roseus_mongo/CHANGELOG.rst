@@ -2,6 +2,17 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* roseus_mongo: support non blocking insertion & update docstring (`#541 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/541>`_)
+  * roseus_mongo: skip non wait insertion test on hydro
+  * roseus_mongo: minor fix in CMakeLists.txt
+  * roseus_mongo: support update method
+  * roseus_mongo: bugfix: assert on decoding string without blacket
+  * roseus_mongo: add docs; minor fix
+  * roseus_mongo: support non blocking insertion
+* Contributors: Yuki Furuta
+
 1.6.3 (2017-09-08)
 ------------------
 * roseus_mongo: fix decode escaped string (`#538 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/538>`_)

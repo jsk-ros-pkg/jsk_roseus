@@ -2,6 +2,60 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* (ros::tf-transform->coords) failed with with geometry_msgs::Transform (`#563 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/563>`_)
+  * fix when tf-transform->coords receives geometry_msgs::Transform
+  * [test/eustf.l] Add test to check (ros::tf-transform->coords) with geometry_msgs::Transform
+* [roseus-utils.l]fix eusobj->marker-msg (`#555 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/555>`_)
+  * load dependent packages if msg/srv is not found in ros::load-ros-manifest
+  * add ros::rospack-depends
+  * roseus is always have roseus/ros/roseus
+  * add debug message when loading manifest/msg/srv files, also more message when we need to avoid using load-ros-manifest
+  * INDIGO: https://github.com/jsk-ros-pkg/jsk_roseus/issues/554
+    if pkg without msg, need to return no-msg-package
+    JADE/KINETIC: https://github.com/jsk-ros-pkg/jsk_robot/issues/823
+    package without msg does not have manifest.l
+  * fix find-load-msg-path, use dirs ~/share instaed of ~/share/roseus, it does not change logic
+
+* do not load manifest.l when we have source tree, but does not have manifest.l because of missing msg/srv (`#554 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/554>`_)
+* add test to check :connection-header (`#540 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/540>`_)
+  * roseusp.cpp : add :connection-header method
+  * add test to check :connection-header
+
+* fix dead locking on accessing rosparam in timer callback (`#557 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/557>`_)
+  * test-mark-lock.l: add function using mark_lock
+  * roseus: remove mutex_lock / unlock
+  * roseus: add test code for dead locking of mark_lock
+
+* add test code for [unexpected behavior if message has property `name`] #508 (`#509 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/509>`_)
+  * add test code for #508
+
+* add ros::duration-sleep (`#549 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/549>`_)
+  * test/test-roseus.l : add test for ros::duration-sleep
+  * roseus.cpp/roseus.l : add ros::duration-sleep
+
+* Support both AcitonGoal and Goal in :send-goal (`#546 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/546>`_)
+  * test/simple-client-test.l: fix typo returns -> return
+  * actionlib.l:send-goal : send-goal accepts both ActionGoal and Goal, where Python and C only takes Goal, but original roseus takes ActoinGoal, here we make ActionGoal when Goal is passed as python/c client
+  * send SimpleGoal, not SimpleActionGoal
+
+* roseus.cpp: use boost::shared_ptr for ros::Rate (`#553 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/553>`_)
+* add test to check numbers in node name (#536) (`#552 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/552>`_)
+  * Allow numbers on ros::roseus node name
+  * add test to check numbers in node name (#536)
+
+* Fix roseus test error, see https://github.com/jsk-ros-pkg/jsk_roseus/pull/545#issuecomment-349224047 (`#551 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/551>`_)
+  * add more messages, fix for roslaunch 1.12.8, due to //github.com/ros/ros_comm/issues/1097,
+  * print error message when test-rosmaster failed
+  * relax hzerror in test-anonymous.test,  ex, https://travis-ci.org/jsk-ros-pkg/jsk_roseus/jobs/313841319
+  * test-roseus.l: test-master, add comment on tests
+  * test-roseus.l: fix test error on test-master
+    ros::get-uri returns http://localhost:11311, not http://localhost:11311/, also accept arbitrary order in ros::get-nodes, ros::get-topics tests
+
+
+* Contributors: Yuki Furuta, Guilherme Affonso, Kei Okada, Naoki Hiraoka, Iori Yanokura
+
 1.6.3 (2017-09-08)
 ------------------
 * Fix ros::get-namesapce (`#533 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/533>`_)
