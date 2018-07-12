@@ -27,7 +27,8 @@
    (exit 1))
 
 ;; check if this process is created by roslaunch
-(when (string= "__log:=" (subseq (car (last lisp::*eustop-argument*)) 0 7))
+(when (let ((arg (car (last lisp::*eustop-argument*))))
+        (and (>= (length arg) 7) (string= "__log:=" (subseq arg 0 7))))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
   (setq lisp::*exit-on-fatal-error* t)
   (lisp::install-error-handler 'ros::roseus-error)
