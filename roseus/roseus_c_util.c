@@ -212,8 +212,8 @@ pointer CONV_PC_MSG2 (ctx,n,argv)
 pointer ___roseus_c_util(ctx,n, argv, env)
 register context *ctx;int n;pointer *argv;pointer env;
 {
-  defun(ctx,"CONVERT-MSG2-POINTCLOUD", argv[0], CONV_MSG2_PC);
-  defun(ctx,"CONVERT-POINTCLOUD-MSG2", argv[0], CONV_PC_MSG2);
+  defun(ctx,"CONVERT-MSG2-POINTCLOUD", argv[0], CONV_MSG2_PC,NULL);
+  defun(ctx,"CONVERT-POINTCLOUD-MSG2", argv[0], CONV_PC_MSG2,NULL);
   return NULL;
 }
 
