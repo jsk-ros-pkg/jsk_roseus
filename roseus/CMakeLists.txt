@@ -91,6 +91,27 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
+# you need to run `catkin build --force-cmake` when you have updated eus.h
+# update function using defun() for https://github.com/euslisp/EusLisp/pull/116
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test-defun.c "#include \"eus.h\"\nvoid TEST();\nvoid test(void) {register context *ctx; pointer mod; defun(ctx,\"TEST\",mod,TEST,NULL);}")
+get_directory_property(__CMAKE_COMPILE_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+set(__CMAKE_COMPILE_DEFINITION "")
+foreach(__D ${__CMAKE_COMPILE_DEFINITIONS})
+  set(__CMAKE_COMPILE_DEFINITION ${__CMAKE_COMPILE_DEFINITION} -D${__D})
+endforeach()
+message(STATUS "Running test file to check defun() API, see https://github.com/euslisp/EusLisp/pull/116")
+execute_process (COMMAND ${CMAKE_C_COMPILER} -I${euslisp_INCLUDE_DIRS} ${__CMAKE_COMPILE_DEFINITION} -c test-defun.c
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  RESULT_VARIABLE TEST_DEFUN)
+file(WRITE ${PROJECT_SOURCE_DIR}/defun.h "// redefine defun for update defun() API (https://github.com/euslisp/EusLisp/pull/116)\n")
+if(${TEST_DEFUN})
+  message(STATUS "add defin() macro for euslisp < 9.24")
+  file(APPEND ${PROJECT_SOURCE_DIR}/defun.h "#undef defun\n")
+  file(APPEND ${PROJECT_SOURCE_DIR}/defun.h "#define defun(a, b, c, d, e) defun(a, b, c, d) // for EusLisp < 9.24\n")
+endif()
+
+
+
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(roseus ${Boost_LIBRARIES})
 

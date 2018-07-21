@@ -818,6 +818,7 @@ pointer EUSTF_TFBC_LOOKUPTRANSFORM(register context *ctx,int n,pointer *argv)
   return(vs);
 }
 
+#include "defun.h"
 pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
 {
   pointer rospkg,p=Spevalof(PACKAGE);
@@ -831,39 +832,39 @@ pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
     exit(2);
   }
   Spevalof(PACKAGE)=rospkg;
-  defun(ctx,"EUSTF-TRANSFORMER",argv[0],(pointer (*)())EUSTF_TRANSFORMER);
-  defun(ctx,"EUSTF-ALL-FRAMES-AS-STRING",argv[0],(pointer (*)())EUSTF_ALLFRAMESASSTRING);
-  defun(ctx,"EUSTF-SET-TRANSFORM",argv[0],(pointer (*)())EUSTF_SETTRANSFORM);
-  defun(ctx,"EUSTF-WAIT-FOR-TRANSFORM",argv[0],(pointer (*)())EUSTF_WAITFORTRANSFORM);
-  defun(ctx,"EUSTF-WAIT-FOR-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_WAITFORTRANSFORMFULL);
-  defun(ctx,"EUSTF-CAN-TRANSFORM",argv[0],(pointer (*)())EUSTF_CANTRANSFORM);
-  defun(ctx,"EUSTF-CAN-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_CANTRANSFORMFULL);
-  defun(ctx,"EUSTF-CHAIN",argv[0],(pointer (*)())EUSTF_CHAIN);
-  defun(ctx,"EUSTF-CLEAR",argv[0],(pointer (*)())EUSTF_CLEAR);
-  defun(ctx,"EUSTF-FRAME-EXISTS",argv[0],(pointer (*)())EUSTF_FRAMEEXISTS);
-  defun(ctx,"EUSTF-GET-FRAME-STRINGS",argv[0],(pointer (*)())EUSTF_GETFRAMESTRINGS);
-  defun(ctx,"EUSTF-GET-LATEST-COMMON-TIME",argv[0],(pointer (*)())EUSTF_GETLATERSTCOMMONTIME);
-  defun(ctx,"EUSTF-LOOKUP-TRANSFORM",argv[0],(pointer (*)())EUSTF_LOOKUPTRANSFORM);
-  defun(ctx,"EUSTF-LOOKUP-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_LOOKUPTRANSFORMFULL);
-  defun(ctx,"EUSTF-TRANSFORM-POSE",argv[0],(pointer (*)())EUSTF_TRANSFORMPOSE);
-  defun(ctx,"EUSTF-LOOKUP-VELOCITY",argv[0],(pointer (*)())EUSTF_LOOKUPVELOCITY);
+  defun(ctx,"EUSTF-TRANSFORMER",argv[0],(pointer (*)())EUSTF_TRANSFORMER,"A Class which provides coordinate transforms between any two frames in a system");
+  defun(ctx,"EUSTF-ALL-FRAMES-AS-STRING",argv[0],(pointer (*)())EUSTF_ALLFRAMESASSTRING,"A way to see what frames have been cached Useful for debugging");
+  defun(ctx,"EUSTF-SET-TRANSFORM",argv[0],(pointer (*)())EUSTF_SETTRANSFORM,"Add transform information to the tf data structure");
+  defun(ctx,"EUSTF-WAIT-FOR-TRANSFORM",argv[0],(pointer (*)())EUSTF_WAITFORTRANSFORM,"Block until a transform is possible or it times out");
+  defun(ctx,"EUSTF-WAIT-FOR-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_WAITFORTRANSFORMFULL,"Block until a transform is possible or it times out");
+  defun(ctx,"EUSTF-CAN-TRANSFORM",argv[0],(pointer (*)())EUSTF_CANTRANSFORM,"Test if a transform is possible");
+  defun(ctx,"EUSTF-CAN-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_CANTRANSFORMFULL,"Test if a transform is possible");
+  defun(ctx,"EUSTF-CHAIN",argv[0],(pointer (*)())EUSTF_CHAIN,"Debugging function that will print the spanning chain of transforms");
+  defun(ctx,"EUSTF-CLEAR",argv[0],(pointer (*)())EUSTF_CLEAR,"Clear all data");
+  defun(ctx,"EUSTF-FRAME-EXISTS",argv[0],(pointer (*)())EUSTF_FRAMEEXISTS,"Check if a frame exists in the tree");
+  defun(ctx,"EUSTF-GET-FRAME-STRINGS",argv[0],(pointer (*)())EUSTF_GETFRAMESTRINGS,"A way to get a std::vector of available frame ids");
+  defun(ctx,"EUSTF-GET-LATEST-COMMON-TIME",argv[0],(pointer (*)())EUSTF_GETLATERSTCOMMONTIME,"Return the latest rostime which is common across the spanning set zero if fails to cross");
+  defun(ctx,"EUSTF-LOOKUP-TRANSFORM",argv[0],(pointer (*)())EUSTF_LOOKUPTRANSFORM,"Get the transform between two frames by frame ID");
+  defun(ctx,"EUSTF-LOOKUP-TRANSFORM-FULL",argv[0],(pointer (*)())EUSTF_LOOKUPTRANSFORMFULL,"Get the transform between two frames by frame ID");
+  defun(ctx,"EUSTF-TRANSFORM-POSE",argv[0],(pointer (*)())EUSTF_TRANSFORMPOSE,"Transform a Stamped Pose into the target frame This can throw anything a lookupTransform can throw as well as tf::InvalidArgument");
+  defun(ctx,"EUSTF-LOOKUP-VELOCITY",argv[0],(pointer (*)())EUSTF_LOOKUPVELOCITY,"Lookup the twist of the tracking_frame with respect to the observation frame in the reference_frame using the reference point");
   /* */
-  defun(ctx,"EUSTF-TRANSFORM-LISTENER",argv[0],(pointer (*)())EUSTF_TRANSFORM_LISTENER);
-  defun(ctx,"EUSTF-TRANSFORM-LISTENER-DISPOSE",argv[0],(pointer (*)())EUSTF_TRANSFORM_LISTENER_DISPOSE);
+  defun(ctx,"EUSTF-TRANSFORM-LISTENER",argv[0],(pointer (*)())EUSTF_TRANSFORM_LISTENER,"This class inherits from Transformer and automatically subscribes to ROS transform messages");
+  defun(ctx,"EUSTF-TRANSFORM-LISTENER-DISPOSE",argv[0],(pointer (*)())EUSTF_TRANSFORM_LISTENER_DISPOSE,"Destructor for TransformListener");
 
   /* */
-  defun(ctx,"EUSTF-SET-EXTRAPOLATION-LIMIT",argv[0],(pointer (*)())EUSTF_SETEXTRAPOLATIONLIMIT);
-  defun(ctx,"EUSTF-GET-PARENT",argv[0],(pointer (*)())EUSTF_GETPARENT);
+  defun(ctx,"EUSTF-SET-EXTRAPOLATION-LIMIT",argv[0],(pointer (*)())EUSTF_SETEXTRAPOLATIONLIMIT,"Set the distance which tf is allow to extrapolate");
+  defun(ctx,"EUSTF-GET-PARENT",argv[0],(pointer (*)())EUSTF_GETPARENT,"Fill the parent of a frame");
   /* */
-  defun(ctx,"EUSTF-TRANSFORM-BROADCASTER",argv[0],(pointer (*)())EUSTF_TRANSFORM_BROADCASTER);
-  defun(ctx,"EUSTF-SEND-TRANSFORM",argv[0],(pointer (*)())EUSTF_SEND_TRANSFORM);
+  defun(ctx,"EUSTF-TRANSFORM-BROADCASTER",argv[0],(pointer (*)())EUSTF_TRANSFORM_BROADCASTER,"This class provides an easy way to publish coordinate frame transform information. It will handle all the messaging and stuffing of messages. And the function prototypes lay out all the necessary data needed for each message");
+  defun(ctx,"EUSTF-SEND-TRANSFORM",argv[0],(pointer (*)())EUSTF_SEND_TRANSFORM,"Send a StampedTransform The stamped data structure includes frame_id, and time, and parent_id already");
 
   /* tf2 */
-  defun(ctx,"EUSTF-BUFFER-CLIENT",argv[0],(pointer (*)())EUSTF_BUFFER_CLIENT);
-  defun(ctx,"EUSTF-BUFFER-CLIENT-DISPOSE",argv[0],(pointer (*)())EUSTF_BUFFER_CLIENT_DISPOSE);
-  defun(ctx,"EUSTF-TF2-WAIT-FOR-SERVER",argv[0],(pointer (*)())EUSTF_TFBC_WAITFORSERVER);
-  defun(ctx,"EUSTF-TF2-CAN-TRANSFORM",argv[0],(pointer (*)())EUSTF_TFBC_CANTRANSFORM);
-  defun(ctx,"EUSTF-TF2-LOOKUP-TRANSFORM",argv[0],(pointer (*)())EUSTF_TFBC_LOOKUPTRANSFORM);
+  defun(ctx,"EUSTF-BUFFER-CLIENT",argv[0],(pointer (*)())EUSTF_BUFFER_CLIENT,"Action client-based implementation of the tf2_ros::BufferInterface abstract data type. BufferClient uses actionlib to coordinate waiting for available transforms.");
+  defun(ctx,"EUSTF-BUFFER-CLIENT-DISPOSE",argv[0],(pointer (*)())EUSTF_BUFFER_CLIENT_DISPOSE,"tf2 BufferClient destructor");
+  defun(ctx,"EUSTF-TF2-WAIT-FOR-SERVER",argv[0],(pointer (*)())EUSTF_TFBC_WAITFORSERVER,"Block until the action server is ready to respond to requests");
+  defun(ctx,"EUSTF-TF2-CAN-TRANSFORM",argv[0],(pointer (*)())EUSTF_TFBC_CANTRANSFORM,"Test if a transform is possible");
+  defun(ctx,"EUSTF-TF2-LOOKUP-TRANSFORM",argv[0],(pointer (*)())EUSTF_TFBC_LOOKUPTRANSFORM,"Get the transform between two frames by frame ID");
 
   pointer_update(Spevalof(PACKAGE),p);
   return 0;
