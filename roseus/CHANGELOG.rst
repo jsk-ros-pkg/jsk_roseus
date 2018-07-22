@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.1 (2018-07-22)
+------------------
 * add melodic test (`#567 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/567>`_)
   * use rosrun roseus roseus test/test-namespace.l, instead of /usr/bin/env roseus
 * update function using new defun function (`#569 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/569>`_)

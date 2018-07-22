@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.1 (2018-07-22)
+------------------
 * add melodic test (`#567 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/567>`_)
   * split test_samples.test into test_samples_action_client_state.test, since it is always failling on only installed test https://api.travis-ci.org/v3/job/406576370/log.txt, not sure why...
   * roseus_smach/test/test_samples.test: extend time-limit to 300

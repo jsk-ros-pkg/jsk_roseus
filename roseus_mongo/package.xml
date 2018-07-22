@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>roseus_mongo</name>
-  <version>1.7.0</version>
+  <version>1.7.1</version>
   <description>The roseus_mongo package</description>
 
   <maintainer email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</maintainer>
