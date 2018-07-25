@@ -42,10 +42,11 @@ To use euslisp built from source, we need to create upstream workspace and then 
     ```bash
     mkdir -p ~/ros/$ROS_DISTRO/src  # If you not yet create your workspace
     cd ~/ros/$ROS_DISTRO/src
-    wstool init
+    wstool init  # If you don't yet create your workspace
     wstool set jsk-ros-pkg/jsk_roseus --git https://github.com/jsk-ros-pkg/jsk_roseus.git -v master -u -y
     rosdep install --from-paths . -i -r -n -y  # By running this, all dependencies will be installed
-    catkin init
+    cd ~/ros/$ROS_DISTRO
+    catkin init  # If you don't yet create your workspace
     catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  # This is optional
     catkin build roseus
     source ~/ros/$ROS_DISTRO/devel/setup.bash
