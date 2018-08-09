@@ -59,7 +59,7 @@
                    (if use-userdata
                        (setq func
                              `(lambda-closure nil 0 0 (userdata)
-                                              (apply #',(car sym) userdata ',(cdr sym))))
+                                              (apply #',(car sym)' ,(cdr sym) userdata)))
                      (setq func
                            `(lambda-closure nil 0 0 (x) (apply #',(car sym) ',(cdr sym)))))
                    (cond
