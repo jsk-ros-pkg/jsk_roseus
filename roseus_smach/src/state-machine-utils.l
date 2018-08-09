@@ -23,7 +23,7 @@ Returns:
     (while (ros::ok)
       (when spin
         (ros::spin-once)
-        (if (boundp '*ri*) (send *ri* :spin-once)))
+        (if (and (boundp '*ri*) *ri*) (send *ri* :spin-once)))
       (send insp :publish-status mydata)
       (when (send sm :goal-reached)
         (return))
