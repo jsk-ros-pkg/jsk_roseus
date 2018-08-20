@@ -1,20 +1,24 @@
-if ("$ENV{ROS_DISTRO}" STRGREATER "indigo")
-  return()
-endif()
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_mongo)
+
+find_package(mongodb_store QUIET)
+if(mongodb_store_FOUND)
+  set(MONGODB_STORE_PKG mongodb_store)
+else()
+  message(AUTHOR_WARNING "===\nros-$ENV{ROS_DISTRO}-mongodb-store package is not found, may be it is not releaed yet\n===")
+endif()
 
 if ("$ENV{ROS_DISTRO}" STRLESS "jade") # up to indigo we need to compile msg fiel
   set(COMPILE_PACKAGES mongodb_store_msgs)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
-  mongodb_store ${COMPILE_PACKAGES}
+  ${MONGODB_STORE_PKG} ${COMPILE_PACKAGES}
   roseus
 )
 
 catkin_package(
-  CATKIN_DEPENDS mongodb_store_msgs roseus
+  CATKIN_DEPENDS ${MONGODB_STORE_PKG} ${COMPILE_PACKAGES} roseus
 )
 
 include_directories(
@@ -25,7 +29,7 @@ install(DIRECTORY euslisp
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   USE_SOURCE_PERMISSIONS)
 
-if(CATKIN_ENABLE_TESTING)
+if(CATKIN_ENABLE_TESTING AND mongodb_store_FOUND)
   find_package(rostest REQUIRED)
   add_rostest(test/test_json_encode.test)
   add_rostest(test/test_json_decode.test)

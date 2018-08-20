@@ -209,6 +209,7 @@ pointer CONV_PC_MSG2 (ctx,n,argv)
   return NIL;
 }
 
+#include "defun.h"
 pointer ___roseus_c_util(ctx,n, argv, env)
 register context *ctx;int n;pointer *argv;pointer env;
 {

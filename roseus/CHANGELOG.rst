@@ -2,6 +2,19 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.1 (2018-07-22)
+------------------
+* add melodic test (`#567 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/567>`_)
+  * use rosrun roseus roseus test/test-namespace.l, instead of /usr/bin/env roseus
+* update function using new defun function (`#569 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/569>`_)
+  * CHNAGED EusLisp defun() arguments, see https://github.com/euslisp/EusLisp/pull/300
+  * force generate defun.h header file
+  * use euslisp(9.24)'s new defun api roseus.cpp taht takes doc as argument, remove _defun
+  * add documentation string to defun functions
+  * add documentation string to defun functions, (roseus_c_util.c uses NULL because this is not exported functions
+* [roseus.l] add length check for argument when searching __log:=t (`#568 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/568>`_)
+* Contributors: Kei Okada, Yohei Kakiuchi
+
 1.7.0 (2018-07-11)
 ------------------
 * (ros::tf-transform->coords) failed with with geometry_msgs::Transform (`#563 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/563>`_)

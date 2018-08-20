@@ -2,6 +2,12 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.1 (2018-07-22)
+------------------
+* add melodic test (`#567 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/567>`_)
+  * rosues_mongo/CMakeLists.txt: check mongodb_store package and deciede to run tests
+* Contributors: Kei Okada
+
 1.7.0 (2018-07-11)
 ------------------
 * roseus_mongo: support non blocking insertion & update docstring (`#541 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/541>`_)

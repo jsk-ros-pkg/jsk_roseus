@@ -818,6 +818,7 @@ pointer EUSTF_TFBC_LOOKUPTRANSFORM(register context *ctx,int n,pointer *argv)
   return(vs);
 }
 
+#include "defun.h"
 pointer ___eustf(register context *ctx, int n, pointer *argv, pointer env)
 {
   pointer rospkg,p=Spevalof(PACKAGE);

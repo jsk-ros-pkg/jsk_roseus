@@ -1,6 +1,6 @@
 <package>
   <name>roseus_tutorials</name>
-  <version>1.7.0</version>
+  <version>1.7.1</version>
   <description>roseus_tutorials
  </description>
 
@@ -28,7 +28,8 @@
   <!-- <run_depend>face_detector_mono<run_depend> -->
   <!-- <depend package="aques_talk" /> -->
   <run_depend>checkerboard_detector</run_depend>
-  <run_depend>pr2eus</run_depend>
+  <!-- run depends on pr2eus has circular dependencies, so removed from package.xml -->
+  <!-- <run_depend>pr2eus</run_depend> -->
   <run_depend>image_proc</run_depend>
   <run_depend>image_view2</run_depend>
   <run_depend>posedetection_msgs</run_depend>

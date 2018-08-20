@@ -2,6 +2,33 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.1 (2018-07-22)
+------------------
+* add melodic test (`#567 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/567>`_)
+  * split test_samples.test into test_samples_action_client_state.test, since it is always failling on only installed test https://api.travis-ci.org/v3/job/406576370/log.txt, not sure why...
+  * roseus_smach/test/test_samples.test: extend time-limit to 300
+  * add retry for testtest_roseus_smach_samples
+  the test failing https://api.travis-ci.org/v3/job/406540328/log.txt
+  is this related to memory leak? https://github.com/jsk-ros-pkg/jsk_roseus/pull/563
+  ```
+  mstart testing [test-smach-sample-userdata]
+  mfoo-count is not set. Setting 0
+  start testing [test-smach-action-client-state]
+  m;p=pointer?(0x6690338)
+  ;; Segmentation Fault.
+  terminate called after throwing an instance of 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::lock_error> >'
+  what():  boost: mutex lock failed in pthread_mutex_lock: Invalid argument
+  [Testcase: testtest_roseus_smach_samples] ... FAILURE!
+  FAILURE: test [test_roseus_smach_samples] did not generate test results
+  File \"/usr/lib/python2.7/unittest/case.py\", line 329, in run
+  testMethod()
+  File \"/opt/ros/kinetic/lib/python2.7/dist-packages/rostest/runner.py\", line 164, in fn
+  self.assert\_(os.path.isfile(test_file), \"test [%s] did not generate test results\"%test_name)
+  File \"/usr/lib/python2.7/unittest/case.py\", line 422, in assertTrue
+  raise self.failureException(msg)
+  ```
+* Contributors: Kei Okada
+
 1.7.0 (2018-07-11)
 ------------------
 * Bugfixes and test codes for roseus_smach (`#566 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/566>`_)

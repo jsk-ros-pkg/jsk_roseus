@@ -26,6 +26,7 @@ install(DIRECTORY sample src test
 if(CATKIN_ENABLE_TESTING)
   find_package(catkin REQUIRED COMPONENTS rostest)
   add_rostest(test/test_samples.test)
+  add_rostest(test/test_samples_action_client_state.test)
   add_rostest(test/test_action_server.test)
   add_rostest(test/test_action_client_state_in_server.test)
   add_rostest(test/test_roseus_smach_utils.test)

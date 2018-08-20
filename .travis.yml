@@ -15,36 +15,22 @@ env:
     - ROS_PARALLEL_TEST_JOBS="-j2"
     - CATKIN_PARALLEL_TEST_JOBS="-p2"
   matrix:
-    - ROS_DISTRO=hydro  USE_DEB=true
-    - ROS_DISTRO=hydro  USE_DEB=true  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-    - ROS_DISTRO=hydro  USE_DEB=false NOT_TEST_INSTALL=true
-    - ROS_DISTRO=hydro  USE_DEB=true  NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_pr2eus" TEST_PKGS="pr2eus"
-    - ROS_DISTRO=hydro  USE_DEB=true  NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_planning" TEST_PKGS="task_compiler" EXTRA_DEB="gawk"
-    - ROS_DISTRO=hydro  USE_DEB=true  NOT_TEST_INSTALL=true BEFORE_SCRIPT="git clone -b hydro-devel http://github.com/ros/geometry; git clone -b hydro-devel http://github.com/ros/geometry-experimental; touch jsk_roseus/roseus_tutorials/CATKIN_IGNORE; touch geometry-experimental/test_tf2/CATKIN_IGNORE" # need to ignore roseus_tutorials which depends on image_view2 and that install deb version of tf/tf2
-    - ROS_DISTRO=hydro  USE_DEB=source
     - ROS_DISTRO=indigo USE_DEB=true
     - ROS_DISTRO=indigo USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_planning" TEST_PKGS="task_compiler"
     - ROS_DISTRO=indigo USE_DEB=true   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - ROS_DISTRO=indigo USE_DEB=false  NOT_TEST_INSTALL=true
     - ROS_DISTRO=indigo USE_DEB=source NOT_TEST_INSTALL=true
-    - ROS_DISTRO=jade USE_DEB=true     TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
-    - ROS_DISTRO=jade USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
-    - ROS_DISTRO=jade USE_DEB=false    NOT_TEST_INSTALL=true TEST_PKGS="roseus roseus_smach"
-    - ROS_DISTRO=jade USE_DEB=source   TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
-    - ROS_DISTRO=kinetic USE_DEB=true     TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
-    - ROS_DISTRO=kinetic USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
+    - ROS_DISTRO=kinetic USE_DEB=true
+    - ROS_DISTRO=kinetic USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_planning" TEST_PKGS="task_compiler"
+    - ROS_DISTRO=kinetic USE_DEB=true   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - ROS_DISTRO=kinetic USE_DEB=false  NOT_TEST_INSTALL=true
+    - ROS_DISTRO=kinetic USE_DEB=source NOT_TEST_INSTALL=true
+    - ROS_DISTRO=melodic USE_DEB=true     TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
+    - ROS_DISTRO=melodic USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
 matrix:
   fast_finish: true
   allow_failures:
-    - env: ROS_DISTRO=hydro  USE_DEB=true
-    - env: ROS_DISTRO=hydro  USE_DEB=true  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-    - env: ROS_DISTRO=hydro  USE_DEB=false NOT_TEST_INSTALL=true
-    - env: ROS_DISTRO=hydro  USE_DEB=true  NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_pr2eus" TEST_PKGS="pr2eus"
-    - env: ROS_DISTRO=hydro  USE_DEB=true  NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_planning" TEST_PKGS="task_compiler" EXTRA_DEB="gawk"
-    - env: ROS_DISTRO=hydro  USE_DEB=true  NOT_TEST_INSTALL=true BEFORE_SCRIPT="git clone -b hydro-devel http://github.com/ros/geometry; git clone -b hydro-devel http://github.com/ros/geometry-experimental; touch jsk_roseus/roseus_tutorials/CATKIN_IGNORE; touch geometry-experimental/test_tf2/CATKIN_IGNORE" # need to ignore roseus_tutorials which depends on image_view2 and that install deb version of tf/tf2
-    - env: ROS_DISTRO=hydro  USE_DEB=source
-    - env: ROS_DISTRO=jade USE_DEB=true     TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
-    - env: ROS_DISTRO=jade USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
+    - env: ROS_DISTRO=melodic USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
 before_script:
   - set -x
   - if [ "${TRAVIS_SECURE_ENV_VARS}" == "true" ]; then openssl aes-256-cbc -K $encrypted_b79fc5843df3_key -iv $encrypted_b79fc5843df3_iv -in .secrets.tar.enc -out .secrets.tar -d; tar -C ~/ -xvf .secrets.tar; if [ "${INSTALL_SRC_SECURE}" != "" ]; then export INSTALL_SRC="$INSTALL_SRC $INSTALL_SRC_SECURE"; fi; if [ "$TEST_PKGS_SECURE" != "" ]; then export TEST_PKGS="$TEST_PKGS $TEST_PKGS_SECURE"; fi; fi
