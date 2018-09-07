@@ -15,7 +15,7 @@
 (setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
 
 (deftest test-simple-client ()
-  (let (c goal)
+  (let (c goal status)
     (setq c (instance ros::simple-action-client :init
                       "reference_simple_action" actionlib::TestAction))
     (warning-message 1 "wait-for-server~%")
@@ -58,6 +58,11 @@
       (assert nil "The ref server did not return result"))
     (assert (equal (send c :get-state) actionlib_msgs::GoalStatus::*succeeded*))
     (assert (equal (send (elt saved-feedback 0) :feedback :feedback) 9))
+
+    ;; check last-status-msg
+    (setq status (send c :last-status-msg))
+    (assert (derivedp status actionlib_msgs::GoalStatusArray))
+    (assert (> (length (send status :status_list)) 0))
 
     (send c :cancel-all-goals)
     ))
