@@ -10,6 +10,48 @@
 gdb --args bash roseus foo.l
 ```
 
+
+### Use roseus with euslisp built from source
+
+To use euslisp built from source, we need to create upstream workspace and then overlay it to your workspace.
+
+1. Create the upstream workspace
+
+    Assumes you already installed `ros-<your distro>-desktop-full`.
+
+    ```bash
+    source /opt/ros/<your distro>/setup.bash
+    mkdir -p ~/ros/$ROS_DISTRO_parent/src/
+    cd ~/ros/$ROS_DISTRO_parent/src
+    wstool init
+    wget https://raw.githubusercontent.com/jsk-ros-pkg/jsk_roseus/master/setup_upstream.sh -O /tmp/setup_upstream.sh
+    bash /tmp/setup_upstream.sh -w ..
+    cd ~/ros/$ROS_DISTRO_parent/
+    catkin init
+    catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  # This is optional
+    catkin build
+    source ~/ros/$ROS_DISTRO_parent/devel/setup.bash
+    ```
+    
+    You can check if `euslisp` built from source is available by running `which irteusgl`.
+
+2. Build downstream packages using euslisp built from source
+
+    Configure your catkin workspace to overlay the upstream workspace and build `roseus`.
+    
+    ```bash
+    mkdir -p ~/ros/$ROS_DISTRO/src  # If you not yet create your workspace
+    cd ~/ros/$ROS_DISTRO/src
+    wstool init  # If you don't yet create your workspace
+    wstool set jsk-ros-pkg/jsk_roseus --git https://github.com/jsk-ros-pkg/jsk_roseus.git -v master -u -y
+    rosdep install --from-paths . -i -r -n -y  # By running this, all dependencies will be installed
+    cd ~/ros/$ROS_DISTRO
+    catkin init  # If you don't yet create your workspace
+    catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo  # This is optional
+    catkin build roseus
+    source ~/ros/$ROS_DISTRO/devel/setup.bash
+    ```
+
 ## Deb Status
 
 | Package | Indigo (Saucy) | Indigo (Trusty) | Jade (Trusty) | Jade (Vivid) | Kinetic (Wily) | Kinetic (Xenial) |
