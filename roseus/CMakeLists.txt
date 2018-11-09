@@ -100,6 +100,8 @@ foreach(__D ${__CMAKE_COMPILE_DEFINITIONS})
   set(__CMAKE_COMPILE_DEFINITION ${__CMAKE_COMPILE_DEFINITION} -D${__D})
 endforeach()
 message(STATUS "Running test file to check defun() API, see https://github.com/euslisp/EusLisp/pull/116")
+message(STATUS "COMMAND ${CMAKE_C_COMPILER} -I${euslisp_INCLUDE_DIRS} ${__CMAKE_COMPILE_DEFINITION} -c test-defun.c")
+
 execute_process (COMMAND ${CMAKE_C_COMPILER} -I${euslisp_INCLUDE_DIRS} ${__CMAKE_COMPILE_DEFINITION} -c test-defun.c
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   RESULT_VARIABLE TEST_DEFUN)
