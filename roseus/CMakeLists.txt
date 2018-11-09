@@ -94,7 +94,7 @@ endif()
 # you need to run `catkin build --force-cmake` when you have updated eus.h
 # update function using defun() for https://github.com/euslisp/EusLisp/pull/116
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test-defun.c "#include \"eus.h\"\nvoid TEST();\nvoid test(void) {register context *ctx; pointer mod; defun(ctx,\"TEST\",mod,TEST,NULL);}")
-get_directory_property(__CMAKE_COMPILE_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+get_directory_property(__CMAKE_COMPILE_DEFINITIONS DIRECTORY ${PROJECT_SOURCE_DIR} COMPILE_DEFINITIONS)
 set(__CMAKE_COMPILE_DEFINITION "")
 foreach(__D ${__CMAKE_COMPILE_DEFINITIONS})
   set(__CMAKE_COMPILE_DEFINITION ${__CMAKE_COMPILE_DEFINITION} -D${__D})
