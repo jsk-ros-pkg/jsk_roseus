@@ -1,11 +1,11 @@
 <launch>
-  <node name="camera_info_to_usb_cam_camera_info" pkg="topic_tools"
-	type="relay" args="camera_info usb_cam/camera_info" />
-  <node name="camera_image_to_usb_cam_camera_image" pkg="topic_tools"
-	type="relay" args="image_raw usb_cam/image_raw" />
-  <node name="ar_pose" pkg="ar_pose" type="ar_multi" respawn="false" output="screen">
-    <param name="marker_pattern_list" type="string" value="$(find roseus_tutorials)/launch/object_4x4_70"/>
-    <param name="threshold" type="int" value="100"/>
+  <node name="ar_pose" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
+    <param name="marker_size" type="double" value="4.4"/>
+    <param name="maker_new_marker_error" type="double" value="0.08"/>
+    <param name="maker_track_error" type="double" value="0.2"/>
+    <param name="output_frame" type="string" value="camera" />
+
+    <remap from="camera_image" to="image_rect_color" />
   </node>
   <sphinxdoc><![CDATA[
 to execute sample euslisp client program
