@@ -2,6 +2,13 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.2 (2018-11-10)
+------------------
+* use PROJECT_SOURCE_DIR instaed of CMAKE_SOURCE_DIR for `catkin_make` (`#580 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/580>`_)
+  * add debug message for COMPILE defun.c
+  * use PROJECT_SOURCE_DIR instaed of CMAKE_SOURCE_DIR for `catkin_make`
+* Contributors: Kei Okada
+
 1.7.1 (2018-07-22)
 ------------------
 * add melodic test (`#567 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/567>`_)
