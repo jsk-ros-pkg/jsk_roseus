@@ -616,6 +616,16 @@
              cb)) points)))
     ))
 ;;
+;; for boundingbox
+;;
+(ros::roseus-add-msgs "jsk_recognition_msgs")
+(defun boundingbox-msg->cube (msg)
+  "Convert jsk_recognition_msgs/BoundingBox to cube in euslisp"
+  (let* ((dims (ros::tf-point->pos (send msg :dimensions)))
+         (cube (make-cube (elt dims 0) (elt dims 1) (elt dims 2))))
+    (send cube :newcoords (ros::tf-pose->coords (send msg :pose)))
+    cube))
+;;
 ;; for pointcloud
 ;;
 (defun make-ros-msg-from-eus-pointcloud (pcloud &key (with-color :rgb)

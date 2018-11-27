@@ -65,6 +65,7 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>actionlib_tutorials</run_depend>
+  <run_depend>jsk_recognition_msgs</run_depend>
 
   <test_depend>xvfb</test_depend>
 
