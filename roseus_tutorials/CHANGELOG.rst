@@ -2,6 +2,9 @@
 Changelog for package roseus_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.2 (2018-11-10)
+------------------
+
 1.7.1 (2018-07-22)
 ------------------
 * run depends on pr2eus has circular dependencies, so removed from package.xml (`#569 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/569>`_)
