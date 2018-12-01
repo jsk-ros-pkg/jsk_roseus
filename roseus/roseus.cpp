@@ -626,7 +626,13 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   s_mapServiced.clear();
   s_mapTimered.clear();
   s_mapHandle.clear();
-  
+
+  /*
+    set locale to none to let C RTL assume logging string can contain non-ascii characters.
+    Refer: https://logging.apache.org/log4cxx/latest_stable/faq.html
+  */
+  setlocale(LC_ALL, "");
+
   /*
     force to flag ros::init_options::NoSigintHandler.
     In fact, this code make no sence, because we steals
