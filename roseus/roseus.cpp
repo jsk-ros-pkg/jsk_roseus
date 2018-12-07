@@ -1146,6 +1146,18 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   link = ros::ServiceManager::instance()->createServiceServerLink(client.getService(), client.isPersistent(), request.__getMD5Sum(), request.__getMD5Sum(), M_string());
   ros::SerializedMessage ser_req = ros::serialization::serializeMessage(request);
   ros::SerializedMessage ser_resp;
+  //check the existence of service
+  if (!service::exists(service, true)) {
+    ROS_ERROR("service  %s doesn't exist ",
+              ros::names::resolve(service).c_str());
+    if (service_cache.find(service) != service_cache.end()) {
+      service_cache.erase(service_cache.find(service));
+    }
+    link.reset();
+    vpop();                       // pop response._message
+    vpop();                       // pop request._message
+    return (response._message); //if the service doesn't exist, return
+  }
   bool bSuccess = link->call(ser_req, ser_resp);
   if ( bSuccess ) {
     try {
