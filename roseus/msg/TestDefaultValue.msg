@@ -1,0 +1,2 @@
+bool FALSE_FLAG=0
+bool TRUE_FLAG=1

@@ -200,6 +200,13 @@
     (ros::spin-once)
     (ros::sleep)
     ))
+
+(deftest test-default-value
+  (assert roseus::TestDefaultValue::*TRUE_FLAG*
+          (format nil "true flag value: ~A" roseus::TestDefaultValue::*TRUE_FLAG*))
+  (assert (null roseus::TestDefaultValue::*FALSE_FLAG*)
+          (format nil "false value: ~A" roseus::TestDefaultValue::*FALSE_FLAG*)))
+
 (ros::roseus "test_geneus")
 (run-all-tests)
 (exit)
