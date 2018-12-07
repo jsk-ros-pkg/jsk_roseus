@@ -32,6 +32,10 @@
   ;; this means callback is evaluated without segfault even when it does not return valid response.
   (assert t "callback is evaluated without segfault"))
 
+(deftest test-call-unadvertised-service ()
+  (ros::roseus "call_unadvertised_service")
+  (call-empty-service "dummy")
+  )
 
 
 (run-all-tests)
