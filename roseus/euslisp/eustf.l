@@ -240,7 +240,7 @@ $ (send tr :lookup-transform \"child\"  \"this_frame\" (ros::time))
    "returns the chain of frames connecting source_frame to target_frame."
    (ros::eustf-chain cobject))
   (:clear () "Clear all transformations." (ros::eustf-clear cobject))
-  (:frame-exists (frame-id) "returns True if frame frame_id exists in the Transformer." (ros::eustf-all-frames-as-string cobject frame-id))
+  (:frame-exists (frame-id) "returns True if frame frame_id exists in the Transformer." (ros::eustf-frame-exists cobject frame-id))
   (:get-frame-strings () "returns all frame names in the Transformer as a list" (ros::eustf-get-frame-strings cobject))
   (:get-latest-common-time
    (source-frame target-frame)
