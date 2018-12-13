@@ -348,8 +348,10 @@
 
 (deftest test-tf-frame-exists ()
   (let ((b (instance ros::transform-broadcaster :init))
-        (l (instance ros::transform-listener :init)))
-    (send b :send-transform (make-coords) "world" "turtle")
+        (l (instance ros::transform-listener :init))
+        (tm (ros::time-now)))
+    (send b :send-transform (make-coords) "world" "turtle" tm)
+    (send l :wait-for-transform "world" "turtle" tm 0.5)
     (assert (send l :frame-exists "world") "tf-transformer: frame-exists failed. t expected")
     (assert (send l :frame-exists "turtle") "tf-transformer: frame-exists failed. t expected")
     (assert (not (send l :frame-exists "rabbit")) "tf-transformer: frame-exists failed. nil expected"))
