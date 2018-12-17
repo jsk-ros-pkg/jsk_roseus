@@ -33,6 +33,10 @@
   (assert t "callback is evaluated without segfault"))
 
 
+(deftest test-call-unadvertised-service ()
+  (ros::roseus "call_unadvertised_service")
+  (call-empty-service "dummy"))
+
 
 (run-all-tests)
 (exit)
