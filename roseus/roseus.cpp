@@ -1118,67 +1118,74 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   if ( n > 2 ) {
       persist = (argv[2] != NIL ? true : false);
   }
-  static std::map<std::string, ros::ServiceClient> service_cache;
-  ServiceClient client;
+  static std::map<std::string, ros::ServiceServerLinkPtr> service_link_cache;
+  static std::map<std::string, std::string> service_md5_cache;
   EuslispMessage request(emessage);
   vpush(request._message);      // to avoid GC, it may not be required...
   EuslispMessage response(csend(ctx,emessage,K_ROSEUS_RESPONSE,0));
   vpush(response._message);     // to avoid GC, its important
-  if (persist == false) {
-    ServiceClientOptions sco(service, request.__getMD5Sum(), false, M_string());
-    client = s_node->serviceClient(sco);
-  }
-  else {
-    // check the instance of client
-    
-    if (service_cache.find(service) != service_cache.end()) {
-      client = service_cache[service];
-    }
-    else {
-      ServiceClientOptions sco(service, request.__getMD5Sum(), true, M_string());
-      client = s_node->serviceClient(sco);
-      service_cache[service] = client;
-    }
-  }
-    // NEED FIX
-  //bool bSuccess =  client.call(request, response, request.__getMD5Sum());
+
+  // NOTE: To make use of connection header, ServiceServerLink is manually handled instead of just invoking ServiceClient.call.
+  // ServiceClientOptions sco(service, request.__getMD5Sum(), persist, M_string());
+  // client = s_node->serviceClient(sco);
+  // bool bSuccess =  client.call(request, response, request.__getMD5Sum());
   ros::ServiceServerLinkPtr link;
-  link = ros::ServiceManager::instance()->createServiceServerLink(client.getService(), client.isPersistent(), request.__getMD5Sum(), request.__getMD5Sum(), M_string());
+  if (persist) {
+    if ( service_link_cache.find(service) != service_link_cache.end() &&
+         ( ! service_link_cache[service]->isValid() ||
+           service_md5_cache[service] !=request.__getMD5Sum() )) {
+      service_link_cache[service]->getConnection()->drop(ros::Connection::Destructing);
+      service_link_cache[service].reset();
+      service_link_cache.erase(service);
+      service_md5_cache.erase(service);
+    }
+
+    if (service_link_cache.find(service) == service_link_cache.end()) {
+      service_link_cache[service] = ros::ServiceManager::instance()->createServiceServerLink(service, persist, request.__getMD5Sum(), request.__getMD5Sum(), M_string());
+      service_md5_cache[service] = request.__getMD5Sum();
+    }
+    link = service_link_cache[service];
+  } else {
+    link = ros::ServiceManager::instance()->createServiceServerLink(service, persist, request.__getMD5Sum(), request.__getMD5Sum(), M_string());
+  }
+
+  bool bSuccess = true;
   ros::SerializedMessage ser_req = ros::serialization::serializeMessage(request);
   ros::SerializedMessage ser_resp;
-  bool bSuccess = link->call(ser_req, ser_resp);
-  if ( bSuccess ) {
-    try {
-      ros::serialization::deserializeMessage(ser_resp, response);
-    } catch (std::exception& e) {
-      ROS_ERROR("Exception thrown while while deserializing service call: %s", e.what());
-      bSuccess = false;
-    }
-    boost::shared_ptr<map<string, string> >connection_header = link->getConnection()->getHeader().getValues();
+  if (link && link->isValid()) {
+    bSuccess = link->call(ser_req, ser_resp);
+    if ( bSuccess ) {
+      try {
+        ros::serialization::deserializeMessage(ser_resp, response);
+      } catch (std::exception& e) {
+        ROS_ERROR("Exception thrown while deserializing service call: %s", e.what());
+        bSuccess = false;
+      }
+      boost::shared_ptr<map<string, string> >connection_header = link->getConnection()->getHeader().getValues();
 #if DEBUG
-    cerr << __PRETTY_FUNCTION__ << endl;
-    cerr << "c_header == " << connection_header << endl;
-    for(map<string, string>::iterator it = connection_header->begin(); it != connection_header->end(); it++){
-      cerr << "            " << it->first << " : " << it->second << endl;
-    }
+      cerr << __PRETTY_FUNCTION__ << endl;
+      cerr << "c_header == " << connection_header << endl;
+      for(map<string, string>::iterator it = connection_header->begin(); it != connection_header->end(); it++){
+        cerr << "            " << it->first << " : " << it->second << endl;
+      }
 #endif
-    response._connection_header = connection_header;
-    StoreConnectionHeader(&response);
-    link.reset();
-    // If we're shutting down but the node haven't finished yet, wait until we do
-    while (ros::isShuttingDown() && ros::ok()) {
-      ros::WallDuration(0.001).sleep();
+      response._connection_header = connection_header;
+      StoreConnectionHeader(&response);
+      link.reset();
+      // If we're shutting down but the node haven't finished yet, wait until we do
+      while (ros::isShuttingDown() && ros::ok()) {
+        ros::WallDuration(0.001).sleep();
+      }
     }
+  } else {
+    bSuccess = false;
+    ROS_ERROR("Failed to establish connection to service server");
   }
   vpop();                       // pop response._message
   vpop();                       // pop request._message
   if ( ! bSuccess ) {
     ROS_ERROR("attempted to call service  %s, but failed ",
               ros::names::resolve(service).c_str());
-    if (persist) {
-      // cleanup service_cache
-      service_cache.erase(service_cache.find(service));
-    }
   }
 
   return (response._message);
