@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
 (ros::load-ros-manifest "image_view2")
-(ros::load-ros-manifest "ar_pose")
+(ros::load-ros-manifest "ar_track_alvar_msgs")
 
 (ros::roseus "ar_pose_clinet")
 
@@ -15,13 +15,14 @@
       (send mrk :frames (list "/ar_marker_frame"))
       (send *tfb* :send-transform
 	    c (send marker :header :frame_id) "/ar_marker_frame"
-	    (send marker :header :stamp))
+	    (ros::time-now)
+	    )
       (ros::ros-info "~A" c)
       (ros::publish "image_marker" mrk)
       )))
 
 (ros::advertise "image_marker" image_view2::ImageMarker2 1)
-(ros::subscribe "ar_pose_marker" ar_pose::ARMarkers #'ar-pose-cb)
+(ros::subscribe "ar_pose_marker" ar_track_alvar_msgs::AlvarMarkers #'ar-pose-cb)
 
 (ros::rate 10)
 (while (ros::ok)
