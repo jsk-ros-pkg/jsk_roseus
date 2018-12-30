@@ -123,8 +123,8 @@
           (dolist (n nodes)
             (setq trans
                   (send sm :add-transition (send n :name) (send n :name) return-fail))
-            (setf (get trans :pddl-state (cons (rmn (send n :name))
-                                               (rmn (send n :name))))))
+            (setf (get trans :pddl-state) (cons (rmn (send n :name))
+                                                (rmn (send n :name)))))
           ))
   
       (when use-sub-machine

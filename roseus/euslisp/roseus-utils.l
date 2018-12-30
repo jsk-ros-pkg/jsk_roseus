@@ -1031,7 +1031,7 @@
        ))
     ))
 ;;
-;; misc unction
+;; misc function
 ;;
 (ros::roseus-add-srvs "std_srvs")
 (defun call-empty-service (srvname &key (wait nil))
@@ -1071,7 +1071,7 @@
   (unix::usleep (round (* wait 1000)))
   (while after-stamp
     (let ((tm (ros::time-now)))
-      (if (< (send (ros::time- after-stamp tm) :tosec) 0)
+      (if (< (send (ros::time- after-stamp tm) :to-sec) 0)
           (return)))
     (unix::usleep 50000))
   (ros::publish topic-name msg)

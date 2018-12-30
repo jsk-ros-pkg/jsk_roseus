@@ -2,6 +2,9 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.2 (2018-11-10)
+------------------
+
 1.7.1 (2018-07-22)
 ------------------
 * add melodic test (`#567 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/567>`_)
