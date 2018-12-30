@@ -1031,7 +1031,7 @@
        ))
     ))
 ;;
-;; misc unction
+;; misc function
 ;;
 (ros::roseus-add-srvs "std_srvs")
 (defun call-empty-service (srvname &key (wait nil))
