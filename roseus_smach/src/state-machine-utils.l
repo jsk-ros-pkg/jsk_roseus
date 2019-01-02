@@ -89,6 +89,7 @@ e.g. (make-state-machine '((:a -> :b)
     You can specify return value as `exec-result` key.
     Also, you can speficy edges with symbol, number and string as `(:b :skip :b_s)`.
     If the action body include references to global variables, it must be given as 'action-a (and not #'action-a)
+    https://github.com/jsk-ros-pkg/jsk_roseus/pull/589#issuecomment-446071574
 "
   (labels ((unique-graph (gr)
              (unique
