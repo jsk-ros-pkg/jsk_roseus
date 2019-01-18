@@ -1,4 +1,5 @@
 <launch>
   <node name="a2i_server" pkg="roseus" type="roseus" args="$(find roseus)/test/add-two-ints-server.l" />
-  <test test-name="add_two_ints" pkg="roseus" type="roseus" args="$(find roseus)/test/test-add-two-ints.l" />
+  <test test-name="add_two_ints" pkg="roseus" type="roseus" args="$(find roseus)/test/test-add-two-ints.l"
+        time-limit="120" />
 </launch>

@@ -23,7 +23,7 @@ Returns:
     (while (ros::ok)
       (when spin
         (ros::spin-once)
-        (if (boundp '*ri*) (send *ri* :spin-once)))
+        (if (and (boundp '*ri*) *ri*) (send *ri* :spin-once)))
       (send insp :publish-status mydata)
       (when (send sm :goal-reached)
         (return))
@@ -64,13 +64,13 @@ e.g. (make-state-machine '((:a -> :b)
                            (:c -> (:d1 :d2))
                            (:d1 -> :end)
                            (:d2 -> :end))
-                         '((:a #'action-a)
-                           (:b #'action-b)
-                           (:b_f #'action-b-f)
-                           (:b_s #'action-b-s)
-                           (:c #'action-c)
-                           (:d1 #'action-d1)
-                           (:d2 #'action-d2))
+                         '((:a 'action-a)
+                           (:b 'action-b)
+                           (:b_f 'action-b-f)
+                           (:b_s 'action-b-s)
+                           (:c 'action-c)
+                           (:d1 'action-d1)
+                           (:d2 'action-d2))
                           '(:a)
                           '(:end :fail))
     This makes state machine like:
@@ -88,6 +88,8 @@ e.g. (make-state-machine '((:a -> :b)
     By default, if `action-a` returns value t, then state transits as defined above.
     You can specify return value as `exec-result` key.
     Also, you can speficy edges with symbol, number and string as `(:b :skip :b_s)`.
+    If the action body include references to global variables, it must be given as 'action-a (and not #'action-a)
+    https://github.com/jsk-ros-pkg/jsk_roseus/pull/589#issuecomment-446071574
 "
   (labels ((unique-graph (gr)
              (unique

@@ -15,7 +15,7 @@
 (unless (find-package "ROSACTIONLIB") (make-package "ROSACTIONLIB"))
 (defclass ros::simple-action-client
   :super ros::object
-  :slots (name-space action-spec simple-state comm-state status-stamp
+  :slots (name-space action-spec simple-state comm-state status-stamp last-status-msg
                      action-goal-class action-result-class action-feedback-class
                      action-done-cb action-active-cb action-feedback-cb
                      goal_id groupname seq-count))
@@ -24,6 +24,7 @@
   (:goal-status-cb
    (msg)
    ;;(ros::ros-debug "[~A] status-cb (seq:~A ~A)" name-space (send msg :header :seq) (mapcar #'(lambda (s) (format nil "id:~A, status:~A" (send s :goal_id :id) (goal-status-to-string (send s :status)))) (send msg :status_list)))
+   (setq last-status-msg msg)
    (let ((m (send comm-state :find-status-by-goal-id msg)))
      (when m
        (let ((com-state (send comm-state :update-status msg))
@@ -58,6 +59,7 @@
    (msg)
    (let (dummy-msg)
      (ros::ros-debug "[~A] reuslt-cb ~A ~A" name-space (send msg :status :goal_id :id) (goal-status-to-string (send msg :status :status)))
+     (if (null goal_id) (return-from :action-result-cb nil))
      (unless (send comm-state :update-result msg)
        (ros::ros-warn "[~A] action-result-cb may recieved old client's goal" name-space)
        (ros::ros-warn "     expected goal id ~A" (and (send comm-state :action-goal) (send (send comm-state :action-goal) :goal_id :id)))
@@ -232,6 +234,7 @@
          (setq state actionlib_msgs::GoalStatus::*active*)))
       state))
   (:get-goal-status-text () (send (send comm-state :latest-goal-status) :text))
+  (:last-status-msg () last-status-msg)
   (:cancel-all-goals
    ()
    (let (cancel)
