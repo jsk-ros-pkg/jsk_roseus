@@ -2,6 +2,17 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* check why test-smach-action-client-state failing on installed test (`#570 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/570>`_ )
+* fix make-state-machine docstring (`#589 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/589>`_ )
+* re-enable test-smach-action-client-state, which is removed in https://github.com/jsk-ros-pkg/jsk_roseus/pull/567#issuecomment-406841511
+* Add issue link in make-state-machine docstring (`#595 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/595>`_ )
+* roseus_smach: change the order of callee args for userdata in pddl2smach (`#587 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/587>`_)
+* roseus_smach: pass userdata values unless :arg-keys is set (`#586 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/586>`_)
+  * roseus_smach: fix error on exec state machine without *ri*
+* Contributors: Guilherme Affonso, Yuki Furuta, Shingo Kitagawa
+
 1.7.2 (2018-11-10)
 ------------------
 
