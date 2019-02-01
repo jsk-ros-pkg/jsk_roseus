@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.3 (2019-02-01)
+------------------
 * check why test-smach-action-client-state failing on installed test (`#570 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/570>`_ )
 * fix make-state-machine docstring (`#589 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/589>`_ )
 * re-enable test-smach-action-client-state, which is removed in https://github.com/jsk-ros-pkg/jsk_roseus/pull/567#issuecomment-406841511
