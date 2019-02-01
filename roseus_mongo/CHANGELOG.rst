@@ -2,8 +2,8 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.3 (2019-02-01)
+------------------
 * Merge remote-tracking branch 'origin/master' into last-status-msg
 * Contributors: Furushchev
 

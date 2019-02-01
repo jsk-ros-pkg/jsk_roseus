@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.3 (2019-02-01)
+------------------
 * roseus.cpp: when topic is subscribed twice, cleanup previous callback function (`#525 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/525>`_ )
   * add test for subscribe object dispose
   * if object is set to gentem symbol, we can not dispose them
