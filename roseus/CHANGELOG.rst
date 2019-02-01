@@ -2,6 +2,36 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* roseus.cpp: when topic is subscribed twice, cleanup previous callback function (`#525 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/525>`_ )
+  * add test for subscribe object dispose
+  * if object is set to gentem symbol, we can not dispose them
+  * test/test-subscribe-dispose.test : add test for dispose
+
+* Fix typo in package.xml (`#598 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/598>`_ )
+* test/add-two-ints-client.l: read request values from argument (`#596 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/596>`_ )
+* This change enable to call
+  ```
+  $ rosrun roseus add_two_ints_client.l 4 5
+  ```
+  Closes `#581 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/581>`_
+* roseus: add :last-status-msg method for simple-action-client (`#578 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/578>`_ )
+* [roseus-util.l] Fixed typo in (one-shot-publish :after-stamp t) :tosec -> :to-sec (`#576 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/576>`_ )
+* [roseus-util.l] fix comment typo: unction -> function (`#583 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/583>`_)
+* roseus: reuse service server/client link on service call if connection is valid (`#593 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/593>`_ )
+  * roseus.cpp: keep connection to server on persistent service call
+  * test-add-two-ints.test: increase timelimit to 120 secs
+  * test-service-callback.l: add test for calling unadvertised service
+  * test-add-two-ints.l: add test code for persistent service call
+
+* Fix frame-exists method (`#592 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/592>`_ )
+  * Add code to wait for transform in test-frame-exists by @Affonso-Gui
+  * Fix wrong function in the :frame-exists method. (Fix `#591 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/591>`_)
+
+* roseus: setlocale to none (`#585 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/585>`_ )
+* Contributors: Guilherme Affonso, Yuki Furuta, Kanae Kochigami, Kei Okada, Koga Yuya, Iori Yanokura
+
 1.7.2 (2018-11-10)
 ------------------
 * use PROJECT_SOURCE_DIR instaed of CMAKE_SOURCE_DIR for `catkin_make` (`#580 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/580>`_)
