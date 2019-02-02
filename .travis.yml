@@ -20,16 +20,19 @@ env:
     - ROS_DISTRO=indigo USE_DEB=true   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - ROS_DISTRO=indigo USE_DEB=false  NOT_TEST_INSTALL=true
     - ROS_DISTRO=indigo USE_DEB=source NOT_TEST_INSTALL=true
+    - ROS_DISTRO=indigo USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_pr2eus" TEST_PKGS="pr2eus pr2eus_moveit"
     - ROS_DISTRO=kinetic USE_DEB=true
     - ROS_DISTRO=kinetic USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_planning" TEST_PKGS="task_compiler"
     - ROS_DISTRO=kinetic USE_DEB=true   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - ROS_DISTRO=kinetic USE_DEB=false  NOT_TEST_INSTALL=true
     - ROS_DISTRO=kinetic USE_DEB=source NOT_TEST_INSTALL=true
+    - ROS_DISTRO=kinetic USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_pr2eus" TEST_PKGS="pr2eus pr2eus_moveit"    
     - ROS_DISTRO=melodic USE_DEB=true
     - ROS_DISTRO=melodic USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_planning" TEST_PKGS="task_compiler"
     - ROS_DISTRO=melodic USE_DEB=true   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - ROS_DISTRO=melodic USE_DEB=false  NOT_TEST_INSTALL=true
     - ROS_DISTRO=melodic USE_DEB=source NOT_TEST_INSTALL=true
+    - ROS_DISTRO=melodic USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_pr2eus" TEST_PKGS="pr2eus pr2eus_moveit"
 matrix:
   fast_finish: true
   # allow_failures:
