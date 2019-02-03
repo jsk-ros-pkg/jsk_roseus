@@ -155,6 +155,42 @@
       (assert nil "Goal 2 didn't finish~%"))
     ))
 
+(deftest test-client-send-one-goal-with-two-instance ()
+  (let (c1 c2 g1 g2)
+    ;;
+    ;; send goal twice from two instance
+    ;;
+    (setq c1 (instance ros::simple-action-client :init
+                      "reference_action" actionlib::TestAction))
+    (warning-message 1 "wait-for-server 1~%")
+    (send c1 :wait-for-server)
+
+    (setq g1 (instance actionlib::TestActionGoal :init))
+    (warning-message 1 "send-goal 1~%")
+    (send g1 :goal :goal 4) ;; 10 sec to goal return set aborted
+    (send c1 :send-goal g1)
+    (warning-message 1 "sent goal 1 (~A)~%" (send g1 :goal_id :id))
+    (unix:sleep 1)
+    ;;
+    (setq c2 (instance ros::simple-action-client :init
+                      "reference_action" actionlib::TestAction))
+    (warning-message 1 "wait-for-server 2~%")
+    (send c2 :wait-for-server)
+    ;; goal send by c1 is taken by c2, thus call (send c2 :wait-for-result) never retuns, so we need actinlib do not return from :wait-for-result, if that goal is overridden from different instance in same roseus process  hack (https://github.com/jsk-ros-pkg/jsk_roseus/pull/519#issuecomment-303000720)
+
+    ;;
+    (warning-message 1 "wait-for-result 1 (~A)~%" (send g1 :goal_id :id))
+    (unless (send c1 :wait-for-result :timeout 20) ;; c1 is retuen after 10 sec
+      (warning-message 1 "wail-for-result 1 failed...~%")
+      ;; if the goal is aborted that's what we expected
+      (cond ((equal actionlib_msgs::GoalStatus::*ABORTED*
+                    (send c1 :get-state))
+             (warning-message 1 "goal is aborted, as expected...~%")
+             )
+            (t
+             (assert nil "Goal 1 didn't finish~%"))))
+    ))
+
 (setq *dispose* nil)
 (defclass ros::simple-action-client-dispose
   :super ros::simple-action-client)
