@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.4 (2019-02-04)
+------------------
 * .travis.yml: run jsk_pr2eus tests in travis (`#599 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/599>`_ )
 
    * test/simple-client-cancel-test.l: add test to find `#567 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/567>`_ regression
