@@ -2,6 +2,16 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* .travis.yml: run jsk_pr2eus tests in travis (`#599 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/599>`_ )
+
+   * test/simple-client-cancel-test.l: add test to find `#567 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/567>`_ regression
+
+* Revert "roseus: add :last-status-msg method for simple-action-client" (`#578 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/578>`_ )
+* Revert "add test for subscribe object dispose" (`#525 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/525>`_ )
+* Contributors: Kei Okada
+
 1.7.3 (2019-02-01)
 ------------------
 * roseus.cpp: when topic is subscribed twice, cleanup previous callback function (`#525 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/525>`_ )

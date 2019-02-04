@@ -2,6 +2,9 @@
 Changelog for package roseus_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.7.3 (2019-02-01)
 ------------------
 * use ar_pose_alvar instead of ar_pose for kinetic (`#582 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/582>`_ )
