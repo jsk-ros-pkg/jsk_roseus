@@ -1,6 +1,6 @@
 <package>
   <name>roseus</name>
-  <version>1.7.3</version>
+  <version>1.7.4</version>
   <description>EusLisp client for ROS Robot Operating System.</description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
 
