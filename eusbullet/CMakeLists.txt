@@ -21,3 +21,5 @@ include_directories(
 
 add_library(eusbullet SHARED src/eusbullet.cpp)
 target_link_libraries(eusbullet ${BULLET_LIBRARIES})
+
+add_rostest(test/test_collision_distance.test)
