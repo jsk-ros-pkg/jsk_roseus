@@ -3,17 +3,19 @@ project(eusbullet)
 
 find_package(catkin COMPONENTS cmake_modules rostest)
 
+find_package(PkgConfig)
+pkg_check_modules(BULLET REQUIRED bullet)
+
 catkin_package(
     DEPENDS euslisp jskeus
-    LIBRARIES eusbullet BulletCollision BulletDynamics LinearMath ConvexDecomposition
+    LIBRARIES eusbullet
   )
 
-
-add_subdirectory(bullet3)
-
-set(BULLET_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/bullet3/src/)
-set(BULLET_LIBRARIES BulletCollision BulletDynamics LinearMath ConvexDecomposition)
-
+# for debug
+# message("[PKG_CONFIG_EXECUTABLE] ${PKG_CONFIG_EXECUTABLE}")
+# message("[BULLET_FOUND] ${BULLET_FOUND}")
+# message("[BULLET_LIBRARIES] ${BULLET_LIBRARIES}")
+# message("[BULLET_INCLUDE_DIRS] ${BULLET_INCLUDE_DIRS}")
 
 include_directories(
   ${BULLET_INCLUDE_DIRS}
