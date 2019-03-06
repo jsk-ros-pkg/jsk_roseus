@@ -8,7 +8,10 @@
 
 (defun print-ros-msg (msg &optional (rp (find-package "ROS"))
                           (ro ros::object) (nest 0) (padding "  "))
-  (dolist (s (send msg :slots))
+  (dolist (s (let ((slt (send msg :slots)))
+               (map nil #'(lambda (obj) (setq slt (remove obj slt :key #'car :count 1)))
+                    (send ro :slots))
+               slt))
     (let ((sm (car s)))
       (when (and (symbolp sm) (eq (symbol-package sm) rp))
         (cond
