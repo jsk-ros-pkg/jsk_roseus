@@ -199,7 +199,7 @@
       (exit 1))
     (ros::ros-debug "Loading ~A" dir)
     (unless (find-package (string-upcase pkg))
-      (make-package (string-upcase pkg)))
+      (make-package (string-upcase pkg) :use nil))
     (dolist (file (directory dir))
       (when (and (string= (pathname-type file) "l")
 		 (not (= #\. (elt (pathname-name file) 0))))
@@ -406,9 +406,9 @@ always the rank of list is 2"
 	   (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg)))))
 
 (defun ros::load-ros-package (pkg)
-  "load reqruied roseus files for given package"
+  "load required roseus files for given package"
   (unless (find-package (string-upcase pkg))
-    (make-package (string-upcase pkg)))
+    (make-package (string-upcase pkg) :use nil))
   (when (probe-file (format nil "~A/msg" (ros::find-load-msg-path pkg)))
     (ros::roseus-add-msgs pkg))
   (when (probe-file (format nil "~A/srv" (ros::find-load-msg-path pkg)))
