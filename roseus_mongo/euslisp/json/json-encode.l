@@ -38,7 +38,7 @@
 (defun encode-vector (v &optional (os *standard-output*))
   (with-blacket os #\[ #\]
     (dotimes (i (length v))
-      (encode-number (aref v i))
+      (encode-number (aref v i) os)
       (if (< i (1- (length v)))
           (write-byte #\, os)))))
 
