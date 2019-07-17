@@ -1931,7 +1931,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"ROS-WARN",argv[0],(pointer (*)())ROSEUS_ROSWARN, "write mesage to warn output");
   defun(ctx,"ROS-ERROR",argv[0],(pointer (*)())ROSEUS_ROSERROR, "write mesage to error output");
   defun(ctx,"ROS-FATAL",argv[0],(pointer (*)())ROSEUS_ROSFATAL, "write mesage to fatal output");
-  defun(ctx,"EXIT",argv[0],(pointer (*)())ROSEUS_EXIT, "Exit ros clinet");
+  defun(ctx,"EXIT",argv[0],(pointer (*)())ROSEUS_EXIT, "Exit ros client");
 
   defun(ctx,"SUBSCRIBE",argv[0],(pointer (*)())ROSEUS_SUBSCRIBE,
          "topicname message_type callbackfunc args0 ... argsN &optional (queuesize 1) %key (:groupname groupname)\n\n"
