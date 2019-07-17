@@ -816,7 +816,9 @@ def_rosconsole_formatter(ROSEUS_ROSERROR, ROS_ERROR)
 def_rosconsole_formatter(ROSEUS_ROSFATAL, ROS_FATAL)
 
 pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
-{
+{ pointer exithook=speval(QEXITHOOK);
+  if (exithook != NIL) {
+    ufuncall(ctx,exithook,exithook,(pointer)(ctx->vsp-n),0,n);}
   ROS_INFO("%s", __PRETTY_FUNCTION__);
   if( s_bInstalled ) {
     ROS_INFO("exiting roseus %ld", (n==0)?n:ckintval(argv[0]));
