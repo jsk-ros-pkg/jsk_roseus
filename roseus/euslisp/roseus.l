@@ -240,7 +240,7 @@
 
 (defun load (fname &rest args)
   (let ((fullname fname))
-    (when (substringp "package://" fname)
+    (when (and (stringp fname) (substringp "package://" fname))
       (setq fullname (ros::resolve-ros-path fname))
       (when ros::*compile-message*
         (let* ((urlname (url-pathname fname))
