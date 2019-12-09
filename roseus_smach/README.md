@@ -53,7 +53,7 @@ Sample codes are available on `sample` directory.
   rosrun roseus_smach parallel-state-machine-sample.l
   (demo)
   ```
-  ## Writing Simple Smach(state-machine)
+## Writing Simple Smach(state-machine)
 Example codes are [here](https://github.com/jsk-ros-pkg/jsk_roseus/blob/master/roseus_smach/sample/state-machine-sample.l).
 ```lisp
 #!/usr/bin/env roseus
