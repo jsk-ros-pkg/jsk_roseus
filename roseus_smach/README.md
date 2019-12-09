@@ -57,20 +57,14 @@ Sample codes are available on `sample` directory.
 Example codes are [here](https://github.com/jsk-ros-pkg/jsk_roseus/blob/master/roseus_smach/sample/state-machine-sample.l).
 ```lisp
 #!/usr/bin/env roseus
-;;
-;; 3 type samples of State machine from SMACH tutorials
-;;
 (load "package://roseus_smach/src/state-machine.l")
 
-;;
-;; sample 1: simple state machine
-;;
 (setq count 0)
-(defun func-foo (&rest args)
+(defun func-foo (userdata-alist)
   (format t "Execute state FOO~%")
   (cond ((< count 3) (incf count) :outcome1)
 	(t :outcome2)))
-(defun func-bar (&rest args)
+(defun func-bar (userdata-alist)
   (format t "Execute state BAR~%")
   :outcome2)
 
@@ -88,6 +82,8 @@ Example codes are [here](https://github.com/jsk-ros-pkg/jsk_roseus/blob/master/r
     (send sm :add-transition :FOO :outcome4 :outcome2)
     (send sm :add-transition :BAR :FOO :outcome2)
     sm ))
+
+(send (smach-simple) :execute nil)
 ```
 ### The Code Explained
 ```lisp
@@ -98,28 +94,26 @@ This line imports state-machine class, state class, and transition class.
 
 
 ```lisp
-(defun func-foo (&rest args)
+(defun func-foo (userdata-alist)
   (format t "Execute state FOO~%")
   (cond ((< count 3) (incf count) :outcome1)
 	(t :outcome2)))
-(defun func-bar (&rest args)
+(defun func-bar (userdata-alist)
   (format t "Execute state BAR~%")
   :outcome2)
 ```
-These lines define some functions that will be hooked to state. Note that the return value of the function is equal to the transition (or the action) of the state.
+These lines define some functions that will be hooked to state. Note that the functions are called with one argument, an alist of the declared user-data arguments, and that their return value is equal to the transition (or the action) of the state.
 
 
 ```lisp
 (sm (instance state-machine :init))
 ```
-This line creates state-machine instance. 
-Noe that you can execute the state machine with `(exec-state-machine sm)` then you can view and check it with [smach_viewer](http://wiki.ros.org/smach_viewer). The function `exec-state-machine ` is defined in [here](https://github.com/jsk-ros-pkg/jsk_roseus/blob/master/roseus_smach/src/state-machine-utils.l#L3). 
-
+This line creates the state-machine instance and binds it to `sm`.
 
 ```lisp
 (send sm :add-node (instance state :init :FOO 'func-foo))
 ```
-This line creates a new state and add the node to the state machine. When you create new state instance, you can name the state and hook the state to a function. In this case, a new state has name `:FOO` and hooked with `func-foo`.  
+This line creates a new state and add the node to the state machine. When you create new state instance, you can name the state and hook the state to a function. Any lisp object can be used for state names. In this case, a new state has name `:FOO` and hooked with `func-foo`.
 
 ```lisp
 (send sm :goal-state (list :outcome4 :outcome5))
@@ -131,5 +125,10 @@ These lines define goal state(s) and start state(s) to the state machine. You ca
 ```lisp
 (send sm :add-transition :FOO :BAR :outcome1)
  ```
- This line defines transtion. The argments of `:add-transition method` is `TO, FROM, OUTCOME`. So this line means that "adding transition from FOO to BAR, when FOO node returns outcome1". 
- 
+ This line defines transtion. The argments of `:add-transition method` is `TO`, `FROM`, `OUTCOME`. So this line means that "adding transition from FOO to BAR, when FOO node returns outcome1".
+
+```lisp
+(send (smach-simple) :execute nil)
+```
+This line sets up and execute the state machine.
+In order to view and check the progress with [smach_viewer](http://wiki.ros.org/smach_viewer), use the function [exec-state-machine](https://github.com/jsk-ros-pkg/jsk_roseus/blob/master/roseus_smach/src/state-machine-utils.l#L3) instead.
