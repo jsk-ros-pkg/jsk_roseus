@@ -173,6 +173,27 @@
              (bench2 (dotimes (i 100) (ros::get-param "test"))))
           "(ros::get-param-cached test) has less performance than (ros::get-param test)"))
 
+;; this should be call after test-set-param
+(deftest test-list-param ()
+  (let ((ret (ros::list-param)) diff)
+    (assert ret "list-param returns nil")
+    (setq diff (set-difference (cdr ret)
+                               '("/test_dictionary/str_value" "/test_dictionary/dictionary/key_bool" "/test_dictionary/dictionary/key_dbl" "/test_dictionary/dictionary/key_str" "/test_dictionary/dictionary/key_int" "/test_dictionary/dictionary/key_list" "/test_dictionary/list" "/test_dictionary/bool_value" "/test_dictionary/int_value" "/test_dictionary/dbl_value" "/rosversion" "/run_id" "/param/test" "/param/read_parameter/test" "/test" "/rosdistro"
+                                 "/test2" "/param/read_parameter/test2" "/param/test2" "/test_dictionary2/str_value" "/test_dictionary2/dictionary/key_bool" "/test_dictionary2/dictionary/key_dbl" "/test_dictionary2/dictionary/key_str" "/test_dictionary2/dictionary/key_int" "/test_dictionary2/dictionary/key_list" "/test_dictionary2/bool_value" "/test_dictionary2/list" "/test_dictionary2/int_value" "/test_dictionary2/dbl_value")
+                               :test #'equal))
+    (assert (not diff) "list-param ~A failed" diff)
+    ))
+
+(deftest test-search-param ()
+  (let (ret)
+    (ros::roseus "param_test") ;; this would be read_parameter in test-parameter.test
+    ;; search param only look for upper namespace
+    (setq ret (ros::search-param "test"))
+    (assert (string= ret "/param/read_parameter/test") "search-param returns ~A" ret)
+    (setq ret (ros::search-param "rosdistro"))
+    (assert (string= ret "/rosdistro")  "search-param returns ~A" ret)
+    ))
+
 (run-all-tests)
 
 (exit)
