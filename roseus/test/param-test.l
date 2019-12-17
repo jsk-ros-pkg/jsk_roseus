@@ -1,11 +1,11 @@
 #!/usr/bin/env roseus
 
 (require :unittest "lib/llib/unittest.l")
+(ros::roseus "read_parameter") ;; some test depends on this namespace, do not change test-name "read_parameter" of test-parameter.test
 
 (init-unit-test)
 
 (deftest test-get-param ()
-  (ros::roseus "param_test")
   (assert (ros::has-param "~test") "[~test] (ros::has-param) failed")
   (let ((ret (ros::get-param "~test")))
     (ros::ros-info "~test ~A" ret)
@@ -70,7 +70,6 @@
   )
 
 (deftest test-set-param ()
-  (ros::roseus "param_test")
   (assert (null (ros::has-param "~test2")) "[~test2] (ros::has-param) failed")
   (let (ret)
     (ros::set-param "~test2" "test_private2")
@@ -186,7 +185,6 @@
 
 (deftest test-search-param ()
   (let (ret)
-    (ros::roseus "param_test") ;; this would be read_parameter in test-parameter.test
     ;; search param only look for upper namespace
     (setq ret (ros::search-param "test"))
     (assert (string= ret "/param/read_parameter/test") "search-param returns ~A" ret)
