@@ -154,6 +154,29 @@
   (:sleep () (ros::duration-sleep (send self :to-sec)))
   )
 
+;; anymsg
+(defclass ros::anymsg
+  :super ros::object
+  :slots (_buff))
+
+(defmethod ros::anymsg
+  (:init ()
+   (send-super :init)
+   self)
+;  (:serialization-length () )
+;  (:serialize (&optional strm) )
+  (:deserialize
+   (buf &optional (ptr- 0))
+   (setq _buff buf)
+   self)
+  (:buf ()
+   _buff)
+  )
+
+(setf (get ros::anymsg :md5sum-) "*")
+(setf (get ros::anymsg :datatype-) "*")
+(setf (get ros::anymsg :definition-) "roseus/AnyMsg")
+
 ;;
 (defclass timer-event
   :super propertied-object
