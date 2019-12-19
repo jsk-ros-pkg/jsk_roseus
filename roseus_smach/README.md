@@ -132,3 +132,84 @@ These lines define goal state(s) and start state(s) to the state machine. You ca
 ```
 This line sets up and execute the state machine.
 In order to view and check the progress with [smach_viewer](http://wiki.ros.org/smach_viewer), use the function [exec-state-machine](https://github.com/jsk-ros-pkg/jsk_roseus/blob/master/roseus_smach/src/state-machine-utils.l#L3) instead.
+## Writing Nested Smach
+Example codes are [here](https://github.com/jsk-ros-pkg/jsk_roseus/blob/01320ceaf72857404746171cbaa0f1724e4ad4b8/roseus_smach/sample/state-machine-sample.l#L42).
+You can also add child state-machine as a node to state-machine.
+![](https://gist.github.com/ykawamura96/987e67b3775d68cac78031b994c3a0ba/raw/865d64ec00d2dfa6f6f1b03735918ac6f65767bc/nested_samch.png)
+```lsip
+#!/usr/bin/env roseus
+(load "package://roseus_smach/src/state-machine.l")
+(defun smach-nested ()
+  (let ((sm-top (instance state-machine :init))
+        (sm-sub (instance state-machine :init)))
+    ;; state instance can include other state-machine like function
+    (send sm-top :add-node (instance state :init "SUB" sm-sub))
+    (send sm-top :add-node (instance state :init "BAS" 'func-bas))
+    (send sm-top :goal-state :outcome5)
+    (send sm-top :start-state "BAS")
+    (send sm-top :add-transition "BAS" "SUB" :outcome3)
+    (send sm-top :add-transition "SUB" :outcome5 :outcome4)
+    ;; node instance can be args of :add-node, :start-state, :add-transition
+    (let ((foo-node (instance state :init "FOO" 'func-foo))
+          (bar-node (instance state :init "BAR" 'func-bar)))
+      (send sm-sub :add-node foo-node)
+      (send sm-sub :add-node bar-node)
+      (send sm-sub :goal-state :outcome4)
+      (send sm-sub :start-state foo-node)
+      (send sm-sub :add-transition foo-node bar-node :outcome1)
+      (send sm-sub :add-transition foo-node :outcome4 :outcome2)
+      (send sm-sub :add-transition bar-node foo-node :outcome2))
+
+    sm-top ))
+
+(send (smach-nested) :execute nil)
+```
+
+### The Code Explained
+```lisp
+#!/usr/bin/env roseus
+(load "package://roseus_smach/src/state-machine.l")
+```
+Same as in the previous exapmle, this line imports state-machine class, state class, and transition class.
+
+```lisp
+  (let ((sm-top (instance state-machine :init))
+        (sm-sub (instance state-machine :init)))
+```
+This line creates two of state-machine instance. The `sm-sub` is a state machine but also **acting like a state (or a node)** in `sm-top`. **This is easy to understand if you think that a state machine as a function**: when the state machine is called, or excuted, state machine does some processing and eventually returns the goal state as its return value just like a function.
+
+```lisp
+    (send sm-top :add-node (instance state :init "SUB" sm-sub))
+```
+The `sm-sub` insatnce is hooked as a node in `sm-top` with name of `"SUB"` in this line. This line also indicates that you can add a state machine as a state just like a function. 
+
+```lisp
+    (send sm-top :add-node (instance state :init "BAS" 'func-bas))
+    (send sm-top :goal-state :outcome5)
+    (send sm-top :start-state "BAS")
+    (send sm-top :add-transition "BAS" "SUB" :outcome3)
+```
+These lines define another node, goal-satte, start-state, and transition in the `sm-top`. 
+```lisp
+    (send sm-top :add-transition "SUB" :outcome5 :outcome4)
+```
+Remeber that **the goal state(s) of state-machine does nothing and retuns its name**. So the outcome (or the return value) of the `sm-sub` is its name of goal state(s).
+If you look further, the goal state of `sm-sub` is `:outcome4`, so the return value of `sum-sub` is `:outcome4` that has type of `string`. Therefore this line adds transition of `from "SUB" to ':outcome5' when "SUB" node returns ':oucome4'`. 
+
+```lisp
+(let ((foo-node (instance state :init "FOO" 'func-foo))
+          (bar-node (instance state :init "BAR" 'func-bar)))
+      (send sm-sub :add-node foo-node)
+      (send sm-sub :add-node bar-node)
+      (send sm-sub :goal-state :outcome4)
+      (send sm-sub :start-state foo-node)
+      (send sm-sub :add-transition foo-node bar-node :outcome1)
+      (send sm-sub :add-transition foo-node :outcome4 :outcome2)
+      (send sm-sub :add-transition bar-node foo-node :outcome2))
+```
+These lines define the behavior of `sm-sub` in detail just like the previous simple state machine exapmle. Note that `(send sm-sub :goal-state :outcome4)` not only defines the goal state, but also defines the return value of its state machine.
+
+```lisp
+(send (smach-nested) :execute nil)
+```
+Finally, the `sm-top` is executed here. 
