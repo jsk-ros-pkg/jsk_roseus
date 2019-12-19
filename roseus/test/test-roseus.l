@@ -111,6 +111,12 @@
   (assert (not (ros::resolve-ros-path "package://not_existing_package")))
   )
 
+(deftest load-pathname ()
+  (let ((fname (concatenate string #+:linux "/tmp/" "tmp-load-pathname-test.l")))
+    (with-open-file (file fname :direction :output)
+      (format file "(print \"Loaded.\")"))
+    (assert (eq (load (pathname fname)) t))))
+
 (deftest test-image-conversion ()
   (when (and
          (assoc :create-viewer (send camera-model :methods))
