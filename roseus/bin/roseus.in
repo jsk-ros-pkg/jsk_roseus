@@ -18,9 +18,10 @@ case $1 in
         GDB_OPTIONS=/tmp/roseus_$$
         cat <<EOF > $GDB_OPTIONS
 break error
-run
+commands
 where
-
+end
+run
 EOF
         LAUNCH_PREFIX="gdb -x $GDB_OPTIONS --args"
 esac
