@@ -202,4 +202,5 @@ if(CATKIN_ENABLE_TESTING)
   #add_rostest(test/test-genmsg-oneworkspace.catkin.launch) # use launch not to run on travis/catkin
   add_rostest(test/test-geneus.test)
   add_rostest(test/test-compile-message.test)
+  add_rostest(test/test-print-ros-msg.test)
 endif()

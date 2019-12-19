@@ -62,13 +62,12 @@
 (shadow 'object *package*)
 (defclass ros::object
   :super propertied-object
-  :slots (_connection-header)))
+  :slots (_connection-header))
 (defmethod ros::object
   (:init () self)
   (:md5sum- () (get (class self) :md5sum-))
   (:datatype- ()  (get (class self) :datatype-))
   (:connection-header () _connection-header))
-  )
 
 (shadow 'time *package*)
 (defclass ros::time
@@ -241,7 +240,7 @@
 
 (defun load (fname &rest args)
   (let ((fullname fname))
-    (when (substringp "package://" fname)
+    (when (and (stringp fname) (substringp "package://" fname))
       (setq fullname (ros::resolve-ros-path fname))
       (when ros::*compile-message*
         (let* ((urlname (url-pathname fname))
