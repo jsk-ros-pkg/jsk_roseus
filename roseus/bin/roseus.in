@@ -15,7 +15,7 @@ LAUNCH_PREFIX="exec"
 case $1 in
     --gdb)
         shift # past argument
-        GDB_OPTIONS=/tmp/roseus_$$
+        GDB_OPTIONS=/tmp/roseus_gdbinit
         cat <<EOF > $GDB_OPTIONS
 break error
 commands
