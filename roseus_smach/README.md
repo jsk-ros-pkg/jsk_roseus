@@ -189,7 +189,7 @@ The `sm-sub` instance is hooked as a node in `sm-top` with name of `"SUB"` in th
     (send sm-top :start-state "BAS")
     (send sm-top :add-transition "BAS" "SUB" :outcome3)
 ```
-These lines define another node, goal-sate, start-state, and transition in the `sm-top`.
+These lines define another node, goal-state, start-state, and transition in the `sm-top`.
 ```lisp
     (send sm-top :add-transition "SUB" :outcome5 :outcome4)
 ```
