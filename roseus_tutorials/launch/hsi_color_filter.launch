@@ -19,8 +19,8 @@
   <arg name="h_min" default="-128" />
   <arg name="s_max" default="255" />
   <arg name="s_min" default="0" />
-  <arg name="v_max" default="255" />
-  <arg name="v_min" default="0" />
+  <arg name="i_max" default="255" />
+  <arg name="i_min" default="0" />
 
   <arg name="create_manager" default="true" />
   <arg name="manager" default="hsi_filter_manager" />
@@ -35,8 +35,8 @@
     <arg name="h_min" default="$(arg h_min)" />
     <arg name="s_max" default="$(arg s_max)" />
     <arg name="s_min" default="$(arg s_min)" />
-    <arg name="v_max" default="$(arg v_max)" />
-    <arg name="v_min" default="$(arg v_min)" />
+    <arg name="i_max" default="$(arg i_max)" />
+    <arg name="i_min" default="$(arg i_min)" />
 
     <arg name="create_manager" default="$(arg create_manager)" />
     <arg name="manager" default="$(arg manager)" />
