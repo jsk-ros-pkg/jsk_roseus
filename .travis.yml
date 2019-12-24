@@ -43,7 +43,7 @@ before_script:
   - export REPOSITORY_NAME=`basename $PWD`
   - if [ "${INSTALL_SRC}" != "" ] ;then sudo apt-get install python-yaml; rm .travis.rosinstall; for src in $INSTALL_SRC; do name=`basename $src`; python -c "import yaml;print yaml.dump([{'git':{'uri':'$src','local-name':'$name'}}], default_flow_style=False)" >> .travis.rosinstall; done; cat .travis.rosinstall; export USE_DEB=false; fi; # set USE_DEB false to enable .travis.rosinstall
 script:
-  - .travis/travis.sh
+  - source .travis/travis.sh
 after_script:
   - sudo pkill -KILL Xorg
   - sudo apt-get remove --purge xvfb
