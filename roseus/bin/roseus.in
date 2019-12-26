@@ -10,18 +10,21 @@ ROSEUS_DIR=`rospack find roseus`
 ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
         ${ROSEUS_DIR}/euslisp/roseus.l ${ROSEUS_DIR}/euslisp/eustf.l ${ROSEUS_DIR}/euslisp/actionlib.l ${ROSEUS_DIR}/euslisp/roseus-utils.l)
 # echo "rosrun euslisp irteusgl ${ARG_STR[@]} $@"
-exec ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
 
-# if you want to run in gdb, please use lines below
-# CMD_NAME=/tmp/roseus_$$
-# cat <<EOF > $CMD_NAME
-# break error
-# run
-# where
+LAUNCH_PREFIX="exec"
+case $1 in
+    --gdb)
+        shift # past argument
+        GDB_OPTIONS=/tmp/roseus_gdbinit
+        cat <<EOF > $GDB_OPTIONS
+break error
+commands
+where
+end
+run
+EOF
+        LAUNCH_PREFIX="gdb -x $GDB_OPTIONS --args"
+esac
 
-# EOF
-# gdb -x $CMD_NAME --args `rospack find euslisp`/jskeus/eus/Linux64/bin/irteusgl "${ARG_STR[@]}" "$@"
-# rm -rf $CMD_NAME
-# // end of using gdb
-
+${LAUNCH_PREFIX} ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
 exit $?

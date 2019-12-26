@@ -104,7 +104,7 @@
                          (copy-object (send msg :data)))))
     (when (string= (send msg :encoding) "bgr8")
       (swap-rgb img24))
-    img24)))
+    img24))
 ) ;; end of when
 ;;
 ;; 3dpoint cloud
@@ -1039,10 +1039,11 @@
 ;; misc function
 ;;
 (ros::roseus-add-srvs "std_srvs")
-(defun call-empty-service (srvname &key (wait nil))
-  "Call empty service"
-  (if wait (ros::wait-for-service srvname))
-  (ros::service-call srvname (instance std_srvs::EmptyRequest :init)))
+(defun call-empty-service (srvname &key (wait nil) (timeout -1)) ;; If timeout is -1 (default), waits until the node is shutdown. If timeout is 0, returns immediately.
+  "Call empty service and return t"
+  (when (ros::wait-for-service srvname (if wait timeout 0))
+    (ros::service-call srvname (instance std_srvs::EmptyRequest :init))
+    t))
 
 (defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
   "Subscribe message, just for once"

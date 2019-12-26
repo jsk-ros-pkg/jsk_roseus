@@ -1548,6 +1548,44 @@ pointer ROSEUS_DELETE_PARAM(register context *ctx,int n,pointer *argv)
   return((ros::param::del(key))?(T):(NIL));
 }
 
+pointer ROSEUS_SEARCH_PARAM(register context *ctx,int n,pointer *argv)
+{
+  string key, result;
+
+  ckarg(1);
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  if ( ros::param::search(key, result) ) {
+    return makestring((char *)result.c_str(), result.length());
+  }
+  return(NIL);
+}
+
+pointer ROSEUS_LIST_PARAM(register context *ctx,int n,pointer *argv)
+{
+  ckarg(0);
+
+#if ROS_VERSION_MINIMUM(1,11,17)
+  std::vector<std::string> keys;
+  if ( ros::param::getParamNames(keys) ) {
+    pointer ret = cons(ctx, NIL,NIL), first;
+    first = ret;
+    vpush(ret);
+    for(std::vector<std::string>::iterator it = keys.begin(); it != keys.end(); it++) {
+      const std::string& key = *it;
+      ccdr(ret) = cons(ctx, makestring((char *)key.c_str(), key.length()), NIL);
+      ret = ccdr(ret);
+    }
+    vpop();
+    return ccdr(first);
+  }
+#else
+  ROS_ERROR("%s : ros::rosparam::getParamNames is not implemented for roscpp %d.%d.%d",  __PRETTY_FUNCTION__, ROS_VERSION_MAJOR, ROS_VERSION_MINOR, ROS_VERSION_PATCH);
+#endif
+  return(NIL);
+}
+
 pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
 {
   ckarg(1);
@@ -1999,6 +2037,8 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"GET-PARAM-CACHED",argv[0],(pointer (*)())ROSEUS_GET_PARAM_CACHED, "Get chached parameter");
   defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM, "Check whether a parameter exists on the parameter server.");
   defun(ctx,"DELETE-PARAM",argv[0],(pointer (*)())ROSEUS_DELETE_PARAM, "key\n\n""Delete parameter from server");
+  defun(ctx,"SEARCH-PARAM",argv[0],(pointer (*)())ROSEUS_SEARCH_PARAM, "key\n\n""Search up the tree for a parameter with a given key. This version defaults to starting in the current node's name.");
+  defun(ctx,"LIST-PARAM",argv[0],(pointer (*)())ROSEUS_LIST_PARAM, "Get the list of all the parameters in the server");
 
   defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND, "Returns ros package path");
   defun(ctx,"ROSPACK-PLUGINS",argv[0],(pointer (*)())ROSEUS_ROSPACK_PLUGINS, "Returns plugins of ros packages");
