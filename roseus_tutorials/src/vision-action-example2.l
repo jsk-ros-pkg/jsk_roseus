@@ -34,6 +34,8 @@
 	;; greetings
 	(send msg :sound sound_play::SoundRequest::*say*) ;; say
 	(send msg :command sound_play::SoundRequest::*play_once*) ;; once
+        (when (fid-method msg :volume)
+          (send msg :volume 1.0))
 	(send msg :arg "こんにちは")
 	(ros::publish "robotsound" msg)
 	;;
