@@ -416,7 +416,7 @@ always the rank of list is 2"
            ;; on jade/kinetic, package without msg does not have manifest.l
 	   (ros::ros-warn "Calling (load-ros-manifest ~A) for the package without msg/srv will be deprecated" pkg)
 	   (ros::ros-warn "ACTION REQUIRED")
-	   (ros::ros-warn " Use (ros::load-ros-package pkg) or (ros::roseus-add-msgs/srvs pkg) for the dependent packages with msg/srv" pkg)
+	   (ros::ros-warn " Use (ros::load-ros-package ~A) or (ros::roseus-add-msgs/srvs ~A) for the dependent packages with msg/srv" pkg pkg)
 	   (ros::ros-warn " See https://github.com/jsk-ros-pkg/jsk_robot/issues/823")
            (dolist (dep (ros::rospack-depends pkg))
              (ros::load-ros-package dep))
