@@ -659,15 +659,15 @@
   (let ((type (send msg :type)))
     (cond
      ((eq type shape_msgs::SolidPrimitive::*BOX*)
-      (shape-msg->shape/cube msg))
+      (shape-msg->cube msg))
      ((eq type shape_msgs::SolidPrimitive::*SPHERE*)
-      (shape-msg->shape/sphere msg))
+      (shape-msg->sphere msg))
      ((eq type shape_msgs::SolidPrimitive::*CYLINDER*)
-      (shape-msg->shape/cylinder msg))
+      (shape-msg->cylinder msg))
      (t
       (error "unknown type ~A" type)))))
 
-(defun shape-msg->shape/cube (msg)
+(defun shape-msg->cube (msg)
   "Convert shape_msgs::SolidPrimitive to euslisp cube object"
   (let* ((scale (send msg :dimensions))
          (cb (make-cube (* (elt scale 0) 1000)
@@ -675,13 +675,13 @@
                         (* (elt scale 2) 1000))))
     cb))
 
-(defun shape-msg->shape/sphere (msg)
+(defun shape-msg->sphere (msg)
   "Convert shape_msgs::SolidPrimitive to euslisp sphere object"
   (let* ((scale (send msg :dimensions))
          (cp (make-sphere (* (elt scale 0) 1000))))
     cp))
 
-(defun shape-msg->shape/cylinder (msg)
+(defun shape-msg->cylinder (msg)
   "Convert shape_msgs::SolidPrimitive to euslisp cylinder object"
   (let* ((scale (send msg :dimensions))
          (height (* (elt scale 0) 1000))
