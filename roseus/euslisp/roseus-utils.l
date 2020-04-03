@@ -620,6 +620,75 @@
                                  (send rgba :b)))
              cb)) points)))
     ))
+
+;;
+;; Shape
+;;
+(ros::roseus-add-msgs "shape_msgs")
+
+;; eus shape object -> shape_msgs::SolidPrimitive
+
+(defun cube->shape-msg (cb)
+  "Convert cube object to shape_msgs::SolidPrimitive"
+  (instance shape_msgs::SolidPrimitive
+            :init :type shape_msgs::SolidPrimitive::*BOX*
+            :dimensions (float-vector
+                         (/ (x-of-cube cb) 1000.0)
+                         (/ (y-of-cube cb) 1000.0)
+                         (/ (z-of-cube cb) 1000.0))))
+
+(defun sphere->shape-msg (sp)
+  "Convert sphere object to shape_msgs::SolidPrimitive"
+  (instance shape_msgs::SolidPrimitive
+            :init :type shape_msgs::SolidPrimitive::*SPHERE*
+            :dimensions (float-vector
+                         (/ (radius-of-sphere sp) 1000.0))))
+
+(defun cylinder->shape-msg (cyl)
+  "Convert cylinder object to shape_msgs::SolidPrimitive"
+  (instance shape_msgs::SolidPrimitive
+            :init :type shape_msgs::SolidPrimitive::*CYLINDER*
+            :dimensions (float-vector
+                         (/ (height-of-cylinder cyl) 1000.0)
+                         (/ (radius-of-cylinder cyl) 1000.0))))
+
+;; shape_msgs::SolidPrimitive -> eus shape object
+
+(defun shape-msg->shape (msg)
+  "Convert shape_msgs::SolidPrimitive to euslisp object"
+  (let ((type (send msg :type)))
+    (cond
+     ((eq type shape_msgs::SolidPrimitive::*BOX*)
+      (shape-msg->shape/cube msg))
+     ((eq type shape_msgs::SolidPrimitive::*SPHERE*)
+      (shape-msg->shape/sphere msg))
+     ((eq type shape_msgs::SolidPrimitive::*CYLINDER*)
+      (shape-msg->shape/cylinder msg))
+     (t
+      (error "unknown type ~A" type)))))
+
+(defun shape-msg->shape/cube (msg)
+  "Convert shape_msgs::SolidPrimitive to euslisp cube object"
+  (let* ((scale (send msg :dimensions))
+         (cb (make-cube (* (elt scale 0) 1000)
+                        (* (elt scale 1) 1000)
+                        (* (elt scale 2) 1000))))
+    cb))
+
+(defun shape-msg->shape/sphere (msg)
+  "Convert shape_msgs::SolidPrimitive to euslisp sphere object"
+  (let* ((scale (send msg :dimensions))
+         (cp (make-sphere (* (elt scale 0) 1000))))
+    cp))
+
+(defun shape-msg->shape/cylinder (msg)
+  "Convert shape_msgs::SolidPrimitive to euslisp cylinder object"
+  (let* ((scale (send msg :dimensions))
+         (height (* (elt scale 0) 1000))
+         (radius (* (elt scale 1) 1000))
+         (cyl (make-cylinder radius height)))
+    cyl))
+
 ;;
 ;; for pointcloud
 ;;
