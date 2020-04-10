@@ -7,7 +7,10 @@ This package includes euslisp implementation of state machine and [smach](http:/
 
 - [roseus](http://wiki.ros.org/roseus)
 - [smach](http://wiki.ros.org/smach)
-- [smach_viewer](http://wiki.ros.org/smach_viewer) (optional for visualization)
+- [smach_viewer](http://wiki.ros.org/smach_viewer)
+  - Optional for visualization.
+  - You have to install this package manually:\
+    `sudo apt install ros-$ROS_DISTRO-smach-viewer`
 
 ## sample
 
