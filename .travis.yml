@@ -43,6 +43,8 @@ before_script:
   - export REPOSITORY_NAME=`basename $PWD`
   - if [ "${INSTALL_SRC}" != "" ] ;then sudo apt-get install python-yaml; rm .travis.rosinstall; for src in $INSTALL_SRC; do name=`basename $src`; python -c "import yaml;print yaml.dump([{'git':{'uri':'$src','local-name':'$name'}}], default_flow_style=False)" >> .travis.rosinstall; done; cat .travis.rosinstall; export USE_DEB=false; fi; # set USE_DEB false to enable .travis.rosinstall
 script:
+  - if [ "${ROS_DISTRO}" == "indigo" ] ;then sed -i "s@http://github.com/jsk-ros-pkg/geneus@https://github.com/tork-a/geneus-release.git\n    version:\ release/indigo/geneus@" .travis.rosinstall; cat .travis.rosinstall; fi
+  - if [ "${ROS_DISTRO}" == "indigo" ] ;then sed -i "s@jsk-ros-pkg/geneus@tork-a/geneus-release@" setup_upstream.sh; sed -i "/^wstool update/a (cd \$WORKSPACE/src/geneus; git checkout release/indigo/geneus)" setup_upstream.sh; cat setup_upstream.sh; fi
   - source .travis/travis.sh
 after_script:
   - sudo pkill -KILL Xorg
