@@ -62,13 +62,12 @@
 (shadow 'object *package*)
 (defclass ros::object
   :super propertied-object
-  :slots (_connection-header)))
+  :slots (_connection-header))
 (defmethod ros::object
   (:init () self)
   (:md5sum- () (get (class self) :md5sum-))
   (:datatype- ()  (get (class self) :datatype-))
   (:connection-header () _connection-header))
-  )
 
 (shadow 'time *package*)
 (defclass ros::time
@@ -154,6 +153,29 @@
          (send-super :init :sec sec :nsec nsec))
   (:sleep () (ros::duration-sleep (send self :to-sec)))
   )
+
+;; anymsg
+(defclass ros::anymsg
+  :super ros::object
+  :slots (_buff))
+
+(defmethod ros::anymsg
+  (:init ()
+   (send-super :init)
+   self)
+;  (:serialization-length () )
+;  (:serialize (&optional strm) )
+  (:deserialize
+   (buf &optional (ptr- 0))
+   (setq _buff buf)
+   self)
+  (:buf ()
+   _buff)
+  )
+
+(setf (get ros::anymsg :md5sum-) "*")
+(setf (get ros::anymsg :datatype-) "*")
+(setf (get ros::anymsg :definition-) "roseus/AnyMsg")
 
 ;;
 (defclass timer-event
@@ -241,7 +263,7 @@
 
 (defun load (fname &rest args)
   (let ((fullname fname))
-    (when (substringp "package://" fname)
+    (when (and (stringp fname) (substringp "package://" fname))
       (setq fullname (ros::resolve-ros-path fname))
       (when ros::*compile-message*
         (let* ((urlname (url-pathname fname))
@@ -394,7 +416,7 @@ always the rank of list is 2"
            ;; on jade/kinetic, package without msg does not have manifest.l
 	   (ros::ros-warn "Calling (load-ros-manifest ~A) for the package without msg/srv will be deprecated" pkg)
 	   (ros::ros-warn "ACTION REQUIRED")
-	   (ros::ros-warn " Use (load-ros-{package,msg,srv} pkg) for the dependent packages with msg/srv" pkg)
+	   (ros::ros-warn " Use (ros::load-ros-package ~A) or (ros::roseus-add-msgs/srvs ~A) for the dependent packages with msg/srv" pkg pkg)
 	   (ros::ros-warn " See https://github.com/jsk-ros-pkg/jsk_robot/issues/823")
            (dolist (dep (ros::rospack-depends pkg))
              (ros::load-ros-package dep))

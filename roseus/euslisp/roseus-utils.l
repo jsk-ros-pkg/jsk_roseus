@@ -8,7 +8,12 @@
 
 (defun print-ros-msg (msg &optional (rp (find-package "ROS"))
                           (ro ros::object) (nest 0) (padding "  "))
-  (dolist (s (send msg :slots))
+  (dolist (s (let ((slt (send msg :slots)))
+               ;; `s' is a list of slots unique to the msg object
+               ;; i.e. slots present in `ro' and inherited by `msg' are filtered
+               (map nil #'(lambda (obj) (setq slt (remove obj slt :key #'car :count 1)))
+                    (send ro :slots))
+               slt))
     (let ((sm (car s)))
       (when (and (symbolp sm) (eq (symbol-package sm) rp))
         (cond
@@ -99,7 +104,7 @@
                          (copy-object (send msg :data)))))
     (when (string= (send msg :encoding) "bgr8")
       (swap-rgb img24))
-    img24)))
+    img24))
 ) ;; end of when
 ;;
 ;; 3dpoint cloud
@@ -615,6 +620,75 @@
                                  (send rgba :b)))
              cb)) points)))
     ))
+
+;;
+;; Shape
+;;
+(ros::roseus-add-msgs "shape_msgs")
+
+;; eus shape object -> shape_msgs::SolidPrimitive
+
+(defun cube->shape-msg (cb)
+  "Convert cube object to shape_msgs::SolidPrimitive"
+  (instance shape_msgs::SolidPrimitive
+            :init :type shape_msgs::SolidPrimitive::*BOX*
+            :dimensions (float-vector
+                         (/ (x-of-cube cb) 1000.0)
+                         (/ (y-of-cube cb) 1000.0)
+                         (/ (z-of-cube cb) 1000.0))))
+
+(defun sphere->shape-msg (sp)
+  "Convert sphere object to shape_msgs::SolidPrimitive"
+  (instance shape_msgs::SolidPrimitive
+            :init :type shape_msgs::SolidPrimitive::*SPHERE*
+            :dimensions (float-vector
+                         (/ (radius-of-sphere sp) 1000.0))))
+
+(defun cylinder->shape-msg (cyl)
+  "Convert cylinder object to shape_msgs::SolidPrimitive"
+  (instance shape_msgs::SolidPrimitive
+            :init :type shape_msgs::SolidPrimitive::*CYLINDER*
+            :dimensions (float-vector
+                         (/ (height-of-cylinder cyl) 1000.0)
+                         (/ (radius-of-cylinder cyl) 1000.0))))
+
+;; shape_msgs::SolidPrimitive -> eus shape object
+
+(defun shape-msg->shape (msg)
+  "Convert shape_msgs::SolidPrimitive to euslisp object"
+  (let ((type (send msg :type)))
+    (cond
+     ((eq type shape_msgs::SolidPrimitive::*BOX*)
+      (shape-msg->cube msg))
+     ((eq type shape_msgs::SolidPrimitive::*SPHERE*)
+      (shape-msg->sphere msg))
+     ((eq type shape_msgs::SolidPrimitive::*CYLINDER*)
+      (shape-msg->cylinder msg))
+     (t
+      (error "unknown type ~A" type)))))
+
+(defun shape-msg->cube (msg)
+  "Convert shape_msgs::SolidPrimitive to euslisp cube object"
+  (let* ((scale (send msg :dimensions))
+         (cb (make-cube (* (elt scale 0) 1000)
+                        (* (elt scale 1) 1000)
+                        (* (elt scale 2) 1000))))
+    cb))
+
+(defun shape-msg->sphere (msg)
+  "Convert shape_msgs::SolidPrimitive to euslisp sphere object"
+  (let* ((scale (send msg :dimensions))
+         (cp (make-sphere (* (elt scale 0) 1000))))
+    cp))
+
+(defun shape-msg->cylinder (msg)
+  "Convert shape_msgs::SolidPrimitive to euslisp cylinder object"
+  (let* ((scale (send msg :dimensions))
+         (height (* (elt scale 0) 1000))
+         (radius (* (elt scale 1) 1000))
+         (cyl (make-cylinder radius height)))
+    cyl))
+
 ;;
 ;; for pointcloud
 ;;
@@ -1034,10 +1108,11 @@
 ;; misc function
 ;;
 (ros::roseus-add-srvs "std_srvs")
-(defun call-empty-service (srvname &key (wait nil))
-  "Call empty service"
-  (if wait (ros::wait-for-service srvname))
-  (ros::service-call srvname (instance std_srvs::EmptyRequest :init)))
+(defun call-empty-service (srvname &key (wait nil) (timeout -1)) ;; If timeout is -1 (default), waits until the node is shutdown. If timeout is 0, returns immediately.
+  "Call empty service and return t"
+  (when (ros::wait-for-service srvname (if wait timeout 0))
+    (ros::service-call srvname (instance std_srvs::EmptyRequest :init))
+    t))
 
 (defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
   "Subscribe message, just for once"

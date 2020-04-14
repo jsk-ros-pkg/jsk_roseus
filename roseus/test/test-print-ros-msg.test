@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="test_print_ros_msg" pkg="roseus" type="roseus" args="$(find roseus)/test/test-print-ros-msg.l" />
+</launch>

@@ -25,12 +25,17 @@ http://www.ros.org/wiki/sound_playを使ってサウンド出力するサンプ�
 ;; 組み込みサウンド
 (send msg :sound sound_play::SoundRequest::*needs_plugging*) ;; need_plugging sound
 (send msg :command sound_play::SoundRequest::*play_once*) ;; once
+;; since sound_play version 0.3.1, the message including volume slot. c.f. https://github.com/ros-drivers/audio_common/pull/51
+(when (find-method msg :volume)
+  (send msg :volume 1.0))
 (ros::publish "robotsound_jp" msg)
 (unix:sleep 2)
 
 ;; サウンドファイルの再生 (skype をインストールしておくこと）
 (send msg :sound sound_play::SoundRequest::*play_file*) ;; need_plugging sound
 (send msg :command sound_play::SoundRequest::*play_once*) ;; once
+(when (find-method msg :volume)
+  (send msg :volume 1.0))
 (send msg :arg "/usr/share/skype/sounds/CallRingingIn.wav")
 (ros::publish "robotsound_jp" msg)
 (unix:sleep 4)
