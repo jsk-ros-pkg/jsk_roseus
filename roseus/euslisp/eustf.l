@@ -35,29 +35,29 @@
 
 ;; eus->tf
 (defun ros::pos->tf-point (pos)
-  "Convert euslisp pos to geoometry_msgs::Point, this also converts [mm] to [m]"
+  "Convert euslisp pos to geometry_msgs::Point, this also converts [mm] to [m]"
   (instance geometry_msgs::point :init
             :x (* 0.001 (elt pos 0)) :y (* 0.001 (elt pos 1)) :z (* 0.001 (elt pos 2))))
 (defun ros::pos->tf-translation (pos)
-  "Convert euslisp pos to geoometry_msgs::Vector3, this also converts [mm] to [m]"
+  "Convert euslisp pos to geometry_msgs::Vector3, this also converts [mm] to [m]"
   (instance geometry_msgs::vector3 :init
             :x (* 0.001 (elt pos 0)) :y (* 0.001 (elt pos 1)) :z (* 0.001 (elt pos 2))))
 
 (defun ros::rot->tf-quaternion (rot)
-  "Convert euslisp rot to geoometry_msgs::Quaternion"
+  "Convert euslisp rot to geometry_msgs::Quaternion"
   (let* ((q (user::matrix2quaternion rot))
          (qx (elt q 1)) (qy (elt q 2)) (qz (elt q 3)) (qw (elt q 0)))
     (instance geometry_msgs::quaternion :init
               :x qx :y qy :z qz :w qw)))
 
 (defun ros::coords->tf-pose (coords)
-  "Convert euslisp coordinates to geoometry_msgs::Pose"
+  "Convert euslisp coordinates to geometry_msgs::Pose"
   (instance geometry_msgs::pose :init
             :position (ros::pos->tf-point (send coords :worldpos))
             :orientation (ros::rot->tf-quaternion (send coords :worldrot))))
 
 (defun ros::coords->tf-pose-stamped (coords id)
-  "Convert euslisp coordinates to geoometry_msgs::PoseStapmed"
+  "Convert euslisp coordinates to geometry_msgs::PoseStapmed"
   (let ((pose (ros::coords->tf-pose coords)))
     ;; PoseStamped = Header + Pose
     ;; Header = seq + frame_id
@@ -68,13 +68,13 @@
               :pose pose)))
 
 (defun ros::coords->tf-transform (coords)
-  "Convert euslisp coordinates to geoometry_msgs::Transform"
+  "Convert euslisp coordinates to geometry_msgs::Transform"
   (instance geometry_msgs::transform :init
             :translation (ros::pos->tf-translation (send coords :worldpos))
             :rotation (ros::rot->tf-quaternion (send coords :worldrot))))
 
 (defun ros::coords->tf-transform-stamped (coords id &optional (child_id ""))
-  "Convert euslisp coordinates to geoometry_msgs::TransformStamped"
+  "Convert euslisp coordinates to geometry_msgs::TransformStamped"
     (let ((trans (ros::coords->tf-transform coords)))
       (instance geometry_msgs::TransformStamped :init
                 :header (instance std_msgs::header :init :frame_id id :stamp (ros::time-now))
@@ -82,29 +82,29 @@
 
 ;; tf->eus
 (defun ros::tf-point->pos (point)
-  "Convert geoometry_msgs::Point to euslisp point vector, this aloso converts [m] to [mm]"
+  "Convert geometry_msgs::Point to euslisp point vector, this aloso converts [m] to [mm]"
   (float-vector (* 1000.0 (send point :x)) (* 1000.0 (send point :y))  (* 1000.0 (send point :z))))
 
 (defun ros::tf-quaternion->rot (quaternion)
-  "Convert geoometry_msgs::quaternion to euslisp rotation matrix"
+  "Convert geometry_msgs::quaternion to euslisp rotation matrix"
   (user::quaternion2matrix
    (float-vector (send quaternion :w)
                  (send quaternion :x)
-                 (send quaternion :y) 
+                 (send quaternion :y)
                  (send quaternion :z))))
 
 (defun ros::tf-pose->coords (pose)
-  "Convert geoometry_msgs::Pose to euslisp coordinates"
+  "Convert geometry_msgs::Pose to euslisp coordinates"
   (make-coords :pos (ros::tf-point->pos (send pose :position))
                :rot (ros::tf-quaternion->rot (send pose :orientation))))
 
 (defun ros::tf-pose-stamped->coords (pose-stamped)
-  "Convert geoometry_msgs::PoseStamped to euslisp coordinates"
+  "Convert geometry_msgs::PoseStamped to euslisp coordinates"
   (make-cascoords :coords (ros::tf-pose->coords (send pose-stamped :pose))
                   :name (send pose-stamped :header :frame_id)))
 
 (defun ros::tf-transform->coords (trans)
-  "Convert geoometry_msgs::Transform to euslisp coordinates"
+  "Convert geometry_msgs::Transform to euslisp coordinates"
   ;; check if trans class is geometry_msgs::TransformStamped
   ;; ros::tf-transform->coords was wrongly implemented to take TransformStamped as argument from electric to kinetic
   ;; Thus, to keep backward compatibility, we should allow users to pass both Transform and TransformStamped
@@ -123,11 +123,11 @@
   )
 
 (defun ros::tf-transform-stamped->coords (trans)
-  "Convert geoometry_msgs::TransformStamped to euslisp coordinates"
+  "Convert geometry_msgs::TransformStamped to euslisp coordinates"
   (ros::tf-transform->coords trans))
 
 (defun ros::tf-twist->coords (twist)
-  "Convert geoometry_msgs::Twist to euslisp coordinates"
+  "Convert geometry_msgs::Twist to euslisp coordinates"
   (let* ((pos (ros::tf-point->pos (send twist :linear)))
          (ang (send twist :angular))
          (rot (user::matrix-exponent (float-vector (send ang :x) (send ang :y) (send ang :z))))
@@ -149,7 +149,7 @@
                   (+ (* cos-roll cos-pitch cos-yaw) (* sin-roll sin-pitch sin-yaw)))))
 
 (defun ros::create-quaternion-msg-from-rpy (roll pitch yaw)
-  "Create geoometry_msgs::Quaternion from roll, pitch and yaw"
+  "Create geometry_msgs::Quaternion from roll, pitch and yaw"
   (let* ((q (ros::create-quaternion-from-rpy roll pitch yaw))
          (qx (elt q 1)) (qy (elt q 2)) (qz (elt q 3)) (qw (elt q 0)))
     (instance geometry_msgs::quaternion :init :x qx :y qy :z qz :w qw)))
