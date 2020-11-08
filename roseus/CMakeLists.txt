@@ -197,6 +197,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-parameter.test)
   add_rostest(test/test-anonymous.test)
   add_rostest(test/test-timer.test)
+  add_rostest(test/test-rate.test)
   # this seems to run other process and need pkill ... https://travis-ci.org/jsk-ros-pkg/jsk_roseus/jobs/233858193
   #add_rostest(test/test-genmsg.catkin.test)
   # this will not ok on running from run_tests, may be running test within launch file may not good.
