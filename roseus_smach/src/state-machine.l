@@ -28,13 +28,11 @@
               (1 (car active-state))
               (t active-state)))
            ((listp node) ;; setter for multiple nodes
-            (unless (equal node (intersection node nodes))
+            (when (set-difference node nodes)
               (warning-message 2 "some nodes of [~A] are not included in [~A]~%" node nodes)
               (error))
             (setq active-state node))
            ((memq node nodes) ;; setter for single node
-            (if (send node :submachine)
-                (send (send node :submachine) :reset-state))
             (setq active-state (list node)))
            (t (setq active-state (find-if
                                   #'(lambda(n)(send (send n :submachine) :active-state node))
@@ -47,7 +45,12 @@
    (&optional res)
    (cond ((null res) parallel-exec-result)
          (t (setq parallel-exec-result res))))
-  (:reset-state () (send self :active-state start-state))
+  (:reset-state
+   ()
+   (send self :active-state start-state)
+   (dolist (astate active-state)
+     (if (send astate :submachine)
+         (send (send astate :submachine) :reset-state))))
   (:start-state
    (&optional ss)
    (cond ((null ss) ;; getter
@@ -55,7 +58,7 @@
           (1 (car start-state))
           (t start-state)))
          ((listp ss) ;; setter for multiple nodes
-            (unless (equal ss (intersection ss (send-all nodes :name)))
+            (when (set-difference ss (send-all nodes :name) :test #'equal)
               (warning-message 2 "some nodes of [~A] are not included in [~A].~%" ss (send-all nodes :name))
               (error))
             (setq start-state (mapcar #'(lambda (n) (send self :node n)) ss)))
@@ -69,7 +72,8 @@
    (setq gs (mapcar #'(lambda(g) (instance state :init g nil)) gs))
    (dolist (n gs) (send self :add-node n))
    (send-super :goal-state gs))
-  (:goal-test (gs) (not (null (intersection (flatten (list gs)) goal-state))))
+  (:goal-test (gs) (null (set-difference (flatten (list gs)) goal-state)))
+  ;; If all active states have reached the goal, returns true
   (:goal-reached () (send self :goal-test active-state))
   ;;
   (:sub-sm-node () (remove-if-not #'(lambda(n)(send n :submachine)) nodes))
@@ -100,17 +104,7 @@
    (userdata &key (step 0))
    ;; check if goal reached and returns goal state name
    (when (send self :goal-reached)
-       (return-from :execute-impl
-         (case (length active-state)
-           (1 (send (car active-state) :name))
-           (t (send-all active-state :name)))))
-   ;; execute in sub machine
-   (let ((active-state1 (car active-state)))
-     (when (and (not (eq 0 step))
-                (send active-state1 :submachine)
-                (not (send (send active-state1 :submachine) :goal-reached)))
-       (return-from :execute-impl
-         (list (send active-state1 :execute userdata :step (1- step))))))
+       (return-from :execute-impl (send-all active-state :name)))
 #|
    (when (and (not (eq 0 step))
             (derivedp active-state state) ;; single node
@@ -122,26 +116,30 @@
    ;; execute once on this machine
    (let (ret next-active-state)
      (dolist (astate active-state)
-       (let* ((last-state astate)
-              (trans (send self :next-arc-list astate))
-              (exec-result  (send last-state :execute userdata)))
-         (ros::ros-debug "trans: ~A" trans)
-         (setq trans (remove-if-not #'(lambda(tr)(send tr :check exec-result)) trans))
-         (case (length trans)
-           (0 (error "undefined transition ~A from ~A~%" exec-result last-state))
-           (1 t) ;; OK
-           (t
-            (case (length active-state)
-                (1 (warn "multiple transitions ~A from ~A~%" exec-result last-state))
-                (t t))))
-         ;; check if active state has changed
-         (when (not (eq astate last-state))
-           (error "active state has not changed ~A -> ~A~%" last-state astate)
-           (return-from :execute-impl (send astate :name)))
-         (setq next-active-state (append next-active-state (send-all trans :to)))
-         (if (send astate :submachine)
-             (send (send astate :submachine) :reset-state))
-         (push exec-result ret)))
+       (if (send self :goal-test astate)
+           (progn (push astate ret)
+                  (setq next-active-state (append next-active-state (list astate))))
+           (if (and (not (eq 0 step))
+                    (send astate :submachine)
+                    (not (send (send astate :submachine) :goal-reached)))
+               (let* ((exec-result (send astate :execute userdata :step (1- step))))
+                 (push exec-result ret)
+                 (setq next-active-state (append next-active-state (list astate))))
+               (let* ((trans (send self :next-arc-list astate))
+                      (exec-result (send astate :execute userdata)))
+                 (ros::ros-debug "trans: ~A" trans)
+                 (setq trans (remove-if-not #'(lambda(tr)(send tr :check exec-result)) trans))
+                 (case (length trans)
+                   (0 (error "undefined transition ~A from ~A~%" exec-result astate))
+                   (1 t) ;; OK
+                   (t
+                    (case (length active-state)
+                      (1 (warn "multiple transitions ~A from ~A~%" exec-result astate))
+                      (t t))))
+                 (setq next-active-state (append next-active-state (send-all trans :to)))
+                 (if (send astate :submachine)
+                     (send (send astate :submachine) :reset-state))
+                 (push exec-result ret)))))
      (setq active-state (unique next-active-state))
      ret))
 
@@ -151,6 +149,7 @@
    (userdata &key (step nil))
    (let ((args (if arg-keys (mapcar #'(lambda (k) (cons k (cdr (assoc k userdata)))) arg-keys) userdata))
          result)
+     ;; If not initialized, initialize states.
      (when (null active-state)
        (send self :reset-state))
      (setq result
