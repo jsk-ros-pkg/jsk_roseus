@@ -253,7 +253,7 @@ $ (send tr :lookup-transform \"child\"  \"this_frame\" (ros::time))
                    :nsec (cdr sec-nsec)))))
   (:lookup-transform
    (target-frame source-frame time)
-   "Returns the transform from source_frame to target_frame at time."
+   "Returns the coordinate of source_frame expressed in target_frame coordinate system at time."
    (let (ret)
      (setq ret (ros::eustf-lookup-transform cobject
                                             target-frame source-frame
