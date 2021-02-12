@@ -212,7 +212,7 @@ $ (send tr :lookup-transform \"child\"  \"this_frame\" (ros::time))
                                (send coords :child-frame-id) auth)))
   (:wait-for-transform
    (target-frame source-frame time timeout &optional (duration 0.01))
-   "Waits for the given transformation to become available. If the timeout occurs before the transformation becomes available"
+   "Waits for the given transformation to become available. If the timeout occurs before the transformation becomes available, return nil"
    (ros::eustf-wait-for-transform cobject
                                   target-frame source-frame
                                   (send time :sec-nsec) timeout duration))
@@ -253,7 +253,7 @@ $ (send tr :lookup-transform \"child\"  \"this_frame\" (ros::time))
                    :nsec (cdr sec-nsec)))))
   (:lookup-transform
    (target-frame source-frame time)
-   "Returns the transform from source_frame to target_frame at time."
+   "Returns the coordinate of source_frame expressed in target_frame coordinate system at time."
    (let (ret)
      (setq ret (ros::eustf-lookup-transform cobject
                                             target-frame source-frame
