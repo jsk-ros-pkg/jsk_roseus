@@ -1,4 +1,4 @@
-#!/usr/bin/env irteusgl
+#!/usr/bin/env roseus
 ;; parallel-state-machine-sample.l
 ;; Author: Furushchev <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
