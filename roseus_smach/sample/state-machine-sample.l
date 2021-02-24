@@ -99,4 +99,40 @@
     (send sm :add-transition :BAR :FOO :outcome2)
     sm ))
 
-(warn ";;(smach-simple)~%;;(smach-nested)~%;;(smach-userdata)~%")
+;;
+;; sample 4: A state machine example of running two states in parallel
+;;  EusLisp version of http://wiki.ros.org/smach/Tutorials/Concurrent%20States
+;;      https://raw.githubusercontent.com/rhaschke/executive_smach_tutorials/indigo-devel/examples/concurrence2.py
+;;
+
+;; re-use func-foo / func-bas, sample 4 requires original func-bar2
+(defun func-bar2 (&rest args)
+  (format t "Execute state BAR~%")
+  :outcome1)
+(defun smach-concurrent ()
+  (let ((sm-top (instance state-machine :init))
+	(sm-con (instance state-machine :init)))
+    ;; state instance can include other state-machine like function
+    (send sm-top :add-node (instance state :init "CON" sm-con))
+    (send sm-top :add-node (instance state :init "BAS" 'func-bas))
+    (send sm-top :goal-state :outcome6)
+    (send sm-top :start-state "BAS")
+    (send sm-top :add-transition "BAS" "CON" :outcome3)
+    (send sm-top :add-transition "CON" :outcome6 :outcome5)
+    ;; node instance can be args of :add-node, :start-state, :add-transition
+    (let ((foo-node (instance state :init "FOO" 'func-foo))
+	  (bar-node (instance state :init "BAR" 'func-bar2)))
+      (send sm-con :add-node foo-node)
+      (send sm-con :add-node bar-node)
+      (send sm-con :goal-state '(:outcome5 :outcome4))
+      (send sm-con :parallel-exec-result t)
+      (send sm-con :start-state (list "FOO" "BAR"))
+      (send sm-con :add-transition foo-node :outcome5 :outcome2)
+      (send sm-con :add-transition bar-node :outcome5 :outcome1)
+      ;; (send sm-con :add-transition :outcome4 "CON" :outcome4) ;; this represents default_outcome=:outcome4, instead we explicitly transfer from FOO to FOO :when outcome1
+      (send sm-con :add-transition foo-node foo-node :outcome1) ;; FOO outputs :outcome1 and :outcome2, on python :outcome1 is ignored but on roseus, you need to explictly write transition
+      )
+    sm-top ))
+
+
+(warn ";;(smach-simple)~%;;(smach-nested)~%;;(smach-userdata)~%;;(smach-concurrent)~%")
