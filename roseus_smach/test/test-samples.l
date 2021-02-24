@@ -27,6 +27,10 @@
   (assert (cdr (assoc :result userdata))
           "action-client-state sets action result to userdata for key :result"))
 
+(deftest test-smach-concurrent ()
+  (assert (eq (send (exec-smach-concurrent) :name) :outcome6)
+	  "nested concurent sample"))
+
 (run-all-tests)
 
 (exit)
