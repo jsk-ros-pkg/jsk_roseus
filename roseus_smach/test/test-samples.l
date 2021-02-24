@@ -1,6 +1,7 @@
 (require :unittest "lib/llib/unittest.l")
 
 (load "package://roseus_smach/sample/state-machine-ros-sample.l")
+(load "package://roseus_smach/sample/parallel-state-machine-sample.l")
 
 (ros::roseus "test_roseus_smach_samples")
 
@@ -27,17 +28,23 @@
 
 (init-unit-test)
 
+(defun exec-sample-parallel-state-machine ()
+  (make-sample-parallel-state-machine)
+  (exec-state-machine *sm*))
+
 (run-test-smach exec-smach-simple :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
 
 (run-test-smach exec-smach-nested :outcome5 '(nil (FOO) (BAR) (FOO) (BAR) (FOO) (BAR) nil (BAS) nil))
 
-(run-test-smach exec-smach-userdata :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) nil))
+(run-test-smach exec-smach-userdata :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO)))
 
 (deftest test-smach-sample-userdata ()
 ;  (assert (eq (send (exec-smach-userdata) :name) :outcome4)
 ;	  "sample of smach with userdata")
   (assert (eq (send (exec-state-machine (smach-userdata)) :name) :outcome4)
           "exec (smach-userdata) without initial userdata"))
+
+(run-test-smach exec-sample-parallel-state-machine :success '((PRESS-BUTTON) (CLOSE-DOOR) (PUT-SOAP PUT-CLOTH) (OPEN-DOOR)))
 
 (deftest test-smach-action-client-state ()
   (setq userdata '(nil))
