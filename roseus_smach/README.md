@@ -27,7 +27,7 @@ Sample codes are available on `sample` directory.
   (exec-smach-simple)
   ```
   - nested state machine
-  ![](http://gist.github.com/furushchev/raw/9b1ed0aa57b47537cd2d/smach-nested.gif)
+  ![](http://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/smach-nested.gif)
   ```
   rosrun smach_viewer smach_viewer.py
   ```
