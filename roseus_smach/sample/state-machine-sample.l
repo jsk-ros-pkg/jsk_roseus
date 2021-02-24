@@ -7,6 +7,8 @@
 
 ;;
 ;; sample 1: simple state machine
+;;  Euslisp version of http://wiki.ros.org/smach/Tutorials/Getting%20Started#Example
+;;      https://raw.githubusercontent.com/rhaschke/executive_smach_tutorials/indigo-devel/examples/state_machine_simple.py
 ;;
 (setq count 0)
 (defun func-foo (&rest args)
@@ -34,6 +36,8 @@
 
 ;;
 ;; sample 2: nodes can contain other state machine
+;;  Euslisp version of http://wiki.ros.org/smach/Tutorials/Create%20a%20hierarchical%20state%20machine
+;;      https://raw.githubusercontent.com/rhaschke/executive_smach_tutorials/indigo-devel/examples/state_machine_nesting2.py
 ;;
 (defun func-bas (&rest args)
   (format t "Execute state BAS~%")
@@ -66,6 +70,8 @@
 ;;
 ;; sample 3: A State machine reperesents only transitions between conditions.
 ;;           There is no local variable in state machine.
+;;  Euslisp version of http://wiki.ros.org/smach/Tutorials/User%20Data
+;;      https://raw.githubusercontent.com/rhaschke/executive_smach_tutorials/indigo-devel/examples/user_data2.py
 ;;
 (defun func-foo-data (args)
   (format t "Execute state FOO~%")
