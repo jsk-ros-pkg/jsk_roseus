@@ -44,6 +44,8 @@
   (assert (eq (send (exec-state-machine (smach-userdata)) :name) :outcome4)
           "exec (smach-userdata) without initial userdata"))
 
+;; (run-test-smach exec-smach-concurrent ..) need https://github.com/jsk-ros-pkg/jsk_roseus/pull/652 to work
+
 (run-test-smach exec-sample-parallel-state-machine :success '((PRESS-BUTTON) (CLOSE-DOOR) (PUT-SOAP PUT-CLOTH) (OPEN-DOOR)))
 
 (deftest test-smach-action-client-state ()
