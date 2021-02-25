@@ -32,7 +32,11 @@
   (make-sample-parallel-state-machine)
   (exec-state-machine *sm*))
 
+(defun exec-smach-simple2 () (setq count 0) (exec-state-machine (smach-simple2)))
+(defun exec-smach-simple3 () (setq count 0) (exec-state-machine (smach-simple3)))
 (run-test-smach exec-smach-simple :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
+(run-test-smach exec-smach-simple2 :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
+(run-test-smach exec-smach-simple3 :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
 
 (run-test-smach exec-smach-nested :outcome5 '(nil (FOO) (BAR) (FOO) (BAR) (FOO) (BAR) nil (BAS) nil))
 
