@@ -112,8 +112,8 @@
           (make-state-machine
            '((:bas :outcome3 :sub) ;; transitions
              (:sub :outcome4 :outcome5))
-           `((:bas 'func-bas)  ;; functon maps
-             (:sub ,sm-sub))   ;; set "nestaed state machine"
+           '((:bas 'func-bas)  ;; functon maps
+             (:sub sm-sub))   ;; set "nestaed state machine"
            '(:bas)      ;; initial
            '(:outcome5) ;; goal
            ))
