@@ -96,6 +96,29 @@
     sm-top ))
 
 
+(defun smach-simple-nested ()
+  (let (sm-top sm-sub)
+    (setq sm-sub
+          (make-state-machine
+           '((:foo :outcome2 :outcome4) ;; transitions
+             (:foo :outcome1 :bar)
+             (:bar :outcome2 :foo))
+           '((:foo 'func-foo) ;; function maps
+             (:bar 'func-bar))
+           '(:foo)      ;; initial
+           '(:outcome4) ;; goal
+           ))
+    (setq sm-top
+          (make-state-machine
+           '((:bas :outcome3 :sub) ;; transitions
+             (:sub :outcome4 :outcome5))
+           `((:bas 'func-bas)  ;; functon maps
+             (:sub ,sm-sub))   ;; set "nestaed state machine"
+           '(:bas)      ;; initial
+           '(:outcome5) ;; goal
+           ))
+    sm-top))
+
 ;;
 ;; sample 3: A State machine reperesents only transitions between conditions.
 ;;           There is no local variable in state machine.
