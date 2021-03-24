@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="dispose" pkg="roseus" type="roseus" args="$(find roseus)/test/test-subscribe-dispose.l" />
+</launch>
