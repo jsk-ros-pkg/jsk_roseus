@@ -436,7 +436,8 @@ always the rank of list is 2"
   (when (probe-file (format nil "~A/srv" (ros::find-load-msg-path pkg)))
     (ros::roseus-add-srvs pkg)))
 
-(setq sys::*exit-hook* 'ros::exit)
+(alias 'lisp::quit 'ros::exit)
+(alias 'lisp::bye 'ros::exit)
 
 (provide :roseus "roseus.l")
 
