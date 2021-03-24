@@ -357,6 +357,76 @@
     (assert (not (send l :frame-exists "rabbit")) "tf-transformer: frame-exists failed. nil expected"))
   )
 
+;; check set-transform bug https://github.com/jsk-ros-pkg/jsk_roseus/pull/649
+(deftest test-set-tranform-transformer ()
+  (let (f m c1)
+    (setq f (instance ros::transformer :init))
+    (setq m (instance geometry_msgs::TransformStamped :init))
+    (send m :header :frame_id "this_frame_a")
+    (send m :child_frame_id "child_a")
+    (send m :transform :translation :x 1) ;; 1000[mm]
+    (send m :transform :translation :y 2)
+    (send m :transform :translation :z 3)
+    (send m :transform :rotation (ros::rot->tf-quaternion (unit-matrix 3)))
+    (ros::ros-info "TransformStamped ~A ~A ~A / ~A ~A ~A ~A"
+                   (send m :transform :translation :x)
+                   (send m :transform :translation :y)
+                   (send m :transform :translation :z)
+                   (send m :transform :rotation :x)
+                   (send m :transform :rotation :y)
+                   (send m :transform :rotation :z)
+                   (send m :transform :rotation :w))
+    (setq c1 (ros::tf-transform-stamped->coords m))
+    (ros::ros-info "tf-transform-stamped->coords -> ~A" c1)
+    (send f :set-transform c1)
+    (ros::ros-info "get-frame-strings ~A" (send f :get-frame-strings))
+    (ros::ros-info "this_frame_a -> child_a ~A" (setq c2 (send f :lookup-transform "this_frame_a" "child_a" (ros::time 0))))
+    (assert (and c2
+                 (eps= (norm (send c1 :difference-position c2)) 0.0)
+                 (eps= (norm (send c1 :difference-rotation c2)) 0.0))
+            (format nil "position ~A, rotation ~A"
+                    (and c2 (send c1 :difference-position c2))
+                    (and c2 (send c1 :difference-rotation c2))))
+
+    (setq c1 (send c1 :inverse-transformation)) ;; set c^(-1)
+    (ros::ros-info "child_a -> this_frame_a ~A" (setq c2 (send f :lookup-transform "child_a" "this_frame_a" (ros::time 0))))
+    (assert (and c2
+                 (eps= (norm (send c1 :difference-position c2)) 0.0)
+                 (eps= (norm (send c1 :difference-rotation c2)) 0.0))
+            (format nil "position ~A, rotation ~A"
+                    (and c2 (send c1 :difference-position c2))
+                    (and c2 (send c1 :difference-rotation c2))))
+    ))
+
+;; check set-transform bug https://github.com/jsk-ros-pkg/jsk_roseus/pull/649
+(deftest test-set-transform-listener-roadcaster ()
+  (let (b l c1 c2)
+    (setq b (instance ros::transform-broadcaster :init))
+    (setq l (instance ros::transform-listener :init))
+    (setq c1 (make-coords :pos #f(1 2 3) :rpy #f(0.1 0.2 0.3)))
+    (ros::ros-info "coords -> ~A" c1)
+    (send b :send-transform c1 "this_frame_b" "child_b" (ros::time 0))
+    (send l :wait-for-transform "this_frame_b" "chidl_b" (ros::time 0) 1)
+    (ros::ros-info "get-frame-strings ~A" (send l :get-frame-strings))
+    ;;
+    (ros::ros-info "this_frame_b -> child_b ~A" (setq c2 (send l :lookup-transform "this_frame_b" "child_b" (ros::time 0))))
+    (assert (and c2
+                 (eps= (norm (send c1 :difference-position c2)) 0.0)
+                 (eps= (norm (send c1 :difference-rotation c2)) 0.0))
+            (format nil "position ~A, rotation ~A"
+                    (and c2 (send c1 :difference-position c2))
+                    (and c2 (send c1 :difference-rotation c2))))
+
+    (setq c1 (send c1 :inverse-transformation)) ;; set c^(-1)
+    (ros::ros-info "child_b -> this_frame_b ~A" (setq c2 (send l :lookup-transform "child_b" "this_frame_b" (ros::time 0))))
+    (assert (and c2
+                 (eps= (norm (send c1 :difference-position c2)) 0.0)
+                 (eps= (norm (send c1 :difference-rotation c2)) 0.0))
+            (format nil "position ~A, rotation ~A"
+                    (and c2 (send c1 :difference-position c2))
+                    (and c2 (send c1 :difference-rotation c2))))
+    ))
+
 (run-all-tests)
 
 (exit)
