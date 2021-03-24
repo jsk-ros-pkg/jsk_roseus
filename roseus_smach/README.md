@@ -277,3 +277,48 @@ or
 $ roseus state-machine-ros-sample.l "(progn (setq count 0)(exec-state-machine (smach-simple3)))"
 ```
 and you can check the state machine behavior with ` rosrun smach_viewer smach_viewer.py`
+
+## Writing Nested Smach with `(make-state-machine)`
+
+You can also write nested state machine with `make-state-machie` function.
+
+you can add sub state-machine to function maps, as you already added node to them.
+
+```lisp
+
+(defun smach-simple-nested ()
+  (let (sm-top sm-sub)
+    (setq sm-sub
+          (make-state-machine
+           '((:foo :outcome2 :outcome4) ;; transitions
+             (:foo :outcome1 :bar)
+             (:bar :outcome2 :foo))
+           '((:foo 'func-foo) ;; function maps
+             (:bar 'func-bar))
+           '(:foo)      ;; initial
+           '(:outcome4) ;; goal
+           ))
+    (setq sm-top
+          (make-state-machine
+           '((:bas :outcome3 :sub) ;; transitions
+             (:sub :outcome4 :outcome5))
+           `((:bas 'func-bas)  ;; functon maps
+             (:sub ,sm-sub))   ;; set "nestaed state machine"
+           '(:bas)      ;; initial
+           '(:outcome5) ;; goal
+           ))
+    sm-top))
+```
+
+From `roseus >= 1.7.4`, you may write
+```lisp
+           '((:bas 'func-bas)  ;; functon maps
+             (:sub sm-sub))   ;; set "nestaed state machine"
+```
+but as for now, please be very careful when you add sub machine. you need to use `` `(backquote)`` and `, (comma)`.
+
+This example can be tested with
+```
+$ roscd roseus_smach/sample
+$ roseus state-machine-ros-sample.l "(progn (setq count 0)(exec-state-machine (smach-simple-nested)))"
+```
