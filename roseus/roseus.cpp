@@ -564,6 +564,7 @@ void roseusSignalHandler(int sig)
     // memoize for euslisp handler...
     context *ctx=euscontexts[thr_self()];
     ctx->intsig = sig;
+    ros::Time::shutdown();
 }
 
 /************************************************************
@@ -709,7 +710,8 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
-  while (ctx->intsig==0 && ros::ok()) {
+  while (ros::ok()) {
+    breakck;
     ros::spinOnce();
     s_rate->sleep();
   }
@@ -784,7 +786,19 @@ pointer ROSEUS_DURATION_SLEEP(register context *ctx,int n,pointer *argv)
   numunion nu;
   ckarg(1);
   float sleep=ckfltval(argv[0]);
-  ros::Duration(sleep).sleep();
+  // overwrite in order to check for interruptions
+  // original behaviour is stated at `ros_wallsleep', in time.cpp
+  if (ros::Time::useSystemTime()) {
+    int sleep_sec=(int)sleep;
+    int sleep_nsec=(int)(1000000000*(sleep-sleep_sec));
+    struct timespec treq,trem;
+    GC_REGION(treq.tv_sec  =  sleep_sec;
+              treq.tv_nsec =  sleep_nsec);
+    while (nanosleep(&treq, &trem)<0) {
+      breakck;
+      treq=trem;}}
+  else {
+    ros::Duration(sleep).sleep();}
   return(T);
 }
 
@@ -1084,20 +1098,41 @@ pointer ROSEUS_GETTOPICPUBLISHER(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
+  ros::Time start_time = ros::Time::now();
+  numunion nu;
   string service;
 
   ckarg2(1,2);
   if (isstring(argv[0])) service = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
-  int32_t timeout = -1;
+  float timeout = -1;
 
   if( n > 1 )
-    timeout = (int32_t)ckintval(argv[1]);
+    timeout = ckfltval(argv[1]);
 
-  bool bSuccess = service::waitForService(service, ros::Duration(timeout));
+  // Overwrite definition on service.cpp L87 to check for signal interruptions
+  // http://docs.ros.org/electric/api/roscpp/html/service_8cpp_source.html
+  bool printed = false;
+  bool result = false;
+  ros::Duration timeout_duration = ros::Duration(timeout);
+  while (ctx->intsig==0 && ros::ok()) {
+    if (service::exists(service, !printed)) {
+      result = true;
+      break;}
+    else {
+      printed = true;
+      if (timeout >= 0) {
+        ros::Time current_time = ros::Time::now();
+        if ((current_time - start_time) >= timeout_duration)
+          return(NIL);}
+      ros::Duration(0.02).sleep();}
+  }
 
-  return (bSuccess?T:NIL);
+  if (result && printed && ros::ok())
+    ROS_INFO("waitForService: Service [%s] is now available.", service.c_str());
+
+  return (result?T:NIL);
 }
 
 pointer ROSEUS_SERVICE_EXISTS(register context *ctx,int n,pointer *argv)
