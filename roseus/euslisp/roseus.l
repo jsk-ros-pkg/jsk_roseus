@@ -14,25 +14,24 @@
 
 (in-package "ROS")
 
-(defun ros::roseus-sigint-handler (sig code)
-  (ros::ROS-WARN (format nil "ros::roseus-sigint-handler ~A" sig))
+(defun ros::roseus-sigint-handler (sig)
+  (ros::ros-error "Received shutdown request (SIGINT)")
   (exit 1))
 
-(defun ros::roseus-error (code msg1 form &optional (msg2))
-   (format *error-output* "~C[1;3~Cm~A roseus-error: ~A"
-                #x1b (+ 1 48)   *program-name* msg1)
-   (if msg2 (format *error-output* " ~A" msg2))
-   (if form (format *error-output* " in ~s" form))
-   (format *error-output* ", exitting...~C[0m~%"  #x1b)
-   (exit 1))
+(defun ros::roseus-error (err)
+  (when (send err :callstack)
+    (lisp::print-callstack (send err :callstack) lisp::*max-callstack-depth*))
+  (let ((errstr (with-output-to-string (str) (lisp::print-error-message err str))))
+    (ros::ros-error errstr))
+  (exit 1))
 
 ;; check if this process is created by roslaunch
 (when (let ((arg (car (last lisp::*eustop-argument*))))
         (and (>= (length arg) 7) (string= "__log:=" (subseq arg 0 7))))
   (ros::ROS-INFO "install ros::roseus-sigint-handler")
   (setq lisp::*exit-on-fatal-error* t)
-  (lisp::install-error-handler 'ros::roseus-error)
-  (unix:signal unix::sigint 'ros::roseus-sigint-handler)
+  (install-handler error 'ros::roseus-error)
+  (install-handler unix::sigint-received 'ros::roseus-sigint-handler)
   (unix:signal unix::sighup 'ros::roseus-sigint-handler)
   (defmacro user::do-until-key (&rest forms) `(while t ,@forms))
   (defun user::y-or-n-p (&rest args) t))
