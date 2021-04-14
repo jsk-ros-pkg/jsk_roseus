@@ -102,7 +102,7 @@ function run-pkg()
     rosrun geneus gen_eus.py -m -o ${output_dir}/${pkg_name} ${pkg_name} ${pkg_msg_depends}
     check-error
     if [ "${COMPILE}" = "Yes" ]; then
-        rosrun roseus roseus "(progn (setq lisp::*error-handler* #'(lambda (&rest args) (print args *error-output*)(exit 1))) (setq ros::*compile-message* t) (ros::load-ros-manifest \"$pkg_name\") (exit 0))"
+        rosrun roseus roseus "(progn (install-handler error #'(lambda (c) (lisp::print-error-message c) (exit 1))) (setq ros::*compile-message* t) (ros::load-ros-manifest \"$pkg_name\") (exit 0))"
         check-error
     fi
 }
