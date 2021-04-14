@@ -688,7 +688,7 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
   }
 
   if( s_mapHandle.find(groupname) != s_mapHandle.end() ) {
-    ROS_DEBUG("groupname %s is already used", groupname.c_str());
+    ROS_DEBUG("groupname \"%s\" is already used", groupname.c_str());
     return (NIL);
   }
 
@@ -722,6 +722,7 @@ pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
   ckarg2(0, 1);
   // ;; arguments ;;
   // [ groupname ]
+  CallbackQueue* queue;
 
   if ( n > 0 ) {
     string groupname;
@@ -730,18 +731,20 @@ pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
 
     map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
     if( it == s_mapHandle.end() ) {
-      ROS_ERROR("Groupname %s is missing", groupname.c_str());
-      return (T);
+      ROS_ERROR("Groupname \"%s\" is missing", groupname.c_str());
+      error(E_USER, "groupname not found");
     }
     boost::shared_ptr<NodeHandle > hdl = (it->second);
-    // spin this nodehandle
-    ((CallbackQueue *)hdl->getCallbackQueue())->callAvailable();
-
-    return (NIL);
+    queue = (CallbackQueue *)hdl->getCallbackQueue();
   } else {
-    ros::spinOnce();
-    return (NIL);
+    queue = ros::getGlobalCallbackQueue();
   }
+  if (queue->isEmpty()) {
+    return (NIL);}
+  else {
+    // execute callbacks
+    queue->callAvailable();}
+  return (T);
 }
 
 pointer ROSEUS_TIME_NOW(register context *ctx,int n,pointer *argv)
@@ -856,7 +859,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
         ROS_DEBUG("subscribe with groupname=%s", groupname.c_str());
         lnode = (it->second).get();
       } else {
-        ROS_ERROR("Groupname %s is missing. Topic %s is not subscribed. Call (ros::create-nodehandle \"%s\") first.",
+        ROS_ERROR("Groupname \"%s\" is missing. Topic %s is not subscribed. Call (ros::create-nodehandle \"%s\") first.",
                   groupname.c_str(), topicname.c_str(), groupname.c_str());
         return (NIL);
       }
