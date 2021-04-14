@@ -1747,11 +1747,8 @@ pointer ROSEUS_GETNAMESPACE(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
 {
-  ckarg(2);
-  string logger;
-  if (isstring(argv[0])) logger.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
-  int log_level = intval(argv[1]);
+  ckarg(1);
+  int log_level = intval(argv[0]);
   ros::console::levels::Level  level = ros::console::levels::Debug;
   switch(log_level){
   case 1:
@@ -1773,7 +1770,9 @@ pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
     return (NIL);
   }
 
-  bool success = ::ros::console::set_logger_level(logger, level);
+  // roseus currently does not support multiple loggers
+  // which must be outputted using the 'ROS_DEBUG_NAMED'-like macros
+  bool success = ::ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, level);
   if (success)
     {
       console::notifyLoggerLevelsChanged();
@@ -2118,7 +2117,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "	(ros::subscribe \"/test\" std_msgs::String #'(lambda (m) (print m)) :groupname \"mygroup\")\n"
          "	(ros::create-timer 0.1 #'(lambda (event) (print \"timer called\")) :groupname \"mygroup\")\n"
          "	(while (ros::ok)  (ros::spin-once \"mygroup\"))\n");
-  defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL, "");
+  defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL, "(level)");
 
   defun(ctx,"GET-HOST",argv[0],(pointer (*)())ROSEUS_GET_HOST, "Get the hostname where the master runs.");
   defun(ctx,"GET-NODES",argv[0],(pointer (*)())ROSEUS_GET_NODES, "Retreives the currently-known list of nodes from the master.");
