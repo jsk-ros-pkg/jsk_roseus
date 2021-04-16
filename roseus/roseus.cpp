@@ -370,7 +370,7 @@ public:
     }
     // avoid gc
     pointer p=gensym(ctx);
-    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    defconst(ctx, (char*)(p->c.sym.pname->c.str.chars), cons(ctx,scb,args), lisppkg);
   }
   ~EuslispSubscriptionCallbackHelper() {
       ROS_ERROR("subscription gc");
@@ -453,7 +453,7 @@ public:
     }
     // avoid gc
     pointer p=gensym(ctx);
-    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    defconst(ctx, (char*)(p->c.sym.pname->c.str.chars), cons(ctx,scb,args), lisppkg);
 
     requestDataType = _req.__getDataType();
     responseDataType = _res.__getDataType();
@@ -2011,7 +2011,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
 
   // avoid gc
   pointer p=gensym(ctx);
-  setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
+  defconst(ctx, (char*)(p->c.sym.pname->c.str.chars), cons(ctx,fncallback,args), lisppkg);
 
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
