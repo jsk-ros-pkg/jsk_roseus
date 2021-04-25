@@ -146,7 +146,7 @@
     (float-vector (+ (* cos-roll cos-pitch cos-yaw) (* sin-roll sin-pitch sin-yaw))
                   (- (* sin-roll cos-pitch cos-yaw) (* cos-roll sin-pitch sin-yaw))
                   (+ (* cos-roll sin-pitch cos-yaw) (* sin-roll cos-pitch sin-yaw))
-                  (- (* sin-roll cos-pitch sin-yaw) (* sin-roll sin-pitch cos-yaw)))))
+                  (- (* cos-roll cos-pitch sin-yaw) (* sin-roll sin-pitch cos-yaw)))))
 
 (defun ros::create-quaternion-msg-from-rpy (roll pitch yaw)
   "Create geometry_msgs::Quaternion from roll, pitch and yaw"
