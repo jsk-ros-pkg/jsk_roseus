@@ -186,7 +186,7 @@
 
 $ (setq tr (instance ros::transformer :init))
 #<ros::transformer #X545e290>
-$ (send tr :set-transform (instance ros::tf-cascaded-coords :init :pos #f(1 2 3) :frame-id \"this_frame\" :child-frame-id \"child\"))
+$ (send tr :set-transform (instance ros::tf-cascaded-coords :init :pos #f(1000 2000 3000) :frame-id \"this_frame\" :child-frame-id \"child\"))
 $ (send tr :get-frame-strings)
 (\"this_frame\" \"child\")
 $ (send tr :lookup-transform \"this_frame\" \"child\" (ros::time))
