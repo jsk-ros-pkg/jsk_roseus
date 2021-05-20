@@ -1132,12 +1132,11 @@
 
 (defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp))
   "Subscribe message, just for once"
-  (let ((num-publishers (ros::get-num-publishers topic-name))
-        (lmsg (instance one-shot-subscribe-msg :init)))
-    (when num-publishers
-      (ros::ros-error (format nil "There is already subscriber for ~A. If you want to use this function, please (ros::unsubscribe ~A)." topic-name topic-name))
-      (return-from one-shot-subscribe))
-    (unless num-publishers
+  (let ((lmsg (instance one-shot-subscribe-msg :init)))
+    (if (ros::get-num-publishers topic-name)
+      (progn
+        (ros::ros-error (format nil "There is already subscriber for ~A. If you want to use this function, please (ros::unsubscribe ~A)." topic-name topic-name))
+        (return-from one-shot-subscribe))
       (cond
        (after-stamp
         (ros::subscribe topic-name mclass
