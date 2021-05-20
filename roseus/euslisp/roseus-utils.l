@@ -1153,6 +1153,7 @@
         (unix::usleep (* 50 1000))
         (ros::spin-once)
         (if (send lmsg :get) (return))))
+    (ros::unsubscribe topic-name)
     (send lmsg :get)))
 
 (defun one-shot-publish (topic-name msg &key (wait 500) (after-stamp) (unadvertise t))
