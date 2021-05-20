@@ -1132,9 +1132,26 @@
       (unless (ros r :success) (ros::ros-warn "Call \"~A\" fails, it returns \"~A\"" srvname (send r :message)))
       r)))
 
+(defclass one-shot-subscribe-msg
+  :super propertied-object
+  :slots (msg-)
+  :documentation "The purpose of this class is to register class closures for callback function of (one-shot-subscribe). This allows the callback function to be accessed safely from anyscope. For detail, please refer to https://github.com/jsk-ros-pkg/jsk_roseus/issues/666
+"
+  )
+(defmethod one-shot-subscribe-msg
+  (:init () self)
+  (:update (msg) (setq msg- msg))
+  (:update-after-stamp (after-stamp msg)
+    (let ((st (send msg :header :stamp)))
+      (when (> (send st :to-sec)
+               (send after-stamp :to-sec))
+        (send self :update msg))))
+  (:get () msg-))
+
 (defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
   "Subscribe message, just for once"
-  (let ((num-publishers (ros::get-num-publishers topic-name)) lmsg)
+  (let ((num-publishers (ros::get-num-publishers topic-name))
+        (lmsg (instance one-shot-subscribe-msg :init)))
     (when num-publishers
       (ros::ros-error (format nil "There is already subscriber for ~A. If you want to use this function, please (ros::unsubscribe ~A)." topic-name topic-name))
       (return-from one-shot-subscribe))
@@ -1142,14 +1159,10 @@
       (cond
        (after-stamp
         (ros::subscribe topic-name mclass
-                        #'(lambda (msg)
-                            (let ((st (send msg :header :stamp)))
-                              (when (> (send st :to-sec)
-                                       (send after-stamp :to-sec))
-                                (setq lmsg msg))))))
+                        #'send lmsg :update-after-stamp after-stamp))
        (t
         (ros::subscribe topic-name mclass
-                        #'(lambda (msg) (setq lmsg msg))))))
+                        #'send lmsg :update))))
     (let ((finishtm (if timeout (ros::time-now))))
       (when finishtm
         (setq finishtm (ros::time+ finishtm (ros::time (/ timeout 1000.0)))))
@@ -1157,9 +1170,9 @@
                        (< (send (ros::time- finishtm (ros::time-now)) :to-Sec) 0)))
         (unix::usleep (* 50 1000))
         (ros::spin-once)
-        (if lmsg (return))))
+        (if (send lmsg :get) (return))))
     (if unsubscribe (ros::unsubscribe topic-name))
-    lmsg))
+    (send lmsg :get)))
 
 (defun one-shot-publish (topic-name msg &key (wait 500) (after-stamp) (unadvertise t))
   "Publish message just for once"
