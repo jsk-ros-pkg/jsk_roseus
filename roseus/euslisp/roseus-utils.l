@@ -1114,10 +1114,13 @@
     (ros::service-call srvname (instance std_srvs::EmptyRequest :init))
     t))
 
-(defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
+(defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp))
   "Subscribe message, just for once"
-  (let (lmsg)
-    (unless (ros::get-num-publishers topic-name)
+  (let ((num-publishers (ros::get-num-publishers topic-name)) lmsg)
+    (when num-publishers
+      (ros::ros-error (format nil "There is already subscriber for ~A. If you want to use this function, please (ros::unsubscribe ~A)." topic-name topic-name))
+      (return-from one-shot-subscribe))
+    (unless num-publishers
       (cond
        (after-stamp
         (ros::subscribe topic-name mclass
@@ -1137,7 +1140,6 @@
         (unix::usleep (* 50 1000))
         (ros::spin-once)
         (if lmsg (return))))
-    (if unsubscribe (ros::unsubscribe topic-name))
     lmsg))
 
 (defun one-shot-publish (topic-name msg &key (wait 500) (after-stamp) (unadvertise t))
