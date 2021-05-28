@@ -888,10 +888,12 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   args=NIL;
   for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
 
+  vpush(args);
   EuslispMessage msg(message);
    boost::shared_ptr<SubscriptionCallbackHelper> *callback =
      (new boost::shared_ptr<SubscriptionCallbackHelper>
       (new EuslispSubscriptionCallbackHelper(fncallback, args, message)));
+  vpop();
   SubscribeOptions so(topicname, queuesize, msg.__getMD5Sum(), msg.__getDataType());
   so.helper = *callback;
   Subscriber subscriber = lnode->subscribe(so);
