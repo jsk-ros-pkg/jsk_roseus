@@ -56,6 +56,10 @@
          ))))
   (:action-result-cb
    (msg)
+   ;; This error msg below will appear from a second time
+   ;; To display this error msg from the first time, use wait-interpolation or ros::spin-once
+   (if (< (send (send msg :result) :error_code) 0)
+       (ros::ros-error "~A" (send (send msg :result) :error_string)))
    (let (dummy-msg)
      (ros::ros-debug "[~A] result-cb ~A ~A" name-space (send msg :status :goal_id :id) (goal-status-to-string (send msg :status :status)))
      (unless (send comm-state :update-result msg)
