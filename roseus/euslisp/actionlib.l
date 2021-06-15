@@ -304,19 +304,18 @@
   (:cancel-callback
    (msg)
    (ros::ros-info ";; Received Cancel")
-   (setq check-func
-	 #'(lambda(msg goal)
+   (flet ((check-func (msg goal)
 	     (let ((stamp (send goal :header :stamp)))
 	       (and (member (send msg :id) (list "" (send goal :goal_id :id)) :test #'string=)
 		    (or (= 0 (send (send msg :stamp) :to-sec))
 			(< 0 (send (ros::time- (send msg :stamp) stamp) :to-sec)))))))
    ;;
-   (when (and pending-goal (funcall check-func msg pending-goal))
-     (setq pending-goal nil))
-   (when (and (equal status actionlib_msgs::GoalStatus::*active*)
-	      (funcall check-func msg goal))
-     (setq status actionlib_msgs::GoalStatus::*preempting*)
-     (if preempt-cb (funcall preempt-cb self goal))))
+     (when (and pending-goal (check-func msg pending-goal))
+       (setq pending-goal nil))
+     (when (and (equal status actionlib_msgs::GoalStatus::*active*)
+                (check-func msg goal))
+       (setq status actionlib_msgs::GoalStatus::*preempting*)
+       (if preempt-cb (funcall preempt-cb self goal)))))
   ;;
   (:publish-result
    (msg &optional (text ""))
