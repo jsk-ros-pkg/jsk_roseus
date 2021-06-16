@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <tinyxml2.h>
+#include <fmt/format.h>
 #include <boost/algorithm/string/join.hpp>
 
 namespace RoseusBT
@@ -33,6 +34,7 @@ public:
 
   std::string test_all_actions();
   std::string test_all_conditions();
+  std::string generate_headers(const char* package_name);
 
 };
 
@@ -45,11 +47,10 @@ std::string XMLParser::port_node_to_message_description(const XMLElement* port_n
     throw std::logic_error(error_str);
   }
 
-  std::string result;
-  result.append(port_node->Attribute("type"));
-  result.append(" ");
-  result.append(port_node->Attribute("name"));
-  return result;
+  std::string output = fmt::format("{} {}",
+                                   port_node->Attribute("type"),
+                                   port_node->Attribute("name"));
+  return output;
 }
 
 std::string XMLParser::generate_action_file_contents(const XMLElement* node) {
@@ -105,6 +106,55 @@ std::string XMLParser::generate_service_file_contents(const XMLElement* node) {
 
   return output;
 }
+
+std::string XMLParser::generate_headers(const char* package_name) {
+  auto format_action_node = [](const XMLElement* node, const char* package_name) {
+    return fmt::format("#include <{}/{}Action.h>",
+                       package_name,
+                       node->Attribute("ID"));
+  };
+
+  auto format_condition_node = [](const XMLElement* node, const char* package_name) {
+    return fmt::format("#include <{}/{}.h>",
+                       package_name,
+                       node->Attribute("ID"));
+  };
+
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  std::vector<std::string> headers;
+
+  std::string common_headers = 1 + R"(
+#include <ros/ros.h>
+
+#include <roseus_bt/eus_action_node.h>
+#include <roseus_bt/eus_condition_node.h>
+
+#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
+#include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
+
+)";
+
+  for (auto action_node = root->FirstChildElement("Action");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("Action"))
+    {
+      headers.push_back(format_action_node(action_node, package_name));
+    }
+
+  for (auto condition_node = root->FirstChildElement("Condition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("Condition"))
+    {
+      headers.push_back(format_condition_node(condition_node, package_name));
+    }
+
+  std::string output;
+  output.append(common_headers);
+  output.append(boost::algorithm::join(headers, "\n"));
+
+  return output;
+}
+
 
 std::string XMLParser::test_all_actions() {
   std::string result;
