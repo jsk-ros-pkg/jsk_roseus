@@ -38,6 +38,7 @@ public:
   std::string test_all_actions();
   std::string test_all_conditions();
   std::string generate_headers(const char* package_name);
+  std::string generate_main_function(const char* roscpp_node_name, const char* xml_filename);
   std::string test_all_action_classes(const char* package_name);
   std::string test_all_condition_classes(const char* package_name);
 
@@ -318,6 +319,81 @@ public:
     node->Attribute("ID") %
     boost::algorithm::join(provided_ports, ",\n") %
     boost::algorithm::join(get_inputs, "\n");
+
+  return bfmt.str();
+}
+
+std::string XMLParser::generate_main_function(const char* roscpp_node_name,
+                                              const char* xml_filename) {
+
+  auto format_ros_init = [](const char* roscpp_node_name) {
+    return fmt::format("  ros::init(argc, argv, \"{}\");", roscpp_node_name);
+  };
+  auto format_create_tree = [](const char* xml_filename) {
+    return fmt::format("  auto tree = factory.createTreeFromFile(\"{}\");", xml_filename);
+  };
+  auto format_action_node = [](const XMLElement* node) {
+    return fmt::format("  RegisterRosAction<{0}Action>(factory, \"{0}\", nh);",
+                       node->Attribute("ID"));
+  };
+  auto format_condition_node = [](const XMLElement* node) {
+    return fmt::format("  RegisterRosService<{0}>(factory, \"{0}\", nh);",
+                       node->Attribute("ID"));
+  };
+
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  std::vector<std::string> register_actions;
+  std::vector<std::string> register_conditions;
+
+  for (auto action_node = root->FirstChildElement("Action");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("Action"))
+    {
+      register_actions.push_back(format_action_node(action_node));
+    }
+
+  for (auto condition_node = root->FirstChildElement("Condition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("Condition"))
+    {
+      register_conditions.push_back(format_condition_node(condition_node));
+    }
+
+  std::string fmt_string = 1 + R"(
+int main(int argc, char **argv)
+{
+%1%
+  ros::NodeHandle nh;
+
+  BehaviorTreeFactory factory;
+
+%3%
+%4%
+
+%2%
+
+  StdCoutLogger logger_cout(tree);
+  PublisherZMQ publisher_zmq(tree);
+
+  NodeStatus status = NodeStatus::IDLE;
+
+  while( ros::ok() && (status == NodeStatus::IDLE || status == NodeStatus::RUNNING))
+  {
+    ros::spinOnce();
+    status = tree.tickRoot();
+    ros::Duration sleep_time(0.05);
+    sleep_time.sleep();
+  }
+
+  return 0;
+}
+)";
+
+  boost::format bfmt = boost::format(fmt_string) %
+    format_ros_init(roscpp_node_name) %
+    format_create_tree(xml_filename) %
+    boost::algorithm::join(register_actions, ",\n") %
+    boost::algorithm::join(register_conditions, ",\n");
 
   return bfmt.str();
 }
