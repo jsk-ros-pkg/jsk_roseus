@@ -9,6 +9,8 @@ int main(int argc, char **argv)
   std::cout << parser.generate_headers("my_package") << std::endl;
   std::cout << std::endl << std::endl;
   std::cout << parser.test_all_action_classes("my_package") << std::endl;
+  std::cout << std::endl;
+  std::cout << parser.test_all_condition_classes("my_package") << std::endl;
 
   // std::cout << "Actions:" << std::endl;
   // std::cout << parser.test_all_actions() << std::endl;

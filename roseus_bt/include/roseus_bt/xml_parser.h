@@ -31,6 +31,7 @@ protected:
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
   std::string generate_action_class(const XMLElement* node, const char* package_name);
+  std::string generate_condition_class(const XMLElement* node, const char* package_name);
 
 public:
 
@@ -38,6 +39,7 @@ public:
   std::string test_all_conditions();
   std::string generate_headers(const char* package_name);
   std::string test_all_action_classes(const char* package_name);
+  std::string test_all_condition_classes(const char* package_name);
 
 };
 
@@ -256,6 +258,70 @@ EusActionNode<%1%::%2%Action>(handle, name, conf) {}
   return bfmt.str();
 }
 
+std::string XMLParser::generate_condition_class(const XMLElement* node, const char* package_name) {
+  auto format_input_port = [](const XMLElement* node) {
+    return fmt::format("      InputPort<RequestType::_{0}_type(\"{0}\")",
+                       node->Attribute("name"));
+  };
+  auto format_get_input = [](const XMLElement* node) {
+    return fmt::format("    getInput(\"{0}\", request.{0});",
+                       node->Attribute("name"));
+  };
+
+  std::vector<std::string> provided_ports;
+  std::vector<std::string> get_inputs;
+
+  for (auto port_node = node->FirstChildElement("input_port");
+       port_node != nullptr;
+       port_node = port_node->NextSiblingElement("input_port"))
+    {
+      provided_ports.push_back(format_input_port(port_node));
+      get_inputs.push_back(format_get_input(port_node));
+    }
+
+  std::string fmt_string = 1 + R"(
+class %2%: public EusConditionNode<%1%::%2%>
+{
+
+public:
+  %2%(ros::NodeHandle& handle, const std::string& node_name, const NodeConfiguration& conf):
+  EusConditionNode<%1%::%2%>(handle, node_name, conf) {}
+
+  static PortsList providedPorts()
+  {
+    return  {
+%3%
+    };
+  }
+
+  void sendRequest(RequestType& request) override
+  {
+%4%
+  }
+
+  NodeStatus onResponse(const ResponseType& res) override
+  {
+    if (res.success) return NodeStatus::SUCCESS;
+    return NodeStatus::FAILURE;
+  }
+
+  virtual NodeStatus onFailedRequest(EusConditionNode::FailureCause failure) override
+  {
+    return NodeStatus::FAILURE;
+  }
+
+};
+)";
+
+  boost::format bfmt = boost::format(fmt_string) %
+    package_name %
+    node->Attribute("ID") %
+    boost::algorithm::join(provided_ports, ",\n") %
+    boost::algorithm::join(get_inputs, "\n");
+
+  return bfmt.str();
+}
+
 
 std::string XMLParser::test_all_actions() {
   std::string result;
@@ -297,6 +363,20 @@ std::string XMLParser::test_all_action_classes(const char* package_name) {
        action_node = action_node->NextSiblingElement("Action"))
     {
       result.append(generate_action_class(action_node, package_name));
+      result.append("\n\n");
+    }
+  return result;
+}
+
+std::string XMLParser::test_all_condition_classes(const char* package_name) {
+  std::string result;
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+
+  for (auto condition_node = root->FirstChildElement("Condition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("Condition"))
+    {
+      result.append(generate_condition_class(condition_node, package_name));
       result.append("\n\n");
     }
   return result;
