@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>roseus_bt</name>
+  <version>0.0.1</version>
+  <description>The roseus_bt package</description>
+
+  <maintainer email="affonso@jsk.imi.i.u-tokyo.ac.jp">affonso</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>tinyxml2</build_depend>
+  <build_depend>behaviortree_ros</build_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>tinyxml2</exec_depend>
+  <exec_depend>behaviortree_ros</exec_depend>
+
+  <export>
+  </export>
+</package>
