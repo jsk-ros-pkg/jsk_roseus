@@ -30,17 +30,18 @@ protected:
   std::string port_node_to_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
+  std::string generate_headers(const char* package_name);
   std::string generate_action_class(const XMLElement* node, const char* package_name);
   std::string generate_condition_class(const XMLElement* node, const char* package_name);
+  std::string generate_main_function(const char* roscpp_node_name, const char* xml_filename);
 
 public:
 
   std::string test_all_actions();
   std::string test_all_conditions();
-  std::string generate_headers(const char* package_name);
-  std::string generate_main_function(const char* roscpp_node_name, const char* xml_filename);
-  std::string test_all_action_classes(const char* package_name);
-  std::string test_all_condition_classes(const char* package_name);
+  std::string generate_cpp_file(const char* package_name,
+                                const char* roscpp_node_name,
+                                const char* xml_filename);
 
 };
 
@@ -430,32 +431,34 @@ std::string XMLParser::test_all_conditions() {
   return result;
 }
 
-std::string XMLParser::test_all_action_classes(const char* package_name) {
-  std::string result;
+std::string XMLParser::generate_cpp_file(const char* package_name,
+                                         const char* roscpp_node_name,
+                                         const char* xml_filename) {
+
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  std::string output;
+  output.append(generate_headers(package_name));
+  output.append("\n\n");
 
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
     {
-      result.append(generate_action_class(action_node, package_name));
-      result.append("\n\n");
+      output.append(generate_action_class(action_node, package_name));
+      output.append("\n\n");
     }
-  return result;
-}
-
-std::string XMLParser::test_all_condition_classes(const char* package_name) {
-  std::string result;
-  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
 
   for (auto condition_node = root->FirstChildElement("Condition");
        condition_node != nullptr;
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
-      result.append(generate_condition_class(condition_node, package_name));
-      result.append("\n\n");
+      output.append(generate_condition_class(condition_node, package_name));
+      output.append("\n\n");
     }
-  return result;
+
+  output.append(generate_main_function(roscpp_node_name, xml_filename));
+
+  return output;
 }
 
 }  // namespace BT
