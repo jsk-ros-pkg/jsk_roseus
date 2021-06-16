@@ -210,12 +210,12 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const char*
 
 
   std::string fmt_string = 1 + R"(
-class %2%: public EusActionNode<%1%::%2%Action>
+class %2%: public BT::EusActionNode<%1%::%2%Action>
 {
 
 public:
   %2%Action(ros::NodeHandle& handle, const std::string& name, const NodeConfiguration& conf):
-EusActionNode<%1%::%2%Action>(handle, name, conf) {}
+BT::EusActionNode<%1%::%2%Action>(handle, name, conf) {}
 
   static PortsList providedPorts()
   {
@@ -281,12 +281,12 @@ std::string XMLParser::generate_condition_class(const XMLElement* node, const ch
     }
 
   std::string fmt_string = 1 + R"(
-class %2%: public EusConditionNode<%1%::%2%>
+class %2%: public BT::EusConditionNode<%1%::%2%>
 {
 
 public:
   %2%(ros::NodeHandle& handle, const std::string& node_name, const NodeConfiguration& conf):
-  EusConditionNode<%1%::%2%>(handle, node_name, conf) {}
+  BT::EusConditionNode<%1%::%2%>(handle, node_name, conf) {}
 
   static PortsList providedPorts()
   {
@@ -306,7 +306,7 @@ public:
     return NodeStatus::FAILURE;
   }
 
-  virtual NodeStatus onFailedRequest(EusConditionNode::FailureCause failure) override
+  virtual NodeStatus onFailedRequest(FailureCause failure) override
   {
     return NodeStatus::FAILURE;
   }
