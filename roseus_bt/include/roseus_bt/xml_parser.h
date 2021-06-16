@@ -5,6 +5,7 @@
 #include <vector>
 #include <tinyxml2.h>
 #include <fmt/format.h>
+#include <boost/format.hpp>
 #include <boost/algorithm/string/join.hpp>
 
 namespace RoseusBT
@@ -29,12 +30,14 @@ protected:
   std::string port_node_to_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
+  std::string generate_action_class(const XMLElement* node, const char* package_name);
 
 public:
 
   std::string test_all_actions();
   std::string test_all_conditions();
   std::string generate_headers(const char* package_name);
+  std::string test_all_action_classes(const char* package_name);
 
 };
 
@@ -155,11 +158,108 @@ std::string XMLParser::generate_headers(const char* package_name) {
   return output;
 }
 
+std::string XMLParser::generate_action_class(const XMLElement* node, const char* package_name) {
+  auto format_input_port = [](const XMLElement* node) {
+    return fmt::format("      InputPort<GoalType::_{0}_type(\"{0}\")",
+                       node->Attribute("name"));
+  };
+  auto format_output_port = [](const XMLElement* node) {
+    return fmt::format("      OutputPort<FeedbackType::_{0}_type(\"{0}\")",
+                       node->Attribute("name"));
+  };
+  auto format_get_input = [](const XMLElement* node) {
+    return fmt::format("    getInput(\"{0}\", goal.{0});",
+                       node->Attribute("name"));
+  };
+  auto format_set_output = [](const XMLElement* node) {
+    return fmt::format("    setOutput(\"{0}\", feedback->{0});",
+                       node->Attribute("name"));
+  };
+
+
+  std::vector<std::string> provided_input_ports;
+  std::vector<std::string> provided_output_ports;
+  std::vector<std::string> get_inputs;
+  std::vector<std::string> set_outputs;
+
+  for (auto port_node = node->FirstChildElement();
+       port_node != nullptr;
+       port_node = port_node->NextSiblingElement())
+    {
+      std::string name = port_node->Name();
+      if (name == "input_port" || name == "inout_port") {
+        provided_input_ports.push_back(format_input_port(port_node));
+        get_inputs.push_back(format_get_input(port_node));
+      }
+      if (name == "output_port" || name == "inout_port") {
+        provided_output_ports.push_back(format_output_port(port_node));
+        set_outputs.push_back(format_set_output(port_node));
+      }
+    }
+
+  std::vector<std::string> provided_ports;
+  provided_ports.insert(provided_ports.end(),
+                        provided_input_ports.begin(),
+                        provided_input_ports.end());
+  provided_ports.insert(provided_ports.end(),
+                        provided_output_ports.begin(),
+                        provided_output_ports.end());
+
+
+  std::string fmt_string = 1 + R"(
+class %2%: public EusActionNode<%1%::%2%Action>
+{
+
+public:
+  %2%Action(ros::NodeHandle& handle, const std::string& name, const NodeConfiguration& conf):
+EusActionNode<%1%::%2%Action>(handle, name, conf) {}
+
+  static PortsList providedPorts()
+  {
+    return  {
+%3%
+    };
+  }
+
+  bool sendGoal(GoalType& goal) override
+  {
+%4%
+    return true;
+  }
+
+  void onFeedback( const typename FeedbackType::ConstPtr& feedback) override
+  {
+%5%
+    return;
+  }
+
+  NodeStatus onResult( const ResultType& result) override
+  {
+    if (result.success) return NodeStatus::SUCCESS;
+    return NodeStatus::FAILURE;
+  }
+
+  virtual NodeStatus onFailedRequest(FailureCause failure) override
+  {
+    return NodeStatus::FAILURE;
+  }
+
+};
+)";
+  boost::format bfmt = boost::format(fmt_string) %
+    package_name %
+    node->Attribute("ID") %
+    boost::algorithm::join(provided_ports, ",\n") %
+    boost::algorithm::join(get_inputs, "\n") %
+    boost::algorithm::join(set_outputs, "\n");
+
+  return bfmt.str();
+}
+
 
 std::string XMLParser::test_all_actions() {
   std::string result;
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
-
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
@@ -183,6 +283,20 @@ std::string XMLParser::test_all_conditions() {
       result.append(condition_node->Attribute("ID"));
       result.append(":\n");
       result.append(generate_service_file_contents(condition_node));
+      result.append("\n\n");
+    }
+  return result;
+}
+
+std::string XMLParser::test_all_action_classes(const char* package_name) {
+  std::string result;
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+
+  for (auto action_node = root->FirstChildElement("Action");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("Action"))
+    {
+      result.append(generate_action_class(action_node, package_name));
       result.append("\n\n");
     }
   return result;
