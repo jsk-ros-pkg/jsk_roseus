@@ -6,13 +6,7 @@ int main(int argc, char **argv)
 {
   RoseusBT::XMLParser parser(argv[1]);
 
-  std::cout << parser.generate_headers("my_package") << std::endl;
-  std::cout << std::endl << std::endl;
-  std::cout << parser.test_all_action_classes("my_package") << std::endl;
-  std::cout << std::endl;
-  std::cout << parser.test_all_condition_classes("my_package") << std::endl;
-  std::cout << std::endl << std::endl;
-  std::cout << parser.generate_main_function("test", argv[1]) << std::endl;
+  std::cout << parser.generate_cpp_file("my_package", "test", argv[1]) << std::endl;
 
   // std::cout << "Actions:" << std::endl;
   // std::cout << parser.test_all_actions() << std::endl;
