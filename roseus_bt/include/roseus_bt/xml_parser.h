@@ -27,10 +27,12 @@ protected:
   XMLDocument doc;
   std::string port_node_to_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
+  std::string generate_service_file_contents(const XMLElement* node);
 
 public:
 
   std::string test_all_actions();
+  std::string test_all_conditions();
 
 };
 
@@ -78,6 +80,32 @@ std::string XMLParser::generate_action_file_contents(const XMLElement* node) {
   return output;
 }
 
+std::string XMLParser::generate_service_file_contents(const XMLElement* node) {
+  std::vector<std::string> request;
+
+  for (auto port_node = node->FirstChildElement();
+       port_node != nullptr;
+       port_node = port_node->NextSiblingElement())
+    {
+      std::string name = port_node->Name();
+      std::string text = port_node_to_message_description(port_node);
+
+      if (name == "input_port") {
+        request.push_back(text);
+      }
+      else {
+        throw std::logic_error("Condition Node only accepts input ports!");
+      }
+    }
+
+  std::string output;
+  output.append(boost::algorithm::join(request, "\n"));
+  output.append("\n---\n");
+  output.append("bool success");
+
+  return output;
+}
+
 std::string XMLParser::test_all_actions() {
   std::string result;
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
@@ -86,7 +114,25 @@ std::string XMLParser::test_all_actions() {
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
     {
+      result.append(action_node->Attribute("ID"));
+      result.append(":\n");
       result.append(generate_action_file_contents(action_node));
+      result.append("\n\n");
+    }
+  return result;
+}
+
+std::string XMLParser::test_all_conditions() {
+  std::string result;
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+
+  for (auto condition_node = root->FirstChildElement("Condition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("Condition"))
+    {
+      result.append(condition_node->Attribute("ID"));
+      result.append(":\n");
+      result.append(generate_service_file_contents(condition_node));
       result.append("\n\n");
     }
   return result;
