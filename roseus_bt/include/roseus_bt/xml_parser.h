@@ -1,6 +1,7 @@
 #ifndef BEHAVIOR_TREE_ROSEUS_BT_XML_PARSER_
 #define BEHAVIOR_TREE_ROSEUS_BT_XML_PARSER_
 
+#include <map>
 #include <string>
 #include <vector>
 #include <tinyxml2.h>
@@ -37,8 +38,8 @@ protected:
 
 public:
 
-  std::string test_all_actions();
-  std::string test_all_conditions();
+  std::map<std::string, std::string> generate_all_action_files();
+  std::map<std::string, std::string> generate_all_service_files();
   std::string generate_cpp_file(const char* package_name,
                                 const char* roscpp_node_name,
                                 const char* xml_filename);
@@ -404,33 +405,34 @@ int main(int argc, char **argv)
 }
 
 
-std::string XMLParser::test_all_actions() {
-  std::string result;
+std::map<std::string, std::string> XMLParser::generate_all_action_files() {
+  auto format_filename = [](const XMLElement* node) {
+    return fmt::format("{}.action", node->Attribute("ID"));
+  };
+
+  std::map<std::string, std::string> result;
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
     {
-      result.append(action_node->Attribute("ID"));
-      result.append(":\n");
-      result.append(generate_action_file_contents(action_node));
-      result.append("\n\n");
+      result[format_filename(action_node)] = generate_action_file_contents(action_node);
     }
   return result;
 }
 
-std::string XMLParser::test_all_conditions() {
-  std::string result;
-  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+std::map<std::string, std::string> XMLParser::generate_all_service_files() {
+  auto format_filename = [](const XMLElement* node) {
+    return fmt::format("{}.srv", node->Attribute("ID"));
+  };
 
+  std::map<std::string, std::string> result;
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   for (auto condition_node = root->FirstChildElement("Condition");
        condition_node != nullptr;
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
-      result.append(condition_node->Attribute("ID"));
-      result.append(":\n");
-      result.append(generate_service_file_contents(condition_node));
-      result.append("\n\n");
+      result[format_filename(condition_node)] = generate_service_file_contents(condition_node);
     }
   return result;
 }
