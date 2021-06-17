@@ -42,6 +42,8 @@ public:
   std::string generate_cpp_file(const char* package_name,
                                 const char* roscpp_node_name,
                                 const char* xml_filename);
+  std::string generate_cmake_lists(const char* package_name,
+                                   const char* target_filename);
 
 };
 
@@ -459,6 +461,113 @@ std::string XMLParser::generate_cpp_file(const char* package_name,
   output.append(generate_main_function(roscpp_node_name, xml_filename));
 
   return output;
+}
+
+std::string XMLParser::generate_cmake_lists(const char* package_name, const char* target_name) {
+  auto format_pkg = [](const char* pkg) {
+    return fmt::format("  {}", pkg);
+  };
+  auto format_action_file = [](const XMLElement* node) {
+    return fmt::format("  {}.action", node->Attribute("ID"));
+  };
+  auto format_service_file = [](const XMLElement* node) {
+    return fmt::format("  {}.srv", node->Attribute("ID"));
+  };
+  auto maybe_push_message_package = [format_pkg](const XMLElement* node, std::vector<std::string>* message_packages) {
+    std::string msg_type = node->Attribute("type");
+    std::size_t pos = msg_type.find('/');
+    if (pos != std::string::npos) {
+      std::string pkg = format_pkg(msg_type.substr(0, pos).c_str());
+      if (std::find(message_packages->begin(), message_packages->end(), pkg) ==
+          message_packages->end()) {
+        message_packages->push_back(pkg);
+      }
+    }
+  };
+
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  std::vector<std::string> message_packages;
+  std::vector<std::string> action_files;
+  std::vector<std::string> service_files;
+
+  message_packages.push_back(format_pkg("std_msgs"));
+  message_packages.push_back(format_pkg("actionlib_msgs"));
+  for (auto action_node = root->FirstChildElement("Action");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("Action"))
+    {
+      action_files.push_back(format_action_file(action_node));
+      for (auto port_node = action_node->FirstChildElement();
+           port_node != nullptr;
+           port_node = port_node->NextSiblingElement())
+        {
+          maybe_push_message_package(port_node, &message_packages);
+        }
+    }
+
+  for (auto condition_node = root->FirstChildElement("Condition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("Condition"))
+    {
+      service_files.push_back(format_service_file(condition_node));
+      for (auto port_node = condition_node->FirstChildElement();
+           port_node != nullptr;
+           port_node = port_node->NextSiblingElement())
+        {
+          maybe_push_message_package(port_node, &message_packages);
+        }
+    }
+
+  std::string fmt_string = 1+ R"(
+cmake_minimum_required(VERSION 3.0.2)
+project(%1%)
+
+find_package(catkin REQUIRED COMPONENTS
+  message_generation
+  roscpp
+  roseus_bt
+%3%
+)
+
+add_service_files(
+  FILES
+%4%
+)
+
+add_action_files(
+  FILES
+%5%
+)
+
+generate_messages(
+  DEPENDENCIES
+%3%
+)
+
+catkin_package(
+ INCLUDE_DIRS include
+ LIBRARIES
+ CATKIN_DEPENDS
+ message_runtime
+%3%
+)
+
+
+include_directories(include ${catkin_INCLUDE_DIRS})
+
+add_executable(%2% src/%2%.cpp)
+add_dependencies(%2% ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(%2% ${catkin_LIBRARIES})
+)";
+
+  boost::format bfmt = boost::format(fmt_string) %
+    package_name %
+    target_name %
+    boost::algorithm::join(message_packages, "\n") %
+    boost::algorithm::join(service_files, "\n") %
+    boost::algorithm::join(action_files, "\n");
+
+  return bfmt.str();
 }
 
 }  // namespace BT
