@@ -7,7 +7,8 @@ int main(int argc, char **argv)
   RoseusBT::XMLParser parser(argv[1]);
 
   // std::cout << parser.generate_cpp_file("my_package", "test", argv[1]) << std::endl;
-  std::cout << parser.generate_cmake_lists("my_package", "test") << std::endl;
+  // std::cout << parser.generate_cmake_lists("my_package", "test") << std::endl;
+  std::cout << parser.generate_package_xml("my_package", "Guilherme Affonso") << std::endl;
 
   // std::cout << "Actions:" << std::endl;
   // std::cout << parser.test_all_actions() << std::endl;
