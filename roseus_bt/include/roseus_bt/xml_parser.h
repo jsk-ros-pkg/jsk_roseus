@@ -678,6 +678,6 @@ std::string XMLParser::generate_package_xml(const char* package_name, const char
   return bfmt.str();
 }
 
-}  // namespace BT
+}  // namespace RoseusBT
 
 #endif  // BEHAVIOR_TREE_ROSEUS_BT_XML_PARSER_
