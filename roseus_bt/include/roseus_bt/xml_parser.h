@@ -19,8 +19,8 @@ class XMLParser
 
 public:
 
-  XMLParser(const std::string &filename) {
-    doc.LoadFile(filename.c_str());
+  XMLParser(const char* filename) : xml_filename(filename) {
+    doc.LoadFile(filename);
   }
 
   ~XMLParser() {};
@@ -28,21 +28,21 @@ public:
 protected:
 
   XMLDocument doc;
+  const char* xml_filename;
   std::string port_node_to_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
   std::string generate_headers(const char* package_name);
   std::string generate_action_class(const XMLElement* node, const char* package_name);
   std::string generate_condition_class(const XMLElement* node, const char* package_name);
-  std::string generate_main_function(const char* roscpp_node_name, const char* xml_filename);
+  std::string generate_main_function(const char* roscpp_node_name);
 
 public:
 
   std::map<std::string, std::string> generate_all_action_files();
   std::map<std::string, std::string> generate_all_service_files();
   std::string generate_cpp_file(const char* package_name,
-                                const char* roscpp_node_name,
-                                const char* xml_filename);
+                                const char* roscpp_node_name);
   std::string generate_cmake_lists(const char* package_name,
                                    const char* target_filename);
   std::string generate_package_xml(const char* package_name,
@@ -329,9 +329,7 @@ public:
   return bfmt.str();
 }
 
-std::string XMLParser::generate_main_function(const char* roscpp_node_name,
-                                              const char* xml_filename) {
-
+std::string XMLParser::generate_main_function(const char* roscpp_node_name) {
   auto format_ros_init = [](const char* roscpp_node_name) {
     return fmt::format("  ros::init(argc, argv, \"{}\");", roscpp_node_name);
   };
@@ -438,8 +436,7 @@ std::map<std::string, std::string> XMLParser::generate_all_service_files() {
 }
 
 std::string XMLParser::generate_cpp_file(const char* package_name,
-                                         const char* roscpp_node_name,
-                                         const char* xml_filename) {
+                                         const char* roscpp_node_name) {
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::string output;
@@ -462,7 +459,7 @@ std::string XMLParser::generate_cpp_file(const char* package_name,
       output.append("\n\n");
     }
 
-  output.append(generate_main_function(roscpp_node_name, xml_filename));
+  output.append(generate_main_function(roscpp_node_name));
 
   return output;
 }
