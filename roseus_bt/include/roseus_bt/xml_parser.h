@@ -163,17 +163,18 @@ std::string XMLParser::generate_headers(const char* package_name) {
   std::string output;
   output.append(common_headers);
   output.append(boost::algorithm::join(headers, "\n"));
-
+  output.append("\n\n");
+  output.append("using namespace BT;");
   return output;
 }
 
 std::string XMLParser::generate_action_class(const XMLElement* node, const char* package_name) {
   auto format_input_port = [](const XMLElement* node) {
-    return fmt::format("      InputPort<GoalType::_{0}_type(\"{0}\")",
+    return fmt::format("      InputPort<GoalType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
   };
   auto format_output_port = [](const XMLElement* node) {
-    return fmt::format("      OutputPort<FeedbackType::_{0}_type(\"{0}\")",
+    return fmt::format("      OutputPort<FeedbackType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
   };
   auto format_get_input = [](const XMLElement* node) {
@@ -216,12 +217,12 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const char*
 
 
   std::string fmt_string = 1 + R"(
-class %2%: public BT::EusActionNode<%1%::%2%Action>
+class %2%: public EusActionNode<%1%::%2%Action>
 {
 
 public:
-  %2%Action(ros::NodeHandle& handle, const std::string& name, const NodeConfiguration& conf):
-BT::EusActionNode<%1%::%2%Action>(handle, name, conf) {}
+  %2%(ros::NodeHandle& handle, const std::string& name, const NodeConfiguration& conf):
+EusActionNode<%1%::%2%Action>(handle, name, conf) {}
 
   static PortsList providedPorts()
   {
@@ -267,7 +268,7 @@ BT::EusActionNode<%1%::%2%Action>(handle, name, conf) {}
 
 std::string XMLParser::generate_condition_class(const XMLElement* node, const char* package_name) {
   auto format_input_port = [](const XMLElement* node) {
-    return fmt::format("      InputPort<RequestType::_{0}_type(\"{0}\")",
+    return fmt::format("      InputPort<RequestType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
   };
   auto format_get_input = [](const XMLElement* node) {
@@ -287,12 +288,12 @@ std::string XMLParser::generate_condition_class(const XMLElement* node, const ch
     }
 
   std::string fmt_string = 1 + R"(
-class %2%: public BT::EusConditionNode<%1%::%2%>
+class %2%: public EusConditionNode<%1%::%2%>
 {
 
 public:
   %2%(ros::NodeHandle& handle, const std::string& node_name, const NodeConfiguration& conf):
-  BT::EusConditionNode<%1%::%2%>(handle, node_name, conf) {}
+  EusConditionNode<%1%::%2%>(handle, node_name, conf) {}
 
   static PortsList providedPorts()
   {
@@ -337,7 +338,7 @@ std::string XMLParser::generate_main_function(const char* roscpp_node_name) {
     return fmt::format("  auto tree = factory.createTreeFromFile(\"{}\");", xml_filename);
   };
   auto format_action_node = [](const XMLElement* node) {
-    return fmt::format("  RegisterRosAction<{0}Action>(factory, \"{0}\", nh);",
+    return fmt::format("  RegisterRosAction<{0}>(factory, \"{0}\", nh);",
                        node->Attribute("ID"));
   };
   auto format_condition_node = [](const XMLElement* node) {
@@ -396,8 +397,8 @@ int main(int argc, char **argv)
   boost::format bfmt = boost::format(fmt_string) %
     format_ros_init(roscpp_node_name) %
     format_create_tree(xml_filename) %
-    boost::algorithm::join(register_actions, ",\n") %
-    boost::algorithm::join(register_conditions, ",\n");
+    boost::algorithm::join(register_actions, "\n") %
+    boost::algorithm::join(register_conditions, "\n");
 
   return bfmt.str();
 }
@@ -526,6 +527,7 @@ project(%1%)
 find_package(catkin REQUIRED COMPONENTS
   message_generation
   roscpp
+  behaviortree_ros
   roseus_bt
 %3%
 )
@@ -546,7 +548,7 @@ generate_messages(
 )
 
 catkin_package(
- INCLUDE_DIRS include
+ INCLUDE_DIRS
  LIBRARIES
  CATKIN_DEPENDS
  message_runtime
@@ -554,7 +556,7 @@ catkin_package(
 )
 
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(%2% src/%2%.cpp)
 add_dependencies(%2% ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -655,11 +657,13 @@ std::string XMLParser::generate_package_xml(const char* package_name, const char
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>behaviortree_ros</build_depend>
   <build_depend>roseus_bt</build_depend>
 %4%
 
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>roscpp</exec_depend>
+  <exec_depend>behaviortree_ros</exec_depend>
   <exec_depend>roseus_bt</exec_depend>
 %5%
 
