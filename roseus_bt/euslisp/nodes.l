@@ -21,6 +21,17 @@
        (send fn :name))
       (t nil))))
 
+(defun check-fn-closure (fn)
+  (when (and (consp fn)
+             (eql (car fn) 'lambda-closure)
+             (not (zerop (third fn))))
+    (let ((name (get-fn-sym fn)))
+      (ros::ros-warn
+       (format nil "Possibly harmful lambda-closure in #'~A! Try using '~A instead."
+               name
+               name)))))
+
+
 ;; macros
 (defmacro define-action-callback (name arg-list &rest body)
   (user::with-gensyms (server goal get-result)
@@ -73,7 +84,9 @@
          (concatenate-string 
           "Wrong function type detected! "
           "Make sure to define execution callbacks using the define-action-callback macro"))
-        (error type-error "action-node-callback function expected for execute-cb"))
+        (error "action-node-callback function expected for execute-cb"))
+      (check-fn-closure execute-cb)
+      (check-fn-closure preempt-cb)
 
       (send-super :init ns spec
               :execute-cb execute-cb
@@ -93,7 +106,7 @@
        (concatenate-string 
         "Wrong function type detected! "
         "Make sure to define execution callbacks using the define-condition-callback macro"))
-      (error type-error "condition-node-callback function expected for execute-cb"))
+      (error "condition-node-callback function expected for execute-cb"))
 
     (ros::advertise-service ns spec execute-cb)
     (push self *condition-list*)
