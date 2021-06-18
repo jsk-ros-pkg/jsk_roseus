@@ -19,7 +19,7 @@ class XMLParser
 
 public:
 
-  XMLParser(const char* filename) : xml_filename(filename) {
+  XMLParser(const char* filename) {
     doc.LoadFile(filename);
   }
 
@@ -28,21 +28,21 @@ public:
 protected:
 
   XMLDocument doc;
-  const char* xml_filename;
   std::string port_node_to_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
   std::string generate_headers(const char* package_name);
   std::string generate_action_class(const XMLElement* node, const char* package_name);
   std::string generate_condition_class(const XMLElement* node, const char* package_name);
-  std::string generate_main_function(const char* roscpp_node_name);
+  std::string generate_main_function(const char* roscpp_node_name, const char* xml_filename);
 
 public:
 
   std::map<std::string, std::string> generate_all_action_files();
   std::map<std::string, std::string> generate_all_service_files();
   std::string generate_cpp_file(const char* package_name,
-                                const char* roscpp_node_name);
+                                const char* roscpp_node_name,
+                                const char* xml_filename);
   std::string generate_cmake_lists(const char* package_name,
                                    const char* target_filename);
   std::string generate_package_xml(const char* package_name,
@@ -330,11 +330,12 @@ public:
   return bfmt.str();
 }
 
-std::string XMLParser::generate_main_function(const char* roscpp_node_name) {
-  auto format_ros_init = [](const char* roscpp_node_name) {
+std::string XMLParser::generate_main_function(const char* roscpp_node_name,
+                                              const char* xml_filename) {
+  auto format_ros_init = [roscpp_node_name]() {
     return fmt::format("  ros::init(argc, argv, \"{}\");", roscpp_node_name);
   };
-  auto format_create_tree = [](const char* xml_filename) {
+  auto format_create_tree = [xml_filename]() {
     return fmt::format("  auto tree = factory.createTreeFromFile(\"{}\");", xml_filename);
   };
   auto format_action_node = [](const XMLElement* node) {
@@ -395,8 +396,8 @@ int main(int argc, char **argv)
 )";
 
   boost::format bfmt = boost::format(fmt_string) %
-    format_ros_init(roscpp_node_name) %
-    format_create_tree(xml_filename) %
+    format_ros_init() %
+    format_create_tree() %
     boost::algorithm::join(register_actions, "\n") %
     boost::algorithm::join(register_conditions, "\n");
 
@@ -437,8 +438,8 @@ std::map<std::string, std::string> XMLParser::generate_all_service_files() {
 }
 
 std::string XMLParser::generate_cpp_file(const char* package_name,
-                                         const char* roscpp_node_name) {
-
+                                         const char* roscpp_node_name,
+                                         const char* xml_filename) {
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::string output;
   output.append(generate_headers(package_name));
@@ -460,7 +461,7 @@ std::string XMLParser::generate_cpp_file(const char* package_name,
       output.append("\n\n");
     }
 
-  output.append(generate_main_function(roscpp_node_name));
+  output.append(generate_main_function(roscpp_node_name, xml_filename));
 
   return output;
 }
