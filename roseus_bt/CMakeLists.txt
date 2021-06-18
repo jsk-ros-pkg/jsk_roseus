@@ -21,10 +21,6 @@ catkin_package(
 include_directories( include ${catkin_INCLUDE_DIRS} ${TinyXML2_INCUDE_DIRS})
 
 
-add_executable(test_parse src/test_parse.cpp)
-add_dependencies(test_parse ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_parse ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES} fmt::fmt)
-
 add_executable(create_bt_package src/create_bt_package.cpp)
 add_dependencies(create_bt_package ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(create_bt_package ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES} fmt::fmt)
