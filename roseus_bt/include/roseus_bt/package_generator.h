@@ -19,6 +19,7 @@ public:
                    const char* target_filename,
                    const char* author_name) :
     parser(xml_filename),
+    xml_filename(xml_filename),
     package_name(package_name),
     roscpp_node_name(roscpp_node_name),
     target_filename(target_filename),
@@ -29,11 +30,13 @@ public:
 private:
   XMLParser parser;
   const char* package_name;
+  std::string xml_filename;
   const char* roscpp_node_name;
   const char* target_filename;
   const char* author_name;
 
 public:
+  void copy_xml_file();
   void write_action_files();
   void write_service_files();
   void write_cpp_file();
@@ -42,6 +45,19 @@ public:
   void write_all_files();
 
 };
+
+void PackageGenerator::copy_xml_file() {
+  std::string base_dir = fmt::format("{}/models", package_name);
+  std::string dest_file = fmt::format("{}/{}",
+      base_dir,
+      boost::filesystem::path(xml_filename).filename().c_str());
+
+  boost::filesystem::create_directories(base_dir);
+  boost::filesystem::copy_file(xml_filename, dest_file,
+                               boost::filesystem::copy_option::overwrite_if_exists);
+
+  xml_filename = dest_file;
+}
 
 void PackageGenerator::write_action_files() {
   std::string base_dir = fmt::format("{}/action", package_name);
@@ -78,7 +94,9 @@ void PackageGenerator::write_cpp_file() {
   boost::filesystem::create_directories(base_dir);
 
   std::ofstream output_file(fmt::format("{}/{}.cpp", base_dir, target_filename));
-  output_file << parser.generate_cpp_file(package_name, roscpp_node_name);
+
+  output_file << parser.generate_cpp_file(package_name, roscpp_node_name,
+                                          boost::filesystem::absolute(xml_filename).c_str());
   output_file.close();
 }
 
@@ -101,6 +119,7 @@ void PackageGenerator::write_package_xml() {
 }
 
 void PackageGenerator::write_all_files() {
+  copy_xml_file();
   write_action_files();
   write_service_files();
   write_cpp_file();
