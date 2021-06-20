@@ -1,13 +1,8 @@
 #ifndef BEHAVIOR_TREE_ROSEUS_BT_XML_PARSER_
 #define BEHAVIOR_TREE_ROSEUS_BT_XML_PARSER_
 
-#include <map>
-#include <string>
-#include <vector>
 #include <tinyxml2.h>
-#include <fmt/format.h>
-#include <boost/format.hpp>
-#include <boost/algorithm/string/join.hpp>
+#include "gen_template.h"
 
 namespace RoseusBT
 {
@@ -19,7 +14,7 @@ class XMLParser
 
 public:
 
-  XMLParser(const char* filename) {
+  XMLParser(const char* filename) : gen_template() {
     doc.LoadFile(filename);
   }
 
@@ -28,6 +23,7 @@ public:
 protected:
 
   XMLDocument doc;
+  GenTemplate gen_template;
   void collect_node_attribute(const XMLElement* node, const XMLElement* ref_node,
                               const char* attribute, std::vector<std::string>* node_attributes);
   std::string port_node_to_message_description(const XMLElement* port_node);
@@ -110,14 +106,7 @@ std::string XMLParser::generate_action_file_contents(const XMLElement* node) {
       }
     }
 
-  std::string output;
-  output.append(boost::algorithm::join(goal, "\n"));
-  output.append("\n---\n");
-  output.append("bool success");
-  output.append("\n---\n");
-  output.append(boost::algorithm::join(feedback, "\n"));
-
-  return output;
+  return gen_template.action_file_template(goal, feedback);
 }
 
 std::string XMLParser::generate_service_file_contents(const XMLElement* node) {
@@ -138,12 +127,7 @@ std::string XMLParser::generate_service_file_contents(const XMLElement* node) {
       }
     }
 
-  std::string output;
-  output.append(boost::algorithm::join(request, "\n"));
-  output.append("\n---\n");
-  output.append("bool success");
-
-  return output;
+  return gen_template.service_file_template(request);
 }
 
 std::string XMLParser::generate_headers(const char* package_name) {
@@ -162,17 +146,6 @@ std::string XMLParser::generate_headers(const char* package_name) {
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::vector<std::string> headers;
 
-  std::string common_headers = 1 + R"(
-#include <ros/ros.h>
-
-#include <roseus_bt/eus_action_node.h>
-#include <roseus_bt/eus_condition_node.h>
-
-#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
-#include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
-
-)";
-
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
@@ -187,12 +160,7 @@ std::string XMLParser::generate_headers(const char* package_name) {
       headers.push_back(format_condition_node(condition_node, package_name));
     }
 
-  std::string output;
-  output.append(common_headers);
-  output.append(boost::algorithm::join(headers, "\n"));
-  output.append("\n\n");
-  output.append("using namespace BT;");
-  return output;
+  return gen_template.headers_template(headers);
 }
 
 std::string XMLParser::generate_action_class(const XMLElement* node, const char* package_name) {
@@ -243,54 +211,8 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const char*
                         provided_output_ports.end());
 
 
-  std::string fmt_string = 1 + R"(
-class %2%: public EusActionNode<%1%::%2%Action>
-{
-
-public:
-  %2%(ros::NodeHandle& handle, const std::string& name, const NodeConfiguration& conf):
-EusActionNode<%1%::%2%Action>(handle, name, conf) {}
-
-  static PortsList providedPorts()
-  {
-    return  {
-%3%
-    };
-  }
-
-  bool sendGoal(GoalType& goal) override
-  {
-%4%
-    return true;
-  }
-
-  void onFeedback( const typename FeedbackType::ConstPtr& feedback) override
-  {
-%5%
-    return;
-  }
-
-  NodeStatus onResult( const ResultType& result) override
-  {
-    if (result.success) return NodeStatus::SUCCESS;
-    return NodeStatus::FAILURE;
-  }
-
-  virtual NodeStatus onFailedRequest(FailureCause failure) override
-  {
-    return NodeStatus::FAILURE;
-  }
-
-};
-)";
-  boost::format bfmt = boost::format(fmt_string) %
-    package_name %
-    node->Attribute("ID") %
-    boost::algorithm::join(provided_ports, ",\n") %
-    boost::algorithm::join(get_inputs, "\n") %
-    boost::algorithm::join(set_outputs, "\n");
-
-  return bfmt.str();
+  return gen_template.action_class_template(package_name, node->Attribute("ID"),
+                                            provided_ports, get_inputs, set_outputs);
 }
 
 std::string XMLParser::generate_condition_class(const XMLElement* node, const char* package_name) {
@@ -314,57 +236,12 @@ std::string XMLParser::generate_condition_class(const XMLElement* node, const ch
       get_inputs.push_back(format_get_input(port_node));
     }
 
-  std::string fmt_string = 1 + R"(
-class %2%: public EusConditionNode<%1%::%2%>
-{
-
-public:
-  %2%(ros::NodeHandle& handle, const std::string& node_name, const NodeConfiguration& conf):
-  EusConditionNode<%1%::%2%>(handle, node_name, conf) {}
-
-  static PortsList providedPorts()
-  {
-    return  {
-%3%
-    };
-  }
-
-  void sendRequest(RequestType& request) override
-  {
-%4%
-  }
-
-  NodeStatus onResponse(const ResponseType& res) override
-  {
-    if (res.success) return NodeStatus::SUCCESS;
-    return NodeStatus::FAILURE;
-  }
-
-  virtual NodeStatus onFailedRequest(FailureCause failure) override
-  {
-    return NodeStatus::FAILURE;
-  }
-
-};
-)";
-
-  boost::format bfmt = boost::format(fmt_string) %
-    package_name %
-    node->Attribute("ID") %
-    boost::algorithm::join(provided_ports, ",\n") %
-    boost::algorithm::join(get_inputs, "\n");
-
-  return bfmt.str();
+  return gen_template.condition_class_template(package_name, node->Attribute("ID"),
+                                               provided_ports, get_inputs);
 }
 
 std::string XMLParser::generate_main_function(const char* roscpp_node_name,
                                               const char* xml_filename) {
-  auto format_ros_init = [roscpp_node_name]() {
-    return fmt::format("  ros::init(argc, argv, \"{}\");", roscpp_node_name);
-  };
-  auto format_create_tree = [xml_filename]() {
-    return fmt::format("  auto tree = factory.createTreeFromFile(\"{}\");", xml_filename);
-  };
   auto format_action_node = [](const XMLElement* node) {
     return fmt::format("  RegisterRosAction<{0}>(factory, \"{0}\", nh);",
                        node->Attribute("ID"));
@@ -392,43 +269,8 @@ std::string XMLParser::generate_main_function(const char* roscpp_node_name,
       register_conditions.push_back(format_condition_node(condition_node));
     }
 
-  std::string fmt_string = 1 + R"(
-int main(int argc, char **argv)
-{
-%1%
-  ros::NodeHandle nh;
-
-  BehaviorTreeFactory factory;
-
-%3%
-%4%
-
-%2%
-
-  StdCoutLogger logger_cout(tree);
-  PublisherZMQ publisher_zmq(tree);
-
-  NodeStatus status = NodeStatus::IDLE;
-
-  while( ros::ok() && (status == NodeStatus::IDLE || status == NodeStatus::RUNNING))
-  {
-    ros::spinOnce();
-    status = tree.tickRoot();
-    ros::Duration sleep_time(0.05);
-    sleep_time.sleep();
-  }
-
-  return 0;
-}
-)";
-
-  boost::format bfmt = boost::format(fmt_string) %
-    format_ros_init() %
-    format_create_tree() %
-    boost::algorithm::join(register_actions, "\n") %
-    boost::algorithm::join(register_conditions, "\n");
-
-  return bfmt.str();
+  return gen_template.main_function_template(roscpp_node_name, xml_filename,
+                                             register_actions, register_conditions);
 }
 
 std::string XMLParser::generate_eus_action_server(const char* package_name) {
@@ -474,9 +316,6 @@ std::string XMLParser::generate_eus_action_server(const char* package_name) {
   std::vector<std::string> callback_definition;
   std::vector<std::string> instance_creation;
 
-  callback_definition.push_back(std::string(";; define action callbacks"));
-  instance_creation.push_back(std::string(";; create server instances"));
-
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
@@ -505,19 +344,8 @@ std::string XMLParser::generate_eus_action_server(const char* package_name) {
       }
     }
 
- std::string output;
- output.append("(ros::roseus \"action_server\")\n");
- output.append(fmt::format("(ros::load-ros-package \"{}\")\n", package_name));
- output.append("(load \"package://roseus_bt/euslisp/nodes.l\")\n");
- output.append("\n\n");
- output.append(boost::algorithm::join(callback_definition, "\n"));
- output.append("\n\n");
- output.append(boost::algorithm::join(instance_creation, "\n"));
- output.append("\n\n");
- output.append(";; spin\n");
- output.append("(roseus_bt:spin)");
-
- return output;
+  return gen_template.eus_server_template("action", package_name,
+                                          callback_definition, instance_creation);
 }
 
 std::string XMLParser::generate_eus_condition_server(const char* package_name) {
@@ -562,9 +390,6 @@ std::string XMLParser::generate_eus_condition_server(const char* package_name) {
   std::vector<std::string> callback_definition;
   std::vector<std::string> instance_creation;
 
-  callback_definition.push_back(std::string(";; define condition callbacks"));
-  instance_creation.push_back(std::string(";; create server instances"));
-
   for (auto condition_node = root->FirstChildElement("Condition");
        condition_node != nullptr;
        condition_node = condition_node->NextSiblingElement("Condition"))
@@ -593,19 +418,8 @@ std::string XMLParser::generate_eus_condition_server(const char* package_name) {
       }
     }
 
- std::string output;
- output.append("(ros::roseus \"condition_server\")\n");
- output.append(fmt::format("(ros::load-ros-package \"{}\")\n", package_name));
- output.append("(load \"package://roseus_bt/euslisp/nodes.l\")\n");
- output.append("\n\n");
- output.append(boost::algorithm::join(callback_definition, "\n"));
- output.append("\n\n");
- output.append(boost::algorithm::join(instance_creation, "\n"));
- output.append("\n\n");
- output.append(";; spin\n");
- output.append("(roseus_bt:spin)");
-
- return output;
+  return gen_template.eus_server_template("condition", package_name,
+                                          callback_definition, instance_creation);
 }
 
 std::map<std::string, std::string> XMLParser::generate_all_action_files() {
@@ -724,57 +538,10 @@ std::string XMLParser::generate_cmake_lists(const char* package_name, const char
         }
     }
 
-  std::string fmt_string = 1+ R"(
-cmake_minimum_required(VERSION 3.0.2)
-project(%1%)
-
-find_package(catkin REQUIRED COMPONENTS
-  message_generation
-  roscpp
-  behaviortree_ros
-  roseus_bt
-%3%
-)
-
-add_service_files(
-  FILES
-%4%
-)
-
-add_action_files(
-  FILES
-%5%
-)
-
-generate_messages(
-  DEPENDENCIES
-%3%
-)
-
-catkin_package(
- INCLUDE_DIRS
- LIBRARIES
- CATKIN_DEPENDS
- message_runtime
-%3%
-)
-
-
-include_directories(${catkin_INCLUDE_DIRS})
-
-add_executable(%2% src/%2%.cpp)
-add_dependencies(%2% ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(%2% ${catkin_LIBRARIES})
-)";
-
-  boost::format bfmt = boost::format(fmt_string) %
-    package_name %
-    target_name %
-    boost::algorithm::join(message_packages, "\n") %
-    boost::algorithm::join(service_files, "\n") %
-    boost::algorithm::join(action_files, "\n");
-
-  return bfmt.str();
+  return gen_template.cmake_lists_template(package_name, target_name,
+                                           message_packages,
+                                           service_files,
+                                           action_files);
 }
 
 std::string XMLParser::generate_package_xml(const char* package_name, const char* author_name) {
@@ -795,11 +562,6 @@ std::string XMLParser::generate_package_xml(const char* package_name, const char
       }
     }
   };
-
-  std::string author_email(author_name);
-  std::transform(author_email.begin(), author_email.end(), author_email.begin(),
-                 [](unsigned char c){ return std::tolower(c); });
-  std::replace(author_email.begin(), author_email.end(), ' ', '_');
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::vector<std::string> message_packages;
@@ -829,61 +591,9 @@ std::string XMLParser::generate_package_xml(const char* package_name, const char
   std::transform(message_packages.begin(), message_packages.end(),
                  exec_dependencies.begin(), format_exec_depend);
 
-  std::string fmt_string = 1 + R"(
-<?xml version="1.0"?>
-<package format="2">
-  <name>%1%</name>
-  <version>0.0.0</version>
-  <description>The %1% package</description>
-
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
-  <maintainer email="%3%@example.com">%2%</maintainer>
-
-
-  <!-- One license tag required, multiple allowed, one license per tag -->
-  <!-- Commonly used license strings: -->
-  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
-
-
-  <!-- Url tags are optional, but multiple are allowed, one per tag -->
-  <!-- Optional attribute type can be: website, bugtracker, or repository -->
-  <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/%1%</url> -->
-
-
-  <!-- Author tags are optional, multiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintainers, but could be -->
-  <!-- Example: -->
-  <!-- <author email="%3%@example.com">%2%</author> -->
-
-
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>message_generation</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>behaviortree_ros</build_depend>
-  <build_depend>roseus_bt</build_depend>
-%4%
-
-  <exec_depend>message_runtime</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>behaviortree_ros</exec_depend>
-  <exec_depend>roseus_bt</exec_depend>
-%5%
-
-  <export>
-  </export>
-</package>
-)";
-
-  boost::format bfmt = boost::format(fmt_string) %
-    package_name %
-    author_name %
-    author_email %
-    boost::algorithm::join(build_dependencies, ",\n") %
-    boost::algorithm::join(exec_dependencies, ",\n");
-
-  return bfmt.str();
+  return gen_template.package_xml_template(package_name, author_name,
+                                           build_dependencies,
+                                           exec_dependencies);
 }
 
 }  // namespace RoseusBT
