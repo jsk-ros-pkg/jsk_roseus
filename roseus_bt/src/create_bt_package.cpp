@@ -16,7 +16,8 @@ int main(int argc, char** argv)
     ("executable,e", po::value<std::string>(&executable)->default_value("mynode"),
      "executable name")
     ("author,a", po::value<std::string>(&author)->default_value("The Author"),
-     "author name");
+     "author name")
+    ("overwrite,y", "overwrite all existing files");
 
   po::positional_options_description positional_arguments;
   positional_arguments.add("package_name", 1);
@@ -39,7 +40,8 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  RoseusBT::PackageGenerator pg(package_name, model_file, executable, author);
+  RoseusBT::PackageGenerator pg(package_name, model_file, executable, author,
+                                args.count("overwrite"));
   pg.write_all_files();
 
   return 0;
