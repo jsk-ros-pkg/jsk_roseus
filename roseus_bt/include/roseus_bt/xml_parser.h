@@ -376,7 +376,8 @@ std::string XMLParser::generate_eus_condition_server(std::string package_name) {
                                         std::string service_name) {
     std::string fmt_string = 1 + R"(
 (instance roseus_bt:condition-node :init
-          "{3}" {0}::{1} #'{1}-execute-cb{2})
+          "{3}" {0}::{1}
+          :execute-cb #'{1}-cb{2})
 )";
   return fmt::format(fmt_string,
                      package_name,
