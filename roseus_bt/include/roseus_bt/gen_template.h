@@ -262,13 +262,14 @@ std::string GenTemplate::eus_server_template(std::string server_type,
     return fmt::format("(ros::roseus \"{}_server\")", server_type);
   };
   auto format_load_ros_package = [package_name]() {
-    return fmt::format("(ros::load-ros-package \"{}\")\n", package_name);
+    return fmt::format("(ros::load-ros-package \"{}\")", package_name);
   };
 
   std::string fmt_string = 1 + R"(
 %2%
 %3%
 %4%
+
 
 ;; define %1% callbacks
 %5%
