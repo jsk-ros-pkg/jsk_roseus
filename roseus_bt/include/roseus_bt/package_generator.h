@@ -29,10 +29,10 @@ public:
 class PackageGenerator
 {
 public:
-  PackageGenerator(std::string package_name,
-                   std::string xml_filename,
-                   std::string target_filename,
-                   std::string author_name,
+  PackageGenerator(const std::string package_name,
+                   const std::string xml_filename,
+                   const std::string target_filename,
+                   const std::string author_name,
                    bool force_overwrite) :
     query(),
     parser(xml_filename),
@@ -67,8 +67,8 @@ public:
   void write_cmake_lists();
   void write_package_xml();
   void write_all_files();
-
 };
+
 
 bool Query::yn(const std::string message) {
   auto prompt = [message]() {
@@ -85,7 +85,7 @@ bool Query::yn(const std::string message) {
   throw std::logic_error("Invalid input");
 }
 
-bool PackageGenerator::overwrite(std::string filename) {
+bool PackageGenerator::overwrite(const std::string filename) {
   return force_overwrite || query.yn(fmt::format("Overwrite {}?", filename));
 }
 
