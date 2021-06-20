@@ -41,6 +41,7 @@ public:
   void write_service_files();
   void write_cpp_file();
   void write_eus_action_server();
+  void write_eus_condition_server();
   void write_cmake_lists();
   void write_package_xml();
   void write_all_files();
@@ -111,6 +112,16 @@ void PackageGenerator::write_eus_action_server() {
   output_file.close();
 }
 
+void PackageGenerator::write_eus_condition_server() {
+  std::string base_dir = fmt::format("{}/euslisp", package_name);
+  boost::filesystem::create_directories(base_dir);
+
+  std::ofstream output_file(fmt::format("{}/condition-server.l", base_dir));
+
+  output_file << parser.generate_eus_condition_server(package_name);
+  output_file.close();
+}
+
 void PackageGenerator::write_cmake_lists() {
   std::string base_dir = package_name;
   boost::filesystem::create_directories(base_dir);
@@ -135,6 +146,7 @@ void PackageGenerator::write_all_files() {
   write_service_files();
   write_cpp_file();
   write_eus_action_server();
+  write_eus_condition_server();
   write_cmake_lists();
   write_package_xml();
 }
