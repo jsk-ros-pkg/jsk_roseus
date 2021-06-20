@@ -14,8 +14,8 @@ class XMLParser
 
 public:
 
-  XMLParser(const char* filename) : gen_template() {
-    doc.LoadFile(filename);
+  XMLParser(std::string filename) : gen_template() {
+    doc.LoadFile(filename.c_str());
   }
 
   ~XMLParser() {};
@@ -29,24 +29,24 @@ protected:
   std::string port_node_to_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
-  std::string generate_headers(const char* package_name);
-  std::string generate_action_class(const XMLElement* node, const char* package_name);
-  std::string generate_condition_class(const XMLElement* node, const char* package_name);
-  std::string generate_main_function(const char* roscpp_node_name, const char* xml_filename);
+  std::string generate_headers(std::string package_name);
+  std::string generate_action_class(const XMLElement* node, std::string package_name);
+  std::string generate_condition_class(const XMLElement* node, std::string package_name);
+  std::string generate_main_function(std::string roscpp_node_name, std::string xml_filename);
 
 public:
 
   std::map<std::string, std::string> generate_all_action_files();
   std::map<std::string, std::string> generate_all_service_files();
-  std::string generate_cpp_file(const char* package_name,
-                                const char* roscpp_node_name,
-                                const char* xml_filename);
-  std::string generate_eus_action_server(const char* action_name);
-  std::string generate_eus_condition_server(const char* action_name);
-  std::string generate_cmake_lists(const char* package_name,
-                                   const char* target_filename);
-  std::string generate_package_xml(const char* package_name,
-                                   const char* author_name);
+  std::string generate_cpp_file(std::string package_name,
+                                std::string roscpp_node_name,
+                                std::string xml_filename);
+  std::string generate_eus_action_server(std::string action_name);
+  std::string generate_eus_condition_server(std::string action_name);
+  std::string generate_cmake_lists(std::string package_name,
+                                   std::string target_filename);
+  std::string generate_package_xml(std::string package_name,
+                                   std::string author_name);
 
 };
 
@@ -130,14 +130,14 @@ std::string XMLParser::generate_service_file_contents(const XMLElement* node) {
   return gen_template.service_file_template(request);
 }
 
-std::string XMLParser::generate_headers(const char* package_name) {
-  auto format_action_node = [](const XMLElement* node, const char* package_name) {
+std::string XMLParser::generate_headers(std::string package_name) {
+  auto format_action_node = [](const XMLElement* node, std::string package_name) {
     return fmt::format("#include <{}/{}Action.h>",
                        package_name,
                        node->Attribute("ID"));
   };
 
-  auto format_condition_node = [](const XMLElement* node, const char* package_name) {
+  auto format_condition_node = [](const XMLElement* node, std::string package_name) {
     return fmt::format("#include <{}/{}.h>",
                        package_name,
                        node->Attribute("ID"));
@@ -163,7 +163,7 @@ std::string XMLParser::generate_headers(const char* package_name) {
   return gen_template.headers_template(headers);
 }
 
-std::string XMLParser::generate_action_class(const XMLElement* node, const char* package_name) {
+std::string XMLParser::generate_action_class(const XMLElement* node, std::string package_name) {
   auto format_input_port = [](const XMLElement* node) {
     return fmt::format("      InputPort<GoalType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
@@ -215,7 +215,7 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const char*
                                             provided_ports, get_inputs, set_outputs);
 }
 
-std::string XMLParser::generate_condition_class(const XMLElement* node, const char* package_name) {
+std::string XMLParser::generate_condition_class(const XMLElement* node, std::string package_name) {
   auto format_input_port = [](const XMLElement* node) {
     return fmt::format("      InputPort<RequestType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
@@ -240,8 +240,8 @@ std::string XMLParser::generate_condition_class(const XMLElement* node, const ch
                                                provided_ports, get_inputs);
 }
 
-std::string XMLParser::generate_main_function(const char* roscpp_node_name,
-                                              const char* xml_filename) {
+std::string XMLParser::generate_main_function(std::string roscpp_node_name,
+                                              std::string xml_filename) {
   auto format_action_node = [](const XMLElement* node) {
     return fmt::format("  RegisterRosAction<{0}>(factory, \"{0}\", nh);",
                        node->Attribute("ID"));
@@ -273,8 +273,8 @@ std::string XMLParser::generate_main_function(const char* roscpp_node_name,
                                              register_actions, register_conditions);
 }
 
-std::string XMLParser::generate_eus_action_server(const char* package_name) {
-  auto format_callback = [](const XMLElement* node, const char* suffix) {
+std::string XMLParser::generate_eus_action_server(std::string package_name) {
+  auto format_callback = [](const XMLElement* node, std::string suffix) {
     std::string fmt_string = 1 + R"(
 (roseus_bt:define-action-callback {0}-execute-cb{1} ({2})
   ;; do something
@@ -297,7 +297,7 @@ std::string XMLParser::generate_eus_action_server(const char* package_name) {
                        boost::algorithm::join(param_list, " "));
   };
 
-  auto format_instance = [package_name](const XMLElement* node, const char* suffix,
+  auto format_instance = [package_name](const XMLElement* node, std::string suffix,
                                         std::string server_name) {
     std::string fmt_string = 1 + R"(
 (instance roseus_bt:action-node :init
@@ -331,15 +331,15 @@ std::string XMLParser::generate_eus_action_server(const char* package_name) {
       else if (server_names.size() == 1) {
         callback_definition.push_back(format_callback(action_node, ""));
         instance_creation.push_back(format_instance(action_node, "",
-                                                    server_names.at(0).c_str()));
+                                                    server_names.at(0)));
       }
       else {
         int suffix_num = 1;
         for (std::vector<std::string>::const_iterator it = server_names.begin();
              it != server_names.end(); ++it, suffix_num++) {
             std::string suffix = fmt::format("-{}", suffix_num);
-            callback_definition.push_back(format_callback(action_node, suffix.c_str()));
-            instance_creation.push_back(format_instance(action_node, suffix.c_str(), *it));
+            callback_definition.push_back(format_callback(action_node, suffix));
+            instance_creation.push_back(format_instance(action_node, suffix, *it));
         }
       }
     }
@@ -348,8 +348,8 @@ std::string XMLParser::generate_eus_action_server(const char* package_name) {
                                           callback_definition, instance_creation);
 }
 
-std::string XMLParser::generate_eus_condition_server(const char* package_name) {
-  auto format_callback = [](const XMLElement* node, const char* suffix) {
+std::string XMLParser::generate_eus_condition_server(std::string package_name) {
+  auto format_callback = [](const XMLElement* node, std::string suffix) {
     std::string fmt_string = 1 + R"(
 (roseus_bt:define-condition-callback {0}-cb{1} ({2})
   ;; do something
@@ -372,7 +372,7 @@ std::string XMLParser::generate_eus_condition_server(const char* package_name) {
                        boost::algorithm::join(param_list, " "));
   };
 
-  auto format_instance = [package_name](const XMLElement* node, const char* suffix,
+  auto format_instance = [package_name](const XMLElement* node, std::string suffix,
                                         std::string service_name) {
     std::string fmt_string = 1 + R"(
 (instance roseus_bt:condition-node :init
@@ -405,15 +405,15 @@ std::string XMLParser::generate_eus_condition_server(const char* package_name) {
       else if (server_names.size() == 1) {
         callback_definition.push_back(format_callback(condition_node, ""));
         instance_creation.push_back(format_instance(condition_node, "",
-                                                    server_names.at(0).c_str()));
+                                                    server_names.at(0)));
       }
       else {
         int suffix_num = 1;
         for (std::vector<std::string>::const_iterator it = server_names.begin();
              it != server_names.end(); ++it, suffix_num++) {
             std::string suffix = fmt::format("-{}", suffix_num);
-            callback_definition.push_back(format_callback(condition_node, suffix.c_str()));
-            instance_creation.push_back(format_instance(condition_node, suffix.c_str(), *it));
+            callback_definition.push_back(format_callback(condition_node, suffix));
+            instance_creation.push_back(format_instance(condition_node, suffix, *it));
         }
       }
     }
@@ -454,9 +454,9 @@ std::map<std::string, std::string> XMLParser::generate_all_service_files() {
   return result;
 }
 
-std::string XMLParser::generate_cpp_file(const char* package_name,
-                                         const char* roscpp_node_name,
-                                         const char* xml_filename) {
+std::string XMLParser::generate_cpp_file(std::string package_name,
+                                         std::string roscpp_node_name,
+                                         std::string xml_filename) {
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::string output;
   output.append(generate_headers(package_name));
@@ -483,8 +483,8 @@ std::string XMLParser::generate_cpp_file(const char* package_name,
   return output;
 }
 
-std::string XMLParser::generate_cmake_lists(const char* package_name, const char* target_name) {
-  auto format_pkg = [](const char* pkg) {
+std::string XMLParser::generate_cmake_lists(std::string package_name, std::string target_name) {
+  auto format_pkg = [](std::string pkg) {
     return fmt::format("  {}", pkg);
   };
   auto format_action_file = [](const XMLElement* node) {
@@ -497,7 +497,7 @@ std::string XMLParser::generate_cmake_lists(const char* package_name, const char
     std::string msg_type = node->Attribute("type");
     std::size_t pos = msg_type.find('/');
     if (pos != std::string::npos) {
-      std::string pkg = format_pkg(msg_type.substr(0, pos).c_str());
+      std::string pkg = format_pkg(msg_type.substr(0, pos));
       if (std::find(message_packages->begin(), message_packages->end(), pkg) ==
           message_packages->end()) {
         message_packages->push_back(pkg);
@@ -544,7 +544,7 @@ std::string XMLParser::generate_cmake_lists(const char* package_name, const char
                                            action_files);
 }
 
-std::string XMLParser::generate_package_xml(const char* package_name, const char* author_name) {
+std::string XMLParser::generate_package_xml(std::string package_name, std::string author_name) {
   auto format_build_depend = [](std::string pkg) {
     return fmt::format("  <build_depend>{}</build_depend>", pkg);
   };
