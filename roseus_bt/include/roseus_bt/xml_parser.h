@@ -28,6 +28,8 @@ public:
 protected:
 
   XMLDocument doc;
+  void collect_node_attribute(const XMLElement* node, const XMLElement* ref_node,
+                              const char* attribute, std::vector<std::string>* node_attributes);
   std::string port_node_to_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
@@ -43,6 +45,7 @@ public:
   std::string generate_cpp_file(const char* package_name,
                                 const char* roscpp_node_name,
                                 const char* xml_filename);
+  std::string generate_eus_action_server(const char* action_name);
   std::string generate_cmake_lists(const char* package_name,
                                    const char* target_filename);
   std::string generate_package_xml(const char* package_name,
@@ -50,6 +53,29 @@ public:
 
 };
 
+
+void XMLParser::collect_node_attribute(const XMLElement* node,
+                                       const XMLElement* ref_node,
+                                       const char* attribute,
+                                       std::vector<std::string>* node_attributes) {
+
+  if (!std::strcmp(node->Name(), ref_node->Name()) &&
+      !std::strcmp(node->Attribute("ID"), ref_node->Attribute("ID"))) {
+    if (node->Attribute(attribute) &&
+        std::find(node_attributes->begin(), node_attributes->end(),
+                  node->Attribute(attribute)) == node_attributes->end()) {
+      node_attributes->push_back(node->Attribute(attribute));
+    }
+    return;
+  }
+
+  for (auto child_node = node->FirstChildElement();
+       child_node != nullptr;
+       child_node = child_node->NextSiblingElement())
+    {
+      collect_node_attribute(child_node, ref_node, attribute, node_attributes);
+    }
+}
 
 std::string XMLParser::port_node_to_message_description(const XMLElement* port_node) {
   if (!port_node->Attribute("type") ||
@@ -404,6 +430,94 @@ int main(int argc, char **argv)
   return bfmt.str();
 }
 
+std::string XMLParser::generate_eus_action_server(const char* package_name) {
+  auto format_callback = [](const XMLElement* node, const char* suffix) {
+    std::string fmt_string = 1 + R"(
+(roseus_bt:define-action-callback {0}-execute-cb{1} ({2})
+  ;; do something
+  t)
+)";
+    std::vector<std::string> param_list;
+    for (auto port_node = node->FirstChildElement();
+         port_node != nullptr;
+         port_node = port_node->NextSiblingElement())
+      {
+        std::string name = port_node->Name();
+        if (name == "input_port" || name == "inout_port") {
+          param_list.push_back(port_node->Attribute("name"));
+        }
+      }
+
+    return fmt::format(fmt_string,
+                       node->Attribute("ID"),
+                       suffix,
+                       boost::algorithm::join(param_list, " "));
+  };
+
+  auto format_instance = [package_name](const XMLElement* node, const char* suffix,
+                                        std::string server_name) {
+    std::string fmt_string = 1 + R"(
+(instance roseus_bt:action-node :init
+          "{3}" {0}::{1}Action
+          :execute-cb '{1}-execute-cb{2})
+)";
+  return fmt::format(fmt_string,
+                     package_name,
+                     node->Attribute("ID"),
+                     suffix,
+                     server_name);
+  };
+
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
+  std::vector<std::string> callback_definition;
+  std::vector<std::string> instance_creation;
+
+  callback_definition.push_back(std::string(";; define action callbacks"));
+  instance_creation.push_back(std::string(";; create server instances"));
+
+  for (auto action_node = root->FirstChildElement("Action");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("Action"))
+    {
+      std::vector<std::string> server_names;
+      collect_node_attribute(bt_root, action_node, "server_name", &server_names);
+
+      if (server_names.empty()) {
+        callback_definition.push_back(format_callback(action_node, ""));
+        instance_creation.push_back(format_instance(action_node, "",
+                                                    action_node->Attribute("ID")));
+      }
+      else if (server_names.size() == 1) {
+        callback_definition.push_back(format_callback(action_node, ""));
+        instance_creation.push_back(format_instance(action_node, "",
+                                                    server_names.at(0).c_str()));
+      }
+      else {
+        int suffix_num = 1;
+        for (std::vector<std::string>::const_iterator it = server_names.begin();
+             it != server_names.end(); ++it, suffix_num++) {
+            std::string suffix = fmt::format("-{}", suffix_num);
+            callback_definition.push_back(format_callback(action_node, suffix.c_str()));
+            instance_creation.push_back(format_instance(action_node, suffix.c_str(), *it));
+        }
+      }
+    }
+
+ std::string output;
+ output.append("(ros::roseus \"action_server\")\n");
+ output.append(fmt::format("(ros::load-ros-package \"{}\")\n", package_name));
+ output.append("(load \"package://roseus_bt/euslisp/nodes.l\")\n");
+ output.append("\n\n");
+ output.append(boost::algorithm::join(callback_definition, "\n"));
+ output.append("\n\n");
+ output.append(boost::algorithm::join(instance_creation, "\n"));
+ output.append("\n\n");
+ output.append(";; spin\n");
+ output.append("(roseus_bt:spin)");
+
+ return output;
+}
 
 std::map<std::string, std::string> XMLParser::generate_all_action_files() {
   auto format_filename = [](const XMLElement* node) {
