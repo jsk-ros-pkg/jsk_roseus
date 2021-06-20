@@ -4,7 +4,8 @@
 (in-package "ROSEUS_BT")
 
 (export '(define-action-callback define-condition-callback
-          action-node condition-node spin-once set-output ok))
+          action-node condition-node spin-once spin
+          set-output ok))
 
 (defvar *action-list*)
 (defvar *condition-list*)
@@ -120,6 +121,11 @@
   (ros::spin-once)
   (dolist (ac *action-list*)
     (send ac :worker)))
+
+(defun spin ()
+  (while t
+    (spin-once)
+    (ros::sleep)))
 
 (defun set-output (name val)
   (error "not defined in global scope"))
