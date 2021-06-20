@@ -277,7 +277,7 @@ std::string GenTemplate::eus_server_template(std::string server_type,
 %6%
 
 ;; spin
-(roseus_bt::spin)
+(roseus_bt:spin)
 )";
   
   boost::format bfmt = boost::format(fmt_string) %
