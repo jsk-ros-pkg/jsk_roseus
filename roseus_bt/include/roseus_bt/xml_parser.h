@@ -46,6 +46,7 @@ public:
                                 const char* roscpp_node_name,
                                 const char* xml_filename);
   std::string generate_eus_action_server(const char* action_name);
+  std::string generate_eus_condition_server(const char* action_name);
   std::string generate_cmake_lists(const char* package_name,
                                    const char* target_filename);
   std::string generate_package_xml(const char* package_name,
@@ -506,6 +507,94 @@ std::string XMLParser::generate_eus_action_server(const char* package_name) {
 
  std::string output;
  output.append("(ros::roseus \"action_server\")\n");
+ output.append(fmt::format("(ros::load-ros-package \"{}\")\n", package_name));
+ output.append("(load \"package://roseus_bt/euslisp/nodes.l\")\n");
+ output.append("\n\n");
+ output.append(boost::algorithm::join(callback_definition, "\n"));
+ output.append("\n\n");
+ output.append(boost::algorithm::join(instance_creation, "\n"));
+ output.append("\n\n");
+ output.append(";; spin\n");
+ output.append("(roseus_bt:spin)");
+
+ return output;
+}
+
+std::string XMLParser::generate_eus_condition_server(const char* package_name) {
+  auto format_callback = [](const XMLElement* node, const char* suffix) {
+    std::string fmt_string = 1 + R"(
+(roseus_bt:define-condition-callback {0}-cb{1} ({2})
+  ;; do something
+  t)
+)";
+    std::vector<std::string> param_list;
+    for (auto port_node = node->FirstChildElement();
+         port_node != nullptr;
+         port_node = port_node->NextSiblingElement())
+      {
+        std::string name = port_node->Name();
+        if (name == "input_port" || name == "inout_port") {
+          param_list.push_back(port_node->Attribute("name"));
+        }
+      }
+
+    return fmt::format(fmt_string,
+                       node->Attribute("ID"),
+                       suffix,
+                       boost::algorithm::join(param_list, " "));
+  };
+
+  auto format_instance = [package_name](const XMLElement* node, const char* suffix,
+                                        std::string service_name) {
+    std::string fmt_string = 1 + R"(
+(instance roseus_bt:condition-node :init
+          "{3}" {0}::{1} #'{1}-execute-cb{2})
+)";
+  return fmt::format(fmt_string,
+                     package_name,
+                     node->Attribute("ID"),
+                     suffix,
+                     service_name);
+  };
+
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
+  std::vector<std::string> callback_definition;
+  std::vector<std::string> instance_creation;
+
+  callback_definition.push_back(std::string(";; define condition callbacks"));
+  instance_creation.push_back(std::string(";; create server instances"));
+
+  for (auto condition_node = root->FirstChildElement("Condition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("Condition"))
+    {
+      std::vector<std::string> server_names;
+      collect_node_attribute(bt_root, condition_node, "service_name", &server_names);
+
+      if (server_names.empty()) {
+        callback_definition.push_back(format_callback(condition_node, ""));
+        instance_creation.push_back(format_instance(condition_node, "",
+                                                    condition_node->Attribute("ID")));
+      }
+      else if (server_names.size() == 1) {
+        callback_definition.push_back(format_callback(condition_node, ""));
+        instance_creation.push_back(format_instance(condition_node, "",
+                                                    server_names.at(0).c_str()));
+      }
+      else {
+        int suffix_num = 1;
+        for (std::vector<std::string>::const_iterator it = server_names.begin();
+             it != server_names.end(); ++it, suffix_num++) {
+            std::string suffix = fmt::format("-{}", suffix_num);
+            callback_definition.push_back(format_callback(condition_node, suffix.c_str()));
+            instance_creation.push_back(format_instance(condition_node, suffix.c_str(), *it));
+        }
+      }
+    }
+
+ std::string output;
+ output.append("(ros::roseus \"condition_server\")\n");
  output.append(fmt::format("(ros::load-ros-package \"{}\")\n", package_name));
  output.append("(load \"package://roseus_bt/euslisp/nodes.l\")\n");
  output.append("\n\n");
