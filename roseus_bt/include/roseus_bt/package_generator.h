@@ -13,15 +13,13 @@ namespace RoseusBT
 class PackageGenerator
 {
 public:
-  PackageGenerator(const char* package_name,
-                   const char* xml_filename,
-                   const char* roscpp_node_name,
-                   const char* target_filename,
-                   const char* author_name) :
+  PackageGenerator(std::string package_name,
+                   std::string xml_filename,
+                   std::string target_filename,
+                   std::string author_name) :
     parser(xml_filename),
     xml_filename(xml_filename),
     package_name(package_name),
-    roscpp_node_name(roscpp_node_name),
     target_filename(target_filename),
     author_name(author_name) {};
 
@@ -29,11 +27,10 @@ public:
 
 private:
   XMLParser parser;
-  const char* package_name;
+  std::string package_name;
   std::string xml_filename;
-  const char* roscpp_node_name;
-  const char* target_filename;
-  const char* author_name;
+  std::string target_filename;
+  std::string author_name;
 
 public:
   void copy_xml_file();
@@ -95,6 +92,7 @@ void PackageGenerator::write_cpp_file() {
   std::string base_dir = fmt::format("{}/src", package_name);
   boost::filesystem::create_directories(base_dir);
 
+  std::string roscpp_node_name = fmt::format("{}_engine", target_filename);
   std::ofstream output_file(fmt::format("{}/{}.cpp", base_dir, target_filename));
 
   output_file << parser.generate_cpp_file(package_name, roscpp_node_name,
