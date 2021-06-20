@@ -1,7 +1,9 @@
 #include <map>
 #include <string>
+#include <regex>
 #include <vector>
 #include <fstream>
+#include <iostream>
 #include <fmt/format.h>
 #include <boost/filesystem.hpp>
 #include <roseus_bt/xml_parser.h>
@@ -10,27 +12,50 @@
 namespace RoseusBT
 {
 
+class Query
+{
+private:
+  const std::regex yes, no;
+public:
+  Query() :
+    yes("y|yes", std::regex::icase | std::regex::optimize),
+    no("n|no", std::regex::icase | std::regex::optimize)
+  {};
+  ~Query() {};
+
+  bool yn(const std::string message);
+};
+
 class PackageGenerator
 {
 public:
   PackageGenerator(std::string package_name,
                    std::string xml_filename,
                    std::string target_filename,
-                   std::string author_name) :
+                   std::string author_name,
+                   bool force_overwrite) :
+    query(),
     parser(xml_filename),
     xml_filename(xml_filename),
     package_name(package_name),
     target_filename(target_filename),
-    author_name(author_name) {};
+    author_name(author_name),
+    force_overwrite(force_overwrite)
+  {};
 
   ~PackageGenerator() {};
 
 private:
+  Query query;
   XMLParser parser;
   std::string package_name;
   std::string xml_filename;
   std::string target_filename;
   std::string author_name;
+  bool force_overwrite;
+
+protected:
+  bool overwrite(const std::string filename);
 
 public:
   void copy_xml_file();
@@ -45,16 +70,37 @@ public:
 
 };
 
+bool Query::yn(const std::string message) {
+  auto prompt = [message]() {
+    std::cout << message << " [Y/n] ";
+  };
+
+  std::string answer;
+
+  while(prompt(), std::cin >> answer) {
+    if (std::regex_match(answer, yes)) return true;
+    if (std::regex_match(answer, no)) return false;
+  }
+
+  throw std::logic_error("Invalid input");
+}
+
+bool PackageGenerator::overwrite(std::string filename) {
+  return force_overwrite || query.yn(fmt::format("Overwrite {}?", filename));
+}
+
 void PackageGenerator::copy_xml_file() {
   std::string base_dir = fmt::format("{}/models", package_name);
   std::string dest_file = fmt::format("{}/{}",
       base_dir,
       boost::filesystem::path(xml_filename).filename().c_str());
 
+  if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
+    return;
+
   boost::filesystem::create_directories(base_dir);
   boost::filesystem::copy_file(xml_filename, dest_file,
                                boost::filesystem::copy_option::overwrite_if_exists);
-
   xml_filename = dest_file;
 }
 
@@ -93,8 +139,12 @@ void PackageGenerator::write_cpp_file() {
   boost::filesystem::create_directories(base_dir);
 
   std::string roscpp_node_name = fmt::format("{}_engine", target_filename);
-  std::ofstream output_file(fmt::format("{}/{}.cpp", base_dir, target_filename));
+  std::string dest_file = fmt::format("{}/{}.cpp", base_dir, target_filename);
 
+  if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
+    return;
+
+  std::ofstream output_file(dest_file);
   output_file << parser.generate_cpp_file(package_name, roscpp_node_name,
                                           boost::filesystem::absolute(xml_filename).c_str());
   output_file.close();
@@ -104,8 +154,11 @@ void PackageGenerator::write_eus_action_server() {
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
-  std::ofstream output_file(fmt::format("{}/action-server.l", base_dir));
+  std::string dest_file = fmt::format("{}/action-server.l", base_dir);
+  if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
+    return;
 
+  std::ofstream output_file(dest_file);
   output_file << parser.generate_eus_action_server(package_name);
   output_file.close();
 }
@@ -114,8 +167,11 @@ void PackageGenerator::write_eus_condition_server() {
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
-  std::ofstream output_file(fmt::format("{}/condition-server.l", base_dir));
+  std::string dest_file = fmt::format("{}/condition-server.l", base_dir);
+  if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
+    return;
 
+  std::ofstream output_file(dest_file);
   output_file << parser.generate_eus_condition_server(package_name);
   output_file.close();
 }
@@ -124,7 +180,11 @@ void PackageGenerator::write_cmake_lists() {
   std::string base_dir = package_name;
   boost::filesystem::create_directories(base_dir);
 
-  std::ofstream output_file(fmt::format("{}/CMakeLists.txt", base_dir));
+  std::string dest_file = fmt::format("{}/CMakeLists.txt", base_dir);
+  if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
+    return;
+
+  std::ofstream output_file(dest_file);
   output_file << parser.generate_cmake_lists(package_name, target_filename);
   output_file.close();
 }
@@ -133,7 +193,11 @@ void PackageGenerator::write_package_xml() {
   std::string base_dir = package_name;
   boost::filesystem::create_directories(base_dir);
 
-  std::ofstream output_file(fmt::format("{}/package.xml", base_dir));
+  std::string dest_file = fmt::format("{}/package.xml", base_dir);
+  if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
+    return;
+
+  std::ofstream output_file(dest_file);
   output_file << parser.generate_package_xml(package_name, author_name);
   output_file.close();
 }
