@@ -32,6 +32,7 @@ protected:
   std::string generate_headers(const std::string package_name);
   std::string generate_action_class(const XMLElement* node, const std::string package_name);
   std::string generate_condition_class(const XMLElement* node, const std::string package_name);
+  std::string generate_subscriber_class(const XMLElement* node);
   std::string generate_main_function(const std::string roscpp_node_name, const std::string xml_filename);
 
 public:
@@ -143,6 +144,10 @@ std::string XMLParser::generate_headers(const std::string package_name) {
                        node->Attribute("ID"));
   };
 
+  auto format_subscriber_node = [](const XMLElement* node) {
+    return fmt::format("#include <{}.h>", node->Attribute("type"));
+  };
+
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::vector<std::string> headers;
 
@@ -158,6 +163,13 @@ std::string XMLParser::generate_headers(const std::string package_name) {
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
       headers.push_back(format_condition_node(condition_node, package_name));
+    }
+
+  for (auto subscriber_node = root->FirstChildElement("Subscriber");
+       subscriber_node != nullptr;
+       subscriber_node = subscriber_node->NextSiblingElement("Subscriber"))
+    {
+      headers.push_back(format_subscriber_node(subscriber_node));
     }
 
   return gen_template.headers_template(headers);
@@ -240,6 +252,26 @@ std::string XMLParser::generate_condition_class(const XMLElement* node, const st
                                                provided_ports, get_inputs);
 }
 
+std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
+  auto format_type = [](const XMLElement* node) {
+    std::string type = node->Attribute("type");
+    std::size_t pos = type.find('/');
+    if (pos == std::string::npos) {
+      throw std::logic_error(fmt::format("Invalid topic type in: {}", type));
+    }
+    return fmt::format("{}::{}", type.substr(0, pos), type.substr(1+pos));
+  };
+  auto format_field = [](const XMLElement* node) {
+    if (!node->Attribute("field")) return "";
+    return node->Attribute("field");
+  };
+
+  return gen_template.subscriber_class_template(node->Attribute("ID"),
+                                                format_type(node),
+                                                format_field(node));
+}
+
+
 std::string XMLParser::generate_main_function(const std::string roscpp_node_name,
                                               const std::string xml_filename) {
   auto format_action_node = [](const XMLElement* node) {
@@ -250,10 +282,15 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
     return fmt::format("  RegisterRosService<{0}>(factory, \"{0}\", nh);",
                        node->Attribute("ID"));
   };
+  auto format_subscriber_node = [](const XMLElement* node) {
+    return fmt::format("  RegisterSubscriberNode<{0}>(factory, \"{0}\", nh);",
+                       node->Attribute("ID"));
+  };
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::vector<std::string> register_actions;
   std::vector<std::string> register_conditions;
+  std::vector<std::string> register_subscribers;
 
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
@@ -269,8 +306,17 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
       register_conditions.push_back(format_condition_node(condition_node));
     }
 
+  for (auto subscriber_node = root->FirstChildElement("Subscriber");
+       subscriber_node != nullptr;
+       subscriber_node = subscriber_node->NextSiblingElement("Subscriber"))
+    {
+      register_subscribers.push_back(format_subscriber_node(subscriber_node));
+    }
+
   return gen_template.main_function_template(roscpp_node_name, xml_filename,
-                                             register_actions, register_conditions);
+                                             register_actions,
+                                             register_conditions,
+                                             register_subscribers);
 }
 
 std::string XMLParser::generate_eus_action_server(const std::string package_name) {
@@ -479,6 +525,14 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
       output.append("\n\n");
     }
 
+  for (auto subscriber_node = root->FirstChildElement("Subscriber");
+       subscriber_node != nullptr;
+       subscriber_node = subscriber_node->NextSiblingElement("Subscriber"))
+    {
+      output.append(generate_subscriber_class(subscriber_node));
+      output.append("\n\n");
+    }
+
   output.append(generate_main_function(roscpp_node_name, xml_filename));
 
   return output;
@@ -514,6 +568,7 @@ std::string XMLParser::generate_cmake_lists(const std::string package_name,
 
   message_packages.push_back(format_pkg("std_msgs"));
   message_packages.push_back(format_pkg("actionlib_msgs"));
+
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
@@ -538,6 +593,13 @@ std::string XMLParser::generate_cmake_lists(const std::string package_name,
         {
           maybe_push_message_package(port_node, &message_packages);
         }
+    }
+
+  for (auto subscriber_node = root->FirstChildElement("Subscriber");
+       subscriber_node != nullptr;
+       subscriber_node = subscriber_node->NextSiblingElement("Subscriber"))
+    {
+      maybe_push_message_package(subscriber_node, &message_packages);
     }
 
   return gen_template.cmake_lists_template(package_name, target_name,

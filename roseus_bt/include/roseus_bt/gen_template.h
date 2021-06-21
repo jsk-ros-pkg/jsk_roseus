@@ -29,10 +29,13 @@ public:
   std::string  condition_class_template(std::string package_name, std::string nodeID,
                                         std::vector<std::string> provided_ports,
                                         std::vector<std::string> get_inputs);
+  std::string subscriber_class_template(std::string nodeID, std::string message_type,
+                                          std::string message_field);
   std::string main_function_template(std::string roscpp_node_name,
                                        std::string xml_filename,
                                        std::vector<std::string> register_actions,
-                                       std::vector<std::string> register_conditions);
+                                       std::vector<std::string> register_conditions,
+                                       std::vector<std::string> register_subscribers);
   std::string eus_server_template(std::string server_type,
                                     std::string package_name,
                                     std::vector<std::string> callbacks,
@@ -86,6 +89,7 @@ std::string GenTemplate::headers_template(std::vector<std::string> headers) {
 
 #include <roseus_bt/eus_action_node.h>
 #include <roseus_bt/eus_condition_node.h>
+#include <roseus_bt/eus_subscriber_node.h>
 
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
 #include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
@@ -203,10 +207,44 @@ public:
 }
 
 
+std::string GenTemplate::subscriber_class_template(std::string nodeID, std::string message_type,
+                                                   std::string message_field) {
+  if (!message_field.empty()) {
+    std::string fmt_string = R"(
+  virtual void callback(%1% msg) {
+    setOutput("to", msg.%2%);
+  }
+)";
+
+    boost::format bfmt = boost::format(fmt_string) %
+      message_type %
+      message_field;
+
+    message_field = bfmt.str();
+  }
+
+  std::string fmt_string = 1 + R"(
+class %1%: public EusSubscriberNode<%2%>
+{
+public:
+  %1%(ros::NodeHandle& handle, const std::string& node_name, const NodeConfiguration& conf) :
+    EusSubscriberNode<%2%>(handle, node_name, conf) {}
+%3%};
+)";
+  boost::format bfmt = boost::format(fmt_string) %
+    nodeID %
+    message_type %
+    message_field;
+
+  return bfmt.str();
+}
+
+
 std::string GenTemplate::main_function_template(std::string roscpp_node_name,
                                                 std::string xml_filename,
                                                 std::vector<std::string> register_actions,
-                                                std::vector<std::string> register_conditions) {
+                                                std::vector<std::string> register_conditions,
+                                                std::vector<std::string> register_subscribers) {
   auto format_ros_init = [roscpp_node_name]() {
     return fmt::format("  ros::init(argc, argv, \"{}\");", roscpp_node_name);
   };
@@ -224,6 +262,7 @@ int main(int argc, char **argv)
 
 %3%
 %4%
+%5%
 
 %2%
 
@@ -248,7 +287,8 @@ int main(int argc, char **argv)
     format_ros_init() %
     format_create_tree() %
     boost::algorithm::join(register_actions, "\n") %
-    boost::algorithm::join(register_conditions, "\n");
+    boost::algorithm::join(register_conditions, "\n") %
+    boost::algorithm::join(register_subscribers, "\n");
 
   return bfmt.str();
 }
