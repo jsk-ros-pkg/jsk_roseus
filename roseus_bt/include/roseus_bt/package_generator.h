@@ -95,6 +95,9 @@ void PackageGenerator::copy_xml_file() {
       base_dir,
       boost::filesystem::path(xml_filename).filename().c_str());
 
+  if (dest_file == xml_filename)
+    return;
+
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
