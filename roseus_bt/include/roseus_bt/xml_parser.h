@@ -26,6 +26,8 @@ protected:
   GenTemplate gen_template;
   void collect_node_attribute(const XMLElement* node, const XMLElement* ref_node,
                               const char* attribute, std::vector<std::string>* node_attributes);
+  void maybe_push_message_package(const XMLElement* node,
+                                  std::vector<std::string>* message_packages);
   std::string format_eus_name(const std::string input);
   std::string port_node_to_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
@@ -75,6 +77,19 @@ void XMLParser::collect_node_attribute(const XMLElement* node,
       collect_node_attribute(child_node, ref_node, attribute, node_attributes);
     }
 }
+
+void XMLParser::maybe_push_message_package(const XMLElement* node,
+                                           std::vector<std::string>* message_packages) {
+  std::string msg_type = node->Attribute("type");
+  std::size_t pos = msg_type.find('/');
+  if (pos != std::string::npos) {
+    std::string pkg = msg_type.substr(0, pos);
+    if (std::find(message_packages->begin(), message_packages->end(), pkg) ==
+        message_packages->end()) {
+      message_packages->push_back(pkg);
+    }
+  }
+};
 
 std::string XMLParser::format_eus_name(const std::string input) {
   std::regex e ("([^A-Z]+)([A-Z]+)");
@@ -572,25 +587,14 @@ std::string XMLParser::generate_cmake_lists(const std::string package_name,
   auto format_service_file = [](const XMLElement* node) {
     return fmt::format("  {}.srv", node->Attribute("ID"));
   };
-  auto maybe_push_message_package = [format_pkg](const XMLElement* node, std::vector<std::string>* message_packages) {
-    std::string msg_type = node->Attribute("type");
-    std::size_t pos = msg_type.find('/');
-    if (pos != std::string::npos) {
-      std::string pkg = format_pkg(msg_type.substr(0, pos));
-      if (std::find(message_packages->begin(), message_packages->end(), pkg) ==
-          message_packages->end()) {
-        message_packages->push_back(pkg);
-      }
-    }
-  };
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::vector<std::string> message_packages;
   std::vector<std::string> action_files;
   std::vector<std::string> service_files;
 
-  message_packages.push_back(format_pkg("std_msgs"));
-  message_packages.push_back(format_pkg("actionlib_msgs"));
+  message_packages.push_back("std_msgs");
+  message_packages.push_back("actionlib_msgs");
 
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
@@ -625,6 +629,9 @@ std::string XMLParser::generate_cmake_lists(const std::string package_name,
       maybe_push_message_package(subscriber_node, &message_packages);
     }
 
+  std::transform(message_packages.begin(), message_packages.end(),
+                 message_packages.begin(), format_pkg);
+
   return gen_template.cmake_lists_template(package_name, target_name,
                                            message_packages,
                                            service_files,
@@ -638,17 +645,6 @@ std::string XMLParser::generate_package_xml(const std::string package_name,
   };
   auto format_exec_depend = [](std::string pkg) {
     return fmt::format("  <exec_depend>{}</exec_depend>", pkg);
-  };
-  auto maybe_push_message_package = [](const XMLElement* node, std::vector<std::string>* message_packages) {
-    std::string msg_type = node->Attribute("type");
-    std::size_t pos = msg_type.find('/');
-    if (pos != std::string::npos) {
-      std::string pkg = msg_type.substr(0, pos);
-      if (std::find(message_packages->begin(), message_packages->end(), pkg) ==
-          message_packages->end()) {
-        message_packages->push_back(pkg);
-      }
-    }
   };
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
