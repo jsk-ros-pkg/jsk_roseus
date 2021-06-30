@@ -329,13 +329,21 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
 }
 
 std::string XMLParser::generate_eus_action_server(const std::string package_name) {
-  auto format_callback = [this](const XMLElement* node, std::string suffix) {
+  auto format_setoutput = [](const XMLElement* node) {
+    return fmt::format("  ;; (roseus_bt:set-output \"{0}\" <{1}>)",
+                       node->Attribute("name"),
+                       node->Attribute("type"));
+  };
+
+  auto format_callback = [this, format_setoutput](const XMLElement* node, std::string suffix) {
     std::string fmt_string = 1 + R"(
 (roseus_bt:define-action-callback {0}-execute-cb{1} ({2})
   ;; do something
+{3}
   t)
 )";
     std::vector<std::string> param_list;
+    std::vector<std::string> output_list;
     for (auto port_node = node->FirstChildElement();
          port_node != nullptr;
          port_node = port_node->NextSiblingElement())
@@ -344,12 +352,16 @@ std::string XMLParser::generate_eus_action_server(const std::string package_name
         if (name == "input_port" || name == "inout_port") {
           param_list.push_back(port_node->Attribute("name"));
         }
+        if (name == "output_port" || name == "inout_port") {
+          output_list.push_back(format_setoutput(port_node));
+        }
       }
 
     return fmt::format(fmt_string,
                        format_eus_name(node->Attribute("ID")),
                        suffix,
-                       boost::algorithm::join(param_list, " "));
+                       boost::algorithm::join(param_list, " "),
+                       boost::algorithm::join(output_list, "\n"));
   };
 
   auto format_instance = [this, package_name](const XMLElement* node, std::string suffix,
