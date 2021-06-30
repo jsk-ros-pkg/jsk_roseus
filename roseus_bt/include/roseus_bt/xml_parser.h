@@ -427,6 +427,8 @@ std::string XMLParser::generate_eus_action_server(const std::string package_name
       }
     }
 
+  if (callback_definition.empty()) return "";
+
   return gen_template.eus_server_template("action", package_name,
                                           callback_definition, instance_creation);
 }
@@ -502,6 +504,8 @@ std::string XMLParser::generate_eus_condition_server(const std::string package_n
         }
       }
     }
+
+  if (callback_definition.empty()) return "";
 
   return gen_template.eus_server_template("condition", package_name,
                                           callback_definition, instance_creation);
