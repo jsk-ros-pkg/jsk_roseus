@@ -158,8 +158,11 @@ void PackageGenerator::write_eus_action_server() {
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
+  std::string body = parser.generate_eus_action_server(package_name);
+  if (body.empty()) return;
+
   std::ofstream output_file(dest_file);
-  output_file << parser.generate_eus_action_server(package_name);
+  output_file << body;
   output_file.close();
 }
 
@@ -171,8 +174,11 @@ void PackageGenerator::write_eus_condition_server() {
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
+  std::string body = parser.generate_eus_condition_server(package_name);
+  if (body.empty()) return;
+
   std::ofstream output_file(dest_file);
-  output_file << parser.generate_eus_condition_server(package_name);
+  output_file << body;
   output_file.close();
 }
 
