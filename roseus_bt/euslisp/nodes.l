@@ -1,5 +1,5 @@
 (unless (find-package "ROSEUS_BT")
-  (make-package "ROSEUS_BT"))
+  (make-package "ROSEUS_BT" :nicknames (list "ROSEUS-BT")))
 
 (in-package "ROSEUS_BT")
 
