@@ -26,6 +26,7 @@ protected:
   GenTemplate gen_template;
   void collect_node_attribute(const XMLElement* node, const XMLElement* ref_node,
                               const char* attribute, std::vector<std::string>* node_attributes);
+  std::string format_eus_name(const std::string input);
   std::string port_node_to_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
@@ -74,6 +75,14 @@ void XMLParser::collect_node_attribute(const XMLElement* node,
       collect_node_attribute(child_node, ref_node, attribute, node_attributes);
     }
 }
+
+std::string XMLParser::format_eus_name(const std::string input) {
+  std::regex e ("([^A-Z]+)([A-Z]+)");
+  std::string out = std::regex_replace(input, e, "$1-$2");
+  std::transform(out.begin(), out.end(), out.begin(),
+                 [](unsigned char c){ return std::tolower(c); });
+  return out;
+};
 
 std::string XMLParser::port_node_to_message_description(const XMLElement* port_node) {
   if (!port_node->Attribute("type") ||
@@ -320,7 +329,7 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
 }
 
 std::string XMLParser::generate_eus_action_server(const std::string package_name) {
-  auto format_callback = [](const XMLElement* node, std::string suffix) {
+  auto format_callback = [this](const XMLElement* node, std::string suffix) {
     std::string fmt_string = 1 + R"(
 (roseus_bt:define-action-callback {0}-execute-cb{1} ({2})
   ;; do something
@@ -338,21 +347,22 @@ std::string XMLParser::generate_eus_action_server(const std::string package_name
       }
 
     return fmt::format(fmt_string,
-                       node->Attribute("ID"),
+                       format_eus_name(node->Attribute("ID")),
                        suffix,
                        boost::algorithm::join(param_list, " "));
   };
 
-  auto format_instance = [package_name](const XMLElement* node, std::string suffix,
-                                        std::string server_name) {
+  auto format_instance = [this, package_name](const XMLElement* node, std::string suffix,
+                                              std::string server_name) {
     std::string fmt_string = 1 + R"(
 (instance roseus_bt:action-node :init
           "{3}" {0}::{1}Action
-          :execute-cb '{1}-execute-cb{2})
+          :execute-cb '{2}-execute-cb{3})
 )";
   return fmt::format(fmt_string,
                      package_name,
                      node->Attribute("ID"),
+                     format_eus_name(node->Attribute("ID")),
                      suffix,
                      server_name);
   };
@@ -395,7 +405,7 @@ std::string XMLParser::generate_eus_action_server(const std::string package_name
 }
 
 std::string XMLParser::generate_eus_condition_server(const std::string package_name) {
-  auto format_callback = [](const XMLElement* node, std::string suffix) {
+  auto format_callback = [this](const XMLElement* node, std::string suffix) {
     std::string fmt_string = 1 + R"(
 (roseus_bt:define-condition-callback {0}-cb{1} ({2})
   ;; do something
@@ -413,21 +423,22 @@ std::string XMLParser::generate_eus_condition_server(const std::string package_n
       }
 
     return fmt::format(fmt_string,
-                       node->Attribute("ID"),
+                       format_eus_name(node->Attribute("ID")),
                        suffix,
                        boost::algorithm::join(param_list, " "));
   };
 
-  auto format_instance = [package_name](const XMLElement* node, std::string suffix,
-                                        std::string service_name) {
+  auto format_instance = [this, package_name](const XMLElement* node, std::string suffix,
+                                              std::string service_name) {
     std::string fmt_string = 1 + R"(
 (instance roseus_bt:condition-node :init
           "{3}" {0}::{1}
-          :execute-cb #'{1}-cb{2})
+          :execute-cb #'{2}-cb{3})
 )";
   return fmt::format(fmt_string,
                      package_name,
                      node->Attribute("ID"),
+                     format_eus_name(node->Attribute("ID")),
                      suffix,
                      service_name);
   };
