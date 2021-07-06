@@ -1,7 +1,6 @@
 #ifndef BEHAVIOR_TREE_ROSEUS_BT_GEN_TEMPLATE_
 #define BEHAVIOR_TREE_ROSEUS_BT_GEN_TEMPLATE_
 
-#include <map>
 #include <string>
 #include <vector>
 #include <fmt/format.h>
@@ -40,14 +39,6 @@ public:
                                     std::string package_name,
                                     std::vector<std::string> callbacks,
                                     std::vector<std::string> instances);
-  std::string cmake_lists_template(std::string package_name, std::string target_name,
-                                     std::vector<std::string> message_packages,
-                                     std::vector<std::string> service_files,
-                                     std::vector<std::string> action_files);
-  std::string package_xml_template(std::string package_name,
-                                     std::string author_name,
-                                     std::vector<std::string> build_dependencies,
-                                     std::vector<std::string> exec_dependencies);
 };
 
 
@@ -325,132 +316,6 @@ std::string GenTemplate::eus_server_template(std::string server_type,
     "(load \"package://roseus_bt/euslisp/nodes.l\")" %
     boost::algorithm::join(callbacks, "\n") %
     boost::algorithm::join(instances, "\n");
-
-  return bfmt.str();
-}
-
-
-std::string GenTemplate::cmake_lists_template(std::string package_name, std::string target_name,
-                                              std::vector<std::string> message_packages,
-                                              std::vector<std::string> service_files,
-                                              std::vector<std::string> action_files) {
-  std::string fmt_string = 1+ R"(
-cmake_minimum_required(VERSION 3.0.2)
-project(%1%)
-
-find_package(catkin REQUIRED COMPONENTS
-  message_generation
-  roscpp
-  behaviortree_ros
-  roseus_bt
-%3%
-)
-
-add_service_files(
-  FILES
-%4%
-)
-
-add_action_files(
-  FILES
-%5%
-)
-
-generate_messages(
-  DEPENDENCIES
-%3%
-)
-
-catkin_package(
- INCLUDE_DIRS
- LIBRARIES
- CATKIN_DEPENDS
- message_runtime
-%3%
-)
-
-
-include_directories(${catkin_INCLUDE_DIRS})
-
-add_executable(%2% src/%2%.cpp)
-add_dependencies(%2% ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(%2% ${catkin_LIBRARIES})
-)";
-
-  boost::format bfmt = boost::format(fmt_string) %
-    package_name %
-    target_name %
-    boost::algorithm::join(message_packages, "\n") %
-    boost::algorithm::join(service_files, "\n") %
-    boost::algorithm::join(action_files, "\n");
-
-  return bfmt.str();      
-}
-
-
-std::string GenTemplate::package_xml_template(std::string package_name,
-                                              std::string author_name,
-                                              std::vector<std::string> build_dependencies,
-                                              std::vector<std::string> exec_dependencies) {
-
-  std::string author_email(author_name);
-  std::transform(author_email.begin(), author_email.end(), author_email.begin(),
-                 [](unsigned char c){ return std::tolower(c); });
-  std::replace(author_email.begin(), author_email.end(), ' ', '_');
-
-  std::string fmt_string = 1 + R"(
-<?xml version="1.0"?>
-<package format="2">
-  <name>%1%</name>
-  <version>0.0.0</version>
-  <description>The %1% package</description>
-
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
-  <maintainer email="%3%@example.com">%2%</maintainer>
-
-
-  <!-- One license tag required, multiple allowed, one license per tag -->
-  <!-- Commonly used license strings: -->
-  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
-
-
-  <!-- Url tags are optional, but multiple are allowed, one per tag -->
-  <!-- Optional attribute type can be: website, bugtracker, or repository -->
-  <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/%1%</url> -->
-
-
-  <!-- Author tags are optional, multiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintainers, but could be -->
-  <!-- Example: -->
-  <!-- <author email="%3%@example.com">%2%</author> -->
-
-
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>message_generation</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>behaviortree_ros</build_depend>
-  <build_depend>roseus_bt</build_depend>
-%4%
-
-  <exec_depend>message_runtime</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>behaviortree_ros</exec_depend>
-  <exec_depend>roseus_bt</exec_depend>
-%5%
-
-  <export>
-  </export>
-</package>
-)";
-
-  boost::format bfmt = boost::format(fmt_string) %
-    package_name %
-    author_name %
-    author_email %
-    boost::algorithm::join(build_dependencies, ",\n") %
-    boost::algorithm::join(exec_dependencies, ",\n");
 
   return bfmt.str();
 }
