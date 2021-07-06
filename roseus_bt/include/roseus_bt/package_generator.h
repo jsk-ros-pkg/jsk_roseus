@@ -157,7 +157,7 @@ void PackageGenerator::write_eus_action_server() {
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
-  std::string dest_file = fmt::format("{}/action-server.l", base_dir);
+  std::string dest_file = fmt::format("{}/{}-action-server.l", base_dir, target_filename);
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
@@ -173,7 +173,7 @@ void PackageGenerator::write_eus_condition_server() {
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
-  std::string dest_file = fmt::format("{}/condition-server.l", base_dir);
+  std::string dest_file = fmt::format("{}/{}-condition-server.l", base_dir, target_filename);
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 

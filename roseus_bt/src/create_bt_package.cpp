@@ -1,6 +1,7 @@
 #include <iostream>
 #include <roseus_bt/package_generator.h>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 namespace po = boost::program_options;
 
@@ -13,8 +14,7 @@ int main(int argc, char** argv)
     ("help,h", "show this help message and exit")
     ("package_name", po::value<std::string>(&package_name), "package name")
     ("model_file", po::value<std::string>(&model_file), "model file")
-    ("executable,e", po::value<std::string>(&executable)->default_value("mynode"),
-     "executable name")
+    ("executable,e", po::value<std::string>(&executable), "executable name (defaults to model filename)")
     ("author,a", po::value<std::string>(&author)->default_value("The Author"),
      "author name")
     ("overwrite,y", "overwrite all existing files");
@@ -38,6 +38,11 @@ int main(int argc, char** argv)
   if (package_name.empty() || model_file.empty()) {
     std::cout << desc << std::endl;
     return 1;
+  }
+
+  // Fill default executable name
+  if (executable.empty()) {
+    executable = boost::filesystem::path(model_file).stem().string();
   }
 
   RoseusBT::PackageGenerator pg(package_name, model_file, executable, author,
