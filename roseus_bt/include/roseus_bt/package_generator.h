@@ -7,6 +7,7 @@
 #include <fmt/format.h>
 #include <boost/filesystem.hpp>
 #include <roseus_bt/xml_parser.h>
+#include <roseus_bt/pkg_template.h>
 
 
 namespace RoseusBT
@@ -30,15 +31,16 @@ class PackageGenerator
 {
 public:
   PackageGenerator(const std::string package_name,
-                   const std::string xml_filename,
-                   const std::string target_filename,
+                   const std::vector<std::string> xml_filenames,
+                   const std::vector<std::string> target_filenames,
                    const std::string author_name,
                    bool force_overwrite) :
     query(),
-    parser(xml_filename),
-    xml_filename(xml_filename),
+    pkg_template(),
+    parser_vector(xml_filenames.begin(), xml_filenames.end()),
     package_name(package_name),
-    target_filename(target_filename),
+    xml_filenames(xml_filenames),
+    target_filenames(target_filenames),
     author_name(author_name),
     force_overwrite(force_overwrite)
   {};
@@ -47,10 +49,11 @@ public:
 
 private:
   Query query;
-  XMLParser parser;
+  PkgTemplate pkg_template;
+  std::vector<XMLParser> parser_vector;
   std::string package_name;
-  std::string xml_filename;
-  std::string target_filename;
+  std::vector<std::string> xml_filenames;
+  std::vector<std::string> target_filenames;
   std::string author_name;
   bool force_overwrite;
 
@@ -58,14 +61,17 @@ protected:
   bool overwrite(const std::string filename);
 
 public:
-  void copy_xml_file();
-  void write_action_files();
-  void write_service_files();
-  void write_cpp_file();
-  void write_eus_action_server();
-  void write_eus_condition_server();
-  void write_cmake_lists();
-  void write_package_xml();
+  void copy_xml_file(std::string* xml_filename);
+  void write_action_files(XMLParser* parser);
+  void write_service_files(XMLParser* parser);
+  void write_cpp_file(XMLParser* parser,
+                      const std::string target_filename, const std::string xml_filename);
+  void write_eus_action_server(XMLParser* parser, const std::string target_filename);
+  void write_eus_condition_server(XMLParser* parser, const std::string target_filename);
+  void write_cmake_lists(const std::vector<std::string> message_packages,
+                         const std::vector<std::string> service_files,
+                         const std::vector<std::string> action_files);
+  void write_package_xml(const std::vector<std::string> message_packages);
   void write_all_files();
 };
 
@@ -89,55 +95,53 @@ bool PackageGenerator::overwrite(const std::string filename) {
   return force_overwrite || query.yn(fmt::format("Overwrite {}?", filename));
 }
 
-void PackageGenerator::copy_xml_file() {
+void PackageGenerator::copy_xml_file(std::string* xml_filename) {
   std::string base_dir = fmt::format("{}/models", package_name);
   std::string dest_file = fmt::format("{}/{}",
       base_dir,
-      boost::filesystem::path(xml_filename).filename().c_str());
+      boost::filesystem::path(*xml_filename).filename().c_str());
 
-  if (dest_file == xml_filename)
+  if (dest_file == *xml_filename)
     return;
 
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
   boost::filesystem::create_directories(base_dir);
-  boost::filesystem::copy_file(xml_filename, dest_file,
+  boost::filesystem::copy_file(*xml_filename, dest_file,
                                boost::filesystem::copy_option::overwrite_if_exists);
-  xml_filename = dest_file;
+  xml_filename = &dest_file;
 }
 
-void PackageGenerator::write_action_files() {
+void PackageGenerator::write_action_files(XMLParser* parser) {
   std::string base_dir = fmt::format("{}/action", package_name);
   boost::filesystem::create_directories(base_dir);
 
-  std::map<std::string, std::string> action_files;
-  std::map<std::string, std::string>::iterator it;
-  action_files = parser.generate_all_action_files();
+  std::map<std::string, std::string> action_files = parser->generate_all_action_files();
 
-  for (it=action_files.begin(); it!=action_files.end(); ++it) {
+  for (auto it=action_files.begin(); it!=action_files.end(); ++it) {
     std::ofstream output_file(fmt::format("{}/{}", base_dir, it->first));
     output_file << it->second;
     output_file.close();
   }
 }
 
-void PackageGenerator::write_service_files() {
+void PackageGenerator::write_service_files(XMLParser* parser) {
   std::string base_dir = fmt::format("{}/srv", package_name);
   boost::filesystem::create_directories(base_dir);
 
-  std::map<std::string, std::string> action_files;
-  std::map<std::string, std::string>::iterator it;
-  action_files = parser.generate_all_service_files();
+  std::map<std::string, std::string> service_files = parser->generate_all_service_files();
 
-  for (it=action_files.begin(); it!=action_files.end(); ++it) {
+  for (auto it=service_files.begin(); it!=service_files.end(); ++it) {
     std::ofstream output_file(fmt::format("{}/{}", base_dir, it->first));
     output_file << it->second;
     output_file.close();
   }
 }
 
-void PackageGenerator::write_cpp_file() {
+void PackageGenerator::write_cpp_file(XMLParser* parser,
+                                      const std::string target_filename,
+                                      const std::string xml_filename) {
   std::string base_dir = fmt::format("{}/src", package_name);
   boost::filesystem::create_directories(base_dir);
 
@@ -148,12 +152,13 @@ void PackageGenerator::write_cpp_file() {
     return;
 
   std::ofstream output_file(dest_file);
-  output_file << parser.generate_cpp_file(package_name, roscpp_node_name,
-                                          boost::filesystem::absolute(xml_filename).c_str());
+  output_file << parser->generate_cpp_file(package_name, roscpp_node_name,
+                        boost::filesystem::absolute(xml_filename).c_str());
   output_file.close();
 }
 
-void PackageGenerator::write_eus_action_server() {
+void PackageGenerator::write_eus_action_server(XMLParser* parser,
+                                               const std::string target_filename) {
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
@@ -161,7 +166,7 @@ void PackageGenerator::write_eus_action_server() {
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
-  std::string body = parser.generate_eus_action_server(package_name);
+  std::string body = parser->generate_eus_action_server(package_name);
   if (body.empty()) return;
 
   std::ofstream output_file(dest_file);
@@ -169,7 +174,8 @@ void PackageGenerator::write_eus_action_server() {
   output_file.close();
 }
 
-void PackageGenerator::write_eus_condition_server() {
+void PackageGenerator::write_eus_condition_server(XMLParser* parser,
+                                                  const std::string target_filename) {
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
@@ -177,7 +183,7 @@ void PackageGenerator::write_eus_condition_server() {
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
-  std::string body = parser.generate_eus_condition_server(package_name);
+  std::string body = parser->generate_eus_condition_server(package_name);
   if (body.empty()) return;
 
   std::ofstream output_file(dest_file);
@@ -185,7 +191,9 @@ void PackageGenerator::write_eus_condition_server() {
   output_file.close();
 }
 
-void PackageGenerator::write_cmake_lists() {
+void PackageGenerator::write_cmake_lists(const std::vector<std::string> message_packages,
+                                         const std::vector<std::string> service_files,
+                                         const std::vector<std::string> action_files) {
   std::string base_dir = package_name;
   boost::filesystem::create_directories(base_dir);
 
@@ -194,11 +202,14 @@ void PackageGenerator::write_cmake_lists() {
     return;
 
   std::ofstream output_file(dest_file);
-  output_file << parser.generate_cmake_lists(package_name, target_filename);
+  output_file << pkg_template.generate_cmake_lists(package_name, target_filenames,
+                                                   message_packages,
+                                                   service_files,
+                                                   action_files);
   output_file.close();
 }
 
-void PackageGenerator::write_package_xml() {
+void PackageGenerator::write_package_xml(const std::vector<std::string> message_packages) {
   std::string base_dir = package_name;
   boost::filesystem::create_directories(base_dir);
 
@@ -207,19 +218,35 @@ void PackageGenerator::write_package_xml() {
     return;
 
   std::ofstream output_file(dest_file);
-  output_file << parser.generate_package_xml(package_name, author_name);
+  output_file << pkg_template.generate_package_xml(package_name, author_name,
+                                                   message_packages);
   output_file.close();
 }
 
 void PackageGenerator::write_all_files() {
-  copy_xml_file();
-  write_action_files();
-  write_service_files();
-  write_cpp_file();
-  write_eus_action_server();
-  write_eus_condition_server();
-  write_cmake_lists();
-  write_package_xml();
+  std::vector<std::string> message_packages;
+  std::vector<std::string> action_files;
+  std::vector<std::string> service_files;
+
+  message_packages.push_back("std_msgs");
+  message_packages.push_back("actionlib_msgs");
+
+  for (int i=0; i<parser_vector.size(); i++) {
+    XMLParser* parser = &parser_vector.at(i);
+    std::string xml_filename = xml_filenames.at(i);
+    std::string target_filename = target_filenames.at(i);
+
+    parser->push_dependencies(&message_packages, &service_files, &action_files);
+    copy_xml_file(&xml_filename);
+    write_action_files(parser);
+    write_service_files(parser);
+    write_cpp_file(parser, target_filename, xml_filename);
+    write_eus_action_server(parser, target_filename);
+    write_eus_condition_server(parser, target_filename);
+  }
+
+  write_cmake_lists(message_packages, service_files, action_files);
+  write_package_xml(message_packages);
 }
 
 }  // namespaceRoseusBT

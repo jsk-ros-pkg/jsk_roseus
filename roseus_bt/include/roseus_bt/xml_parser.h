@@ -4,10 +4,15 @@
 #include <tinyxml2.h>
 #include "gen_template.h"
 
+void push_new(std::string elem, std::vector<std::string>* vec) {
+  if (std::find(vec->begin(), vec->end(), elem) == vec->end()) {
+    vec->push_back(elem);
+  }
+}
+
 namespace RoseusBT
 {
   using namespace tinyxml2;
-
 
 class XMLParser
 {
@@ -45,13 +50,11 @@ public:
   std::string generate_cpp_file(const std::string package_name,
                                 const std::string roscpp_node_name,
                                 const std::string xml_filename);
-  std::string generate_eus_action_server(const std::string action_name);
-  std::string generate_eus_condition_server(const std::string action_name);
-  std::string generate_cmake_lists(const std::string package_name,
-                                   const std::string target_filename);
-  std::string generate_package_xml(const std::string package_name,
-                                   const std::string author_name);
-
+  std::string generate_eus_action_server(const std::string package_name);
+  std::string generate_eus_condition_server(const std::string package_name);
+  void push_dependencies(std::vector<std::string>* message_packages,
+                         std::vector<std::string>* action_files,
+                         std::vector<std::string>* service_files);
 };
 
 
@@ -84,10 +87,7 @@ void XMLParser::maybe_push_message_package(const XMLElement* node,
   std::size_t pos = msg_type.find('/');
   if (pos != std::string::npos) {
     std::string pkg = msg_type.substr(0, pos);
-    if (std::find(message_packages->begin(), message_packages->end(), pkg) ==
-        message_packages->end()) {
-      message_packages->push_back(pkg);
-    }
+    push_new(pkg, message_packages);
   }
 };
 
@@ -580,11 +580,9 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
   return output;
 }
 
-std::string XMLParser::generate_cmake_lists(const std::string package_name,
-                                            const std::string target_name) {
-  auto format_pkg = [](std::string pkg) {
-    return fmt::format("  {}", pkg);
-  };
+void XMLParser::push_dependencies(std::vector<std::string>* message_packages,
+                                  std::vector<std::string>* service_files,
+                                  std::vector<std::string>* action_files) {
   auto format_action_file = [](const XMLElement* node) {
     return fmt::format("  {}.action", node->Attribute("ID"));
   };
@@ -593,23 +591,17 @@ std::string XMLParser::generate_cmake_lists(const std::string package_name,
   };
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
-  std::vector<std::string> message_packages;
-  std::vector<std::string> action_files;
-  std::vector<std::string> service_files;
-
-  message_packages.push_back("std_msgs");
-  message_packages.push_back("actionlib_msgs");
 
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
     {
-      action_files.push_back(format_action_file(action_node));
+      push_new(format_action_file(action_node), action_files);
       for (auto port_node = action_node->FirstChildElement();
            port_node != nullptr;
            port_node = port_node->NextSiblingElement())
         {
-          maybe_push_message_package(port_node, &message_packages);
+          maybe_push_message_package(port_node, message_packages);
         }
     }
 
@@ -617,12 +609,12 @@ std::string XMLParser::generate_cmake_lists(const std::string package_name,
        condition_node != nullptr;
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
-      service_files.push_back(format_service_file(condition_node));
+      push_new(format_service_file(condition_node), service_files);
       for (auto port_node = condition_node->FirstChildElement();
            port_node != nullptr;
            port_node = port_node->NextSiblingElement())
         {
-          maybe_push_message_package(port_node, &message_packages);
+          maybe_push_message_package(port_node, message_packages);
         }
     }
 
@@ -630,59 +622,10 @@ std::string XMLParser::generate_cmake_lists(const std::string package_name,
        subscriber_node != nullptr;
        subscriber_node = subscriber_node->NextSiblingElement("Subscriber"))
     {
-      maybe_push_message_package(subscriber_node, &message_packages);
+      maybe_push_message_package(subscriber_node, message_packages);
     }
-
-  std::transform(message_packages.begin(), message_packages.end(),
-                 message_packages.begin(), format_pkg);
-
-  return gen_template.cmake_lists_template(package_name, target_name,
-                                           message_packages,
-                                           service_files,
-                                           action_files);
 }
 
-std::string XMLParser::generate_package_xml(const std::string package_name,
-                                            const std::string author_name) {
-  auto format_build_depend = [](std::string pkg) {
-    return fmt::format("  <build_depend>{}</build_depend>", pkg);
-  };
-  auto format_exec_depend = [](std::string pkg) {
-    return fmt::format("  <exec_depend>{}</exec_depend>", pkg);
-  };
-
-  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
-  std::vector<std::string> message_packages;
-
-  message_packages.push_back("std_msgs");
-  message_packages.push_back("actionlib_msgs");
-
-  for (auto node = root->FirstChildElement();
-       node != nullptr;
-       node = node->NextSiblingElement())
-    {
-      for (auto port_node = node->FirstChildElement();
-           port_node != nullptr;
-           port_node = port_node->NextSiblingElement())
-        {
-          maybe_push_message_package(port_node, &message_packages);
-        }
-    }
-
-  std::vector<std::string> build_dependencies;
-  std::vector<std::string> exec_dependencies;
-  build_dependencies.resize(message_packages.size());
-  exec_dependencies.resize(message_packages.size());
-
-  std::transform(message_packages.begin(), message_packages.end(),
-                 build_dependencies.begin(), format_build_depend);
-  std::transform(message_packages.begin(), message_packages.end(),
-                 exec_dependencies.begin(), format_exec_depend);
-
-  return gen_template.package_xml_template(package_name, author_name,
-                                           build_dependencies,
-                                           exec_dependencies);
-}
 
 }  // namespace RoseusBT
 
