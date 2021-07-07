@@ -110,7 +110,7 @@ void PackageGenerator::copy_xml_file(std::string* xml_filename) {
   boost::filesystem::create_directories(base_dir);
   boost::filesystem::copy_file(*xml_filename, dest_file,
                                boost::filesystem::copy_option::overwrite_if_exists);
-  xml_filename = &dest_file;
+  *xml_filename = dest_file;
 }
 
 void PackageGenerator::write_action_files(XMLParser* parser) {
