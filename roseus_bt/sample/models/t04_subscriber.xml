@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <SequenceStar name="InitSequence">
+            <Action ID="Init" name="Initialize Task" server_name="/t04_subscriber/init"/>
+            <Action ID="setSubscriber" name="setBottleCoords" to="bottle_coords" topic_name="/petbottle/coords"/>
+            <Sequence name="MainSequence">
+                <Fallback name="MoveToTable">
+                    <Condition ID="atSpot" spot="table-front" service_name="/t04_subscriber/atspot"/>
+                    <Action ID="MoveTo" name="MoveToSpot" spot="table-front"
+                            server_name="/t04_subscriber/moveto"/>
+                </Fallback>
+                <Action ID="PickBottleAt" coords="${bottle_coords}" name="PickBottleAtCoords"
+                        server_name="/t04_subscriber/pickbottleat"/>
+                <Action ID="PourBottle" server_name="/t04_subscriber/pourbottle"/>
+                <Action ID="PlaceBottle" server_name="/t04_subscriber/placebottle"/>
+            </Sequence>
+        </SequenceStar>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="Init"/>
+        <Action ID="MoveTo">
+            <input_port name="spot" type="string"/>
+        </Action>
+        <Action ID="PickBottleAt">
+            <input_port name="coords" type="geometry_msgs/Pose"/>
+        </Action>
+        <Action ID="PlaceBottle"/>
+        <Action ID="PourBottle"/>
+        <Condition ID="atSpot">
+            <input_port name="spot" type="string"/>
+        </Condition>
+        <Subscriber ID="setSubscriber" type="geometry_msgs/Pose"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+

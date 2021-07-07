@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence name="MainSequence">
+            <Action ID="Init" name="InitializeTask" server_name="/t01_simple_tree/init"/>
+            <Action ID="MoveToTable" server_name="/t01_simple_tree/movetotable"/>
+            <Action ID="PickBottle" server_name="/t01_simple_tree/pickbottle"/>
+            <Action ID="PourBottle" server_name="/t01_simple_tree/pourbottle"/>
+            <Action ID="PlaceBottle" server_name="/t01_simple_tree/placebottle"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="Init"/>
+        <Action ID="MoveToTable"/>
+        <Action ID="PickBottle"/>
+        <Action ID="PlaceBottle"/>
+        <Action ID="PourBottle"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+
