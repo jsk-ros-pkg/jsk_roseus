@@ -438,7 +438,7 @@ std::string XMLParser::generate_eus_condition_server(const std::string package_n
     std::string fmt_string = 1 + R"(
 (roseus_bt:define-condition-callback {0}-cb{1} ({2})
   ;; do something
-  t)
+  )
 )";
     std::vector<std::string> param_list;
     for (auto port_node = node->FirstChildElement();
