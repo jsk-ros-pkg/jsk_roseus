@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <SequenceStar name="InitSequence">
+            <Action ID="Init" name="Initialize Task" server_name="/t06_reactive/init"/>
+            <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"
+                    server_name="/t06_reactive/setcoords"/>
+            <Action ID="setRequestSubscriber" to="needs_drink" topic_name="/get_drink/request"/>
+            <Sequence>
+                <ReactiveFallback>
+                    <Condition ID="CheckTrue" value="${needs_drink}" name="NeedsDrink"
+                               service_name="/t06_reactive/checktrue"/>
+                    <SubTree ID="SweepTask"/>
+                </ReactiveFallback>
+                <SubTree ID="PourTask" coords="bottle_coords"/>
+            </Sequence>
+        </SequenceStar>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="PourTask">
+        <Sequence name="MainSequence">
+            <Fallback name="MoveToTable">
+                <Condition ID="atSpot" spot="table-front"
+                           service_name="/t06_reactive/atspot"/>
+                <Action ID="MoveTo" name="MoveToSpot" spot="table-front"
+                        server_name="/t06_reactive/moveto"/>
+            </Fallback>
+            <Action ID="PickBottleAt" coords="${coords}" name="PickBottleAtCoords"
+                    server_name="/t06_reactive/pickbottleat"/>
+            <Action ID="PourBottle" server_name="/t06_reactive/pourbottle"/>
+            <Action ID="PlaceBottle" server_name="/t06_reactive/placebottle"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="SweepTask">
+        <Sequence name="MainSequence">
+            <Fallback name="MoveToBroom">
+                <Condition ID="atSpot" spot="broom-front" service_name="/t06_reactive/atspot"/>
+                <Action ID="MoveTo" spot="broom-front" server_name="/t06_reactive/moveto"/>
+            </Fallback>
+            <Action ID="SweepFloor" server_name="/t06_reactive/sweepfloor"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="Init"/>
+        <Action ID="MoveTo">
+            <input_port name="spot" type="string"/>
+        </Action>
+        <Action ID="PickBottleAt">
+            <input_port name="coords" type="geometry_msgs/Pose"/>
+        </Action>
+        <Action ID="PlaceBottle"/>
+        <Action ID="PourBottle"/>
+        <SubTree ID="PourTask"/>
+        <Action ID="SweepFloor"/>
+        <SubTree ID="SweepTask"/>
+        <Condition ID="atSpot">
+            <input_port name="spot" type="string"/>
+        </Condition>
+        <Condition ID="CheckTrue">
+          <input_port name="value" type="std_msgs/Bool"/>
+        </Condition>
+        <Action ID="setCoords">
+            <output_port name="coords" type="geometry_msgs/Pose"/>
+        </Action>
+        <Subscriber ID="setRequestSubscriber" type="std_msgs/Bool"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+

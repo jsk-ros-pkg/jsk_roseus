@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence name="MainSequence">
+            <Action ID="Init" name="InitializeTask" server_name="/t02_conditions/init"/>
+            <Fallback name="MoveToTable">
+                <Condition ID="atTable" service_name="/t02_conditions/attable"/>
+                <Action ID="MoveToTable" server_name="/t02_conditions/movetotable"/>
+            </Fallback>
+            <Action ID="PickBottle" server_name="/t02_conditions/pickbottle"/>
+            <Action ID="PourBottle" server_name="/t02_conditions/pourbottle"/>
+            <Action ID="PlaceBottle" server_name="/t02_conditions/placebottle"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="Init"/>
+        <Action ID="MoveToTable"/>
+        <Action ID="PickBottle"/>
+        <Action ID="PlaceBottle"/>
+        <Action ID="PourBottle"/>
+        <Condition ID="atTable"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+
