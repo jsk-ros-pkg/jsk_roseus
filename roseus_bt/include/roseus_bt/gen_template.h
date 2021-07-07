@@ -248,10 +248,7 @@ int main(int argc, char **argv)
 
   BehaviorTreeFactory factory;
 
-%3%
-%4%
-%5%
-
+%3%%4%%5%
 %2%
 
   StdCoutLogger logger_cout(tree);
@@ -270,6 +267,10 @@ int main(int argc, char **argv)
   return 0;
 }
 )";
+
+  if (register_actions.size() != 0) register_actions.push_back("");
+  if (register_conditions.size() != 0) register_conditions.push_back("");
+  if (register_subscribers.size() != 0) register_subscribers.push_back("");
 
   boost::format bfmt = boost::format(fmt_string) %
     format_ros_init() %
