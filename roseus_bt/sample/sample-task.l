@@ -4,11 +4,12 @@
 
 ;; Initialize *room* and *robot*
 (defun init (&optional (broom t) (start-viewer t))
-  (defparameter *room* (instance sample-room-scene :init :broom broom))
-  (defparameter *robot* (instance sample-robot :init))
-  (send *robot* :reset-pose)
-  (send *robot* :fix-leg-to-coords (make-coords))
-  (send *robot* :update-descendants)
+  (defvar *room* (instance sample-room-scene :init :broom broom))
+  (unless (boundp '*robot*)
+    (defvar *robot* (instance sample-robot :init))
+    (send *robot* :reset-pose)
+    (send *robot* :fix-leg-to-coords (make-coords))
+    (send *robot* :update-descendants))
   (if start-viewer (objects (list *room* *robot*))))
 
 
@@ -36,11 +37,19 @@
 (defun go-to-spot (name)
   (send *robot* :go-to-coords (send *room* :spot name) :debug-view t))
 
+;; At spot
+(defun at-spot (name)
+  (let ((robot-coords (send *robot* :get-legcoords))
+        (spot-coords (send *room* :spot name)))
+    (and (< (norm (send robot-coords :difference-position spot-coords)) 100)
+         (< (norm (send robot-coords :difference-rotation spot-coords)) (deg2rad 10)))))
 
 ;; Pour task
-(defun pick-sushi-bottle ()
+(defun pick-sushi-bottle (&optional bottle-coords)
   (let ((petbottle-obj (send *room* :object "petbottle"))
         (sushi-cup-obj (send *room* :object "sushi-cup")))
+    (if bottle-coords
+        (send petbottle-obj :newcoords bottle-coords))
     (dual-arm-grasp-obj petbottle-obj sushi-cup-obj)
     (send *robot* :dual-arm-ik
           (list
@@ -73,12 +82,14 @@
 
 
 ;; Sweep task
-(defun sweep-floor ()
-  (let ((broom-obj (send *room* :object "broom")))
+(defun sweep-floor (&optional (check-fn #'(lambda () t)))
+  (let ((broom-obj (send *room* :object "broom"))
+        (i 0))
     (send *robot* :dual-arm-ik (send broom-obj :handle) :debug-view t)
 
-    (dotimes (i 125)
+    (while (funcall check-fn)
       (send broom-obj :rpy -pi/2 0 (* 0.2 (sin (/ i 10.0))))
       (send broom-obj :locate (float-vector (+ 400 (* 250 (sin (/ (incf i) 10.0)))) -1500 0) :world)
       (send *robot* :dual-arm-ik (send broom-obj :handle))
-      (send *irtviewer* :draw-objects))))
+      (send *irtviewer* :draw-objects)
+      (incf i))))
