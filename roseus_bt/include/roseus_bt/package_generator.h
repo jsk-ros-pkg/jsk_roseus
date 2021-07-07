@@ -43,7 +43,14 @@ public:
     target_filenames(target_filenames),
     author_name(author_name),
     force_overwrite(force_overwrite)
-  {};
+  {
+    // Check package name
+    std::regex valid_naming ("^[a-zA-Z0-9][a-zA-Z0-9_-]*$");
+    if (!std::regex_match(package_name, valid_naming)) {
+      throw std::logic_error(
+          fmt::format("Package name {} does not follow naming conventions", package_name));
+    }
+  };
 
   ~PackageGenerator() {};
 
