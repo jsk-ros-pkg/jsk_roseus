@@ -354,8 +354,7 @@ std::string XMLParser::generate_eus_action_server(const std::string package_name
     std::string fmt_string = 1 + R"(
 (roseus_bt:define-action-callback {0}-execute-cb{1} ({2})
   ;; do something
-{3}
-  t)
+{3}  t)
 )";
     std::vector<std::string> param_list;
     std::vector<std::string> output_list;
@@ -372,6 +371,9 @@ std::string XMLParser::generate_eus_action_server(const std::string package_name
         }
       }
 
+    if (output_list.size() != 0) {
+      output_list.push_back("");
+    }
     return fmt::format(fmt_string,
                        format_eus_name(node->Attribute("ID")),
                        suffix,
