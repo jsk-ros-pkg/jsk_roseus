@@ -406,7 +406,11 @@ std::string XMLParser::generate_eus_action_server(const std::string package_name
        action_node = action_node->NextSiblingElement("Action"))
     {
       std::vector<std::string> server_names;
-      collect_node_attribute(bt_root, action_node, "server_name", &server_names);
+      for (auto bt_node = bt_root;
+           bt_node != nullptr;
+           bt_node = bt_node->NextSiblingElement()) {
+        collect_node_attribute(bt_node, action_node, "server_name", &server_names);
+      }
 
       if (server_names.empty()) {
         callback_definition.push_back(format_callback(action_node, ""));
@@ -484,7 +488,11 @@ std::string XMLParser::generate_eus_condition_server(const std::string package_n
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
       std::vector<std::string> server_names;
-      collect_node_attribute(bt_root, condition_node, "service_name", &server_names);
+      for (auto bt_node = bt_root;
+           bt_node != nullptr;
+           bt_node = bt_node->NextSiblingElement()) {
+        collect_node_attribute(bt_node, condition_node, "service_name", &server_names);
+      }
 
       if (server_names.empty()) {
         callback_definition.push_back(format_callback(condition_node, ""));
