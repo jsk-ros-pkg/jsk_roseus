@@ -69,6 +69,8 @@ std::string TutorialParser::generate_eus_action_server(const std::string package
   load_files.push_back("package://roseus_bt/sample/sample-task.l");
 
   collect_eus_actions(package_name, &callback_definition, &instance_creation);
+  collect_eus_conditions(package_name, &callback_definition, &instance_creation,
+                         NULL, NULL);
 
   if (callback_definition.empty()) return "";
 
@@ -85,7 +87,8 @@ std::string TutorialParser::generate_eus_condition_server(const std::string pack
   // Add load files
   load_files.push_back("package://roseus_bt/sample/sample-task.l");
 
-  collect_eus_conditions(package_name, &callback_definition, &instance_creation);
+  collect_eus_conditions(package_name, NULL, NULL,
+                         &callback_definition, &instance_creation);
 
   if (callback_definition.empty()) return "";
 
