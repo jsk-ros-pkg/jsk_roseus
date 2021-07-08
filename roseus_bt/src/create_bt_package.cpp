@@ -1,4 +1,5 @@
 #include <iostream>
+#include <roseus_bt/xml_parser.h>
 #include <roseus_bt/package_generator.h>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -56,8 +57,9 @@ int main(int argc, char** argv)
       *exec_it = boost::filesystem::path(model_file).stem().string();
   }
 
-  RoseusBT::PackageGenerator pg(package_name, model_files, executable_names, author,
-                                args.count("overwrite"));
+  RoseusBT::PackageGenerator<RoseusBT::XMLParser> pg(package_name,
+                                                     model_files, executable_names,
+                                                     author, args.count("overwrite"));
   pg.write_all_files();
 
   return 0;

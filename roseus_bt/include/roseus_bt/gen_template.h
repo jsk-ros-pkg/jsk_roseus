@@ -38,7 +38,8 @@ public:
   std::string eus_server_template(std::string server_type,
                                     std::string package_name,
                                     std::vector<std::string> callbacks,
-                                    std::vector<std::string> instances);
+                                    std::vector<std::string> instances,
+                                    std::vector<std::string> load_files);
 };
 
 
@@ -286,25 +287,31 @@ int main(int argc, char **argv)
 std::string GenTemplate::eus_server_template(std::string server_type,
                                              std::string package_name,
                                              std::vector<std::string> callbacks,
-                                             std::vector<std::string> instances) {
+                                             std::vector<std::string> instances,
+                                             std::vector<std::string> load_files) {
   auto format_ros_roseus = [server_type]() {
     return fmt::format("(ros::roseus \"{}_server\")", server_type);
   };
   auto format_load_ros_package = [package_name]() {
     return fmt::format("(ros::load-ros-package \"{}\")", package_name);
   };
+  auto format_load_file = [](std::string filename) {
+    return fmt::format("(load \"{}\")", filename);
+  };
+
+  std::transform(load_files.begin(), load_files.end(), load_files.begin(), format_load_file);
 
   std::string fmt_string = 1 + R"(
 %2%
 %3%
 %4%
-
-
-;; define %1% callbacks
 %5%
 
-;; create server instances
+;; define %1% callbacks
 %6%
+
+;; create server instances
+%7%
 
 ;; spin
 (roseus_bt:spin)
@@ -315,6 +322,7 @@ std::string GenTemplate::eus_server_template(std::string server_type,
     format_ros_roseus() %
     format_load_ros_package() %
     "(load \"package://roseus_bt/euslisp/nodes.l\")" %
+    boost::algorithm::join(load_files, "\n") %
     boost::algorithm::join(callbacks, "\n") %
     boost::algorithm::join(instances, "\n");
 

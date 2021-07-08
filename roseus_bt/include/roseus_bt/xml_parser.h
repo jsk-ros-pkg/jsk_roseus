@@ -1,8 +1,10 @@
 #ifndef BEHAVIOR_TREE_ROSEUS_BT_XML_PARSER_
 #define BEHAVIOR_TREE_ROSEUS_BT_XML_PARSER_
 
+#include <map>
+#include <regex>
 #include <tinyxml2.h>
-#include "gen_template.h"
+#include <roseus_bt/gen_template.h>
 
 void push_new(std::string elem, std::vector<std::string>* vec) {
   if (std::find(vec->begin(), vec->end(), elem) == vec->end()) {
@@ -31,6 +33,17 @@ protected:
   GenTemplate gen_template;
   void collect_node_attribute(const XMLElement* node, const XMLElement* ref_node,
                               const char* attribute, std::vector<std::string>* node_attributes);
+  void collect_param_list(const XMLElement* node, std::vector<std::string>* param_list,
+                          std::vector<std::string>* output_list,
+                          std::function<std::string(const XMLElement*)> fn);
+  void collect_param_list(const XMLElement* node, std::vector<std::string>* param_list,
+                          std::vector<std::string>* output_list);
+  void collect_eus_actions(const std::string package_name,
+                           std::vector<std::string>* callback_definition,
+                           std::vector<std::string>* instance_creation);
+  void collect_eus_conditions(const std::string package_name,
+                              std::vector<std::string>* callback_definition,
+                           std::vector<std::string>* instance_creation);
   void maybe_push_message_package(const XMLElement* node,
                                   std::vector<std::string>* message_packages);
   std::string format_eus_name(const std::string input);
@@ -43,6 +56,8 @@ protected:
   std::string generate_subscriber_class(const XMLElement* node);
   std::string generate_main_function(const std::string roscpp_node_name, const std::string xml_filename);
 
+  virtual std::string format_node_body(const XMLElement* node);
+
 public:
 
   std::map<std::string, std::string> generate_all_action_files();
@@ -50,11 +65,13 @@ public:
   std::string generate_cpp_file(const std::string package_name,
                                 const std::string roscpp_node_name,
                                 const std::string xml_filename);
-  std::string generate_eus_action_server(const std::string package_name);
-  std::string generate_eus_condition_server(const std::string package_name);
   void push_dependencies(std::vector<std::string>* message_packages,
                          std::vector<std::string>* action_files,
                          std::vector<std::string>* service_files);
+
+  virtual std::string generate_eus_action_server(const std::string package_name);
+  virtual std::string generate_eus_condition_server(const std::string package_name);
+
 };
 
 
@@ -81,6 +98,178 @@ void XMLParser::collect_node_attribute(const XMLElement* node,
     }
 }
 
+void XMLParser::collect_param_list(const XMLElement* node,
+                                   std::vector<std::string>* param_list,
+                                   std::vector<std::string>* output_list,
+                                   std::function<std::string(const XMLElement*)> fn) {
+
+  for (auto port_node = node->FirstChildElement();
+       port_node != nullptr;
+       port_node = port_node->NextSiblingElement())
+    {
+      std::string name = port_node->Name();
+      if (name == "input_port" || name == "inout_port") {
+        if (param_list != NULL)
+          param_list->push_back(port_node->Attribute("name"));
+      }
+      if (name == "output_port" || name == "inout_port") {
+        if (output_list != NULL)
+          output_list->push_back(fn(port_node));
+      }
+    }
+}
+
+void XMLParser::collect_param_list(const XMLElement* node,
+                                   std::vector<std::string>* param_list,
+                                   std::vector<std::string>* output_list) {
+  auto format_output_port = [](const XMLElement* port_node) {
+    return port_node->Attribute("name");
+  };
+  collect_param_list(node, param_list, output_list, format_output_port);
+}
+
+void XMLParser::collect_eus_actions(const std::string package_name,
+                                    std::vector<std::string>* callback_definition,
+                                    std::vector<std::string>* instance_creation) {
+
+  auto format_callback = [this](const XMLElement* node, std::string suffix) {
+    std::string fmt_string = 1 + R"(
+(roseus_bt:define-action-callback {0}-execute-cb{1} ({2})
+{3}
+  t)
+)";
+    std::vector<std::string> param_list;
+    collect_param_list(node, &param_list, NULL);
+
+    return fmt::format(fmt_string,
+                       format_eus_name(node->Attribute("ID")),
+                       suffix,
+                       boost::algorithm::join(param_list, " "),
+                       format_node_body(node));
+  };
+
+  auto format_instance = [this, package_name](const XMLElement* node, std::string suffix,
+                                              std::string server_name) {
+    std::string fmt_string = 1 + R"(
+(instance roseus_bt:action-node :init
+          "{4}" {0}::{1}Action
+          :execute-cb '{2}-execute-cb{3})
+)";
+    return fmt::format(fmt_string,
+                       package_name,
+                       node->Attribute("ID"),
+                       format_eus_name(node->Attribute("ID")),
+                       suffix,
+                       server_name);
+  };
+
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
+
+  for (auto action_node = root->FirstChildElement("Action");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("Action"))
+    {
+      std::vector<std::string> server_names;
+      for (auto bt_node = bt_root;
+           bt_node != nullptr;
+           bt_node = bt_node->NextSiblingElement()) {
+        collect_node_attribute(bt_node, action_node, "server_name", &server_names);
+      }
+
+      if (server_names.empty()) {
+        callback_definition->push_back(format_callback(action_node, ""));
+        instance_creation->push_back(format_instance(action_node, "",
+                                                     action_node->Attribute("ID")));
+      }
+      else if (server_names.size() == 1) {
+        callback_definition->push_back(format_callback(action_node, ""));
+        instance_creation->push_back(format_instance(action_node, "",
+                                                     server_names.at(0)));
+      }
+      else {
+        int suffix_num = 1;
+        for (std::vector<std::string>::const_iterator it = server_names.begin();
+             it != server_names.end(); ++it, suffix_num++) {
+          std::string suffix = fmt::format("-{}", suffix_num);
+          callback_definition->push_back(format_callback(action_node, suffix));
+          instance_creation->push_back(format_instance(action_node, suffix, *it));
+        }
+      }
+    }
+}
+
+void XMLParser::collect_eus_conditions(const std::string package_name,
+                                       std::vector<std::string>* callback_definition,
+                                       std::vector<std::string>* instance_creation) {
+
+  auto format_callback = [this](const XMLElement* node, std::string suffix) {
+    std::string fmt_string = 1 + R"(
+(roseus_bt:define-condition-callback {0}-cb{1} ({2})
+{3}
+  )
+)";
+    std::vector<std::string> param_list;
+    collect_param_list(node, &param_list, NULL);
+
+    return fmt::format(fmt_string,
+                       format_eus_name(node->Attribute("ID")),
+                       suffix,
+                       boost::algorithm::join(param_list, " "),
+                       format_node_body(node));
+  };
+
+  auto format_instance = [this, package_name](const XMLElement* node, std::string suffix,
+                                              std::string service_name) {
+    std::string fmt_string = 1 + R"(
+(instance roseus_bt:condition-node :init
+          "{4}" {0}::{1}
+          :execute-cb #'{2}-cb{3})
+)";
+    return fmt::format(fmt_string,
+                       package_name,
+                       node->Attribute("ID"),
+                       format_eus_name(node->Attribute("ID")),
+                       suffix,
+                       service_name);
+  };
+
+  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
+
+  for (auto condition_node = root->FirstChildElement("Condition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("Condition"))
+    {
+      std::vector<std::string> server_names;
+      for (auto bt_node = bt_root;
+           bt_node != nullptr;
+           bt_node = bt_node->NextSiblingElement()) {
+        collect_node_attribute(bt_node, condition_node, "service_name", &server_names);
+      }
+
+      if (server_names.empty()) {
+        callback_definition->push_back(format_callback(condition_node, ""));
+        instance_creation->push_back(format_instance(condition_node, "",
+                                                    condition_node->Attribute("ID")));
+      }
+      else if (server_names.size() == 1) {
+        callback_definition->push_back(format_callback(condition_node, ""));
+        instance_creation->push_back(format_instance(condition_node, "",
+                                                    server_names.at(0)));
+      }
+      else {
+        int suffix_num = 1;
+        for (std::vector<std::string>::const_iterator it = server_names.begin();
+             it != server_names.end(); ++it, suffix_num++) {
+          std::string suffix = fmt::format("-{}", suffix_num);
+          callback_definition->push_back(format_callback(condition_node, suffix));
+          instance_creation->push_back(format_instance(condition_node, suffix, *it));
+        }
+      }
+    }
+}
+
 void XMLParser::maybe_push_message_package(const XMLElement* node,
                                            std::vector<std::string>* message_packages) {
   std::string msg_type = node->Attribute("type");
@@ -98,6 +287,20 @@ std::string XMLParser::format_eus_name(const std::string input) {
                  [](unsigned char c){ return std::tolower(c); });
   return out;
 };
+
+std::string XMLParser::format_node_body(const XMLElement* node) {
+  auto format_setoutput = [](const XMLElement* port_node) {
+    return fmt::format("  ;; (roseus_bt:set-output \"{0}\" <{1}>)",
+                       port_node->Attribute("name"),
+                       port_node->Attribute("type"));
+  };
+
+  std::vector<std::string> output_list;
+  output_list.push_back("  ;; do something");
+  collect_param_list(node, NULL, &output_list, format_setoutput);
+
+  return boost::algorithm::join(output_list, "\n");
+}
 
 std::string XMLParser::port_node_to_message_description(const XMLElement* port_node) {
   if (!port_node->Attribute("type") ||
@@ -344,181 +547,32 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
 }
 
 std::string XMLParser::generate_eus_action_server(const std::string package_name) {
-  auto format_setoutput = [](const XMLElement* node) {
-    return fmt::format("  ;; (roseus_bt:set-output \"{0}\" <{1}>)",
-                       node->Attribute("name"),
-                       node->Attribute("type"));
-  };
 
-  auto format_callback = [this, format_setoutput](const XMLElement* node, std::string suffix) {
-    std::string fmt_string = 1 + R"(
-(roseus_bt:define-action-callback {0}-execute-cb{1} ({2})
-  ;; do something
-{3}  t)
-)";
-    std::vector<std::string> param_list;
-    std::vector<std::string> output_list;
-    for (auto port_node = node->FirstChildElement();
-         port_node != nullptr;
-         port_node = port_node->NextSiblingElement())
-      {
-        std::string name = port_node->Name();
-        if (name == "input_port" || name == "inout_port") {
-          param_list.push_back(port_node->Attribute("name"));
-        }
-        if (name == "output_port" || name == "inout_port") {
-          output_list.push_back(format_setoutput(port_node));
-        }
-      }
-
-    if (output_list.size() != 0) {
-      output_list.push_back("");
-    }
-    return fmt::format(fmt_string,
-                       format_eus_name(node->Attribute("ID")),
-                       suffix,
-                       boost::algorithm::join(param_list, " "),
-                       boost::algorithm::join(output_list, "\n"));
-  };
-
-  auto format_instance = [this, package_name](const XMLElement* node, std::string suffix,
-                                              std::string server_name) {
-    std::string fmt_string = 1 + R"(
-(instance roseus_bt:action-node :init
-          "{4}" {0}::{1}Action
-          :execute-cb '{2}-execute-cb{3})
-)";
-  return fmt::format(fmt_string,
-                     package_name,
-                     node->Attribute("ID"),
-                     format_eus_name(node->Attribute("ID")),
-                     suffix,
-                     server_name);
-  };
-
-  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
-  const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
   std::vector<std::string> callback_definition;
   std::vector<std::string> instance_creation;
+  std::vector<std::string> load_files;
 
-  for (auto action_node = root->FirstChildElement("Action");
-       action_node != nullptr;
-       action_node = action_node->NextSiblingElement("Action"))
-    {
-      std::vector<std::string> server_names;
-      for (auto bt_node = bt_root;
-           bt_node != nullptr;
-           bt_node = bt_node->NextSiblingElement()) {
-        collect_node_attribute(bt_node, action_node, "server_name", &server_names);
-      }
-
-      if (server_names.empty()) {
-        callback_definition.push_back(format_callback(action_node, ""));
-        instance_creation.push_back(format_instance(action_node, "",
-                                                    action_node->Attribute("ID")));
-      }
-      else if (server_names.size() == 1) {
-        callback_definition.push_back(format_callback(action_node, ""));
-        instance_creation.push_back(format_instance(action_node, "",
-                                                    server_names.at(0)));
-      }
-      else {
-        int suffix_num = 1;
-        for (std::vector<std::string>::const_iterator it = server_names.begin();
-             it != server_names.end(); ++it, suffix_num++) {
-            std::string suffix = fmt::format("-{}", suffix_num);
-            callback_definition.push_back(format_callback(action_node, suffix));
-            instance_creation.push_back(format_instance(action_node, suffix, *it));
-        }
-      }
-    }
+  collect_eus_actions(package_name, &callback_definition, &instance_creation);
 
   if (callback_definition.empty()) return "";
 
   return gen_template.eus_server_template("action", package_name,
-                                          callback_definition, instance_creation);
+                                          callback_definition, instance_creation,
+                                          load_files);
 }
 
 std::string XMLParser::generate_eus_condition_server(const std::string package_name) {
-  auto format_callback = [this](const XMLElement* node, std::string suffix) {
-    std::string fmt_string = 1 + R"(
-(roseus_bt:define-condition-callback {0}-cb{1} ({2})
-  ;; do something
-  )
-)";
-    std::vector<std::string> param_list;
-    for (auto port_node = node->FirstChildElement();
-         port_node != nullptr;
-         port_node = port_node->NextSiblingElement())
-      {
-        std::string name = port_node->Name();
-        if (name == "input_port" || name == "inout_port") {
-          param_list.push_back(port_node->Attribute("name"));
-        }
-      }
-
-    return fmt::format(fmt_string,
-                       format_eus_name(node->Attribute("ID")),
-                       suffix,
-                       boost::algorithm::join(param_list, " "));
-  };
-
-  auto format_instance = [this, package_name](const XMLElement* node, std::string suffix,
-                                              std::string service_name) {
-    std::string fmt_string = 1 + R"(
-(instance roseus_bt:condition-node :init
-          "{4}" {0}::{1}
-          :execute-cb #'{2}-cb{3})
-)";
-  return fmt::format(fmt_string,
-                     package_name,
-                     node->Attribute("ID"),
-                     format_eus_name(node->Attribute("ID")),
-                     suffix,
-                     service_name);
-  };
-
-  const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
-  const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
   std::vector<std::string> callback_definition;
   std::vector<std::string> instance_creation;
+  std::vector<std::string> load_files;
 
-  for (auto condition_node = root->FirstChildElement("Condition");
-       condition_node != nullptr;
-       condition_node = condition_node->NextSiblingElement("Condition"))
-    {
-      std::vector<std::string> server_names;
-      for (auto bt_node = bt_root;
-           bt_node != nullptr;
-           bt_node = bt_node->NextSiblingElement()) {
-        collect_node_attribute(bt_node, condition_node, "service_name", &server_names);
-      }
-
-      if (server_names.empty()) {
-        callback_definition.push_back(format_callback(condition_node, ""));
-        instance_creation.push_back(format_instance(condition_node, "",
-                                                    condition_node->Attribute("ID")));
-      }
-      else if (server_names.size() == 1) {
-        callback_definition.push_back(format_callback(condition_node, ""));
-        instance_creation.push_back(format_instance(condition_node, "",
-                                                    server_names.at(0)));
-      }
-      else {
-        int suffix_num = 1;
-        for (std::vector<std::string>::const_iterator it = server_names.begin();
-             it != server_names.end(); ++it, suffix_num++) {
-            std::string suffix = fmt::format("-{}", suffix_num);
-            callback_definition.push_back(format_callback(condition_node, suffix));
-            instance_creation.push_back(format_instance(condition_node, suffix, *it));
-        }
-      }
-    }
+  collect_eus_conditions(package_name, &callback_definition, &instance_creation);
 
   if (callback_definition.empty()) return "";
 
   return gen_template.eus_server_template("condition", package_name,
-                                          callback_definition, instance_creation);
+                                          callback_definition, instance_creation,
+                                          load_files);
 }
 
 std::map<std::string, std::string> XMLParser::generate_all_action_files() {
