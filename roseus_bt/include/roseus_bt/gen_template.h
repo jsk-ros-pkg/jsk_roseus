@@ -300,6 +300,7 @@ std::string GenTemplate::eus_server_template(std::string server_type,
   };
 
   std::transform(load_files.begin(), load_files.end(), load_files.begin(), format_load_file);
+  if (load_files.size() != 0) load_files.push_back("");
 
   std::string fmt_string = 1 + R"(
 %1%
