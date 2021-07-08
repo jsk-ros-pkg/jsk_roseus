@@ -47,7 +47,7 @@ protected:
   void maybe_push_message_package(const XMLElement* node,
                                   std::vector<std::string>* message_packages);
   std::string format_eus_name(const std::string input);
-  std::string port_node_to_message_description(const XMLElement* port_node);
+  std::string format_message_description(const XMLElement* port_node);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
   std::string generate_headers(const std::string package_name);
@@ -302,7 +302,7 @@ std::string XMLParser::format_node_body(const XMLElement* node) {
   return boost::algorithm::join(output_list, "\n");
 }
 
-std::string XMLParser::port_node_to_message_description(const XMLElement* port_node) {
+std::string XMLParser::format_message_description(const XMLElement* port_node) {
   if (!port_node->Attribute("type") ||
       !port_node->Attribute("name")) {
     std::string error_str = "Illformed port in ";
@@ -324,7 +324,7 @@ std::string XMLParser::generate_action_file_contents(const XMLElement* node) {
        port_node = port_node->NextSiblingElement())
     {
       std::string name = port_node->Name();
-      std::string text = port_node_to_message_description(port_node);
+      std::string text = format_message_description(port_node);
 
       if (name == "input_port" || name == "inout_port") {
         goal.push_back(text);
@@ -345,7 +345,7 @@ std::string XMLParser::generate_service_file_contents(const XMLElement* node) {
        port_node = port_node->NextSiblingElement())
     {
       std::string name = port_node->Name();
-      std::string text = port_node_to_message_description(port_node);
+      std::string text = format_message_description(port_node);
 
       if (name == "input_port") {
         request.push_back(text);
