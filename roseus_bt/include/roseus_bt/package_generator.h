@@ -6,7 +6,6 @@
 #include <iostream>
 #include <fmt/format.h>
 #include <boost/filesystem.hpp>
-#include <roseus_bt/xml_parser.h>
 #include <roseus_bt/pkg_template.h>
 
 
@@ -27,6 +26,7 @@ public:
   bool yn(const std::string message);
 };
 
+template<class Parser>
 class PackageGenerator
 {
 public:
@@ -57,7 +57,7 @@ public:
 private:
   Query query;
   PkgTemplate pkg_template;
-  std::vector<XMLParser> parser_vector;
+   std::vector<Parser> parser_vector;
   std::string package_name;
   std::vector<std::string> xml_filenames;
   std::vector<std::string> target_filenames;
@@ -69,12 +69,12 @@ protected:
 
 public:
   void copy_xml_file(std::string* xml_filename);
-  void write_action_files(XMLParser* parser);
-  void write_service_files(XMLParser* parser);
-  void write_cpp_file(XMLParser* parser,
+  void write_action_files(Parser* parser);
+  void write_service_files(Parser* parser);
+  void write_cpp_file(Parser* parser,
                       const std::string target_filename, const std::string xml_filename);
-  void write_eus_action_server(XMLParser* parser, const std::string target_filename);
-  void write_eus_condition_server(XMLParser* parser, const std::string target_filename);
+  void write_eus_action_server(Parser* parser, const std::string target_filename);
+  void write_eus_condition_server(Parser* parser, const std::string target_filename);
   void write_cmake_lists(const std::vector<std::string> message_packages,
                          const std::vector<std::string> service_files,
                          const std::vector<std::string> action_files);
@@ -98,11 +98,13 @@ bool Query::yn(const std::string message) {
   throw std::logic_error("Invalid input");
 }
 
-bool PackageGenerator::overwrite(const std::string filename) {
+template<class Parser>
+bool PackageGenerator<Parser>::overwrite(const std::string filename) {
   return force_overwrite || query.yn(fmt::format("Overwrite {}?", filename));
 }
 
-void PackageGenerator::copy_xml_file(std::string* xml_filename) {
+template<class Parser>
+void PackageGenerator<Parser>::copy_xml_file(std::string* xml_filename) {
   std::string base_dir = fmt::format("{}/models", package_name);
   std::string dest_file = fmt::format("{}/{}",
       base_dir,
@@ -120,7 +122,8 @@ void PackageGenerator::copy_xml_file(std::string* xml_filename) {
   *xml_filename = dest_file;
 }
 
-void PackageGenerator::write_action_files(XMLParser* parser) {
+template<class Parser>
+void PackageGenerator<Parser>::write_action_files(Parser* parser) {
   std::string base_dir = fmt::format("{}/action", package_name);
   boost::filesystem::create_directories(base_dir);
 
@@ -133,7 +136,8 @@ void PackageGenerator::write_action_files(XMLParser* parser) {
   }
 }
 
-void PackageGenerator::write_service_files(XMLParser* parser) {
+template<class Parser>
+void PackageGenerator<Parser>::write_service_files(Parser* parser) {
   std::string base_dir = fmt::format("{}/srv", package_name);
   boost::filesystem::create_directories(base_dir);
 
@@ -146,9 +150,10 @@ void PackageGenerator::write_service_files(XMLParser* parser) {
   }
 }
 
-void PackageGenerator::write_cpp_file(XMLParser* parser,
-                                      const std::string target_filename,
-                                      const std::string xml_filename) {
+template<class Parser>
+void PackageGenerator<Parser>::write_cpp_file(Parser* parser,
+                                              const std::string target_filename,
+                                              const std::string xml_filename) {
   std::string base_dir = fmt::format("{}/src", package_name);
   boost::filesystem::create_directories(base_dir);
 
@@ -164,8 +169,9 @@ void PackageGenerator::write_cpp_file(XMLParser* parser,
   output_file.close();
 }
 
-void PackageGenerator::write_eus_action_server(XMLParser* parser,
-                                               const std::string target_filename) {
+template<class Parser>
+void PackageGenerator<Parser>::write_eus_action_server(Parser* parser,
+                                                       const std::string target_filename) {
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
@@ -181,8 +187,9 @@ void PackageGenerator::write_eus_action_server(XMLParser* parser,
   output_file.close();
 }
 
-void PackageGenerator::write_eus_condition_server(XMLParser* parser,
-                                                  const std::string target_filename) {
+template<class Parser>
+void PackageGenerator<Parser>::write_eus_condition_server(Parser* parser,
+                                                          const std::string target_filename) {
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
@@ -198,9 +205,10 @@ void PackageGenerator::write_eus_condition_server(XMLParser* parser,
   output_file.close();
 }
 
-void PackageGenerator::write_cmake_lists(const std::vector<std::string> message_packages,
-                                         const std::vector<std::string> service_files,
-                                         const std::vector<std::string> action_files) {
+template<class Parser>
+void PackageGenerator<Parser>::write_cmake_lists(const std::vector<std::string> message_packages,
+                                                 const std::vector<std::string> service_files,
+                                                 const std::vector<std::string> action_files) {
   std::string base_dir = package_name;
   boost::filesystem::create_directories(base_dir);
 
@@ -216,7 +224,8 @@ void PackageGenerator::write_cmake_lists(const std::vector<std::string> message_
   output_file.close();
 }
 
-void PackageGenerator::write_package_xml(const std::vector<std::string> message_packages) {
+template<class Parser>
+void PackageGenerator<Parser>::write_package_xml(const std::vector<std::string> message_packages) {
   std::string base_dir = package_name;
   boost::filesystem::create_directories(base_dir);
 
@@ -230,7 +239,8 @@ void PackageGenerator::write_package_xml(const std::vector<std::string> message_
   output_file.close();
 }
 
-void PackageGenerator::write_all_files() {
+template<class Parser>
+void PackageGenerator<Parser>::write_all_files() {
   std::vector<std::string> message_packages;
   std::vector<std::string> action_files;
   std::vector<std::string> service_files;
@@ -239,7 +249,7 @@ void PackageGenerator::write_all_files() {
   message_packages.push_back("actionlib_msgs");
 
   for (int i=0; i<parser_vector.size(); i++) {
-    XMLParser* parser = &parser_vector.at(i);
+    Parser* parser = &parser_vector.at(i);
     std::string xml_filename = xml_filenames.at(i);
     std::string target_filename = target_filenames.at(i);
 
