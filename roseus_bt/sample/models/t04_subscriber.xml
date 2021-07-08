@@ -11,6 +11,16 @@
                     <Action ID="MoveTo" name="MoveToSpot" spot="table-front"
                             server_name="/t04_subscriber/moveto"/>
                 </Fallback>
+                <RetryUntilSuccesful name="WaitForTopicMessage" num_attempts="-1">
+                    <Fallback>
+                        <Condition ID="CheckCoords" name="CheckBottleCoords"
+                                   coords="${bottle_coords}"
+                                   service_name="t04_subscriber/checkcoords"/>
+                        <Delay delay_msec="1000" name="Sleep">
+                            <AlwaysFailure/>
+                        </Delay>
+                    </Fallback>
+                </RetryUntilSuccesful>
                 <Action ID="PickBottleAt" coords="${bottle_coords}" name="PickBottleAtCoords"
                         server_name="/t04_subscriber/pickbottleat"/>
                 <Action ID="PourBottle" server_name="/t04_subscriber/pourbottle"/>
@@ -24,6 +34,9 @@
         <Action ID="MoveTo">
             <input_port name="spot" type="string"/>
         </Action>
+        <Condition ID="CheckCoords">
+            <input_port name="coords" type="geometry_msgs/Pose"/>
+        </Condition>
         <Action ID="PickBottleAt">
             <input_port name="coords" type="geometry_msgs/Pose"/>
         </Action>
