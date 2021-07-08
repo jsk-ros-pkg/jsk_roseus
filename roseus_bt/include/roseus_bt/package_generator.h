@@ -1,3 +1,6 @@
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_PACKAGE_GENERATOR_
+#define BEHAVIOR_TREE_ROSEUS_BT_PACKAGE_GENERATOR_
+
 #include <map>
 #include <string>
 #include <regex>
@@ -266,4 +269,7 @@ void PackageGenerator<Parser>::write_all_files() {
   write_package_xml(message_packages);
 }
 
+
 }  // namespaceRoseusBT
+
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_PACKAGE_GENERATOR_
