@@ -3,7 +3,7 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <SequenceStar name="InitSequence">
-            <Action ID="Init" name="Initialize Task" server_name="/t05_subtrees/init"/>
+            <Action ID="InitWithBroom" name="Initialize Task" server_name="/t05_subtrees/init"/>
             <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"
                     server_name="/t05_subtrees/setcoords"/>
             <Sequence>
@@ -40,7 +40,7 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="Init"/>
+        <Action ID="InitWithBroom"/>
         <Action ID="MoveTo">
             <input_port name="spot" type="string"/>
         </Action>
