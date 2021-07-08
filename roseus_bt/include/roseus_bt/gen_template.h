@@ -302,23 +302,22 @@ std::string GenTemplate::eus_server_template(std::string server_type,
   std::transform(load_files.begin(), load_files.end(), load_files.begin(), format_load_file);
 
   std::string fmt_string = 1 + R"(
+%1%
 %2%
 %3%
 %4%
+
+;; define callbacks
 %5%
 
-;; define %1% callbacks
-%6%
-
 ;; create server instances
-%7%
+%6%
 
 ;; spin
 (roseus_bt:spin)
 )";
   
   boost::format bfmt = boost::format(fmt_string) %
-    server_type %
     format_ros_roseus() %
     format_load_ros_package() %
     "(load \"package://roseus_bt/euslisp/nodes.l\")" %
