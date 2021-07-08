@@ -1,0 +1,14 @@
+- git:
+    local-name: jsk_roseus
+    uri: https://github.com/Affonso-Gui/jsk_roseus.git
+    version: roseus_bt
+
+- git:
+    local-name: BehaviorTree.ROS
+    uri: https://github.com/BehaviorTree/BehaviorTree.ROS
+    version: master
+
+- git:
+    local-name: Groot
+    uri: https://github.com/BehaviorTree/Groot.git
+    version: master
