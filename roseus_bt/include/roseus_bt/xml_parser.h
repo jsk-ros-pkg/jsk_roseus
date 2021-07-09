@@ -187,8 +187,8 @@ void XMLParser::collect_eus_actions(const std::string package_name,
        action_node = action_node->NextSiblingElement("Action"))
     {
       std::string server_name = action_node->Attribute("server_name");
-      callback_definition->push_back(format_callback(action_node));
-      instance_creation->push_back(format_instance(action_node, server_name));
+      push_new(format_callback(action_node), callback_definition);
+      push_new(format_instance(action_node, server_name), instance_creation);
     }
 }
 
@@ -237,14 +237,14 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
       if (is_reactive(condition_node)) {
         if (parallel_callback_definition != NULL &&
             parallel_instance_creation != NULL) {
-          parallel_callback_definition->push_back(format_callback(condition_node));
-          parallel_instance_creation->push_back(format_instance(condition_node, service_name));
+          push_new(format_callback(condition_node), parallel_callback_definition);
+          push_new(format_instance(condition_node, service_name), parallel_instance_creation);
         }
       }
       else {
         if (callback_definition != NULL && instance_creation != NULL) {
-          callback_definition->push_back(format_callback(condition_node));
-          instance_creation->push_back(format_instance(condition_node, service_name));
+          push_new(format_callback(condition_node), callback_definition);
+          push_new(format_instance(condition_node, service_name), instance_creation);
         }
       }
     }
