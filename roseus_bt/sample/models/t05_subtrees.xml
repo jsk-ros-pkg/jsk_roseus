@@ -3,9 +3,8 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <SequenceStar name="InitSequence">
-            <Action ID="InitWithBroom" name="Initialize Task" server_name="/t05_subtrees/init"/>
-            <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"
-                    server_name="/t05_subtrees/setcoords"/>
+            <Action ID="InitWithBroom" name="Initialize Task"/>
+            <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"/>
             <Sequence>
                 <SubTree ID="PourTask" coords="bottle_coords"/>
                 <SubTree ID="SweepTask"/>
@@ -16,48 +15,48 @@
     <BehaviorTree ID="PourTask">
         <Sequence name="MainSequence">
             <Fallback name="MoveToTable">
-                <Condition ID="atSpot" spot="table-front" service_name="/t05_subtrees/atspot"/>
-                <Action ID="MoveTo" name="MoveToSpot" spot="table-front"
-                        server_name="/t05_subtrees/moveto"/>
+                <Condition ID="atSpot" spot="table-front"/>
+                <Action ID="MoveTo" name="MoveToSpot" spot="table-front"/>
             </Fallback>
-            <Action ID="PickBottleAt" coords="${coords}" name="PickBottleAtCoords"
-                    server_name="/t05_subtrees/pickbottleat"/>
-            <Action ID="PourBottle" server_name="/t05_subtrees/pourbottle"/>
-            <Action ID="PlaceBottle" server_name="/t05_subtrees/placebottle"/>
+            <Action ID="PickBottleAt" coords="${coords}" name="PickBottleAtCoords"/>
+            <Action ID="PourBottle"/>
+            <Action ID="PlaceBottle"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <BehaviorTree ID="SweepTask">
         <Sequence name="MainSequence">
             <Fallback name="MoveToBroom">
-                <Condition ID="atSpot" spot="broom-front" service_name="/t05_subtrees/atspot"/>
-                <Action ID="MoveTo" spot="broom-front" server_name="/t05_subtrees/moveto"/>
+                <Condition ID="atSpot" spot="broom-front"/>
+                <Action ID="MoveTo" spot="broom-front"/>
             </Fallback>
             <Timeout msec="5000">
-                <Action ID="SweepFloor" server_name="/t05_subtrees/sweepfloor"/>
+                <Action ID="SweepFloor"/>
             </Timeout>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="InitWithBroom"/>
-        <Action ID="MoveTo">
+        <SubTree ID="PourTask"/>
+        <SubTree ID="SweepTask"/>
+
+        <Action ID="InitWithBroom" server_name="/t05_subtrees/init"/>
+        <Action ID="MoveTo" server_name="/t05_subtrees/moveto">
             <input_port name="spot" type="string"/>
         </Action>
-        <Action ID="PickBottleAt">
+        <Action ID="PickBottleAt" server_name="/t05_subtrees/pickbottleat">
             <input_port name="coords" type="geometry_msgs/Pose"/>
         </Action>
-        <Action ID="PlaceBottle"/>
-        <Action ID="PourBottle"/>
-        <SubTree ID="PourTask"/>
-        <Action ID="SweepFloor"/>
-        <SubTree ID="SweepTask"/>
-        <Condition ID="atSpot">
-            <input_port name="spot" type="string"/>
-        </Condition>
-        <Action ID="setCoords">
+        <Action ID="PourBottle" server_name="/t05_subtrees/pourbottle"/>
+        <Action ID="PlaceBottle" server_name="/t05_subtrees/placebottle"/>
+        <Action ID="SweepFloor" server_name="/t05_subtrees/sweepfloor"/>
+        <Action ID="setCoords" server_name="/t05_subtrees/setcoords">
             <output_port name="coords" type="geometry_msgs/Pose"/>
         </Action>
+
+        <Condition ID="atSpot" service_name="/t05_subtrees/atspot">
+            <input_port name="spot" type="string"/>
+        </Condition>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>

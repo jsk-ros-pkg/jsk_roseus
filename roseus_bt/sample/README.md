@@ -17,11 +17,11 @@ The model file https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_b
 - `<BehaviorTree/>` specifies the tree structure
 - `<TreeNodesModel/>` specifies the custom node pallete
 
-Every `<Action/>` tag in the `<BehaviorTree/>` must be provided with an arbitrary `server_name` field.
+Every `<Action/>` tag in the `<TreeNodesModel/>` must be provided with an arbitrary `server_name` field.
 
 The recommended way to write a xml model file is to use the Groot editor and then edit in the required fields afterwards.
 
-Both the behavior tree composition at the xml model file and the euslisp server file are loaded at runtime, but changes in the node pallete (`<TreeNodesModel/>`) must be re-generated and re-compiled.
+Both the `<BehaviorTree/>` tag in the xml model file and the euslisp server are loaded at runtime, but changes in the node pallete (`<TreeNodesModel/>`) must be re-generated and re-compiled.
 
 #### Run the code
 
@@ -46,7 +46,7 @@ rosrun groot Groot
 
 The second example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t02_conditions.xml also includes condition and fallback nodes.
 
-Every `<Condition/>` tag in the `<BehaviorTree/>` must be provided with an arbitrary `service_name` field.
+Every `<Condition/>` tag in the `<TreeNodesModel/>` must be provided with an arbitrary `service_name` field.
 
 #### Run the code
 
