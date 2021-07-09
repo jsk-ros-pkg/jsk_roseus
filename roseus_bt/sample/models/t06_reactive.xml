@@ -3,14 +3,12 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <SequenceStar name="InitSequence">
-            <Action ID="InitWithBroom" name="Initialize Task" server_name="/t06_reactive/init"/>
-            <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"
-                    server_name="/t06_reactive/setcoords"/>
+            <Action ID="InitWithBroom" name="Initialize Task"/>
+            <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"/>
             <Action ID="setRequestSubscriber" to="needs_drink" topic_name="/get_drink/request"/>
             <Sequence>
                 <ReactiveFallback>
-                    <Condition ID="CheckTrue" value="${needs_drink}" name="NeedsDrink"
-                               service_name="/t06_reactive/checktrue"/>
+                    <Condition ID="CheckTrue" value="${needs_drink}" name="NeedsDrink"/>
                     <SubTree ID="SweepTask"/>
                 </ReactiveFallback>
                 <SubTree ID="PourTask" coords="bottle_coords"/>
@@ -21,50 +19,50 @@
     <BehaviorTree ID="PourTask">
         <Sequence name="MainSequence">
             <Fallback name="MoveToTable">
-                <Condition ID="atSpot" spot="table-front"
-                           service_name="/t06_reactive/atspot"/>
-                <Action ID="MoveTo" name="MoveToSpot" spot="table-front"
-                        server_name="/t06_reactive/moveto"/>
+                <Condition ID="atSpot" spot="table-front"/>
+                <Action ID="MoveTo" name="MoveToSpot" spot="table-front"/>
             </Fallback>
-            <Action ID="PickBottleAt" coords="${coords}" name="PickBottleAtCoords"
-                    server_name="/t06_reactive/pickbottleat"/>
-            <Action ID="PourBottle" server_name="/t06_reactive/pourbottle"/>
-            <Action ID="PlaceBottle" server_name="/t06_reactive/placebottle"/>
+            <Action ID="PickBottleAt" coords="${coords}" name="PickBottleAtCoords"/>
+            <Action ID="PourBottle"/>
+            <Action ID="PlaceBottle"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <BehaviorTree ID="SweepTask">
         <Sequence name="MainSequence">
             <Fallback name="MoveToBroom">
-                <Condition ID="atSpot" spot="broom-front" service_name="/t06_reactive/atspot"/>
-                <Action ID="MoveTo" spot="broom-front" server_name="/t06_reactive/moveto"/>
+                <Condition ID="atSpot" spot="broom-front"/>
+                <Action ID="MoveTo" spot="broom-front"/>
             </Fallback>
-            <Action ID="SweepFloor" server_name="/t06_reactive/sweepfloor"/>
+            <Action ID="SweepFloor"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="InitWithBroom"/>
-        <Action ID="MoveTo">
+        <SubTree ID="PourTask"/>
+        <SubTree ID="SweepTask"/>
+
+        <Action ID="InitWithBroom" server_name="/t06_reactive/init"/>
+        <Action ID="MoveTo" server_name="/t06_reactive/moveto">
             <input_port name="spot" type="string"/>
         </Action>
-        <Action ID="PickBottleAt">
+        <Action ID="PickBottleAt" server_name="/t06_reactive/pickbottleat">
             <input_port name="coords" type="geometry_msgs/Pose"/>
         </Action>
-        <Action ID="PlaceBottle"/>
-        <Action ID="PourBottle"/>
-        <SubTree ID="PourTask"/>
-        <Action ID="SweepFloor"/>
-        <SubTree ID="SweepTask"/>
-        <Condition ID="atSpot">
-            <input_port name="spot" type="string"/>
-        </Condition>
-        <Condition ID="CheckTrue">
-          <input_port name="value" type="std_msgs/Bool"/>
-        </Condition>
-        <Action ID="setCoords">
+        <Action ID="PourBottle" server_name="/t06_reactive/pourbottle"/>
+        <Action ID="PlaceBottle" server_name="/t06_reactive/placebottle"/>
+        <Action ID="SweepFloor" server_name="/t06_reactive/sweepfloor"/>
+        <Action ID="setCoords" server_name="/t06_reactive/setcoords">
             <output_port name="coords" type="geometry_msgs/Pose"/>
         </Action>
+
+        <Condition ID="atSpot" service_name="/t06_reactive/atspot">
+            <input_port name="spot" type="string"/>
+        </Condition>
+        <Condition ID="CheckTrue" service_name="/t06_reactive/checktrue">
+          <input_port name="value" type="std_msgs/Bool"/>
+        </Condition>
+
         <Subscriber ID="setRequestSubscriber" type="std_msgs/Bool"/>
     </TreeNodesModel>
     <!-- ////////// -->

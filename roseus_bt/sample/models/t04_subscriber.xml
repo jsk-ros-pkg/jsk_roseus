@@ -3,48 +3,47 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <SequenceStar name="InitSequence">
-            <Action ID="Init" name="Initialize Task" server_name="/t04_subscriber/init"/>
+            <Action ID="Init" name="Initialize Task"/>
             <Action ID="setSubscriber" name="setBottleCoords" to="bottle_coords" topic_name="/petbottle/coords"/>
             <Sequence name="MainSequence">
                 <Fallback name="MoveToTable">
-                    <Condition ID="atSpot" spot="table-front" service_name="/t04_subscriber/atspot"/>
-                    <Action ID="MoveTo" name="MoveToSpot" spot="table-front"
-                            server_name="/t04_subscriber/moveto"/>
+                    <Condition ID="atSpot" spot="table-front"/>
+                    <Action ID="MoveTo" name="MoveToSpot" spot="table-front"/>
                 </Fallback>
                 <RetryUntilSuccesful name="WaitForTopicMessage" num_attempts="-1">
                     <Fallback>
                         <Condition ID="CheckCoords" name="CheckBottleCoords"
-                                   coords="${bottle_coords}"
-                                   service_name="t04_subscriber/checkcoords"/>
+                                   coords="${bottle_coords}"/>
                         <Delay delay_msec="1000" name="Sleep">
                             <AlwaysFailure/>
                         </Delay>
                     </Fallback>
                 </RetryUntilSuccesful>
-                <Action ID="PickBottleAt" coords="${bottle_coords}" name="PickBottleAtCoords"
-                        server_name="/t04_subscriber/pickbottleat"/>
-                <Action ID="PourBottle" server_name="/t04_subscriber/pourbottle"/>
-                <Action ID="PlaceBottle" server_name="/t04_subscriber/placebottle"/>
+                <Action ID="PickBottleAt" coords="${bottle_coords}" name="PickBottleAtCoords"/>
+                <Action ID="PourBottle"/>
+                <Action ID="PlaceBottle"/>
             </Sequence>
         </SequenceStar>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="Init"/>
-        <Action ID="MoveTo">
+        <Action ID="Init" server_name="/t04_subscriber/init"/>
+        <Action ID="MoveTo" server_name="/t04_subscriber/moveto">
             <input_port name="spot" type="string"/>
         </Action>
-        <Condition ID="CheckCoords">
-            <input_port name="coords" type="geometry_msgs/Pose"/>
-        </Condition>
-        <Action ID="PickBottleAt">
+        <Action ID="PickBottleAt" server_name="/t04_subscriber/pickbottleat">
             <input_port name="coords" type="geometry_msgs/Pose"/>
         </Action>
-        <Action ID="PlaceBottle"/>
-        <Action ID="PourBottle"/>
-        <Condition ID="atSpot">
+        <Action ID="PourBottle" server_name="/t04_subscriber/pourbottle"/>
+        <Action ID="PlaceBottle" server_name="/t04_subscriber/placebottle"/>
+
+        <Condition ID="CheckCoords" service_name="t04_subscriber/checkcoords">
+            <input_port name="coords" type="geometry_msgs/Pose"/>
+        </Condition>
+        <Condition ID="atSpot" service_name="/t04_subscriber/atspot">
             <input_port name="spot" type="string"/>
         </Condition>
+
         <Subscriber ID="setSubscriber" type="geometry_msgs/Pose"/>
     </TreeNodesModel>
     <!-- ////////// -->

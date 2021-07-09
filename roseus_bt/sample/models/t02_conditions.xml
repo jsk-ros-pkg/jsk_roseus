@@ -3,24 +3,24 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence name="MainSequence">
-            <Action ID="Init" name="InitializeTask" server_name="/t02_conditions/init"/>
+            <Action ID="Init" name="InitializeTask"/>
             <Fallback name="MoveToTable">
-                <Condition ID="atTable" service_name="/t02_conditions/attable"/>
-                <Action ID="MoveToTable" server_name="/t02_conditions/movetotable"/>
+                <Condition ID="atTable"/>
+                <Action ID="MoveToTable"/>
             </Fallback>
-            <Action ID="PickBottle" server_name="/t02_conditions/pickbottle"/>
-            <Action ID="PourBottle" server_name="/t02_conditions/pourbottle"/>
-            <Action ID="PlaceBottle" server_name="/t02_conditions/placebottle"/>
+            <Action ID="PickBottle"/>
+            <Action ID="PourBottle"/>
+            <Action ID="PlaceBottle"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="Init"/>
-        <Action ID="MoveToTable"/>
-        <Action ID="PickBottle"/>
-        <Action ID="PlaceBottle"/>
-        <Action ID="PourBottle"/>
-        <Condition ID="atTable"/>
+        <Action ID="Init" server_name="/t02_conditions/init"/>
+        <Action ID="MoveToTable" server_name="/t02_conditions/movetotable"/>
+        <Action ID="PickBottle" server_name="/t02_conditions/pickbottle"/>
+        <Action ID="PourBottle" server_name="/t02_conditions/pourbottle"/>
+        <Action ID="PlaceBottle" server_name="/t02_conditions/placebottle"/>
+        <Condition ID="atTable" service_name="/t02_conditions/attable"/>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>
