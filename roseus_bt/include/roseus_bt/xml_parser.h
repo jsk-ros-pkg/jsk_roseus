@@ -4,6 +4,7 @@
 #include <map>
 #include <regex>
 #include <tinyxml2.h>
+#include <roseus_bt/exceptions.h>
 #include <roseus_bt/gen_template.h>
 
 void push_new(std::string elem, std::vector<std::string>* vec) {
@@ -23,6 +24,7 @@ public:
 
   XMLParser(std::string filename) : gen_template() {
     doc.LoadFile(filename.c_str());
+    check_xml_file();
   }
 
   ~XMLParser() {};
@@ -31,6 +33,7 @@ protected:
 
   XMLDocument doc;
   GenTemplate gen_template;
+  void check_xml_file();
   bool is_reactive(const XMLElement* node);
   bool is_reactive_base(const XMLElement* node, const XMLElement* ref_node, bool reactive_parent);
   void collect_param_list(const XMLElement* node, std::vector<std::string>* param_list,
@@ -75,6 +78,96 @@ public:
   virtual std::string generate_eus_condition_server(const std::string package_name);
 
 };
+
+void XMLParser::check_xml_file() {
+  auto format_error = [](const XMLElement* node, std::string message) {
+      XMLPrinter printer;
+      node->Accept(&printer);
+      return fmt::format("{} at line {}: {}",
+                         message,
+                         node->GetLineNum(),
+                         printer.CStr());
+  };
+  auto check_push = [this](XMLElement* node, std::vector<std::string>* vec) {
+    if (std::find(vec->begin(), vec->end(), node->Attribute("ID")) == vec->end()) {
+      vec->push_back(node->Attribute("ID"));
+    }
+    else {
+      XMLPrinter printer;
+      node->Accept(&printer);
+      std::cerr << "Ignoring duplicated node at " <<
+      node->GetLineNum() << ": " << printer.CStr() << std::endl;
+      doc.DeleteNode(node);
+    }
+  };
+
+  XMLElement* bt_root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  std::vector<std::string> actions, conditions, subscribers;
+
+  // check tree model
+  for (auto node = bt_root->FirstChildElement();
+       node != nullptr;
+       node = node->NextSiblingElement()) {
+
+    std::string name = node->Name();
+
+    if (name != "Action" &&
+        name != "Condition" &&
+        name != "Subscriber" &&
+        name != "SubTree") {
+      std::string message = fmt::format("Unknown node type {}", name);
+      throw XMLError::UnknownNode(format_error(node, message));
+    }
+
+    if (!node->Attribute("ID")) {
+      throw XMLError::NoAttribute(format_error(node, "Missing \"ID\" attribute"));
+    }
+
+    if (name == "Action") {
+      if (!node->Attribute("server_name")) {
+        throw XMLError::NoAttribute(format_error(node, "Missing \"server_name\" attribute"));
+      }
+      check_push(node, &actions);
+    }
+
+    if (name == "Condition") {
+      if (!node->Attribute("service_name")) {
+        throw XMLError::NoAttribute(format_error(node, "Missing \"service_name\" attribute"));
+      }
+      check_push(node, &conditions);
+    }
+
+    if (name == "Subscriber") {
+      if (!node->Attribute("type")) {
+        throw XMLError::NoAttribute(format_error(node, "Missing \"type\" attribute"));
+      }
+      check_push(node, &subscribers);
+    }
+
+    // check ports
+    for (auto port_node = node->FirstChildElement();
+         port_node != nullptr;
+         port_node = port_node->NextSiblingElement()) {
+
+      std::string port_name = port_node->Name();
+
+      if (port_name != "input_port" &&
+          port_name != "output_port" &&
+          port_name != "inout_port") {
+        std::string message = fmt::format("Unknown port type {}", port_node->Name());
+        throw XMLError::UnknownNode(format_error(port_node, message));
+      }
+
+      if (!port_node->Attribute("name")) {
+        throw XMLError::NoAttribute(format_error(port_node, "Missing \"name\" attribute"));
+      }
+
+      if (!port_node->Attribute("type")) {
+        throw XMLError::NoAttribute(format_error(port_node, "Missing \"type\" attribute"));
+      }
+    }
+  }
+}
 
 bool XMLParser::is_reactive(const XMLElement* node) {
   const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
