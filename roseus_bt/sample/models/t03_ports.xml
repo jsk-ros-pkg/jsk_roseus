@@ -3,39 +3,37 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <SequenceStar name="InitSequence">
-            <Action ID="Init" name="Initialize Task" server_name="/t03_ports/init"/>
-            <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"
-                    server_name="/t03_ports/setcoords"/>
+            <Action ID="Init" name="Initialize Task"/>
+            <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"/>
             <Sequence name="MainSequence">
                 <Fallback name="MoveToTable">
-                    <Condition ID="atSpot" spot="table-front" service_name="/t03_ports/atspot"/>
-                    <Action ID="MoveTo" name="MoveToSpot" spot="table-front"
-                            server_name="/t03_ports/moveto"/>
+                    <Condition ID="atSpot" spot="table-front"/>
+                    <Action ID="MoveTo" name="MoveToSpot" spot="table-front"/>
                 </Fallback>
-                <Action ID="PickBottleAt" coords="${bottle_coords}" name="PickBottleAtCoords"
-                        server_name="/t03_ports/pickbottleat"/>
-                <Action ID="PourBottle" server_name="/t03_ports/pourbottle"/>
-                <Action ID="PlaceBottle" server_name="/t03_ports/placebottle"/>
+                <Action ID="PickBottleAt" coords="${bottle_coords}" name="PickBottleAtCoords"/>
+                <Action ID="PourBottle"/>
+                <Action ID="PlaceBottle"/>
             </Sequence>
         </SequenceStar>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="Init"/>
-        <Action ID="MoveTo">
+        <Action ID="Init" server_name="/t03_ports/init"/>
+        <Action ID="MoveTo" server_name="/t03_ports/moveto">
             <input_port name="spot" type="string"/>
         </Action>
-        <Action ID="PickBottleAt">
+        <Action ID="PickBottleAt" server_name="/t03_ports/pickbottleat">
             <input_port name="coords" type="geometry_msgs/Pose"/>
         </Action>
-        <Action ID="PlaceBottle"/>
-        <Action ID="PourBottle"/>
-        <Condition ID="atSpot">
-            <input_port name="spot" type="string"/>
-        </Condition>
-        <Action ID="setCoords">
+        <Action ID="PourBottle" server_name="/t03_ports/pourbottle"/>
+        <Action ID="PlaceBottle" server_name="/t03_ports/placebottle"/>
+        <Action ID="setCoords" server_name="/t03_ports/setcoords">
             <output_port name="coords" type="geometry_msgs/Pose"/>
         </Action>
+
+        <Condition ID="atSpot" service_name="/t03_ports/atspot">
+            <input_port name="spot" type="string"/>
+        </Condition>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>

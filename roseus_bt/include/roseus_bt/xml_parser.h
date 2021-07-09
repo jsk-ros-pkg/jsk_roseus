@@ -31,11 +31,8 @@ protected:
 
   XMLDocument doc;
   GenTemplate gen_template;
-  void collect_node_attribute(const XMLElement* node, const XMLElement* ref_node,
-                              const char* attribute,
-                              std::vector<std::string>* node_attributes,
-                              std::vector<std::string>* parallel_node_attributes,
-                              bool is_parallel);
+  bool is_reactive(const XMLElement* node);
+  bool is_reactive_base(const XMLElement* node, const XMLElement* ref_node, bool reactive_parent);
   void collect_param_list(const XMLElement* node, std::vector<std::string>* param_list,
                           std::vector<std::string>* output_list,
                           std::function<std::string(const XMLElement*)> fn);
@@ -49,12 +46,6 @@ protected:
                               std::vector<std::string>* instance_creation,
                               std::vector<std::string>* parallel_callback_definition,
                               std::vector<std::string>* parallel_instance_creation);
-  void push_eus_server(const XMLElement* node,
-                       std::vector<std::string> server_names,
-                       std::vector<std::string>* callback_definition,
-                       std::vector<std::string>* instance_creation,
-                       std::function<std::string(const XMLElement*, std::string)> format_callback,
-                       std::function<std::string(const XMLElement*, std::string, std::string)> format_instance);
   void maybe_push_message_package(const XMLElement* node,
                                   std::vector<std::string>* message_packages);
   std::string format_eus_name(const std::string input);
@@ -85,52 +76,46 @@ public:
 
 };
 
+bool XMLParser::is_reactive(const XMLElement* node) {
+  const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
 
-void XMLParser::collect_node_attribute(const XMLElement* node,
-                                       const XMLElement* ref_node,
-                                       const char* attribute,
-                                       std::vector<std::string>* node_attributes,
-                                       std::vector<std::string>* parallel_node_attributes,
-                                       bool is_parallel) {
+  bt_root->NextSiblingElement("BehaviorTree");
+
+  for (auto bt_node = bt_root;
+       bt_node != nullptr;
+       bt_node = bt_node->NextSiblingElement("BehaviorTree")) {
+    if (is_reactive_base(bt_node, node, false))
+      return true;
+  }
+  return false;
+}
+
+bool XMLParser::is_reactive_base(const XMLElement* node, const XMLElement* ref_node,
+                                 bool reactive_parent) {
+
   std::string name = node->Name();
 
   // is possibly reactive control node
   if (name.find("Fallback") != std::string::npos ||
       name.find("Sequence") != std::string::npos) {
-    is_parallel = (name.find("Reactive") != std::string::npos);
+    reactive_parent = (name.find("Reactive") != std::string::npos);
   }
 
-  // node name and ID matches
-  if (!std::strcmp(node->Name(), ref_node->Name()) &&
+  // parent node is reactive, node name and ID matches
+  if (reactive_parent  &&
+      !std::strcmp(node->Name(), ref_node->Name()) &&
       !std::strcmp(node->Attribute("ID"), ref_node->Attribute("ID"))) {
-
-    // check if the node has the given attribute
-    if (!node->Attribute(attribute)) {
-      XMLPrinter printer;
-      node->Accept(&printer);
-      throw std::logic_error(fmt::format("{} is required in {} nodes! At {}",
-                                         attribute, name, printer.CStr()));
-    }
-
-    // push if the attribute is unique to the list
-    if (std::find(node_attributes->begin(), node_attributes->end(),
-                  node->Attribute(attribute)) == node_attributes->end()) {
-      if (is_parallel)
-        parallel_node_attributes->push_back(node->Attribute(attribute));
-      else
-        node_attributes->push_back(node->Attribute(attribute));
-    }
-    return;
+    return true;
   }
 
   for (auto child_node = node->FirstChildElement();
        child_node != nullptr;
        child_node = child_node->NextSiblingElement())
     {
-      collect_node_attribute(child_node, ref_node, attribute,
-                             node_attributes, parallel_node_attributes,
-                             is_parallel);
+      if (is_reactive_base(child_node, ref_node, reactive_parent))
+        return true;
     }
+  return false;
 }
 
 void XMLParser::collect_param_list(const XMLElement* node,
@@ -167,10 +152,10 @@ void XMLParser::collect_eus_actions(const std::string package_name,
                                     std::vector<std::string>* callback_definition,
                                     std::vector<std::string>* instance_creation) {
 
-  auto format_callback = [this](const XMLElement* node, std::string suffix) {
+  auto format_callback = [this](const XMLElement* node) {
     std::string fmt_string = 1 + R"(
-(roseus_bt:define-action-callback {0}-execute-cb{1} ({2})
-{3}
+(roseus_bt:define-action-callback {0}-execute-cb ({1})
+{2}
   t)
 )";
     std::vector<std::string> param_list;
@@ -178,44 +163,32 @@ void XMLParser::collect_eus_actions(const std::string package_name,
 
     return fmt::format(fmt_string,
                        format_eus_name(node->Attribute("ID")),
-                       suffix,
                        boost::algorithm::join(param_list, " "),
                        format_node_body(node));
   };
 
-  auto format_instance = [this, package_name](const XMLElement* node, std::string suffix,
-                                              std::string server_name) {
+  auto format_instance = [this, package_name](const XMLElement* node, std::string server_name) {
     std::string fmt_string = 1 + R"(
 (instance roseus_bt:action-node :init
-          "{4}" {0}::{1}Action
-          :execute-cb '{2}-execute-cb{3})
+          "{3}" {0}::{1}Action
+          :execute-cb '{2}-execute-cb)
 )";
     return fmt::format(fmt_string,
                        package_name,
                        node->Attribute("ID"),
                        format_eus_name(node->Attribute("ID")),
-                       suffix,
                        server_name);
   };
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
-  const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
 
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
     {
-      std::vector<std::string> server_names;
-      for (auto bt_node = bt_root;
-           bt_node != nullptr;
-           bt_node = bt_node->NextSiblingElement("BehaviorTree")) {
-        collect_node_attribute(bt_node, action_node, "server_name", &server_names, &server_names,
-                               false);
-      }
-
-      push_eus_server(action_node, server_names,
-                      callback_definition, instance_creation,
-                      format_callback, format_instance);
+      std::string server_name = action_node->Attribute("server_name");
+      callback_definition->push_back(format_callback(action_node));
+      instance_creation->push_back(format_instance(action_node, server_name));
     }
 }
 
@@ -225,10 +198,10 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
                                        std::vector<std::string>* parallel_callback_definition,
                                        std::vector<std::string>* parallel_instance_creation) {
 
-  auto format_callback = [this](const XMLElement* node, std::string suffix) {
+  auto format_callback = [this](const XMLElement* node) {
     std::string fmt_string = 1 + R"(
-(roseus_bt:define-condition-callback {0}-cb{1} ({2})
-{3}
+(roseus_bt:define-condition-callback {0}-cb ({1})
+{2}
   )
 )";
     std::vector<std::string> param_list;
@@ -236,82 +209,46 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
 
     return fmt::format(fmt_string,
                        format_eus_name(node->Attribute("ID")),
-                       suffix,
                        boost::algorithm::join(param_list, " "),
                        format_node_body(node));
   };
 
-  auto format_instance = [this, package_name](const XMLElement* node, std::string suffix,
-                                              std::string service_name) {
+  auto format_instance = [this, package_name](const XMLElement* node, std::string service_name) {
     std::string fmt_string = 1 + R"(
 (instance roseus_bt:condition-node :init
-          "{4}" {0}::{1}
-          :execute-cb #'{2}-cb{3})
+          "{3}" {0}::{1}
+          :execute-cb #'{2}-cb)
 )";
     return fmt::format(fmt_string,
                        package_name,
                        node->Attribute("ID"),
                        format_eus_name(node->Attribute("ID")),
-                       suffix,
                        service_name);
   };
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
-  const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
 
   for (auto condition_node = root->FirstChildElement("Condition");
        condition_node != nullptr;
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
-      std::vector<std::string> server_names;
-      std::vector<std::string> parallel_server_names;
-      for (auto bt_node = bt_root;
-           bt_node != nullptr;
-           bt_node = bt_node->NextSiblingElement("BehaviorTree")) {
-        collect_node_attribute(bt_node, condition_node, "service_name",
-                               &server_names, &parallel_server_names,
-                               false);
+      std::string service_name = condition_node->Attribute("service_name");
+
+      if (is_reactive(condition_node)) {
+        if (parallel_callback_definition != NULL &&
+            parallel_instance_creation != NULL) {
+          parallel_callback_definition->push_back(format_callback(condition_node));
+          parallel_instance_creation->push_back(format_instance(condition_node, service_name));
+        }
       }
-      push_eus_server(condition_node, server_names,
-                      callback_definition, instance_creation,
-                      format_callback, format_instance);
-      push_eus_server(condition_node, parallel_server_names,
-                      parallel_callback_definition, parallel_instance_creation,
-                      format_callback, format_instance);
+      else {
+        if (callback_definition != NULL && instance_creation != NULL) {
+          callback_definition->push_back(format_callback(condition_node));
+          instance_creation->push_back(format_instance(condition_node, service_name));
+        }
+      }
     }
 }
-
-void XMLParser::push_eus_server(
-    const XMLElement* node,
-    std::vector<std::string> server_names,
-    std::vector<std::string>* callback_definition,
-    std::vector<std::string>* instance_creation,
-    std::function<std::string(const XMLElement*, std::string)> format_callback,
-    std::function<std::string(const XMLElement*, std::string, std::string)> format_instance)
-{
-  if (callback_definition == NULL || instance_creation == NULL) {
-   return;
-  }
-
-  if (server_names.empty()) {
-    return;
-  }
-
-  if (server_names.size() == 1) {
-    callback_definition->push_back(format_callback(node, ""));
-    instance_creation->push_back(format_instance(node, "", server_names.at(0)));
-  }
-  else {
-    int suffix_num = 1;
-    for (std::vector<std::string>::const_iterator it = server_names.begin();
-         it != server_names.end(); ++it, suffix_num++) {
-      std::string suffix = fmt::format("-{}", suffix_num);
-      callback_definition->push_back(format_callback(node, suffix));
-      instance_creation->push_back(format_instance(node, suffix, *it));
-    }
-  }
-}
-
 
 void XMLParser::maybe_push_message_package(const XMLElement* node,
                                            std::vector<std::string>* message_packages) {
@@ -321,7 +258,7 @@ void XMLParser::maybe_push_message_package(const XMLElement* node,
     std::string pkg = msg_type.substr(0, pos);
     push_new(pkg, message_packages);
   }
-};
+}
 
 std::string XMLParser::format_eus_name(const std::string input) {
   std::regex e ("([^A-Z]+)([A-Z]+)");
@@ -329,7 +266,7 @@ std::string XMLParser::format_eus_name(const std::string input) {
   std::transform(out.begin(), out.end(), out.begin(),
                  [](unsigned char c){ return std::tolower(c); });
   return out;
-};
+}
 
 std::string XMLParser::format_node_body(const XMLElement* node) {
   auto format_setoutput = [](const XMLElement* port_node) {
@@ -446,6 +383,10 @@ std::string XMLParser::generate_headers(const std::string package_name) {
 }
 
 std::string XMLParser::generate_action_class(const XMLElement* node, const std::string package_name) {
+  auto format_server_name = [](const XMLElement* node) {
+    return fmt::format("      InputPort<std::string>(\"server_name\", \"{0}\", \"name of the Action Server\")",
+                       node->Attribute("server_name"));
+  };
   auto format_input_port = [](const XMLElement* node) {
     return fmt::format("      InputPort<GoalType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
@@ -468,6 +409,8 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const std::
   std::vector<std::string> provided_output_ports;
   std::vector<std::string> get_inputs;
   std::vector<std::string> set_outputs;
+
+  provided_input_ports.push_back(format_server_name(node));
 
   for (auto port_node = node->FirstChildElement();
        port_node != nullptr;
@@ -498,6 +441,10 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const std::
 }
 
 std::string XMLParser::generate_condition_class(const XMLElement* node, const std::string package_name) {
+  auto format_service_name = [](const XMLElement* node) {
+    return fmt::format("      InputPort<std::string>(\"service_name\", \"{0}\", \"name of the ROS service\")",
+                       node->Attribute("service_name"));
+  };
   auto format_input_port = [](const XMLElement* node) {
     return fmt::format("      InputPort<RequestType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
@@ -509,6 +456,8 @@ std::string XMLParser::generate_condition_class(const XMLElement* node, const st
 
   std::vector<std::string> provided_ports;
   std::vector<std::string> get_inputs;
+
+  provided_ports.push_back(format_service_name(node));
 
   for (auto port_node = node->FirstChildElement("input_port");
        port_node != nullptr;

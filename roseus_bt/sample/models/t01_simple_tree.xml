@@ -3,20 +3,20 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence name="MainSequence">
-            <Action ID="Init" name="InitializeTask" server_name="/t01_simple_tree/init"/>
-            <Action ID="MoveToTable" server_name="/t01_simple_tree/movetotable"/>
-            <Action ID="PickBottle" server_name="/t01_simple_tree/pickbottle"/>
-            <Action ID="PourBottle" server_name="/t01_simple_tree/pourbottle"/>
-            <Action ID="PlaceBottle" server_name="/t01_simple_tree/placebottle"/>
+            <Action ID="Init" name="InitializeTask"/>
+            <Action ID="MoveToTable"/>
+            <Action ID="PickBottle"/>
+            <Action ID="PourBottle"/>
+            <Action ID="PlaceBottle"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="Init"/>
-        <Action ID="MoveToTable"/>
-        <Action ID="PickBottle"/>
-        <Action ID="PlaceBottle"/>
-        <Action ID="PourBottle"/>
+        <Action ID="Init" server_name="/t01_simple_tree/init"/>
+        <Action ID="MoveToTable" server_name="/t01_simple_tree/movetotable"/>
+        <Action ID="PickBottle" server_name="/t01_simple_tree/pickbottle"/>
+        <Action ID="PourBottle" server_name="/t01_simple_tree/pourbottle"/>
+        <Action ID="PlaceBottle" server_name="/t01_simple_tree/placebottle"/>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>
