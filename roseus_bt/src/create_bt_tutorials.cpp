@@ -37,6 +37,7 @@ int main(int argc, char** argv)
   model_files.push_back(path + "t04_subscriber.xml");
   model_files.push_back(path + "t05_subtrees.xml");
   model_files.push_back(path + "t06_reactive.xml");
+  // model_files.push_back(path + "t07_xacro.xml");
 
   // Set executable names
   executable_names.resize(model_files.size());
