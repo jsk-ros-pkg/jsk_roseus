@@ -15,13 +15,13 @@ catkin build roseus_bt_tutorials
 We start with a simple behavior tree, composed only by a few actions organized into a single sequence.
 The model file https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t01_simple_tree.xml is divided into the following two main sections:
 - `<BehaviorTree/>` specifies the tree structure
-- `<TreeNodesModel/>` specifies the custom node pallete
+- `<TreeNodesModel/>` specifies the custom node palette
 
 Every `<Action/>` tag in the `<TreeNodesModel/>` must be provided with an arbitrary `server_name` field.
 
 The recommended way to write a xml model file is to use the Groot editor and then edit in the required fields afterwards.
 
-Both the `<BehaviorTree/>` tag in the xml model file and the euslisp server are loaded at runtime, but changes in the node pallete (`<TreeNodesModel/>`) must be re-generated and re-compiled.
+Both the `<BehaviorTree/>` tag in the xml model file and the euslisp server are loaded at runtime, but changes in the node palette (`<TreeNodesModel/>`) must be re-generated and re-compiled.
 
 #### Run the code
 
@@ -177,7 +177,7 @@ rosrun groot Groot
 
 The sixth example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t06_reactive.xml uses reactive fallbacks to constantly check and respond to user requests.
 
-The main difference of reactive nodes (e.g. `<ReactiveSequence/>` and `<ReactiveFallback/>`) is that when a child returns RUNNING the reactive node will resume ticking from its first child. This forces the node to re-evaluate any conditions preceding the execution node, therefore achieving enhanced reativity.
+The main difference of reactive nodes (e.g. `<ReactiveSequence/>` and `<ReactiveFallback/>`) is that when a child returns RUNNING the reactive node will resume ticking from its first child. This forces the node to re-evaluate any conditions preceding the execution node, therefore achieving enhanced reactivity.
 
 Because in such scenario the condition nodes must be evaluated alongside the running action we prepare two distinct roseus servers -- one for actions and one for conditions.
 On the action side it is also necessary to check for the presence of interruption requests with the `(roseus_bt:ok)` function.
