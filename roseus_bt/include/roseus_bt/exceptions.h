@@ -23,6 +23,11 @@ public:
   NoAttribute(std::string message) : XMLError(message) {};
 };
 
+class NoNode: public XMLError {
+public:
+  NoNode(std::string message) : XMLError(message) {};
+};
+
 class UnknownNode: public XMLError {
 public:
   UnknownNode(std::string message) : XMLError(message) {};
