@@ -175,7 +175,7 @@ rosrun groot Groot
 ## t06_reactive
 ![t06](https://user-images.githubusercontent.com/20625381/125036676-390d7480-e0ce-11eb-813e-69784c2053a9.gif)
 
-The final example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t06_reactive.xml uses reactive fallbacks to constantly check and respond to user requests.
+The sixth example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t06_reactive.xml uses reactive fallbacks to constantly check and respond to user requests.
 
 The main difference of reactive nodes (e.g. `<ReactiveSequence/>` and `<ReactiveFallback/>`) is that when a child returns RUNNING the reactive node will resume ticking from its first child. This forces the node to re-evaluate any conditions preceding the execution node, therefore achieving enhanced reativity.
 
@@ -210,3 +210,22 @@ Optionally run Groot for visualization
 ```bash
 rosrun groot Groot
 ```
+
+## t07_xacro
+
+The final example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t07_xacro.xml.xacro illustrates how we can use the xacro package to improve readability and modularity of the model file descriptions.
+
+The following will create the `t07_xacro.xml` file equivalent to the `t05_subtrees.xml` example
+```bash
+roscd roseus_bt/sample/models
+rosrun xacro xacro t07_xacro.xml.xacro -o t07_xacro.xml
+```
+
+And it is also possible to create independent models for each of the subtrees (in this case setting the `main` argument)
+```bash
+rosrun xacro xacro t07_xacro_pour_task.xml.xacro -o t07_xacro_pour_task.xml main:=true
+rosrun xacro xacro t07_xacro_sweep_task.xml.xacro -o t07_xacro_sweep_task.xml main:=true
+```
+
+Note how port variables need to be quoted (e.g.`$${var}`) to use the xacro syntax.
+The `{var}` notation also works.
