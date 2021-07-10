@@ -88,21 +88,19 @@ void XMLParser::check_xml_file() {
                          node->GetLineNum(),
                          printer.CStr());
   };
-  auto check_push = [this](XMLElement* node, std::vector<std::string>* vec) {
+  auto check_push = [this](XMLElement* node, std::vector<std::string>* vec,
+                           std::vector<XMLElement*> *duplicated_nodes) {
     if (std::find(vec->begin(), vec->end(), node->Attribute("ID")) == vec->end()) {
       vec->push_back(node->Attribute("ID"));
     }
     else {
-      XMLPrinter printer;
-      node->Accept(&printer);
-      std::cerr << "Ignoring duplicated node at " <<
-      node->GetLineNum() << ": " << printer.CStr() << std::endl;
-      doc.DeleteNode(node);
+      duplicated_nodes->push_back(node);
     }
   };
 
   XMLElement* bt_root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::vector<std::string> actions, conditions, subscribers;
+  std::vector<XMLElement*> duplicated_nodes;
 
   // check tree model
   for (auto node = bt_root->FirstChildElement();
@@ -127,21 +125,21 @@ void XMLParser::check_xml_file() {
       if (!node->Attribute("server_name")) {
         throw XMLError::NoAttribute(format_error(node, "Missing \"server_name\" attribute"));
       }
-      check_push(node, &actions);
+      check_push(node, &actions, &duplicated_nodes);
     }
 
     if (name == "Condition") {
       if (!node->Attribute("service_name")) {
         throw XMLError::NoAttribute(format_error(node, "Missing \"service_name\" attribute"));
       }
-      check_push(node, &conditions);
+      check_push(node, &conditions, &duplicated_nodes);
     }
 
     if (name == "Subscriber") {
       if (!node->Attribute("type")) {
         throw XMLError::NoAttribute(format_error(node, "Missing \"type\" attribute"));
       }
-      check_push(node, &subscribers);
+      check_push(node, &subscribers, &duplicated_nodes);
     }
 
     // check ports
@@ -166,6 +164,15 @@ void XMLParser::check_xml_file() {
         throw XMLError::NoAttribute(format_error(port_node, "Missing \"type\" attribute"));
       }
     }
+  }
+
+  // delete duplicated nodes
+  for (int i = 0; i < duplicated_nodes.size(); i++) {
+    XMLElement* node = duplicated_nodes.at(i);
+    std::cerr << fmt::format("Ignoring duplicated {} node {} at line {}",
+                             node->Name(), node->Attribute("ID"), node->GetLineNum())
+              << std::endl;
+    doc.DeleteNode(node);
   }
 }
 
