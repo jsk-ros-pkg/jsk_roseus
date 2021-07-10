@@ -98,9 +98,21 @@ void XMLParser::check_xml_file() {
     }
   };
 
-  XMLElement* bt_root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+  XMLElement* root = doc.RootElement();
+  if (root == nullptr) {
+    throw XMLError::NoNode("The XML must have a root node called <root>");
+  }
+  if (std::string(root->Name()) != "root") {
+    throw XMLError::NoNode("The XML must have a root node called <root>");
+  }
+
+  XMLElement* bt_root = root->FirstChildElement("TreeNodesModel");
   std::vector<std::string> actions, conditions, subscribers;
   std::vector<XMLElement*> duplicated_nodes;
+
+  if (bt_root == nullptr) {
+    throw XMLError::NoNode("The XML must have a <TreeNodesModel> node");
+  }
 
   // check tree model
   for (auto node = bt_root->FirstChildElement();
@@ -178,8 +190,6 @@ void XMLParser::check_xml_file() {
 
 bool XMLParser::is_reactive(const XMLElement* node) {
   const XMLElement* bt_root = doc.RootElement()->FirstChildElement("BehaviorTree");
-
-  bt_root->NextSiblingElement("BehaviorTree");
 
   for (auto bt_node = bt_root;
        bt_node != nullptr;
