@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<root xmlns:xacro="http://www.ros.org/wiki/xacro" main_tree_to_execute="BehaviorTree">
+
+  <xacro:arg name="main" default="false"/>
+
+  <xacro:macro name="generate_bt" params="ID">
+    <BehaviorTree ID="${ID}">
+        <Sequence name="MainSequence">
+            <Fallback name="MoveToTable">
+                <Condition ID="atSpot" spot="table-front"/>
+                <Action ID="MoveTo" name="MoveToSpot" spot="table-front"/>
+            </Fallback>
+            <Action ID="PickBottleAt" coords="$${coords}" name="PickBottleAtCoords"/>
+            <Action ID="PourBottle"/>
+            <Action ID="PlaceBottle"/>
+        </Sequence>
+    </BehaviorTree>
+  </xacro:macro>
+
+  <xacro:macro name="list_nodes" params="namespace">
+    <Action ID="MoveTo" server_name="${namespace}/moveto">
+        <input_port name="spot" type="string"/>
+    </Action>
+    <Action ID="PickBottleAt" server_name="${namespace}/pickbottleat">
+        <input_port name="coords" type="geometry_msgs/Pose"/>
+    </Action>
+    <Action ID="PourBottle" server_name="${namespace}/pourbottle"/>
+    <Action ID="PlaceBottle" server_name="${namespace}/placebottle"/>
+
+    <Condition ID="atSpot" service_name="${namespace}/atspot">
+        <input_port name="spot" type="string"/>
+    </Condition>
+  </xacro:macro>
+
+  <xacro:if value="$(arg main)">
+    <xacro:generate_bt ID="BehaviorTree"/>
+    <!-- ////////// -->
+    <TreeNodesModel>
+      <xacro:list_nodes namespace="/t07_xacro_pour_task"/>
+    </TreeNodesModel>
+  </xacro:if>
+</root>

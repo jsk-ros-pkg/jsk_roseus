@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<root xmlns:xacro="http://www.ros.org/wiki/xacro" main_tree_to_execute="BehaviorTree">
+
+  <xacro:include filename="$(find roseus_bt)/sample/models/t07_xacro_pour_task.xml.xacro"
+                 ns="pour_task"/>
+  <xacro:include filename="$(find roseus_bt)/sample/models/t07_xacro_sweep_task.xml.xacro"
+                 ns="sweep_task"/>
+
+  <xacro:property name="namespace" value="/t07_xacro"/>
+
+  <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <SequenceStar name="InitSequence">
+            <Action ID="InitWithBroom" name="Initialize Task"/>
+            <Action ID="setCoords" name="setBottleCoords" coords="$${bottle_coords}"/>
+            <Sequence>
+                <SubTree ID="PourTask" coords="bottle_coords"/>
+                <SubTree ID="SweepTask"/>
+            </Sequence>
+        </SequenceStar>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <xacro:pour_task.generate_bt ID="PourTask"/>
+    <!-- ////////// -->
+    <xacro:sweep_task.generate_bt ID="SweepTask"/>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <SubTree ID="PourTask"/>
+        <SubTree ID="SweepTask"/>
+
+        <Action ID="InitWithBroom" server_name="${namespace}/init"/>
+        <Action ID="setCoords" server_name="${namespace}/setcoords">
+            <output_port name="coords" type="geometry_msgs/Pose"/>
+        </Action>
+
+        <xacro:pour_task.list_nodes namespace="${namespace}"/>
+        <xacro:sweep_task.list_nodes namespace="${namespace}"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
