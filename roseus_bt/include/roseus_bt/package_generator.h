@@ -10,6 +10,7 @@
 #include <fmt/format.h>
 #include <boost/filesystem.hpp>
 #include <roseus_bt/pkg_template.h>
+#include <roseus_bt/bt_exceptions.h>
 
 
 namespace RoseusBT
@@ -50,8 +51,7 @@ public:
     // Check package name
     std::regex valid_naming ("^[a-zA-Z0-9][a-zA-Z0-9_-]*$");
     if (!std::regex_match(package_name, valid_naming)) {
-      throw std::logic_error(
-          fmt::format("Package name {} does not follow naming conventions", package_name));
+      throw InvalidPackageName(package_name);
     }
   };
 
@@ -98,7 +98,7 @@ bool Query::yn(const std::string message) {
     if (std::regex_match(answer, no)) return false;
   }
 
-  throw std::logic_error("Invalid input");
+  throw InvalidInput();
 }
 
 template<class Parser>

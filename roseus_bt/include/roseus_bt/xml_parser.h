@@ -4,7 +4,9 @@
 #include <map>
 #include <regex>
 #include <tinyxml2.h>
-#include <roseus_bt/exceptions.h>
+#include <boost/filesystem.hpp>
+#include <roseus_bt/bt_exceptions.h>
+#include <roseus_bt/xml_exceptions.h>
 #include <roseus_bt/gen_template.h>
 
 void push_new(std::string elem, std::vector<std::string>* vec) {
@@ -23,6 +25,9 @@ class XMLParser
 public:
 
   XMLParser(std::string filename) : gen_template() {
+    if (!boost::filesystem::exists(filename)) {
+      throw XMLError::FileNotFound(filename);
+    }
     doc.LoadFile(filename.c_str());
     check_xml_file();
   }
@@ -80,14 +85,6 @@ public:
 };
 
 void XMLParser::check_xml_file() {
-  auto format_error = [](const XMLElement* node, std::string message) {
-      XMLPrinter printer;
-      node->Accept(&printer);
-      return fmt::format("{} at line {}: {}",
-                         message,
-                         node->GetLineNum(),
-                         printer.CStr());
-  };
   auto check_push = [this](XMLElement* node, std::vector<std::string>* vec,
                            std::vector<XMLElement*> *duplicated_nodes) {
     if (std::find(vec->begin(), vec->end(), node->Attribute("ID")) == vec->end()) {
@@ -100,10 +97,10 @@ void XMLParser::check_xml_file() {
 
   XMLElement* root = doc.RootElement();
   if (root == nullptr) {
-    throw XMLError::NoNode("The XML must have a root node called <root>");
+    throw XMLError::ParsingError();
   }
   if (std::string(root->Name()) != "root") {
-    throw XMLError::NoNode("The XML must have a root node called <root>");
+    throw XMLError::WrongRoot();
   }
 
   XMLElement* bt_root = root->FirstChildElement("TreeNodesModel");
@@ -111,7 +108,7 @@ void XMLParser::check_xml_file() {
   std::vector<XMLElement*> duplicated_nodes;
 
   if (bt_root == nullptr) {
-    throw XMLError::NoNode("The XML must have a <TreeNodesModel> node");
+    throw XMLError::MissingRequiredNode("TreeNodesModel");
   }
 
   // check tree model
@@ -125,31 +122,30 @@ void XMLParser::check_xml_file() {
         name != "Condition" &&
         name != "Subscriber" &&
         name != "SubTree") {
-      std::string message = fmt::format("Unknown node type {}", name);
-      throw XMLError::UnknownNode(format_error(node, message));
+      throw XMLError::UnknownNode(node);
     }
 
     if (!node->Attribute("ID")) {
-      throw XMLError::NoAttribute(format_error(node, "Missing \"ID\" attribute"));
+      throw XMLError::MissingRequiredAttribute("ID", node);
     }
 
     if (name == "Action") {
       if (!node->Attribute("server_name")) {
-        throw XMLError::NoAttribute(format_error(node, "Missing \"server_name\" attribute"));
+        throw XMLError::MissingRequiredAttribute("server_name", node);
       }
       check_push(node, &actions, &duplicated_nodes);
     }
 
     if (name == "Condition") {
       if (!node->Attribute("service_name")) {
-        throw XMLError::NoAttribute(format_error(node, "Missing \"service_name\" attribute"));
+        throw XMLError::MissingRequiredAttribute("service_name", node);
       }
       check_push(node, &conditions, &duplicated_nodes);
     }
 
     if (name == "Subscriber") {
       if (!node->Attribute("type")) {
-        throw XMLError::NoAttribute(format_error(node, "Missing \"type\" attribute"));
+        throw XMLError::MissingRequiredAttribute("type", node);
       }
       check_push(node, &subscribers, &duplicated_nodes);
     }
@@ -164,16 +160,15 @@ void XMLParser::check_xml_file() {
       if (port_name != "input_port" &&
           port_name != "output_port" &&
           port_name != "inout_port") {
-        std::string message = fmt::format("Unknown port type {}", port_node->Name());
-        throw XMLError::UnknownNode(format_error(port_node, message));
+        throw XMLError::UnknownPortNode(port_node);
       }
 
       if (!port_node->Attribute("name")) {
-        throw XMLError::NoAttribute(format_error(port_node, "Missing \"name\" attribute"));
+        throw XMLError::MissingRequiredAttribute("name", port_node);
       }
 
       if (!port_node->Attribute("type")) {
-        throw XMLError::NoAttribute(format_error(port_node, "Missing \"type\" attribute"));
+        throw XMLError::MissingRequiredAttribute("type", port_node);
       }
     }
   }
@@ -393,13 +388,6 @@ std::string XMLParser::format_node_body(const XMLElement* node) {
 }
 
 std::string XMLParser::format_message_description(const XMLElement* port_node) {
-  if (!port_node->Attribute("type") ||
-      !port_node->Attribute("name")) {
-    std::string error_str = "Illformed port in ";
-    error_str.append(port_node->Name());
-    throw std::logic_error(error_str);
-  }
-
   std::string output = fmt::format("{} {}",
                                    port_node->Attribute("type"),
                                    port_node->Attribute("name"));
@@ -441,7 +429,7 @@ std::string XMLParser::generate_service_file_contents(const XMLElement* node) {
         request.push_back(text);
       }
       else {
-        throw std::logic_error("Condition Node only accepts input ports!");
+        throw InvalidOutputPort();
       }
     }
 
@@ -586,7 +574,7 @@ std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
     std::string type = node->Attribute("type");
     std::size_t pos = type.find('/');
     if (pos == std::string::npos) {
-      throw std::logic_error(fmt::format("Invalid topic type in: {}", type));
+      throw XMLError::InvalidTopicType(type, node);
     }
     return fmt::format("{}::{}", type.substr(0, pos), type.substr(1+pos));
   };
