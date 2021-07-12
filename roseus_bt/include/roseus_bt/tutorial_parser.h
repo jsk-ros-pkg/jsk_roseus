@@ -58,7 +58,7 @@ std::string TutorialParser::format_node_body(const XMLElement* node) {
     return fmt::format(fmt_string, output_list.at(0));
   }
 
-  throw std::logic_error(fmt::format("Unrecognized {} node with ID {}", node->Name(), id));
+  throw XMLError::UnknownNode(node);
 }
 
 std::string TutorialParser::generate_eus_action_server(const std::string package_name) {
