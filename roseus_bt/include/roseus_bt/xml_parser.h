@@ -25,7 +25,7 @@ class XMLParser
 
 public:
 
-  XMLParser(std::string filename) : gen_template() {
+  XMLParser(std::string filename) {
     if (!boost::filesystem::exists(filename)) {
       throw XMLError::FileNotFound(filename);
     }
@@ -39,7 +39,7 @@ public:
 protected:
 
   XMLDocument doc;
-  GenTemplate gen_template;
+  static GenTemplate gen_template;
   void check_xml_file(std::string filename);
   bool is_reactive(const XMLElement* node);
   bool is_reactive_base(const XMLElement* node, const XMLElement* ref_node, bool reactive_parent);
@@ -85,6 +85,8 @@ public:
   virtual std::string generate_eus_condition_server(const std::string package_name);
 
 };
+
+GenTemplate XMLParser::gen_template = GenTemplate();
 
 void XMLParser::check_xml_file(std::string filename) {
   auto check_push = [this](XMLElement* node, std::vector<std::string>* vec,
