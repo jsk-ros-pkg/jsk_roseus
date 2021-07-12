@@ -3,6 +3,9 @@
 #include <roseus_bt/package_generator.h>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
 
 namespace po = boost::program_options;
 
@@ -20,7 +23,8 @@ int main(int argc, char** argv)
      "executable name (defaults to model filename)")
     ("author,a", po::value<std::string>(&author)->default_value("The Author"),
      "author name")
-    ("overwrite,y", "overwrite all existing files");
+    ("overwrite,y", "overwrite all existing files")
+    ("verbose,v", "print all logging messages");
 
   po::positional_options_description positional_arguments;
   positional_arguments.add("package_name", 1);
@@ -29,6 +33,14 @@ int main(int argc, char** argv)
   po::variables_map args;
   po::store(po::command_line_parser(argc, argv).options(desc).positional(positional_arguments).run(), args);
   po::notify(args);
+
+  // Initialize Logger
+  auto logger_level = boost::log::trivial::warning;
+  if (args.count("verbose")) {
+    logger_level = boost::log::trivial::debug;
+  }
+  boost::log::core::get()->set_filter(
+     boost::log::trivial::severity >= logger_level);
 
   // Help
   if (args.count("help")) {

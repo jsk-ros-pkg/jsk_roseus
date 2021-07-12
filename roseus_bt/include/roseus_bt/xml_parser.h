@@ -5,6 +5,7 @@
 #include <regex>
 #include <tinyxml2.h>
 #include <boost/filesystem.hpp>
+#include <boost/log/trivial.hpp>
 #include <roseus_bt/bt_exceptions.h>
 #include <roseus_bt/xml_exceptions.h>
 #include <roseus_bt/gen_template.h>
@@ -28,8 +29,9 @@ public:
     if (!boost::filesystem::exists(filename)) {
       throw XMLError::FileNotFound(filename);
     }
+    BOOST_LOG_TRIVIAL(debug) << "Initializing XMLParser from " << filename << "...";
     doc.LoadFile(filename.c_str());
-    check_xml_file();
+    check_xml_file(filename);
   }
 
   ~XMLParser() {};
@@ -38,7 +40,7 @@ protected:
 
   XMLDocument doc;
   GenTemplate gen_template;
-  void check_xml_file();
+  void check_xml_file(std::string filename);
   bool is_reactive(const XMLElement* node);
   bool is_reactive_base(const XMLElement* node, const XMLElement* ref_node, bool reactive_parent);
   void collect_param_list(const XMLElement* node, std::vector<std::string>* param_list,
@@ -84,7 +86,7 @@ public:
 
 };
 
-void XMLParser::check_xml_file() {
+void XMLParser::check_xml_file(std::string filename) {
   auto check_push = [this](XMLElement* node, std::vector<std::string>* vec,
                            std::vector<XMLElement*> *duplicated_nodes) {
     if (std::find(vec->begin(), vec->end(), node->Attribute("ID")) == vec->end()) {
@@ -176,9 +178,8 @@ void XMLParser::check_xml_file() {
   // delete duplicated nodes
   for (int i = 0; i < duplicated_nodes.size(); i++) {
     XMLElement* node = duplicated_nodes.at(i);
-    std::cerr << fmt::format("Ignoring duplicated {} node {} at line {}",
-                             node->Name(), node->Attribute("ID"), node->GetLineNum())
-              << std::endl;
+    BOOST_LOG_TRIVIAL(warning) << fmt::format("Ignoring duplicated {} node {} at {} line {}",
+       node->Name(), node->Attribute("ID"), filename, node->GetLineNum());
     doc.DeleteNode(node);
   }
 }
@@ -199,6 +200,7 @@ bool XMLParser::is_reactive_base(const XMLElement* node, const XMLElement* ref_n
                                  bool reactive_parent) {
 
   std::string name = node->Name();
+  BOOST_LOG_TRIVIAL(trace) << "is_reactive_base: transversing" << name << "...";
 
   // is possibly reactive control node
   if (name.find("Fallback") != std::string::npos ||
@@ -233,13 +235,19 @@ void XMLParser::collect_param_list(const XMLElement* node,
        port_node = port_node->NextSiblingElement())
     {
       std::string name = port_node->Name();
+      BOOST_LOG_TRIVIAL(trace) << "collect_param_list: transversing" << name << "...";
+
       if (name == "input_port" || name == "inout_port") {
-        if (param_list != NULL)
+        if (param_list != NULL) {
+          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting input:" << name << "...";
           param_list->push_back(port_node->Attribute("name"));
+        }
       }
       if (name == "output_port" || name == "inout_port") {
-        if (output_list != NULL)
+        if (output_list != NULL) {
+          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting output:" << name << "...";
           output_list->push_back(fn(port_node));
+        }
       }
     }
 }
@@ -292,6 +300,7 @@ void XMLParser::collect_eus_actions(const std::string package_name,
        action_node = action_node->NextSiblingElement("Action"))
     {
       std::string server_name = action_node->Attribute("server_name");
+      BOOST_LOG_TRIVIAL(trace) << "collect_eus_actions: transversing " << server_name << "...";
       push_new(format_callback(action_node), callback_definition);
       push_new(format_instance(action_node, server_name), instance_creation);
     }
@@ -338,6 +347,7 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
       std::string service_name = condition_node->Attribute("service_name");
+      BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: transversing " << service_name << "...";
 
       if (is_reactive(condition_node)) {
         if (parallel_callback_definition != NULL &&
