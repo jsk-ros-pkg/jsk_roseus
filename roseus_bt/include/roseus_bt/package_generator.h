@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fmt/format.h>
 #include <boost/filesystem.hpp>
+#include <boost/log/trivial.hpp>
 #include <roseus_bt/pkg_template.h>
 #include <roseus_bt/bt_exceptions.h>
 
@@ -119,6 +120,7 @@ void PackageGenerator<Parser>::copy_xml_file(std::string* xml_filename) {
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
+  BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
   boost::filesystem::create_directories(base_dir);
   boost::filesystem::copy_file(*xml_filename, dest_file,
                                boost::filesystem::copy_option::overwrite_if_exists);
@@ -133,7 +135,9 @@ void PackageGenerator<Parser>::write_action_files(Parser* parser) {
   std::map<std::string, std::string> action_files = parser->generate_all_action_files();
 
   for (auto it=action_files.begin(); it!=action_files.end(); ++it) {
-    std::ofstream output_file(fmt::format("{}/{}", base_dir, it->first));
+    std::string dest_file = fmt::format("{}/{}", base_dir, it->first);
+    BOOST_LOG_TRIVIAL(debug) << "Writing " << dest_file << "...";
+    std::ofstream output_file(dest_file);
     output_file << it->second;
     output_file.close();
   }
@@ -147,7 +151,9 @@ void PackageGenerator<Parser>::write_service_files(Parser* parser) {
   std::map<std::string, std::string> service_files = parser->generate_all_service_files();
 
   for (auto it=service_files.begin(); it!=service_files.end(); ++it) {
-    std::ofstream output_file(fmt::format("{}/{}", base_dir, it->first));
+    std::string dest_file = fmt::format("{}/{}", base_dir, it->first);
+    BOOST_LOG_TRIVIAL(debug) << "Writing " << dest_file << "...";
+    std::ofstream output_file(dest_file);
     output_file << it->second;
     output_file.close();
   }
@@ -166,6 +172,7 @@ void PackageGenerator<Parser>::write_cpp_file(Parser* parser,
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
+  BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
   std::ofstream output_file(dest_file);
   output_file << parser->generate_cpp_file(package_name, roscpp_node_name,
                         boost::filesystem::absolute(xml_filename).c_str());
@@ -182,6 +189,7 @@ void PackageGenerator<Parser>::write_eus_action_server(Parser* parser,
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
+  BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
   std::string body = parser->generate_eus_action_server(package_name);
   if (body.empty()) return;
 
@@ -203,6 +211,7 @@ void PackageGenerator<Parser>::write_eus_condition_server(Parser* parser,
   std::string body = parser->generate_eus_condition_server(package_name);
   if (body.empty()) return;
 
+  BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
   std::ofstream output_file(dest_file);
   output_file << body;
   output_file.close();
@@ -219,6 +228,7 @@ void PackageGenerator<Parser>::write_cmake_lists(const std::vector<std::string> 
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
+  BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
   std::ofstream output_file(dest_file);
   output_file << pkg_template.generate_cmake_lists(package_name, target_filenames,
                                                    message_packages,
@@ -236,6 +246,7 @@ void PackageGenerator<Parser>::write_package_xml(const std::vector<std::string> 
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
     return;
 
+  BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
   std::ofstream output_file(dest_file);
   output_file << pkg_template.generate_package_xml(package_name, author_name,
                                                    message_packages);
@@ -255,6 +266,8 @@ void PackageGenerator<Parser>::write_all_files() {
     Parser* parser = &parser_vector.at(i);
     std::string xml_filename = xml_filenames.at(i);
     std::string target_filename = target_filenames.at(i);
+
+    BOOST_LOG_TRIVIAL(info) << "Generating " << xml_filename << " files...";
 
     parser->push_dependencies(&message_packages, &service_files, &action_files);
     copy_xml_file(&xml_filename);

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(roseus_bt)
 
+SET(Boost_USE_STATIC_LIBS ON)
+
 find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   roscpp
@@ -8,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(TinyXML2 REQUIRED)
+find_package(Boost REQUIRED COMPONENTS log)
 find_package(fmt)
 
 catkin_package(
@@ -23,8 +26,8 @@ include_directories( include ${catkin_INCLUDE_DIRS} ${TinyXML2_INCUDE_DIRS})
 
 add_executable(create_bt_package src/create_bt_package.cpp)
 add_dependencies(create_bt_package ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(create_bt_package ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES} fmt::fmt)
+target_link_libraries(create_bt_package ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES} ${Boost_LIBRARIES} fmt::fmt)
 
 add_executable(create_bt_tutorials src/create_bt_tutorials.cpp)
 add_dependencies(create_bt_tutorials ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(create_bt_tutorials ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES} fmt::fmt)
+target_link_libraries(create_bt_tutorials ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES} ${Boost_LIBRARIES} fmt::fmt)

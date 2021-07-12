@@ -4,6 +4,9 @@
 #include <roseus_bt/package_generator.h>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
 
 namespace po = boost::program_options;
 
@@ -17,11 +20,21 @@ int main(int argc, char** argv)
   po::options_description desc("usage");
   desc.add_options()
     ("help,h", "show this help message and exit")
-    ("overwrite,y", "overwrite all existing files");
+    ("overwrite,y", "overwrite all existing files")
+    ("verbose,v", "print all logging messages");
 
   po::variables_map args;
   po::store(po::parse_command_line(argc, argv, desc), args);
   po::notify(args);
+
+  // Initialize Logger
+  auto logger_level = boost::log::trivial::warning;
+  if (args.count("verbose")) {
+    logger_level = boost::log::trivial::debug;
+  }
+
+  boost::log::core::get()->set_filter(
+     boost::log::trivial::severity >= logger_level);
 
   // Help
   if (args.count("help")) {
