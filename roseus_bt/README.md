@@ -1,5 +1,4 @@
-roseus_bt
-============
+# roseus_bt
 
 Generate glue code for connecting your roseus projects to [BehaviorTree.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP), [BehaviorTree.ROS](https://github.com/BehaviorTree/BehaviorTree.ROS) and [Groot](https://github.com/BehaviorTree/Groot).
 
