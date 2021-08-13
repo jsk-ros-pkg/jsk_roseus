@@ -1,5 +1,4 @@
-roseus_bt_tutorials
-============
+# roseus_bt_tutorials
 
 Create and build the tutorial package
 
