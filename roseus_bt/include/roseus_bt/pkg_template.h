@@ -45,7 +45,7 @@ std::string PkgTemplate::cmake_lists_template(std::string package_name,
                                               std::vector<std::string> action_files,
                                               std::vector<std::string> add_executables) {
   std::string fmt_string = 1+ R"(
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 2.8.3)
 project(%1%)
 
 find_package(catkin REQUIRED COMPONENTS
