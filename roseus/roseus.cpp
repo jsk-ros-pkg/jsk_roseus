@@ -837,12 +837,12 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
   ROS_INFO("%s", __PRETTY_FUNCTION__);
   if( s_bInstalled ) {
     ROS_INFO("exiting roseus %ld", (n==0)?n:ckintval(argv[0]));
+    ros::shutdown();
     s_mapAdvertised.clear();
     s_mapSubscribed.clear();
     s_mapServiced.clear();
     s_mapTimered.clear();
     s_mapHandle.clear();
-    ros::shutdown();
   }
   if (n==0) _exit(0);
   else _exit(ckintval(argv[0]));
