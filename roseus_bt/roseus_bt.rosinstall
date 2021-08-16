@@ -1,7 +1,7 @@
 - git:
     local-name: jsk_roseus
-    uri: https://github.com/Affonso-Gui/jsk_roseus.git
-    version: roseus_bt
+    uri: https://github.com/jsk-ros-pkg/jsk_roseus.git
+    version: master
 
 - git:
     local-name: BehaviorTree.ROS
