@@ -88,6 +88,7 @@
         (error "action-node-callback function expected for execute-cb"))
       (check-fn-closure execute-cb)
       (check-fn-closure preempt-cb)
+      (check-fn-closure accept-cb)
 
       (send-super :init ns spec
               :execute-cb execute-cb
