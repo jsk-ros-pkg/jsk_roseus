@@ -57,7 +57,7 @@
                          (,get-result ,@arg-list))))))
        (setf (get ',name :function-type) :action-node-callback)
        (setf (get ',name :function-documentation) ,(format nil "~S" arg-list)))))
-       
+
 
 (defmacro define-condition-callback (name arg-list &rest body)
   (user::with-gensyms (request get-result)
