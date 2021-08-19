@@ -154,8 +154,10 @@
                   (get (car (last (send gr :nodes))) :func-name)
                 (rmnl (send (car (last (send gr :nodes))) :name)))))
       (send sm :start-state start-state)
-      (ros::ros-info (format nil "convert-smach: smach start-state is ~A." start-state))
-      (ros::ros-info (format nil "convert-smach: smach goal-state are ~A." goal-state))
+      (ros::ros-info (format nil "convert-smach: smach start-state is ~A."
+                             (send (send sm :start-state) :name)))
+      (ros::ros-info (format nil "convert-smach: smach goal-state are ~A."
+                             (send-all (send sm :goal-state) :name)))
       (send sm :reset-state)
   
       sm )))
