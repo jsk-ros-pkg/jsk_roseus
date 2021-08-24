@@ -25,12 +25,19 @@
 (defun check-fn-closure (fn)
   (when (and (consp fn)
              (eql (car fn) 'lambda-closure)
-             (not (zerop (third fn))))
+             (or (not (zerop (third fn)))
+                 (not (zerop (fourth fn)))))
     (let ((name (get-fn-sym fn)))
-      (ros::ros-warn
-       (format nil "Possibly harmful lambda-closure in #'~A! Try using '~A instead."
-               name
-               name)))))
+      (if name
+          (ros::ros-warn
+           (format nil "Possibly harmful lambda-closure in #'~A! Try using '~A instead."
+                   name
+                   name))
+          (ros::ros-warn
+           (format nil "Possibly harmful lambda context in ~A! Reseting to 0..."
+                   (append (subseq fn 0 5) '(...)))
+           (setf (third fn) 0)
+           (setf (fourth fn) 0))))))
 
 
 ;; macros
