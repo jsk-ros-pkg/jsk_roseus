@@ -20,6 +20,7 @@ Returns:
     (send insp :publish-structure) ;; publish once and latch
     (apply #'send sm :arg-keys (union (send sm :arg-keys) (mapcar #'car mydata)))
 
+    (ros::rate hz)
     (while (ros::ok)
       (when spin
         (ros::spin-once)
@@ -40,7 +41,7 @@ Returns:
              (return))
           (t (error "value of key :iterate must be t or function"))))))
       (send sm :execute mydata :step -1)
-      (unix::usleep (round (/ 1e6 hz))))
+      (ros::sleep))
     (send sm :active-state)))
 
 (defun smach-exec (sm)
