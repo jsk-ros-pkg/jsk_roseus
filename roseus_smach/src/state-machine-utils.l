@@ -15,7 +15,7 @@ Returns:
   the last active state
 "
   (let ((insp (instance state-machine-inspector :init sm :root-name root-name)))
-    (unix::sleep 2)
+    (unix::usleep (round (* 0.5 1e6)))
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
     (apply #'send sm :arg-keys (union (send sm :arg-keys) (mapcar #'car mydata)))
