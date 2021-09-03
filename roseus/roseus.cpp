@@ -1870,21 +1870,47 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   isInstalledCheck;
   numunion nu;
   bool oneshot = false;
+  string groupname;
   pointer fncallback = NIL, args;
   NodeHandle *lnode = s_node.get();
   string fncallname;
   float period=ckfltval(argv[0]);
 
-  // period callbackfunc args0 ... argsN [ oneshot ]
-  // ;; oneshot ;;
-  if (n > 1 && issymbol(argv[n-2]) && issymbol(argv[n-1])) {
-    if (argv[n-2] == K_ROSEUS_ONESHOT) {
-      if ( argv[n-1] != NIL ) {
-        oneshot = true;
+  // period callbackfunc args0 ... argsN [:oneshot oneshot] [:groupname groupname]
+  bool check_key = true;
+  while (check_key)
+  {
+    if (n > 1 && issymbol(argv[n-2])) {
+      // ;; oneshot ;;
+      if (argv[n-2] == K_ROSEUS_ONESHOT && issymbol(argv[n-1])) {
+        if ( argv[n-1] != NIL ) {
+          oneshot = true;
+        }
+        n -= 2;
       }
-      n -= 2;
+      // ;; groupname ;;
+      else if (argv[n-2] == K_ROSEUS_GROUPNAME && isstring(argv[n-1])) {
+        groupname.assign((char *)get_string(argv[n-1]));
+        map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+        if( it != s_mapHandle.end() ) {
+          ROS_DEBUG("create-timer with groupname=%s", groupname.c_str());
+          lnode = (it->second).get();
+        } else {
+          ROS_ERROR("Groupname %s is missing. Call (ros::create-nodehandle \"%s\") first.",
+                    groupname.c_str(), groupname.c_str());
+          return (NIL);
+        }
+        n -= 2;
+      }
+      else {
+        check_key = false;
+      }
+    }
+    else {
+      check_key = false;
     }
   }
+
   // ;; functions ;;
   if (piscode(argv[1])) { // compiled code
     fncallback=argv[1];
@@ -1916,7 +1942,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
 
   // ;; store mapTimered
-  ROS_DEBUG("create timer %s at %f (oneshot=%d)", fncallname.c_str(), period, oneshot);
+  ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname);
   s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), TimerFunction(fncallback, args), oneshot);
 
   return (T);
