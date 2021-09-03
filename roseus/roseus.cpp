@@ -2078,7 +2078,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "Create ros NodeHandle with given group name. \n"
          "\n"
          "	(ros::roseus \"test\")\n"
-         "	(ros::create-node-handle \"mygroup\")\n"
+         "	(ros::create-nodehandle \"mygroup\")\n"
          "	(ros::subscribe \"/test\" std_msgs::String #'(lambda (m) (print m)) :groupname \"mygroup\")\n"
          "	(ros::create-timer 0.1 #'(lambda (event) (print \"timer called\")) :groupname \"mygroup\")\n"
          "	(while (ros::ok)  (ros::spin-once \"mygroup\"))\n");
