@@ -2090,7 +2090,26 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"GET-URI",argv[0],(pointer (*)())ROSEUS_GET_URI, "Get the full URI to the master ");
   defun(ctx,"GET-TOPICS",argv[0],(pointer (*)())ROSEUS_GET_TOPICS, "Get the list of topics that are being published by all nodes.");
 
-  defun(ctx,"CREATE-TIMER",argv[0],(pointer (*)())ROSEUS_CREATE_TIMER, "Create periodic callbacks.");
+  defun(ctx,"CREATE-TIMER",argv[0],(pointer (*)())ROSEUS_CREATE_TIMER,
+         "period callbackfunc args0 ... argsN &key (:oneshot oneshot) (:groupname groupname)\n\n"
+         "Create periodic callbacks.\n"
+         "\n"
+         "	;; callback function\n"
+         "	(defun timer-cb (event) (print \"timer callback called.\")\n"
+         "	(defun oneshot-timer-cb (event) (print \"timer callback called. oneshot.\")\n"
+         "	(ros::create-timer 0.1 #'timer-cb)\n"
+         "	(ros::create-timer 0.1 #'oneshot-timer-cb :oneshot t)\n"
+         "	;; lambda function\n"
+         "	(ros::create-timer 0.1 #'(lambda (event) (print \"timer callback called\")))\n"
+         "	;; method call\n"
+         "	(defclass timer-cb-class\n"
+         "	  :super propertied-object\n"
+         "	  :slots ())\n"
+         "	(defmethod timer-cb-class\n"
+         "	  (:init () (ros::create-timer 0.1 #'send self :timer-cb))\n"
+         "	  (:timer-cb (event) (print \"timer callback called\")))\n"
+         "	(setq m (instance timer-cb-class :init))\n"
+         );
 
   pointer_update(Spevalof(PACKAGE),p);
 
