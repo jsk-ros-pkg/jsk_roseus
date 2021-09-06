@@ -1260,7 +1260,7 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   string service;
 
   ckarg(1);
-  if (isstring(argv[0])) service = ros::names::resolve((char *)(argv[0]));
+  if (isstring(argv[0])) service = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
   ROS_DEBUG("unadvertise %s", service.c_str());
