@@ -57,7 +57,7 @@
   (:action-result-cb
    (msg)
    (let (dummy-msg)
-     (ros::ros-debug "[~A] reuslt-cb ~A ~A" name-space (send msg :status :goal_id :id) (goal-status-to-string (send msg :status :status)))
+     (ros::ros-debug "[~A] result-cb ~A ~A" name-space (send msg :status :goal_id :id) (goal-status-to-string (send msg :status :status)))
      (unless (send comm-state :update-result msg)
        (ros::ros-warn "[~A] action-result-cb may recieved old client's goal" name-space)
        (ros::ros-warn "     expected goal id ~A" (and (send comm-state :action-goal) (send (send comm-state :action-goal) :goal_id :id)))
@@ -70,10 +70,10 @@
                       (string= (send msg :status :goal_id :id)
                                (send (send (send c :comm-state) :action-goal) :goal_id :id)))
              (send c :action-result-cb msg)
-             (ros::ros-warn "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send (send c :comm-state) :state))
+             (ros::ros-warn "[~A] result-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send (send c :comm-state) :state))
              )))
        (return-from :action-result-cb nil))
-     (ros::ros-debug "[~A] reuslt-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send comm-state :state))
+     (ros::ros-debug "[~A] result-cb ~A -> state ~A" name-space (send msg :status :goal_id :id) (send comm-state :state))
      ;; transition to goal state
      (setq dummy-msg (instance actionlib_msgs::GoalStatusArray :init))
      (send dummy-msg :status_list (list (send msg :status)))

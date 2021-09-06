@@ -120,13 +120,16 @@
          (send active-state :execute userdata :step (1- step))))
 |#
    ;; execute once on this machine
-   (let (ret next-active-state)
+   (let (ret next-active-state trans-list)
+     ;;(warning-message 3 "Executing state ~A~%" (send-all active-state :name))
      (dolist (astate active-state)
+       (warning-message 3 "Executing state ~A~%" (send astate :name))
        (let* ((last-state astate)
               (trans (send self :next-arc-list astate))
               (exec-result  (send last-state :execute userdata)))
          (ros::ros-debug "trans: ~A" trans)
          (setq trans (remove-if-not #'(lambda(tr)(send tr :check exec-result)) trans))
+         (setq trans-list (append trans-list (list trans)))
          (case (length trans)
            (0 (error "undefined transition ~A from ~A~%" exec-result last-state))
            (1 t) ;; OK
@@ -142,6 +145,15 @@
          (if (send astate :submachine)
              (send (send astate :submachine) :reset-state))
          (push exec-result ret)))
+     ;; spew some info
+     (when (> (length active-state) 1)
+       (dotimes (i (length active-state))
+         (warning-message 3 "Concurent state '~A' retuned outcome '~A' on termination~%"
+                          (send (elt active-state i) :name) (elt ret i)))
+       (warning-message 3 "Concurrent Outcomes ~A~%" (mapcar #'(lambda (s r) (cons (send s :name) r)) active-state ret)))
+     (warning-message 3 "State machine ~A '~A' :'~A' --> '~A'~%"
+                      (if (send self :goal-test next-active-state) "terminating" "transitioning")
+                      (send-all active-state :name) (send-all (flatten trans-list) :name) (send-all next-active-state :name))
      (setq active-state (unique next-active-state))
      ret))
 
