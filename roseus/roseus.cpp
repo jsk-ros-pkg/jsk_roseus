@@ -1889,21 +1889,47 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   isInstalledCheck;
   numunion nu;
   bool oneshot = false;
+  string groupname;
   pointer fncallback = NIL, args;
   NodeHandle *lnode = s_node.get();
   string fncallname;
   float period=ckfltval(argv[0]);
 
-  // period callbackfunc args0 ... argsN [ oneshot ]
-  // ;; oneshot ;;
-  if (n > 1 && issymbol(argv[n-2]) && issymbol(argv[n-1])) {
-    if (argv[n-2] == K_ROSEUS_ONESHOT) {
-      if ( argv[n-1] != NIL ) {
-        oneshot = true;
+  // period callbackfunc args0 ... argsN [:oneshot oneshot] [:groupname groupname]
+  bool check_key = true;
+  while (check_key)
+  {
+    if (n > 1 && issymbol(argv[n-2])) {
+      // ;; oneshot ;;
+      if (argv[n-2] == K_ROSEUS_ONESHOT && issymbol(argv[n-1])) {
+        if ( argv[n-1] != NIL ) {
+          oneshot = true;
+        }
+        n -= 2;
       }
-      n -= 2;
+      // ;; groupname ;;
+      else if (argv[n-2] == K_ROSEUS_GROUPNAME && isstring(argv[n-1])) {
+        groupname.assign((char *)get_string(argv[n-1]));
+        map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+        if( it != s_mapHandle.end() ) {
+          ROS_DEBUG("create-timer with groupname=%s", groupname.c_str());
+          lnode = (it->second).get();
+        } else {
+          ROS_ERROR("Groupname %s is missing. Call (ros::create-nodehandle \"%s\") first.",
+                    groupname.c_str(), groupname.c_str());
+          return (NIL);
+        }
+        n -= 2;
+      }
+      else {
+        check_key = false;
+      }
+    }
+    else {
+      check_key = false;
     }
   }
+
   // ;; functions ;;
   if (piscode(argv[1])) { // compiled code
     fncallback=argv[1];
@@ -1935,7 +1961,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
 
   // ;; store mapTimered
-  ROS_DEBUG("create timer %s at %f (oneshot=%d)", fncallname.c_str(), period, oneshot);
+  ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
   s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), TimerFunction(fncallback, args), oneshot);
 
   return (T);
@@ -2071,8 +2097,9 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "Create ros NodeHandle with given group name. \n"
          "\n"
          "	(ros::roseus \"test\")\n"
-         "	(ros::create-node-handle \"mygroup\")\n"
+         "	(ros::create-nodehandle \"mygroup\")\n"
          "	(ros::subscribe \"/test\" std_msgs::String #'(lambda (m) (print m)) :groupname \"mygroup\")\n"
+         "	(ros::create-timer 0.1 #'(lambda (event) (print \"timer called\")) :groupname \"mygroup\")\n"
          "	(while (ros::ok)  (ros::spin-once \"mygroup\"))\n");
   defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL, "");
 
@@ -2082,7 +2109,26 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"GET-URI",argv[0],(pointer (*)())ROSEUS_GET_URI, "Get the full URI to the master ");
   defun(ctx,"GET-TOPICS",argv[0],(pointer (*)())ROSEUS_GET_TOPICS, "Get the list of topics that are being published by all nodes.");
 
-  defun(ctx,"CREATE-TIMER",argv[0],(pointer (*)())ROSEUS_CREATE_TIMER, "Create periodic callbacks.");
+  defun(ctx,"CREATE-TIMER",argv[0],(pointer (*)())ROSEUS_CREATE_TIMER,
+         "period callbackfunc args0 ... argsN &key (:oneshot oneshot) (:groupname groupname)\n\n"
+         "Create periodic callbacks.\n"
+         "\n"
+         "	;; callback function\n"
+         "	(defun timer-cb (event) (print \"timer callback called.\")\n"
+         "	(defun oneshot-timer-cb (event) (print \"timer callback called. oneshot.\")\n"
+         "	(ros::create-timer 0.1 #'timer-cb)\n"
+         "	(ros::create-timer 0.1 #'oneshot-timer-cb :oneshot t)\n"
+         "	;; lambda function\n"
+         "	(ros::create-timer 0.1 #'(lambda (event) (print \"timer callback called\")))\n"
+         "	;; method call\n"
+         "	(defclass timer-cb-class\n"
+         "	  :super propertied-object\n"
+         "	  :slots ())\n"
+         "	(defmethod timer-cb-class\n"
+         "	  (:init () (ros::create-timer 0.1 #'send self :timer-cb))\n"
+         "	  (:timer-cb (event) (print \"timer callback called\")))\n"
+         "	(setq m (instance timer-cb-class :init))\n"
+         );
 
   pointer_update(Spevalof(PACKAGE),p);
 
