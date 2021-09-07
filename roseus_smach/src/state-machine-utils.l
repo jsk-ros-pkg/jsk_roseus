@@ -7,7 +7,7 @@
 Args:
   sm (state-machine): state machine
   mydata (alist): userdata for smach
-  :spin (bool, default: t): call (ros::spin-once) every time before executing state if T, call nothing otherwise.
+  :spin (bool, default: t): call (send insp :spin-once) every time before executing state if T, call nothing otherwise.
   :hz (integer, default: 1): rate of execution loop
   :iterate (t or function): Enable asking [Y/N] on each action execution if given t, if function is given, then it is called before execution. If function returns nil, next action is not executed. Otherwise the action is executed
 
@@ -15,14 +15,15 @@ Returns:
   the last active state
 "
   (let ((insp (instance state-machine-inspector :init sm :root-name root-name)))
-    (unix::sleep 2)
+    (unix::usleep (round (* 0.5 1e6)))
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
     (apply #'send sm :arg-keys (union (send sm :arg-keys) (mapcar #'car mydata)))
 
+    (ros::rate hz)
     (while (ros::ok)
       (when spin
-        (ros::spin-once)
+        (send insp :spin-once)
         (if (and (boundp '*ri*) *ri*) (send *ri* :spin-once)))
       (send insp :publish-status mydata)
       (when (send sm :goal-reached)
@@ -40,7 +41,7 @@ Returns:
              (return))
           (t (error "value of key :iterate must be t or function"))))))
       (send sm :execute mydata :step -1)
-      (unix::usleep (round (/ 1e6 hz))))
+      (ros::sleep))
     (send sm :active-state)))
 
 (defun smach-exec (sm)
