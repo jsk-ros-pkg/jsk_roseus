@@ -350,11 +350,13 @@
   (:set-preempted
    (&optional (msg (send self :result)) (text ""))
    (ros::ros-info ";; Cancel Goal ~A" (send goal-id :id))
-   (case status
-     ((actionlib_msgs::GoalStatus::*pending* actionlib_msgs::GoalStatus::*recalling*)
+   (cond
+     ((or (= status actionlib_msgs::GoalStatus::*pending*)
+          (= status actionlib_msgs::GoalStatus::*recalling*))
       (setq status actionlib_msgs::GoalStatus::*recalled*)
       )
-     ((actionlib_msgs::GoalStatus::*active* actionlib_msgs::GoalStatus::*preepmpting*)
+     ((or (= status actionlib_msgs::GoalStatus::*active*)
+          (= status actionlib_msgs::GoalStatus::*preempting*))
       (setq status actionlib_msgs::GoalStatus::*preempted*)
       ))
    (send self :publish-result msg text))
