@@ -7,7 +7,7 @@
 Args:
   sm (state-machine): state machine
   mydata (alist): userdata for smach
-  :spin (bool, default: t): call (ros::spin-once) every time before executing state if T, call nothing otherwise.
+  :spin (bool, default: t): call (send sm :spin-once) every time before executing state if T, call nothing otherwise.
   :hz (integer, default: 1): rate of execution loop
   :iterate (t or function): Enable asking [Y/N] on each action execution if given t, if function is given, then it is called before execution. If function returns nil, next action is not executed. Otherwise the action is executed
 
@@ -23,7 +23,7 @@ Returns:
     (ros::rate hz)
     (while (ros::ok)
       (when spin
-        (ros::spin-once)
+        (send insp :spin-once)
         (if (and (boundp '*ri*) *ri*) (send *ri* :spin-once)))
       (send insp :publish-status mydata)
       (when (send sm :goal-reached)
