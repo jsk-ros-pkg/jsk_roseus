@@ -90,13 +90,17 @@
                   (t
                    (setq trans
                          (send sm :add-transition (get n :func-name) (get (cdar (last act)) :func-name)
-                               return-success))
+                               return-success
+                               ;; each action returns t or retun-success when compited
+                               :test '(lambda (arg value) (member arg (list value t)))))
                    (setf (get trans :pddl-state) (cons (rmn (send n :name))
                                                        (rmn (send (cdar (last act)) :name))))
                    (when (< 1 (length act))
                      (setq trans
                            (send sm :add-transition (get n :func-name) (get (cdar act) :func-name)
-                                 return-fail))
+                                 return-fail
+                                 ;; each action returns nil or retun-fail when failed
+                                 :test '(lambda (arg value) (member arg (list value nil)))))
                      (setf (get trans :pddl-state) (cons (rmn (send n :name))
                                                          (rmn (send (cdar act) :name))))))))
            (t
