@@ -13,21 +13,28 @@
 
 (defclass state-machine-inspector
   :super propertied-object
-  :slots (sm root-name srv-name init-tm state-counter structure-counter))
+  :slots (sm root-name srv-name init-tm state-counter structure-counter
+             groupname))
 (defmethod state-machine-inspector
   (:init
-   (sm-obj &key ((:root-name rn) "SM_ROOT") ((:srv-name sn) "/server_name"))
-   (setq sm sm-obj root-name rn srv-name sn)
+   (sm-obj &key ((:root-name rn) "SM_ROOT") ((:srv-name sn) "/server_name") ((:groupname gp)))
+   (setq sm sm-obj root-name rn srv-name sn groupname gp)
    (setq state-counter 0 structure-counter 0)
+   (if groupname (ros::create-nodehandle groupname))
    (ros::advertise
     (concatenate string srv-name "/smach/container_status")
     smach_msgs::SmachContainerStatus 100)
    (ros::advertise
     (concatenate string srv-name "/smach/container_structure")
     smach_msgs::SmachContainerStructure 100 t) ;; latch type
-   (ros::subscribe (concatenate string srv-name "/smach/container_init")
-                   smach_msgs::SmachContainerInitialStatusCmd
-                   #'send self :set-initial-state-cb)
+   (if groupname
+     (ros::subscribe (concatenate string srv-name "/smach/container_init")
+                     smach_msgs::SmachContainerInitialStatusCmd
+                     #'send self :set-initial-state-cb
+                     :groupname groupname)
+     (ros::subscribe (concatenate string srv-name "/smach/container_init")
+                     smach_msgs::SmachContainerInitialStatusCmd
+                     #'send self :set-initial-state-cb))
    self)
   ;;
   (:state-machine (&rest args) (forward-message-to sm args))
@@ -156,12 +163,16 @@
   (:exec-state-machine (&key (user-data) (reset-state))
    (send self :reset-state :user-data user-data :on-state reset-state)
    (while (not (send sm :goal-reached))
-     (ros::spin-once)
+     (send self :spin-once)
      (send self :publish-status user-data)
      (send self :state-machine :execute user-data :step -1))
    (warn ";; goal reached at ~A~%" (send sm :active-state))
    (send self :publish-all-status user-data)
    (send sm :active-state))
+  (:spin-once ()
+    (if groupname
+      (ros::spin-once groupname)
+      (ros::spin-once)))
   )
 
 (provide :state-machine-ros)
