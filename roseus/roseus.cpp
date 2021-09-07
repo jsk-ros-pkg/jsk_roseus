@@ -2072,7 +2072,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "	(setq res (ros::service-call \"add_two_ints\" req t))\n"
          "	(format t \"~d + ~d = ~d~~%\" (send req :a) (send req :b) (send res :sum))\n");
   defun(ctx,"ADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_ADVERTISE_SERVICE,
-         "servicename message_type callback function\n\n"
+         "servicename message_type callbackfunc args0 ... argsN &key (:groupname groupname)\n\n"
          "Advertise a service\n"
          "	(ros::advertise-service \"add_two_ints\" roseus::AddTwoInts #'add-two-ints)");
   defun(ctx,"UNADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE_SERVICE, "Unadvertise service");
