@@ -64,16 +64,13 @@
                                               (apply #',(car sym) (append ',(cdr sym) (list userdata)))))
                      (setq func
                            `(lambda-closure nil 0 0 (x) (apply #',(car sym) ',(cdr sym)))))
-                   (cond
-                    (readable
+                   (let ((node-name (cond (readable func-name)
+                                          (t name))))
                      (if use-sub-machine
-                         (let ((sub-sm (instance state-machine :init)))
-                           (send sm :add-node (instance state :init func-name sub-sm)))
-                       (send sm :add-node (instance state :init func-name func))))
-                    (t (if use-sub-machine
-                           (let ((sub-sm (instance state-machine :init)))
-                             (send sm :add-node (instance state :init name sub-sm)))
-                         (send sm :add-node (instance state :init name func)))))
+                       (let ((sub-sm (instance state-machine :init)))
+                         (send sm :add-node (instance state :init node-name sub-sm)))
+                       (send sm :add-node (instance state :init node-name func)))
+                     (ros::ros-info (format nil "convert-smach: add-node: ~A" node-name)))
                    ))
                 )))
       (setq goal-state (if goal-state (append goals goal-state) goals))
@@ -81,39 +78,29 @@
   
       ;; add arcs
       (dolist (n (send gr :nodes))
-        (let ((act (send n :neighbor-action-alist))
-              (name (rmnl (send n :name)))
-              trans)
-          (cond
-           (readable
-            (cond ((null act))
-                  (t
-                   (setq trans
-                         (send sm :add-transition (get n :func-name) (get (cdar (last act)) :func-name)
-                               return-success))
-                   (setf (get trans :pddl-state) (cons (rmn (send n :name))
-                                                       (rmn (send (cdar (last act)) :name))))
-                   (when (< 1 (length act))
-                     (setq trans
-                           (send sm :add-transition (get n :func-name) (get (cdar act) :func-name)
-                                 return-fail))
-                     (setf (get trans :pddl-state) (cons (rmn (send n :name))
-                                                         (rmn (send (cdar act) :name))))))))
-           (t
-            (cond ((null act))
-                  (t
-                   (setq trans
-                         (send sm :add-transition name (rmnl (send (cdar (last act)) :name))
-                               return-success))
-                   (setf (get trans :pddl-state) (cons (rmn (send n :name))
-                                                       (rmn (send (cdar (last act)) :name))))
-                   (when (< 1 (length act))
-                     (setq trans
-                           (send sm :add-transition name (rmnl (send (cdar act) :name))
-                                 return-fail))
-                     (setf (get trans :pddl-state) (cons (rmn (send n :name))
-                                                         (rmn (send (cdar act) :name))))
-                     )))))
+        (let* ((act (send n :neighbor-action-alist))
+               (name (rmnl (send n :name)))
+               (from-name (cond (readable (get n :func-name))
+                                (t name)))
+               (to-name (cond (readable (get (cdar (last act)) :func-name))
+                              (t (rmnl (send (cdar (last act)) :name)))))
+               trans)
+          (cond ((null act))
+                (t
+                 (setq trans (send sm :add-transition from-name to-name return-success))
+                 (setf (get trans :pddl-state) (cons (rmn (send n :name))
+                                                     (rmn (send (cdar (last act)) :name))))
+                 (ros::ros-info (format nil "convert-smach: add-transition: ~A -> ~A" from-name to-name))
+                 (when (< 1 (length act))
+                   (let ((to-fail-name (cond (readable (get (cdar act) :func-name))
+                                             (t (rmnl (send (cdar (last act)) :name)))))
+                         fail-trans)
+
+                     (setq fail-trans (send sm :add-transition from-name to-fail-name return-fail))
+                     (setf (get fail-trans :pddl-state) (cons (rmn (send n :name))
+                                                              (rmn (send (cdar act) :name))))
+                     (ros::ros-info (format nil "convert-smach: add-transition: ~A !-> ~A" from-name to-fail-name))
+                     ))))
           ))
   
       ;; add self-return fail for nodes which have no failure path.
