@@ -154,6 +154,29 @@
   (:sleep () (ros::duration-sleep (send self :to-sec)))
   )
 
+;; anymsg
+(defclass ros::anymsg
+  :super ros::object
+  :slots (_buff))
+
+(defmethod ros::anymsg
+  (:init ()
+   (send-super :init)
+   self)
+;  (:serialization-length () )
+;  (:serialize (&optional strm) )
+  (:deserialize
+   (buf &optional (ptr- 0))
+   (setq _buff buf)
+   self)
+  (:buf ()
+   _buff)
+  )
+
+(setf (get ros::anymsg :md5sum-) "*")
+(setf (get ros::anymsg :datatype-) "*")
+(setf (get ros::anymsg :definition-) "roseus/AnyMsg")
+
 ;;
 (defclass timer-event
   :super propertied-object
@@ -240,7 +263,7 @@
 
 (defun load (fname &rest args)
   (let ((fullname fname))
-    (when (substringp "package://" fname)
+    (when (and (stringp fname) (substringp "package://" fname))
       (setq fullname (ros::resolve-ros-path fname))
       (when ros::*compile-message*
         (let* ((urlname (url-pathname fname))
@@ -258,7 +281,7 @@
               (return-from load (load (format nil "~A/~A.so" dir path-name)
                                       :entry (format nil "___~A" path-name)))))
           )))
-    (if (null fullname) ;; when ros::resolve-ros-patch is failed to load
+    (if (null fullname) ;; when ros::resolve-ros-path is failed to load
         (error "file ~s not found" fname))
     (apply #'load-org-for-ros fullname args)))
 
@@ -393,7 +416,7 @@ always the rank of list is 2"
            ;; on jade/kinetic, package without msg does not have manifest.l
 	   (ros::ros-warn "Calling (load-ros-manifest ~A) for the package without msg/srv will be deprecated" pkg)
 	   (ros::ros-warn "ACTION REQUIRED")
-	   (ros::ros-warn " Use (load-ros-{package,msg,srv} pkg) for the dependent packages with msg/srv" pkg)
+	   (ros::ros-warn " Use (ros::load-ros-package ~A) or (ros::roseus-add-msgs/srvs ~A) for the dependent packages with msg/srv" pkg pkg)
 	   (ros::ros-warn " See https://github.com/jsk-ros-pkg/jsk_robot/issues/823")
            (dolist (dep (ros::rospack-depends pkg))
              (ros::load-ros-package dep))
@@ -405,7 +428,7 @@ always the rank of list is 2"
 	   (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg)))))
 
 (defun ros::load-ros-package (pkg)
-  "load reqruied roseus files for given package"
+  "load required roseus files for given package"
   (unless (find-package (string-upcase pkg))
     (make-package (string-upcase pkg)))
   (when (probe-file (format nil "~A/msg" (ros::find-load-msg-path pkg)))

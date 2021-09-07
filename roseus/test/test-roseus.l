@@ -103,6 +103,9 @@
     (assert (marker-msg->shape (cylinder->marker-msg (make-cylinder 100 100) (instance std_msgs::header))))
     (assert (marker-msg->shape (cube->marker-msg (make-cube 100 100 100) (instance std_msgs::header))))
     (assert (marker-msg->shape (sphere->marker-msg (make-sphere 100) (instance std_msgs::header))))
+    (assert (shape-msg->shape (cylinder->shape-msg (make-cylinder 100 100))))
+    (assert (shape-msg->shape (cube->shape-msg (make-cube 100 100 100))))
+    (assert (shape-msg->shape (sphere->shape-msg (make-sphere 100))))
     ;;
     ))
 
@@ -110,6 +113,12 @@
   (assert (ros::resolve-ros-path "package://roseus"))
   (assert (not (ros::resolve-ros-path "package://not_existing_package")))
   )
+
+(deftest load-pathname ()
+  (let ((fname (concatenate string #+:linux "/tmp/" "tmp-load-pathname-test.l")))
+    (with-open-file (file fname :direction :output)
+      (format file "(print \"Loaded.\")"))
+    (assert (eq (load (pathname fname)) t))))
 
 (deftest test-image-conversion ()
   (when (and

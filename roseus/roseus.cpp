@@ -1197,11 +1197,30 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   string service;
   pointer emessage;
   pointer fncallback, args;
+  NodeHandle *lnode = s_node.get();
 
   if (isstring(argv[0])) service = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
   emessage = argv[1];
   fncallback = argv[2];
+
+  if (n >= 5 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
+    if (argv[n-2] == K_ROSEUS_GROUPNAME) {
+      string groupname;
+      groupname.assign((char *)get_string(argv[n-1]));
+      map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+      if( it != s_mapHandle.end() ) {
+        ROS_DEBUG("advertising service with groupname=%s", groupname.c_str());
+        lnode = (it->second).get();
+      } else {
+        ROS_ERROR("Groupname \"%s\" is missing. Service %s is not advertised. Call (ros::create-nodehandle \"%s\") first.",
+                  groupname.c_str(), service.c_str(), groupname.c_str());
+        return (NIL);
+      }
+      n -= 2;
+    }
+  }
+
   args=NIL;
   for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
   if( s_mapServiced.find(service) != s_mapServiced.end() ) {
@@ -1225,7 +1244,7 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   aso.req_datatype = (*callback->get()).getRequestDataType();
   aso.res_datatype = (*callback->get()).getResponseDataType();
   aso.helper = *callback;
-  ServiceServer server = s_node->advertiseService(aso);
+  ServiceServer server = lnode->advertiseService(aso);
   boost::shared_ptr<ServiceServer> ser = boost::shared_ptr<ServiceServer>(new ServiceServer(server));
   if ( !!ser ) {
     s_mapServiced[service] = ser;
@@ -1241,7 +1260,7 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   string service;
 
   ckarg(1);
-  if (isstring(argv[0])) service = ros::names::resolve((char *)(argv[0]));
+  if (isstring(argv[0])) service = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
   ROS_DEBUG("unadvertise %s", service.c_str());
@@ -1548,6 +1567,44 @@ pointer ROSEUS_DELETE_PARAM(register context *ctx,int n,pointer *argv)
   return((ros::param::del(key))?(T):(NIL));
 }
 
+pointer ROSEUS_SEARCH_PARAM(register context *ctx,int n,pointer *argv)
+{
+  string key, result;
+
+  ckarg(1);
+  if (isstring(argv[0])) key.assign((char *)get_string(argv[0]));
+  else error(E_NOSTRING);
+
+  if ( ros::param::search(key, result) ) {
+    return makestring((char *)result.c_str(), result.length());
+  }
+  return(NIL);
+}
+
+pointer ROSEUS_LIST_PARAM(register context *ctx,int n,pointer *argv)
+{
+  ckarg(0);
+
+#if ROS_VERSION_MINIMUM(1,11,17)
+  std::vector<std::string> keys;
+  if ( ros::param::getParamNames(keys) ) {
+    pointer ret = cons(ctx, NIL,NIL), first;
+    first = ret;
+    vpush(ret);
+    for(std::vector<std::string>::iterator it = keys.begin(); it != keys.end(); it++) {
+      const std::string& key = *it;
+      ccdr(ret) = cons(ctx, makestring((char *)key.c_str(), key.length()), NIL);
+      ret = ccdr(ret);
+    }
+    vpop();
+    return ccdr(first);
+  }
+#else
+  ROS_ERROR("%s : ros::rosparam::getParamNames is not implemented for roscpp %d.%d.%d",  __PRETTY_FUNCTION__, ROS_VERSION_MAJOR, ROS_VERSION_MINOR, ROS_VERSION_PATCH);
+#endif
+  return(NIL);
+}
+
 pointer ROSEUS_ROSPACK_FIND(register context *ctx,int n,pointer *argv)
 {
   ckarg(1);
@@ -1832,21 +1889,47 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   isInstalledCheck;
   numunion nu;
   bool oneshot = false;
+  string groupname;
   pointer fncallback = NIL, args;
   NodeHandle *lnode = s_node.get();
   string fncallname;
   float period=ckfltval(argv[0]);
 
-  // period callbackfunc args0 ... argsN [ oneshot ]
-  // ;; oneshot ;;
-  if (n > 1 && issymbol(argv[n-2]) && issymbol(argv[n-1])) {
-    if (argv[n-2] == K_ROSEUS_ONESHOT) {
-      if ( argv[n-1] != NIL ) {
-        oneshot = true;
+  // period callbackfunc args0 ... argsN [:oneshot oneshot] [:groupname groupname]
+  bool check_key = true;
+  while (check_key)
+  {
+    if (n > 1 && issymbol(argv[n-2])) {
+      // ;; oneshot ;;
+      if (argv[n-2] == K_ROSEUS_ONESHOT && issymbol(argv[n-1])) {
+        if ( argv[n-1] != NIL ) {
+          oneshot = true;
+        }
+        n -= 2;
       }
-      n -= 2;
+      // ;; groupname ;;
+      else if (argv[n-2] == K_ROSEUS_GROUPNAME && isstring(argv[n-1])) {
+        groupname.assign((char *)get_string(argv[n-1]));
+        map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+        if( it != s_mapHandle.end() ) {
+          ROS_DEBUG("create-timer with groupname=%s", groupname.c_str());
+          lnode = (it->second).get();
+        } else {
+          ROS_ERROR("Groupname %s is missing. Call (ros::create-nodehandle \"%s\") first.",
+                    groupname.c_str(), groupname.c_str());
+          return (NIL);
+        }
+        n -= 2;
+      }
+      else {
+        check_key = false;
+      }
+    }
+    else {
+      check_key = false;
     }
   }
+
   // ;; functions ;;
   if (piscode(argv[1])) { // compiled code
     fncallback=argv[1];
@@ -1878,7 +1961,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
 
   // ;; store mapTimered
-  ROS_DEBUG("create timer %s at %f (oneshot=%d)", fncallname.c_str(), period, oneshot);
+  ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
   s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), TimerFunction(fncallback, args), oneshot);
 
   return (T);
@@ -1932,7 +2015,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"EXIT",argv[0],(pointer (*)())ROSEUS_EXIT, "Exit ros clinet");
 
   defun(ctx,"SUBSCRIBE",argv[0],(pointer (*)())ROSEUS_SUBSCRIBE,
-         "topicname message_type callbackfunc args0 ... argsN &optional (queuesize 1) %key (:groupname groupname)\n\n"
+         "topicname message_type callbackfunc args0 ... argsN &optional (queuesize 1) &key (:groupname groupname)\n\n"
          "Subscribe to a topic, version for class member function with bare pointer.\n"
          "This method connects to the master to register interest in a given topic. The node will automatically be connected with publishers on this topic. On each message receipt, fp is invoked and passed a shared pointer to the message received. This message should not be changed in place, as it is shared with any other subscriptions to this topic.\n"
          "\n"
@@ -1976,7 +2059,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"GET-NUM-SUBSCRIBERS",argv[0],(pointer (*)())ROSEUS_GETNUMSUBSCRIBERS, "Retuns number of subscribers this publish is connected to");
   defun(ctx,"GET-TOPIC-PUBLISHER",argv[0],(pointer (*)())ROSEUS_GETTOPICPUBLISHER, "topicname\n\n""Retuns the name of topic if it already published");
 
-  defun(ctx,"WAIT-FOR-SERVICE",argv[0],(pointer (*)())ROSEUS_WAIT_FOR_SERVICE, "servicename &optional timeout\n\n""Wait for a service to be advertised and available. Blocks until it is.");
+  defun(ctx,"WAIT-FOR-SERVICE",argv[0],(pointer (*)())ROSEUS_WAIT_FOR_SERVICE, "servicename &optional timeout\n\n""Wait for a service to be advertised and available. Blocks until it is. If the timeout is -1, wait until the node is shutdown. Otherwise it wait for timeout seconds");
   defun(ctx,"SERVICE-EXISTS", argv[0], (pointer (*)())ROSEUS_SERVICE_EXISTS, "servicename\n\n""Checks if a service is both advertised and available.");
   defun(ctx,"SERVICE-CALL",argv[0],(pointer (*)())ROSEUS_SERVICE_CALL,
          "servicename message_type &optional persist\n\n"
@@ -1989,7 +2072,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "	(setq res (ros::service-call \"add_two_ints\" req t))\n"
          "	(format t \"~d + ~d = ~d~~%\" (send req :a) (send req :b) (send res :sum))\n");
   defun(ctx,"ADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_ADVERTISE_SERVICE,
-         "servicename message_type callback function\n\n"
+         "servicename message_type callbackfunc args0 ... argsN &key (:groupname groupname)\n\n"
          "Advertise a service\n"
          "	(ros::advertise-service \"add_two_ints\" roseus::AddTwoInts #'add-two-ints)");
   defun(ctx,"UNADVERTISE-SERVICE",argv[0],(pointer (*)())ROSEUS_UNADVERTISE_SERVICE, "Unadvertise service");
@@ -1999,6 +2082,8 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"GET-PARAM-CACHED",argv[0],(pointer (*)())ROSEUS_GET_PARAM_CACHED, "Get chached parameter");
   defun(ctx,"HAS-PARAM",argv[0],(pointer (*)())ROSEUS_HAS_PARAM, "Check whether a parameter exists on the parameter server.");
   defun(ctx,"DELETE-PARAM",argv[0],(pointer (*)())ROSEUS_DELETE_PARAM, "key\n\n""Delete parameter from server");
+  defun(ctx,"SEARCH-PARAM",argv[0],(pointer (*)())ROSEUS_SEARCH_PARAM, "key\n\n""Search up the tree for a parameter with a given key. This version defaults to starting in the current node's name.");
+  defun(ctx,"LIST-PARAM",argv[0],(pointer (*)())ROSEUS_LIST_PARAM, "Get the list of all the parameters in the server");
 
   defun(ctx,"ROSPACK-FIND",argv[0],(pointer (*)())ROSEUS_ROSPACK_FIND, "Returns ros package path");
   defun(ctx,"ROSPACK-PLUGINS",argv[0],(pointer (*)())ROSEUS_ROSPACK_PLUGINS, "Returns plugins of ros packages");
@@ -2012,8 +2097,9 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "Create ros NodeHandle with given group name. \n"
          "\n"
          "	(ros::roseus \"test\")\n"
-         "	(ros::create-node-handle \"mygroup\")\n"
+         "	(ros::create-nodehandle \"mygroup\")\n"
          "	(ros::subscribe \"/test\" std_msgs::String #'(lambda (m) (print m)) :groupname \"mygroup\")\n"
+         "	(ros::create-timer 0.1 #'(lambda (event) (print \"timer called\")) :groupname \"mygroup\")\n"
          "	(while (ros::ok)  (ros::spin-once \"mygroup\"))\n");
   defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL, "");
 
@@ -2023,7 +2109,26 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"GET-URI",argv[0],(pointer (*)())ROSEUS_GET_URI, "Get the full URI to the master ");
   defun(ctx,"GET-TOPICS",argv[0],(pointer (*)())ROSEUS_GET_TOPICS, "Get the list of topics that are being published by all nodes.");
 
-  defun(ctx,"CREATE-TIMER",argv[0],(pointer (*)())ROSEUS_CREATE_TIMER, "Create periodic callbacks.");
+  defun(ctx,"CREATE-TIMER",argv[0],(pointer (*)())ROSEUS_CREATE_TIMER,
+         "period callbackfunc args0 ... argsN &key (:oneshot oneshot) (:groupname groupname)\n\n"
+         "Create periodic callbacks.\n"
+         "\n"
+         "	;; callback function\n"
+         "	(defun timer-cb (event) (print \"timer callback called.\")\n"
+         "	(defun oneshot-timer-cb (event) (print \"timer callback called. oneshot.\")\n"
+         "	(ros::create-timer 0.1 #'timer-cb)\n"
+         "	(ros::create-timer 0.1 #'oneshot-timer-cb :oneshot t)\n"
+         "	;; lambda function\n"
+         "	(ros::create-timer 0.1 #'(lambda (event) (print \"timer callback called\")))\n"
+         "	;; method call\n"
+         "	(defclass timer-cb-class\n"
+         "	  :super propertied-object\n"
+         "	  :slots ())\n"
+         "	(defmethod timer-cb-class\n"
+         "	  (:init () (ros::create-timer 0.1 #'send self :timer-cb))\n"
+         "	  (:timer-cb (event) (print \"timer callback called\")))\n"
+         "	(setq m (instance timer-cb-class :init))\n"
+         );
 
   pointer_update(Spevalof(PACKAGE),p);
 

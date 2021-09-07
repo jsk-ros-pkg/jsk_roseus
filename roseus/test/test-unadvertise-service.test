@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="unadvertise_server" pkg="roseus" type="roseus" args="$(find roseus)/test/test-unadvertise-service.l" />
+</launch>
