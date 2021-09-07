@@ -1197,11 +1197,30 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   string service;
   pointer emessage;
   pointer fncallback, args;
+  NodeHandle *lnode = s_node.get();
 
   if (isstring(argv[0])) service = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
   emessage = argv[1];
   fncallback = argv[2];
+
+  if (n >= 5 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
+    if (argv[n-2] == K_ROSEUS_GROUPNAME) {
+      string groupname;
+      groupname.assign((char *)get_string(argv[n-1]));
+      map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+      if( it != s_mapHandle.end() ) {
+        ROS_DEBUG("advertising service with groupname=%s", groupname.c_str());
+        lnode = (it->second).get();
+      } else {
+        ROS_ERROR("Groupname \"%s\" is missing. Service %s is not advertised. Call (ros::create-nodehandle \"%s\") first.",
+                  groupname.c_str(), service.c_str(), groupname.c_str());
+        return (NIL);
+      }
+      n -= 2;
+    }
+  }
+
   args=NIL;
   for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
   if( s_mapServiced.find(service) != s_mapServiced.end() ) {
@@ -1225,7 +1244,7 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   aso.req_datatype = (*callback->get()).getRequestDataType();
   aso.res_datatype = (*callback->get()).getResponseDataType();
   aso.helper = *callback;
-  ServiceServer server = s_node->advertiseService(aso);
+  ServiceServer server = lnode->advertiseService(aso);
   boost::shared_ptr<ServiceServer> ser = boost::shared_ptr<ServiceServer>(new ServiceServer(server));
   if ( !!ser ) {
     s_mapServiced[service] = ser;
@@ -1241,7 +1260,7 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   string service;
 
   ckarg(1);
-  if (isstring(argv[0])) service = ros::names::resolve((char *)(argv[0]));
+  if (isstring(argv[0])) service = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
   ROS_DEBUG("unadvertise %s", service.c_str());
@@ -1970,7 +1989,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"EXIT",argv[0],(pointer (*)())ROSEUS_EXIT, "Exit ros clinet");
 
   defun(ctx,"SUBSCRIBE",argv[0],(pointer (*)())ROSEUS_SUBSCRIBE,
-         "topicname message_type callbackfunc args0 ... argsN &optional (queuesize 1) %key (:groupname groupname)\n\n"
+         "topicname message_type callbackfunc args0 ... argsN &optional (queuesize 1) &key (:groupname groupname)\n\n"
          "Subscribe to a topic, version for class member function with bare pointer.\n"
          "This method connects to the master to register interest in a given topic. The node will automatically be connected with publishers on this topic. On each message receipt, fp is invoked and passed a shared pointer to the message received. This message should not be changed in place, as it is shared with any other subscriptions to this topic.\n"
          "\n"
