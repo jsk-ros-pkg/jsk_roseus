@@ -27,7 +27,7 @@ Sample codes are available on `sample` directory.
   (exec-smach-simple)
   ```
   - nested state machine
-  ![](http://gist.github.com/furushchev/raw/9b1ed0aa57b47537cd2d/smach-nested.gif)
+  ![](http://gist.github.com/furushchev/9b1ed0aa57b47537cd2d/raw/smach-nested.gif)
   ```
   rosrun smach_viewer smach_viewer.py
   ```
@@ -216,3 +216,64 @@ These lines define the behavior of `sm-sub` in detail just like the previous sim
 (send (smach-nested) :execute nil)
 ```
 Finally, the `sm-top` is executed here.
+
+## Writing Simple Smach with `(make-state-machine)`
+
+`make-state-machine` function provides easy-way to define simple state machine. It requires `graph-list`, `func-map`, `initial-state`, `goal-states` as arguments.
+
+For example, [simple state machine](http://wiki.ros.org/smach/Tutorials/Getting%20Started#Example) can be written as
+
+```lisp
+(defun smach-simple2 ()
+  (let (sm)
+    (setq sm
+          (make-state-machine
+           ;; define graph,  list of (<from-node> <transition> <to-node>)
+           ;; if <transition> is ->, it corresponds when node returns t and !-> for nil.
+           '((:foo :outcome2 :outcome4)
+             (:foo :outcome1 :bar)
+             (:bar :outcome2 :foo))
+           ;; define function map
+           '((:foo 'func-foo)  ;; foo returns :outcome1 3 times and then returns :outcome2
+             (:bar 'func-bar)) ;; bar always returns :outcome2
+           ;; initial state
+           '(:foo)
+           ;; goal state
+           '(:outcome4)))))
+```
+
+This example have two node `:foo` and `:bar` and `:outcome4` as terminate node.
+Each node corresponds to `'func-foo` and `'func-bar` functions.
+The function `'func-foo` returns `:outcome1` 3 times and then returns `:outcome2`.
+The function `'func-bar` always returns `:outcome2`.
+
+`(:foo :outcome2 :outcome4)` means when `:foo` returns `:outcome2`, it transit to `:outcome4`.
+`(:foo :outcome1 :bar)` means when `:foo` returns `:outcome1`, it transit to `:bar`.
+`(:bar :outcome2 :foo)` means when `:bar` returns `:outcome2`, it transit to `:foo`.
+
+
+To simplify the state machine definition, we recommend users to use `t`/`nil` for return value of each node, so that users is able to use `(:foo -> :outcome4)` for graph definition.
+
+```lisp
+(defun smach-simple3 ()
+  (let (sm)
+    (setq sm
+          (make-state-machine
+           '((:foo -> :outcome4)
+             (:foo !-> :bar)
+             (:bar -> :foo))
+           '((:foo '(lambda (&rest args) (cond ((< count 3) (incf count) nil) (t t))))  ;; foo returns nil 3 times and then returns t
+             (:bar '(lambda (&rest args) t)))                                           ;; bar always returns t
+           '(:foo)
+           '(:outcome4)))))
+```
+
+
+Both example can be tested with
+```
+$ roscd roseus_smach/sample
+$ roseus state-machine-ros-sample.l "(progn (setq count 0)(exec-state-machine (smach-simple2)))"
+or
+$ roseus state-machine-ros-sample.l "(progn (setq count 0)(exec-state-machine (smach-simple3)))"
+```
+and you can check the state machine behavior with ` rosrun smach_viewer smach_viewer.py`

@@ -281,7 +281,7 @@
               (return-from load (load (format nil "~A/~A.so" dir path-name)
                                       :entry (format nil "___~A" path-name)))))
           )))
-    (if (null fullname) ;; when ros::resolve-ros-patch is failed to load
+    (if (null fullname) ;; when ros::resolve-ros-path is failed to load
         (error "file ~s not found" fname))
     (apply #'load-org-for-ros fullname args)))
 
