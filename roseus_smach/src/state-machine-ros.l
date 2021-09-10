@@ -89,6 +89,7 @@
    (&optional (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStructure :init))
          transitions from-nodes to-nodes exec-nodes)
+     (unix::usleep (round (* 0.1 1e6)))
      (send msg :header :seq (incf structure-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
