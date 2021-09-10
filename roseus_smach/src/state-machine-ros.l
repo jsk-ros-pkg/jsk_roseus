@@ -27,6 +27,7 @@
    (ros::advertise
     (concatenate string srv-name "/smach/container_structure")
     smach_msgs::SmachContainerStructure 100 t) ;; latch type
+   (unix::usleep (round (* 0.5 1e6)))
    (if groupname
      (ros::subscribe (concatenate string srv-name "/smach/container_init")
                      smach_msgs::SmachContainerInitialStatusCmd
