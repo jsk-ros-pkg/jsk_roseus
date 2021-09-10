@@ -69,6 +69,11 @@
    (setq gs (mapcar #'(lambda(g) (instance state :init g nil)) gs))
    (dolist (n gs) (send self :add-node n))
    (send-super :goal-state gs))
+  (:append-goal-state (gs)
+   (if (atom gs) (setq gs (list gs)))
+   (setq gs (mapcar #'(lambda(g) (instance state :init g nil)) gs))
+   (dolist (n gs) (send self :add-node n))
+   (send-super :goal-state (append goal-state gs)))
   (:goal-test (gs) (not (null (intersection (flatten (list gs)) goal-state))))
   (:goal-reached () (send self :goal-test active-state))
   ;;
