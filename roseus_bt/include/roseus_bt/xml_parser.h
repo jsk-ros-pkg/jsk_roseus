@@ -45,7 +45,8 @@ protected:
   bool is_reactive_base(const XMLElement* node, const XMLElement* ref_node, bool reactive_parent);
   void collect_param_list(const XMLElement* node, std::vector<std::string>* param_list,
                           std::vector<std::string>* output_list,
-                          std::function<std::string(const XMLElement*)> fn);
+                          std::function<std::string(const XMLElement*)> param_fn,
+                          std::function<std::string(const XMLElement*)> output_fn);
   void collect_param_list(const XMLElement* node, std::vector<std::string>* param_list,
                           std::vector<std::string>* output_list);
   void collect_eus_actions(const std::string package_name,
@@ -68,7 +69,7 @@ protected:
   std::string generate_subscriber_class(const XMLElement* node);
   std::string generate_main_function(const std::string roscpp_node_name, const std::string xml_filename);
 
-  virtual std::string format_node_body(const XMLElement* node);
+  virtual std::string format_node_body(const XMLElement* node, int padding);
 
 public:
 
@@ -230,7 +231,8 @@ bool XMLParser::is_reactive_base(const XMLElement* node, const XMLElement* ref_n
 void XMLParser::collect_param_list(const XMLElement* node,
                                    std::vector<std::string>* param_list,
                                    std::vector<std::string>* output_list,
-                                   std::function<std::string(const XMLElement*)> fn) {
+                                   std::function<std::string(const XMLElement*)> param_fn,
+                                   std::function<std::string(const XMLElement*)> output_fn) {
 
   for (auto port_node = node->FirstChildElement();
        port_node != nullptr;
@@ -242,13 +244,13 @@ void XMLParser::collect_param_list(const XMLElement* node,
       if (name == "input_port" || name == "inout_port") {
         if (param_list != NULL) {
           BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting input:" << name << "...";
-          param_list->push_back(port_node->Attribute("name"));
+          param_list->push_back(param_fn(port_node));
         }
       }
       if (name == "output_port" || name == "inout_port") {
         if (output_list != NULL) {
           BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting output:" << name << "...";
-          output_list->push_back(fn(port_node));
+          output_list->push_back(output_fn(port_node));
         }
       }
     }
@@ -257,29 +259,48 @@ void XMLParser::collect_param_list(const XMLElement* node,
 void XMLParser::collect_param_list(const XMLElement* node,
                                    std::vector<std::string>* param_list,
                                    std::vector<std::string>* output_list) {
-  auto format_output_port = [](const XMLElement* port_node) {
+  auto format_port = [](const XMLElement* port_node) {
     return port_node->Attribute("name");
   };
-  collect_param_list(node, param_list, output_list, format_output_port);
+  collect_param_list(node, param_list, output_list, format_port, format_port);
 }
 
 void XMLParser::collect_eus_actions(const std::string package_name,
                                     std::vector<std::string>* callback_definition,
                                     std::vector<std::string>* instance_creation) {
 
-  auto format_callback = [this](const XMLElement* node) {
-    std::string fmt_string = 1 + R"(
-(roseus_bt:define-action-callback {0}-execute-cb ({1})
-{2}
-  t)
-)";
+  auto format_action_param = [](const XMLElement* node) {
+    return fmt::format("({0} (send goal :goal :{0}))", node->Attribute("name"));
+  };
+  auto format_callback = [this, format_action_param](const XMLElement* node) {
     std::vector<std::string> param_list;
-    collect_param_list(node, &param_list, NULL);
+    collect_param_list(node, &param_list, NULL, format_action_param, NULL);
 
-    return fmt::format(fmt_string,
-                       format_eus_name(node->Attribute("ID")),
-                       boost::algorithm::join(param_list, " "),
-                       format_node_body(node));
+    // has parameters
+    if (param_list.size()) {
+      std::string fmt_string = 1 + R"(
+(defun {0}-execute-cb (server goal)
+  (let ({1})
+{2}
+    (send server :set-succeeded
+          (send server :result :success t))))
+)";
+      return fmt::format(fmt_string,
+                         format_eus_name(node->Attribute("ID")),
+                         boost::algorithm::join(param_list, "\n        "),
+                         format_node_body(node, 4));
+    }
+
+    // no parameters
+    std::string fmt_string = 1 + R"(
+(defun {0}-execute-cb (server goal)
+{1}
+  (send server :set-succeeded
+        (send server :result :success t)))
+)";
+      return fmt::format(fmt_string,
+                         format_eus_name(node->Attribute("ID")),
+                         format_node_body(node, 2));
   };
 
   auto format_instance = [this, package_name](const XMLElement* node, std::string server_name) {
@@ -314,26 +335,44 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
                                        std::vector<std::string>* parallel_callback_definition,
                                        std::vector<std::string>* parallel_instance_creation) {
 
-  auto format_callback = [this](const XMLElement* node) {
-    std::string fmt_string = 1 + R"(
-(roseus_bt:define-condition-callback {0}-cb ({1})
+  auto format_condition_param = [](const XMLElement* node) {
+    return fmt::format("({0} (send request :{0}))", node->Attribute("name"));
+  };
+  auto format_callback = [this, format_condition_param](const XMLElement* node) {
+    std::vector<std::string> param_list;
+    collect_param_list(node, &param_list, NULL, format_condition_param, NULL);
+
+    // has parameters
+    if (param_list.size()) {
+      std::string fmt_string = 1 + R"(
+(defun {0}-cb (server request)
+  (let ({1})
 {2}
+  ))
+)";
+
+      return fmt::format(fmt_string,
+                         format_eus_name(node->Attribute("ID")),
+                         boost::algorithm::join(param_list, "\n        "),
+                         format_node_body(node, 4));
+    }
+
+    // no parameters
+    std::string fmt_string = 1 + R"(
+(defun {0}-cb (server request)
+{1}
   )
 )";
-    std::vector<std::string> param_list;
-    collect_param_list(node, &param_list, NULL);
-
-    return fmt::format(fmt_string,
-                       format_eus_name(node->Attribute("ID")),
-                       boost::algorithm::join(param_list, " "),
-                       format_node_body(node));
+      return fmt::format(fmt_string,
+                         format_eus_name(node->Attribute("ID")),
+                         format_node_body(node, 2));
   };
 
   auto format_instance = [this, package_name](const XMLElement* node, std::string service_name) {
     std::string fmt_string = 1 + R"(
 (instance roseus_bt:condition-node :init
           "{3}" {0}::{1}
-          :execute-cb #'{2}-cb)
+          :execute-cb '{2}-cb)
 )";
     return fmt::format(fmt_string,
                        package_name,
@@ -385,16 +424,17 @@ std::string XMLParser::format_eus_name(const std::string input) {
   return out;
 }
 
-std::string XMLParser::format_node_body(const XMLElement* node) {
-  auto format_setoutput = [](const XMLElement* port_node) {
-    return fmt::format("  ;; (roseus_bt:set-output \"{0}\" <{1}>)",
+std::string XMLParser::format_node_body(const XMLElement* node, int padding) {
+  auto format_setoutput = [padding](const XMLElement* port_node) {
+    return fmt::format(";; (send server :set-output \"{1}\" <{2}>)",
                        port_node->Attribute("name"),
-                       port_node->Attribute("type"));
+                       port_node->Attribute("type")).
+    insert(0, padding, ' ');
   };
 
   std::vector<std::string> output_list;
-  output_list.push_back("  ;; do something");
-  collect_param_list(node, NULL, &output_list, format_setoutput);
+  output_list.push_back(std::string(";; do something").insert(0, padding, ' '));
+  collect_param_list(node, NULL, &output_list, NULL, format_setoutput);
 
   return boost::algorithm::join(output_list, "\n");
 }
