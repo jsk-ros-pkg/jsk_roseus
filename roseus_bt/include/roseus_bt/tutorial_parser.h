@@ -18,7 +18,7 @@ public:
   ~TutorialParser() {};
 
 protected:
-  virtual std::string format_node_body(const XMLElement* node) override;
+  virtual std::string format_node_body(const XMLElement* node, int padding) override;
 
 public:
   virtual std::string generate_eus_action_server(const std::string package_name) override;
@@ -26,36 +26,39 @@ public:
 };
 
 
-std::string TutorialParser::format_node_body(const XMLElement* node) {
+std::string TutorialParser::format_node_body(const XMLElement* node, int padding) {
+  std::string pad(padding, ' ');
   std::string id = node->Attribute("ID");
   std::vector<std::string> param_list, output_list;
   collect_param_list(node, &param_list, &output_list);
 
   // Conditions
-  if (id == "CheckTrue") return "  (send value :data)";
-  if (id == "atTable")   return "  (at-spot \"table-front\")";
-  if (id == "atSpot")    return fmt::format("  (at-spot {})", param_list.at(0));
+  if (id == "CheckTrue") return std::string("(send value :data)").insert(0, padding, ' ');
+  if (id == "atTable")   return std::string("(at-spot \"table-front\")").insert(0, padding, ' ');
+  if (id == "atSpot")    return fmt::format("{}(at-spot {})", pad, param_list.at(0));
   if (id == "CheckCoords") return fmt::format(
-    "  (not (equal (instance geometry_msgs::Pose :init) {}))", param_list.at(0));
+    "{}(not (equal (instance geometry_msgs::Pose :init) {}))", pad, param_list.at(0));
 
   // Actions
-  if (id == "Init")  return "  (init nil t)";
-  if (id == "InitWithBroom") return  "  (init t t)";
-  if (id == "MoveToTable")   return  "  (go-to-spot \"table-front\")";
-  if (id == "PickBottle")    return  "  (pick-sushi-bottle)";
-  if (id == "PourBottle")    return  "  (pour-sushi-bottle)";
-  if (id == "PlaceBottle")   return  "  (place-sushi-bottle)\n  (reset-pose)";
-  if (id == "SweepFloor")    return  "  (sweep-floor #'roseus_bt:ok)\n  (reset-pose)";
+  if (id == "Init")  return std::string("(init nil t)").insert(0, padding, ' ');
+  if (id == "InitWithBroom") return  std::string("(init t t)").insert(0, padding, ' ');
+  if (id == "MoveToTable")   return  std::string("(go-to-spot \"table-front\")").insert(0, padding, ' ');
+  if (id == "PickBottle")    return  std::string("(pick-sushi-bottle)").insert(0, padding, ' ');
+  if (id == "PourBottle")    return  std::string("(pour-sushi-bottle)").insert(0, padding, ' ');
 
+  if (id == "PlaceBottle")
+    return  fmt::format("{0}(place-sushi-bottle)\n{0}(reset-pose)", pad);
+  if (id == "SweepFloor")
+    return  fmt::format("{0}(sweep-floor #'send server :ok)\n{0}(reset-pose)", pad);
   if (id == "MoveTo")
-    return fmt::format("  (go-to-spot {})", param_list.at(0));
+    return fmt::format("{}(go-to-spot {})", pad, param_list.at(0));
   if (id == "PickBottleAt")
-    return fmt::format("  (pick-sushi-bottle (ros::tf-pose->coords {}))", param_list.at(0));
+    return fmt::format("{}(pick-sushi-bottle (ros::tf-pose->coords {}))", pad, param_list.at(0));
   if (id == "setCoords") {
     std::string fmt_string = 1 + R"(
-  (roseus_bt:set-output
-   "{}" (ros::coords->tf-pose (make-coords :pos #f(1850 400 700)))))";
-    return fmt::format(fmt_string, output_list.at(0));
+{0}(send server :set-output "{1}"
+{0}      (ros::coords->tf-pose (make-coords :pos #f(1850 400 700)))))";
+    return fmt::format(fmt_string, pad, output_list.at(0));
   }
 
   throw XMLError::UnknownNode(node);
