@@ -282,8 +282,7 @@ void XMLParser::collect_eus_actions(const std::string package_name,
 (defun {0}-execute-cb (server goal)
   (let ({1})
 {2}
-    (send server :set-succeeded
-          (send server :result :success t))))
+    t))
 )";
       return fmt::format(fmt_string,
                          format_eus_name(node->Attribute("ID")),
@@ -295,8 +294,7 @@ void XMLParser::collect_eus_actions(const std::string package_name,
     std::string fmt_string = 1 + R"(
 (defun {0}-execute-cb (server goal)
 {1}
-  (send server :set-succeeded
-        (send server :result :success t)))
+  t)
 )";
       return fmt::format(fmt_string,
                          format_eus_name(node->Attribute("ID")),
