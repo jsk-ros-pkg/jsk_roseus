@@ -72,8 +72,7 @@
   (:execute-cb ()
     (when (and goal execute-cb)
       (let ((res (funcall execute-cb self goal)))
-        (when (not (equal status actionlib_msgs::GoalStatus::*pending*))
-          ;; avoid double posting to finished requests
+        (when (send self :is-active)
           (send self :set-succeeded
                 (send self :result :success (not (not res)))))))
     (send self :publish-status))
