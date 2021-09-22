@@ -4,6 +4,9 @@
 (in-package "ROSEUS_BT")
 
 (export '(action-node condition-node spin-once spin))
+;; import relevant ros::simple-action-server symbols
+(import '(ros::name-space ros::status ros::execute-cb
+          ros::goal ros::goal-id))
 
 (defvar *action-list*)
 (defvar *condition-list*)
@@ -55,6 +58,25 @@
       (if *condition-list*
           (ros::ros-warn "Actions and Conditions detected in the same node! Start two separate nodes when reacitivity is required."))
       self)
+  (:publish-status ()
+    (let ((msg (instance actionlib_msgs::GoalStatusArray :init)))
+      (when goal-id
+        (send msg :status_list
+              (list (instance actionlib_msgs::goalstatus :init
+                              :goal_id goal-id
+                              :status status
+                              :text (ros::goal-status-to-string status)))))
+      (send msg :header :seq (send self :next-seq-id))
+      (send msg :header :stamp (ros::time-now))
+      (ros::publish (format nil "~A/status" name-space) msg)))
+  (:execute-cb ()
+    (when (and goal execute-cb)
+      (let ((res (funcall execute-cb self goal)))
+        (when (not (equal status actionlib_msgs::GoalStatus::*pending*))
+          ;; avoid double posting to finished requests
+          (send self :set-succeeded
+                (send self :result :success (not (not res)))))))
+    (send self :publish-status))
   (:set-output (name val)
     (let ((msg (send self :feedback (intern (string-upcase name) *keyword-package*) val)))
       (send self :publish-feedback msg)))
@@ -76,7 +98,7 @@
     self)
   (:request-cb (msg)
     (let ((response (send msg :response)))
-      (send response :success (funcall execute-cb self msg))
+      (send response :success (not (not (funcall execute-cb self msg))))
       response)))
 
 
@@ -84,7 +106,7 @@
 (defun spin-once ()
   (ros::spin-once)
   (dolist (ac *action-list*)
-    (send ac :worker)))
+    (send ac :execute-cb)))
 
 (defun spin ()
   (while t
