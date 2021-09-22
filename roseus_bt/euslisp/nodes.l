@@ -42,9 +42,10 @@
 
 
 ;; classes
-(defclass action-node :super ros::simple-action-server)
+(defclass action-node :super ros::simple-action-server :slots (monitor-groupname))
 (defmethod action-node
-  (:init (ns spec &key execute-cb preempt-cb accept-cb groupname)
+  (:init (ns spec &key execute-cb preempt-cb accept-cb groupname
+             ((:monitor-groupname monitor-gn)))
       (check-fn-closure execute-cb)
       (check-fn-closure preempt-cb)
       (check-fn-closure accept-cb)
@@ -54,6 +55,13 @@
               :preempt-cb preempt-cb
               :accept-cb accept-cb
               :groupname groupname)
+      (when monitor-gn
+        (setq monitor-groupname monitor-gn)
+        (ros::create-nodehandle monitor-groupname)
+        ;; resubscribe /cancel on separate handler
+        (ros::subscribe (format nil "~A/cancel" ns)
+                        actionlib_msgs::GoalID #'send self :cancel-callback 50
+                        :groupname monitor-groupname))
       (push self *action-list*)
       (if *condition-list*
           (ros::ros-warn "Actions and Conditions detected in the same node! Start two separate nodes when reacitivity is required."))
@@ -80,8 +88,13 @@
     (let ((msg (send self :feedback (intern (string-upcase name) *keyword-package*) val)))
       (send self :publish-feedback msg)))
   (:ok ()
-     (send self :spin-once)
-     (not (send self :is-preempt-requested))))
+     (send self :spin-monitor)
+     (not (send self :is-preempt-requested)))
+  (:spin-monitor ()
+    (if monitor-groupname
+        (ros::spin-once monitor-groupname)
+        (send self :spin-once))))
+
 
 (defclass condition-node :super propertied-object :slots (execute-cb))
 (defmethod condition-node
