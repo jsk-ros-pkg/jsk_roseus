@@ -239,17 +239,21 @@ void XMLParser::collect_param_list(const XMLElement* node,
        port_node = port_node->NextSiblingElement())
     {
       std::string name = port_node->Name();
-      BOOST_LOG_TRIVIAL(trace) << "collect_param_list: transversing " << name << "...";
+      std::string port_name = port_node->Attribute("name");
+      BOOST_LOG_TRIVIAL(trace) << "collect_param_list: transversing " <<
+        name << ": " << port_name << "...";
 
       if (name == "input_port" || name == "inout_port") {
         if (param_list != NULL) {
-          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting input: " << name << "...";
+          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting input: " <<
+            port_name << "...";
           param_list->push_back(param_fn(port_node));
         }
       }
       if (name == "output_port" || name == "inout_port") {
         if (output_list != NULL) {
-          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting output: " << name << "...";
+          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting output: " <<
+            port_name << "...";
           output_list->push_back(output_fn(port_node));
         }
       }
