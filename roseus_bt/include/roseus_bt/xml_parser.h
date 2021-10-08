@@ -428,7 +428,7 @@ std::string XMLParser::format_eus_name(const std::string input) {
 
 std::string XMLParser::format_node_body(const XMLElement* node, int padding) {
   auto format_setoutput = [padding](const XMLElement* port_node) {
-    return fmt::format(";; (send server :set-output \"{1}\" <{2}>)",
+    return fmt::format(";; (send server :set-output \"{0}\" <{1}>)",
                        port_node->Attribute("name"),
                        port_node->Attribute("type")).
     insert(0, padding, ' ');
