@@ -203,7 +203,7 @@ bool XMLParser::is_reactive_base(const XMLElement* node, const XMLElement* ref_n
                                  bool reactive_parent) {
 
   std::string name = node->Name();
-  BOOST_LOG_TRIVIAL(trace) << "is_reactive_base: transversing" << name << "...";
+  BOOST_LOG_TRIVIAL(trace) << "is_reactive_base: transversing " << name << "...";
 
   // is possibly reactive control node
   if (name.find("Fallback") != std::string::npos ||
@@ -239,17 +239,17 @@ void XMLParser::collect_param_list(const XMLElement* node,
        port_node = port_node->NextSiblingElement())
     {
       std::string name = port_node->Name();
-      BOOST_LOG_TRIVIAL(trace) << "collect_param_list: transversing" << name << "...";
+      BOOST_LOG_TRIVIAL(trace) << "collect_param_list: transversing " << name << "...";
 
       if (name == "input_port" || name == "inout_port") {
         if (param_list != NULL) {
-          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting input:" << name << "...";
+          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting input: " << name << "...";
           param_list->push_back(param_fn(port_node));
         }
       }
       if (name == "output_port" || name == "inout_port") {
         if (output_list != NULL) {
-          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting output:" << name << "...";
+          BOOST_LOG_TRIVIAL(trace) << "collect_param_list: collecting output: " << name << "...";
           output_list->push_back(output_fn(port_node));
         }
       }
