@@ -30,7 +30,7 @@ int main(int argc, char** argv)
   // Initialize Logger
   auto logger_level = boost::log::trivial::warning;
   if (args.count("verbose")) {
-    logger_level = boost::log::trivial::debug;
+    logger_level = boost::log::trivial::trace;
   }
 
   boost::log::core::get()->set_filter(
