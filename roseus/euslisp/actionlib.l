@@ -59,9 +59,9 @@
    (let (dummy-msg)
      (ros::ros-debug "[~A] result-cb ~A ~A" name-space (send msg :status :goal_id :id) (goal-status-to-string (send msg :status :status)))
      (unless (send comm-state :update-result msg)
-       (ros::ros-warn "[~A] action-result-cb may recieved old client's goal" name-space)
+       (ros::ros-warn "[~A] action-result-cb may received old client's goal" name-space)
        (ros::ros-warn "     expected goal id ~A" (and (send comm-state :action-goal) (send (send comm-state :action-goal) :goal_id :id)))
-       (ros::ros-warn "     recieved goal id ~A" (send msg :status :goal_id :id))
+       (ros::ros-warn "     received goal id ~A" (send msg :status :goal_id :id))
        ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/519
        ;; look for exiting objects make from simple-goal-client
        (do-symbols (s (find-package "ROSACTIONLIB"))
@@ -303,20 +303,19 @@
 	 ))
   (:cancel-callback
    (msg)
-   (ros::ros-info ";; Recieved Cancel")
-   (setq check-func
-	 #'(lambda(msg goal)
+   (ros::ros-info ";; Received Cancel")
+   (flet ((check-func (msg goal)
 	     (let ((stamp (send goal :header :stamp)))
 	       (and (member (send msg :id) (list "" (send goal :goal_id :id)) :test #'string=)
 		    (or (= 0 (send (send msg :stamp) :to-sec))
 			(< 0 (send (ros::time- (send msg :stamp) stamp) :to-sec)))))))
    ;;
-   (when (and pending-goal (funcall check-func msg pending-goal))
-     (setq pending-goal nil))
-   (when (and (equal status actionlib_msgs::GoalStatus::*active*)
-	      (funcall check-func msg goal))
-     (setq status actionlib_msgs::GoalStatus::*preempting*)
-     (if preempt-cb (funcall preempt-cb self goal))))
+     (when (and pending-goal (check-func msg pending-goal))
+       (setq pending-goal nil))
+     (when (and (equal status actionlib_msgs::GoalStatus::*active*)
+                (check-func msg goal))
+       (setq status actionlib_msgs::GoalStatus::*preempting*)
+       (if preempt-cb (funcall preempt-cb self goal)))))
   ;;
   (:publish-result
    (msg &optional (text ""))
