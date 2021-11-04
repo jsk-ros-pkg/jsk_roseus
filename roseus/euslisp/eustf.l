@@ -137,16 +137,17 @@
 ;; helper functions
 (defun ros::create-identity-quaternion () (ros::create-quaternion-from-rpy 0 0 0))
 (defun ros::create-quaternion-from-rpy (roll pitch yaw)
+  "return #F(w x y z)"
   (let ((sin-roll  (sin (* roll  0.5))) (cos-roll  (cos (* roll  0.5)))
         (sin-pitch (sin (* pitch 0.5))) (cos-pitch (cos (* pitch 0.5)))
         (sin-yaw   (sin (* yaw   0.5))) (cos-yaw   (cos (* yaw   0.5))))
     (print (list sin-roll cos-roll
                  sin-pitch cos-pitch
                  sin-yaw cos-yaw))
-    (float-vector (- (* sin-roll cos-pitch cos-yaw) (* cos-roll sin-pitch sin-yaw))
+    (float-vector (+ (* cos-roll cos-pitch cos-yaw) (* sin-roll sin-pitch sin-yaw))
+                  (- (* sin-roll cos-pitch cos-yaw) (* cos-roll sin-pitch sin-yaw))
                   (+ (* cos-roll sin-pitch cos-yaw) (* sin-roll cos-pitch sin-yaw))
-                  (- (* sin-roll cos-pitch sin-yaw) (* sin-roll sin-pitch cos-yaw))
-                  (+ (* cos-roll cos-pitch cos-yaw) (* sin-roll sin-pitch sin-yaw)))))
+                  (- (* cos-roll cos-pitch sin-yaw) (* sin-roll sin-pitch cos-yaw)))))
 
 (defun ros::create-quaternion-msg-from-rpy (roll pitch yaw)
   "Create geometry_msgs::Quaternion from roll, pitch and yaw"
