@@ -187,13 +187,13 @@
 
 $ (setq tr (instance ros::transformer :init))
 #<ros::transformer #X545e290>
-$ (send tr :set-transform (instance ros::tf-cascaded-coords :init :pos #f(1 2 3) :frame-id \"this_frame\" :child-frame-id \"child\"))
+$ (send tr :set-transform (instance ros::tf-cascaded-coords :init :pos #f(1000 2000 3000) :frame-id \"this_frame\" :child-frame-id \"child\"))
 $ (send tr :get-frame-strings)
 (\"this_frame\" \"child\")
 $ (send tr :lookup-transform \"this_frame\" \"child\" (ros::time))
-#<cascaded-coords #X5438430 this_frame  1000.0 2000.0 3000.0 / 3.142 0.0 3.142>
+#<cascaded-coords #X5438430 this_frame  1000.0 2000.0 3000.0 / 0.0 0.0 0.0>
 $ (send tr :lookup-transform \"child\"  \"this_frame\" (ros::time))
-#<cascaded-coords #X54388e0 child  1000.0 -2000.0 3000.0 / 3.142 0.0 3.142>
+#<cascaded-coords #X54388e0 child  -1000.0 -2000.0 -3000.0 / 0.0 0.0 0.0>
 "
    (setq cobject (ros::eustf-transformer interpolating cache-time))
    self)
