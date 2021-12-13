@@ -2,6 +2,79 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.5 (2021-12-13)
+------------------
+* [roseus_smach] add :append-goal-state (`#696 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/696>`_)
+* add nested example with make-state-machine function (`#661 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/661>`_)
+
+  * add readme on smach-simple-nested
+  * use defmacro instead of defun for make-simple-state
+  without this, we need to write
+  ```
+  (setq sm-top
+  (make-state-machine
+  '((:bas :outcome3 :sub) ;; transitions
+  (:sub :outcome4 :outcome5))
+  `((:bas 'func-bas)  ;; functon maps
+  (:sub ,sm-sub))   ;; set "nestaed state machine"
+  '(:bas)      ;; initial
+  '(:outcome5) ;; goal
+  ))
+  ```
+  to avoid
+  ```
+  /opt/ros/melodic/share/euslisp/jskeus/eus/Linux64/bin/irteusgl unittest-error: unbound variable sm-sub in (eval (get-alist node func-map)), exitting...
+  ```
+  errors,
+  this change enable us to write intuitive way
+  ```
+  '((:bas 'func-bas)  ;; functon maps
+  (:sub sm-sub))   ;; set "nestaed state machine"
+  ```
+  you can test this behavior with
+  ```
+  (defmacro test (l)
+  `(dolist (e ,l)
+  (print e)
+  (print (eval (cadr e)))))
+  (defmacro test (l)
+  (dolist (e l)
+  (print e)
+  (print (eval (cadr e)))))
+  (let (a)
+  (setq a 10)
+  (test '((:foo 1)  (:bar a))))
+  ```
+
+* [roseus_smach] make roseus_smach execution faster (`#684 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/684>`_)
+
+  * sleep 0.5 s for publisher
+  * use ros::sleep for smach execution
+
+* [roseus_smach] add more ros-info in convert-smach (`#683 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/683>`_)
+* [roseus_smach] fix typo in state-machine-utils.l (`#693 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/693>`_)
+* [roseus_smach] add :start-state and :goal-state in convert-smach (`#682 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/682>`_)
+* [roseus_smach] add groupname in state-machine-inspector (`#691 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/691>`_)
+
+  * use send sm :spin-once in state-machine-utils.l
+  * add groupname and spin-once with groupname
+
+* Updates to README sample code and explanations (`#659 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/659>`_)
+
+  * extend test time limit to 120 sec for test-samples.l
+  * add example/test for smach-simple with make-state-machine function
+  * write more info similar to rospy implementation
+  * add more info(URL/python code) on sample
+  * fix typo of nestate state machine example path
+  * add make-sample-parallel-state-machine tests
+  * add more test, check :active-tates, duration time
+
+* [roseus_smach] use roseus for parallel-state-machine-sample (`#651 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/651>`_)
+* [roseus_smach] add smach_viewer installation to README (`#641 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/641>`_)
+* [roseus_smach] add code explanation of simple-state-machine in README.md. (`#627 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/627>`_)
+
+* Contributors: Guilherme Affonso, Kei Okada, Naoki Hiraoka, Naoya Yamaguchi, Shingo Kitagawa, Yoichiro Kawamura
+
 1.7.4 (2019-02-04)
 ------------------
 

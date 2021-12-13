@@ -2,6 +2,60 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.5 (2021-12-13)
+------------------
+* add noetic test on travis (`#700 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/700>`_)
+
+  * allow service-call to fail 3 times, see https://github.com/ros/ros_comm/issues/1976 for reason
+  * from noetic roslaunch set params https://github.com/ros/ros_comm/blob/07fb5469c71e10e4a05fa3a631897d9adece61c5/tools/roslaunch/src/roslaunch/launch.py#L448-L449
+
+* [eustf.l] fix bug in ros::create-quaternion-from-rpy (`#663 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/663>`_)
+
+  * ros::create-quaternion-from-rpy returns [x y z w] whcih is bug in euslisp. It should return [w x y z]
+  * [roseus/eustf.l] add comment in doc string.
+  * [roseus/test-tf.l] add test-rpy->quaternion-msg
+
+* [roseus/eustf.cpp] convert [mm]->[m] in :set-transform (`#649 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/649>`_)
+* Fix check-func variable scope in ros::simple-action-server (`#670 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/670>`_)
+* Check for preemption request on test/fibonacci-server.l (`#672 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/672>`_)
+* Update advertise-service function documentation (`#694 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/694>`_)
+* Fixing a couple comment typos in roseus.l (`#677 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/677>`_)
+* fix typo: recieve -> receive (`#687 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/687>`_)
+* [roseus] add :groupname in create-timer (`#688 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/688>`_)
+* Fix unadvertise service (`#680 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/680>`_)
+* Add :groupname option to ros::advertise-service (`#679 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/679>`_)
+* [roseus] fix typo in subscribe documentation (`#690 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/690>`_)
+* [roseus] Remove duplicated dependency in package.xml (`#642 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/642>`_)
+* Fix typo: geoometry -> geometry (`#645 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/645>`_)
+* add more info on timeout parameter of wait-for-service (`#646 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/646>`_)
+* fix comment typo in actionlib.l (`#643 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/643>`_)
+* [eustf.l] add comment to :wait-for-transform (`#648 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/648>`_)
+* [eustf.l] fix comment :lookup-transform (`#650 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/650>`_)
+* add functions to convert shape_msgs/SolidPrimitive <-> euslisp object (`#640 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/640>`_)
+* fix warning message for load-ros-manifest (`#638 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/638>`_)
+* add SoundRequest.volume for kinetic (`#620 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/620>`_)
+* Return t after calling service in (call-empty-service service) (`#621 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/621>`_)
+
+  *  Return t after service call in call-empty-service function
+    - Remove unmatched parenthesis
+    - Return nil in call-empty-service if service is not ready
+    - Add timeout in call-empty-service.
+
+* add python like AnyMsg support (`#631 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/631>`_)
+* add list-param and search-param with test code (`#629 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/629>`_)
+* Add command line option to start roseus with gdb (`#630 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/630>`_)
+
+  * Don't use suffixes on gdb config to avoid creating multiple files
+  * Print backtrace on every error break in gdb
+  * Enable command line option --gdb
+  * call ros::roseus on the top of the file
+
+* Allow to load pathnames (`#612 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/612>`_)
+* Ignore _connection-header in 'print-ros-msg' (`#606 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/606>`_)
+* Remove unmatched parenthesis (`#607 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/607>`_)
+
+* Contributors: Guilherme Affonso, Kei Okada, Naoki Hiraoka, Naoya Yamaguchi, Shingo Kitagawa, Yuto Uchimi
+
 1.7.4 (2019-02-04)
 ------------------
 * .travis.yml: run jsk_pr2eus tests in travis (`#599 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/599>`_ )
