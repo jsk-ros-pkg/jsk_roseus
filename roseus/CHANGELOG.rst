@@ -2,8 +2,8 @@
 Changelog for package roseus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.5 (2021-12-13)
+------------------
 * add noetic test on travis (`#700 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/700>`_)
 
   * allow service-call to fail 3 times, see https://github.com/ros/ros_comm/issues/1976 for reason

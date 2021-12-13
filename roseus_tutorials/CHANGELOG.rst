@@ -2,8 +2,8 @@
 Changelog for package roseus_tutorials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.5 (2021-12-13)
+------------------
 * [roseus_tutorials/src/aques-talk.l, roseus_tutorials/src/vision-action-example] add SoundRequest.volume for kinetic (`#620 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/620>`_)
 * [roseus_tutorials/launch/hsi_color_filter.launch] Add euslisp example using hsi_color_filter (`#615 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/615>`_)
 * Contributors: Kei Okada, Yuto Uchimi

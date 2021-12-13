@@ -2,8 +2,8 @@
 Changelog for package roseus_smach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.5 (2021-12-13)
+------------------
 * [roseus_smach] add :append-goal-state (`#696 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/696>`_)
 * add nested example with make-state-machine function (`#661 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/661>`_)
 
