@@ -3,7 +3,7 @@
 
 (in-package "ROSEUS_BT")
 
-(export '(action-node condition-node spin-once spin))
+(export '(action-node resumable-action-node condition-node spin-once spin))
 ;; import relevant ros::simple-action-server symbols
 (import '(ros::name-space ros::status ros::execute-cb
           ros::goal ros::goal-id))
@@ -40,6 +40,13 @@
            (setf (third fn) 0)
            (setf (fourth fn) 0))))))
 
+(defcondition cancel-action :slots (server goal))
+
+(defun signals-cancel (server goal)
+  (signals cancel-action :server server :goal goal))
+
+(defun check-goal (server new-goal old-goal)
+  (equal (send new-goal :goal) (send old-goal :goal)))
 
 ;; classes
 (defclass action-node :super ros::simple-action-server :slots (monitor-groupname))
@@ -98,6 +105,49 @@
         (ros::spin-once monitor-groupname)
         (send self :spin-once))))
 
+(defclass resumable-action-node :super action-node :slots (resume-if timeout cancel-cb))
+(defmethod resumable-action-node
+  (:init (ns spec &key execute-cb preempt-cb accept-cb groupname
+             ((:monitor-groupname monitor-gn))
+             ((:resume-if res-if) 'check-goal) ((:timeout tmout) 10))
+    (check-fn-closure res-if)
+    (assert (numberp tmout))
+    (setq resume-if res-if)
+    (setq timeout tmout)
+    (setq cancel-cb preempt-cb)
+    (send-super :init ns spec
+                :execute-cb execute-cb
+                :preempt-cb 'signals-cancel
+                :accept-cb accept-cb
+                :groupname groupname
+                :monitor-groupname monitor-gn))
+  (:execute-cb ()
+    (catch :execute-cb
+      (handler-bind
+          ((cancel-action
+            #'(lambda (c)
+                (let ((self (send c :server))
+                      (timer (instance user::mtimer :init)))
+                  (print "Exitting...")
+                  (if cancel-cb
+                      (funcall cancel-cb (send c :server) (send c :goal)))
+                  (send self :set-preempted)
+                  (ros::ros-info ";; Stashing current progress")
+                  ;; Wait until has new goal and is available
+                  (until (or goal (> (send timer :stop) timeout))
+                         (send self :spin-once)
+                         (send self :spin-monitor)
+                         (ros::sleep))
+                  (cond
+                    ((> (send timer :stop) timeout)
+                     (ros::ros-warn ";; Resume timeout exceeded!")
+                     (throw :execute-cb nil))
+                    ((not (funcall resume-if self goal (send c :goal)))
+                     (ros::ros-warn ";; Resume conditions were not satisfied!")
+                     (throw :execute-cb nil))
+                    (t
+                     (ros::ros-info ";; Resuming...")))))))
+        (send-super :execute-cb)))))
 
 (defclass condition-node :super propertied-object :slots (execute-cb groupname))
 (defmethod condition-node
@@ -131,6 +181,6 @@
     (send ac :execute-cb)))
 
 (defun spin ()
-  (while t
+  (while (ros::ok)
     (spin-once)
     (ros::sleep)))
