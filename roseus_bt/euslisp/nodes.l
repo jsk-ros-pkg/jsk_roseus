@@ -107,7 +107,7 @@
 
 (defclass resumable-action-node :super action-node :slots (resume-if timeout cancel-cb))
 (defmethod resumable-action-node
-  (:init (ns spec &key execute-cb preempt-cb accept-cb groupname
+  (:init (ns spec &key execute-cb preempt-cb ((:resume-cb rsm-cb)) accept-cb groupname
              ((:monitor-groupname monitor-gn))
              ((:resume-if res-if) 'check-goal) ((:timeout tmout) 10))
     (check-fn-closure res-if)
@@ -115,6 +115,7 @@
     (setq resume-if res-if)
     (setq timeout tmout)
     (setq cancel-cb preempt-cb)
+    (setq resume-cb rsm-cb)
     (send-super :init ns spec
                 :execute-cb execute-cb
                 :preempt-cb 'signals-cancel
@@ -146,7 +147,8 @@
                      (ros::ros-warn ";; Resume conditions were not satisfied!")
                      (throw :execute-cb nil))
                     (t
-                     (ros::ros-info ";; Resuming...")))))))
+                     (ros::ros-info ";; Resuming...")
+                     (if resume-cb (funcall resume-cb self (send c :goal)))))))))
         (send-super :execute-cb)))))
 
 (defclass condition-node :super propertied-object :slots (execute-cb groupname))
