@@ -1,13 +1,19 @@
 #!/usr/bin/env roseus
 
 (ros::load-ros-manifest "jsk_recognition_msgs")
-(defvar *base-frame-id* "/base_footprint")
-(defvar *camera-frame-id* "/head_mount_kinect_rgb_optical_frame")
+
+(setq *input-bbox-array* (ros::get-param "~/input_bbox_array" "/HSI_color_filter/boxes"))
+(setq *base-frame-id* (ros::get-param "~base_frame_id" "/base_footprint"))
+(setq *camera-frame-id* (ros::get-param "~camera_frame_id" ":head_mount_kinect_rgb_optical_frame_lk"))
+;;(setq *robot* (ros::get-param "~robot" *pr2*))
 
 (defun bounding-box-array-cb (msg)
+  (unless (send msg :boxes)
+    (return-from bounding-box-array-cb))
   (let ((bounding-box-list (send msg :boxes)))
     (when bounding-box-list
-      (send *irtviewer* :draw-objects :flush nil)
+      (send *robot* :angle-vector (send *ri* :potentio-vector))
+      (send *tfl* :wait-for-transform *base-frame-id* (send msg :header :frame_id) (ros::time 0) 10)
       (mapcar
        #'(lambda (b)
            (let* ((dims (ros::tf-point->pos (send b :dimensions)))
@@ -15,24 +21,24 @@
                   ;; Convert geoometry_msgs::Pose of BoundingBox to euslisp coordinates [mm]
                   (cam->obj-coords (ros::tf-pose->coords (send b :pose)))
                   ;; Get camera coordinates [mm]
-                  (cam-coords (send *tfl* :lookup-transform
-                            *base-frame-id* (send msg :header :frame_id)
+                  (base->cam-coords (send *tfl* :lookup-transform
+                            *base-frame-id* (send b :header :frame_id)
                             (ros::time 0))))
+                  ;;(base->cam-coords (send (send *robot* *camera-frame-id*) :copy-worldcoords)))
               ;; Get BoundingBox world coordinates [mm]
               (send bx :transform 
-                    (send (send cam-coords :copy-worldcoords) 
+                    (send (send base->cam-coords :copy-worldcoords)
                           :transform cam->obj-coords))
-              (send bx :draw-on :flush nil :color #f(1 0 0))
+              (objects (list bx base->cam-coords *robot*))
              bx))
        bounding-box-list)
-      (send *irtviewer* :viewer :viewsurface :flush)
       )))
 
-(ros::roseus "bounding_box_array_subscriber")
+(ros::roseus "display-tf-bounding-box")
 (setq *tfl* (instance ros::transform-listener :init))
 (unless (boundp '*irtviewer*) (make-irtviewer))
 
-(ros::subscribe "~input_box" jsk_recognition_msgs::BoundingBoxArray
+(ros::subscribe *input-bbox-array* jsk_recognition_msgs::BoundingBoxArray
                 #'bounding-box-array-cb 1)
 (do-until-key
  (x::window-main-one)
