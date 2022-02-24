@@ -96,11 +96,12 @@
         (send self :spin-once))))
 
 
-(defclass condition-node :super propertied-object :slots (execute-cb))
+(defclass condition-node :super propertied-object :slots (execute-cb groupname))
 (defmethod condition-node
-  (:init (ns spec &key ((:execute-cb exec-cb)) groupname)
+  (:init (ns spec &key ((:execute-cb exec-cb)) ((:groupname gn)))
     (check-fn-closure exec-cb)
     (setq execute-cb exec-cb)
+    (setq groupname gn)
     (if groupname
         (ros::advertise-service ns spec #'send self :request-cb :groupname groupname)
         (ros::advertise-service ns spec #'send self :request-cb))
@@ -111,13 +112,19 @@
   (:request-cb (msg)
     (let ((response (send msg :response)))
       (send response :success (not (not (funcall execute-cb self msg))))
-      response)))
+      response))
+  (:spin-once ()
+    (if groupname
+        (ros::spin-once groupname)
+        (ros::spin-once))))
 
 
 ;; functions
 (defun spin-once ()
-  (ros::spin-once)
+  (dolist (cc *condition-list*)
+    (send cc :spin-once))
   (dolist (ac *action-list*)
+    (send ac :spin-once)
     (send ac :execute-cb)))
 
 (defun spin ()
