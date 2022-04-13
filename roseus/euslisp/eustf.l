@@ -137,16 +137,14 @@
 ;; helper functions
 (defun ros::create-identity-quaternion () (ros::create-quaternion-from-rpy 0 0 0))
 (defun ros::create-quaternion-from-rpy (roll pitch yaw)
+  "return #F(w x y z)"
   (let ((sin-roll  (sin (* roll  0.5))) (cos-roll  (cos (* roll  0.5)))
         (sin-pitch (sin (* pitch 0.5))) (cos-pitch (cos (* pitch 0.5)))
         (sin-yaw   (sin (* yaw   0.5))) (cos-yaw   (cos (* yaw   0.5))))
-    (print (list sin-roll cos-roll
-                 sin-pitch cos-pitch
-                 sin-yaw cos-yaw))
-    (float-vector (- (* sin-roll cos-pitch cos-yaw) (* cos-roll sin-pitch sin-yaw))
+    (float-vector (+ (* cos-roll cos-pitch cos-yaw) (* sin-roll sin-pitch sin-yaw))
+                  (- (* sin-roll cos-pitch cos-yaw) (* cos-roll sin-pitch sin-yaw))
                   (+ (* cos-roll sin-pitch cos-yaw) (* sin-roll cos-pitch sin-yaw))
-                  (- (* sin-roll cos-pitch sin-yaw) (* sin-roll sin-pitch cos-yaw))
-                  (+ (* cos-roll cos-pitch cos-yaw) (* sin-roll sin-pitch sin-yaw)))))
+                  (- (* cos-roll cos-pitch sin-yaw) (* sin-roll sin-pitch cos-yaw)))))
 
 (defun ros::create-quaternion-msg-from-rpy (roll pitch yaw)
   "Create geometry_msgs::Quaternion from roll, pitch and yaw"
@@ -186,13 +184,13 @@
 
 $ (setq tr (instance ros::transformer :init))
 #<ros::transformer #X545e290>
-$ (send tr :set-transform (instance ros::tf-cascaded-coords :init :pos #f(1 2 3) :frame-id \"this_frame\" :child-frame-id \"child\"))
+$ (send tr :set-transform (instance ros::tf-cascaded-coords :init :pos #f(1000 2000 3000) :frame-id \"this_frame\" :child-frame-id \"child\"))
 $ (send tr :get-frame-strings)
 (\"this_frame\" \"child\")
 $ (send tr :lookup-transform \"this_frame\" \"child\" (ros::time))
-#<cascaded-coords #X5438430 this_frame  1000.0 2000.0 3000.0 / 3.142 0.0 3.142>
+#<cascaded-coords #X5438430 this_frame  1000.0 2000.0 3000.0 / 0.0 0.0 0.0>
 $ (send tr :lookup-transform \"child\"  \"this_frame\" (ros::time))
-#<cascaded-coords #X54388e0 child  1000.0 -2000.0 3000.0 / 3.142 0.0 3.142>
+#<cascaded-coords #X54388e0 child  -1000.0 -2000.0 -3000.0 / 0.0 0.0 0.0>
 "
    (setq cobject (ros::eustf-transformer interpolating cache-time))
    self)

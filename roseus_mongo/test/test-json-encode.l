@@ -44,6 +44,9 @@
   (warn "~%(json::encode-alist '((:a 1 2 3 4)))~%")
   (assert (string= "{\"a\":[1,2,3,4]}" (json::stream->string #'json::encode-alist '((:a 1 2 3 4)))))
 
+  (warn "(json::encode-alist '((:a . #f(1 2 3)))~%")
+  (assert (string= "{\"a\":[1.0,2.0,3.0]}" (json::stream->string #'json::encode-alist '((:a . #f(1 2 3))))))
+
   (warn "(json::encode-alist '((:a . 1) (:b . 2)))~%")
   (assert (string= "{\"a\":1,\"b\":2}" (json::stream->string #'json::encode-alist '((:a . 1) (:b . 2)))))
 
@@ -74,6 +77,9 @@
 
   (warn "~%(json::encode-plist '(:a (1 2 3 4)))~%")
   (assert (string= "{\"a\":[1,2,3,4]}" (json::stream->string #'json::encode-plist '(:a (1 2 3 4)))))
+
+  (warn "(json::encode-plist '(:a #f(1 2 3)))~%")
+  (assert (string= "{\"a\":[1.0,2.0,3.0]}" (json::stream->string #'json::encode-plist '(:a #f(1 2 3)))))
 
   (warn "(json::encode-plist '(:a 1 :b 2))~%")
   (assert (string= "{\"a\":1,\"b\":2}" (json::stream->string #'json::encode-plist '(:a 1 :b 2))))

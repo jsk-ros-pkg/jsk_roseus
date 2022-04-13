@@ -2,6 +2,11 @@
 Changelog for package roseus_mongo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.5 (2021-12-13)
+------------------
+* add tests for encode-vector (`#618 <https://github.com/jsk-ros-pkg/jsk_roseus/issues/618>`_)
+* Contributors: Hirokazu Ishida
+
 1.7.4 (2019-02-04)
 ------------------
 
