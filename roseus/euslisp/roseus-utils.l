@@ -1115,20 +1115,22 @@
     t))
 
 (defun call-trigger-service (srvname &key (wait nil) (timeout -1) (persistent t))
-  "Call std_srv/Trigger service"
+  "Call std_srv/Trigger service. Use (setq r (call-trigger-service \"/test\" t)) (and r (send r :success)) to check if it succeed. If r is nil, it fail to find service."
   (let (r)
     (when (ros::wait-for-service srvname (if wait timeout 0))
       (setq r (ros::service-call srvname (instance std_srvs::TriggerRequest :init) persistent))
       (ros::ros-debug "Call \"~A\" returns \"~A\"" srvname (send r :message))
-      (send r :success))))
+      (unless (send r :success) (ros::ros-warn "Call \"~A\" fails, it returns \"~A\"" srvname (send r :message)))
+      r)))
 
 (defun call-set-bool-service (srvname data &key (wait nil) (timeout -1) (persistent t))
-  "Call std_srv/Trigger service"
+  "Call std_srv/SetBoolRequest service, Use (setq r (call-set-bool-service \"/test\" t)) (and r (send r :success)) to check if it succeed. If r is nil, it fail to find service."
   (let (r)
     (when (ros::wait-for-service srvname (if wait timeout 0))
       (setq r (ros::service-call srvname (instance std_srvs::SetBoolRequest :init :data data) persistent))
       (ros::ros-debug "Call \"~A\" returns \"~A\"" srvname (send r :message))
-      (send r :success))))
+      (unless (ros r :success) (ros::ros-warn "Call \"~A\" fails, it returns \"~A\"" srvname (send r :message)))
+      r)))
 
 (defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
   "Subscribe message, just for once"
