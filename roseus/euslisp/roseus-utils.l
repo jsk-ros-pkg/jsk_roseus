@@ -1127,7 +1127,7 @@
   (let (r)
     (when (ros::wait-for-service srvname (if wait timeout 0))
       (setq r (ros::service-call srvname (instance std_srvs::SetBoolRequest :init :data data) persistent))
-      (ros::ros-info "Call \"~A\" returns \"~A\"" srvname (send r :message))
+      (ros::ros-debug "Call \"~A\" returns \"~A\"" srvname (send r :message))
       (send r :success))))
 
 (defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
