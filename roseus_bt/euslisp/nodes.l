@@ -83,6 +83,8 @@
         (when (send self :is-active)
           (send self :set-succeeded
                 (send self :result :success (not (not res)))))))
+    ;; TODO: publishing status at high frequencies is slow, but
+    ;; required to make a connection with the action client
     (send self :publish-status))
   (:set-output (name val)
     (let ((msg (send self :feedback (intern (string-upcase name) *keyword-package*) val)))
