@@ -43,6 +43,7 @@ std::string TutorialParser::format_node_body(const XMLElement* node, int padding
   if (id == "Init")  return std::string("(init nil t)").insert(0, padding, ' ');
   if (id == "InitWithBroom") return  std::string("(init t t)").insert(0, padding, ' ');
   if (id == "MoveToTable")   return  std::string("(go-to-spot \"table-front\")").insert(0, padding, ' ');
+  if (id == "MoveToBroom")   return  std::string("(go-to-spot \"broom-front\")").insert(0, padding, ' ');
   if (id == "PickBottle")    return  std::string("(pick-sushi-bottle)").insert(0, padding, ' ');
   if (id == "PourBottle")    return  std::string("(pour-sushi-bottle)").insert(0, padding, ' ');
 

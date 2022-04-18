@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Parallel failure_threshold="1" success_threshold="2">
+            <Sequence name="Robot1">
+                <Action ID="Init"/>
+                <Delay delay_msec="3000">
+                  <Action ID="MoveToTable"/>
+                </Delay>
+            </Sequence>
+            <Sequence name="Robot2">
+                <Action ID="InitWithBroom"/>
+                <Delay delay_msec="3000">
+                  <Action ID="MoveToBroom"/>
+                </Delay>
+            </Sequence>
+        </Parallel>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <RemoteAction ID="Init" server_name="/robot1/init"
+                      host_name="localhost" host_port="9090"/>
+        <RemoteAction ID="MoveToTable" server_name="/robot1/move"
+                      host_name="localhost" host_port="9090"/>
+
+        <RemoteAction ID="InitWithBroom" server_name="/robot2/init"
+                      host_name="localhost" host_port="9091"/>
+        <RemoteAction ID="MoveToBroom" server_name="/robot2/move"
+                      host_name="localhost" host_port="9091"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+

@@ -212,7 +212,7 @@ rosrun groot Groot
 
 ## t07_xacro
 
-The final example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t07_xacro.xml.xacro illustrates how we can use the xacro package to improve readability and modularity of the model file descriptions.
+In this example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t07_xacro.xml.xacro we illustrate how it is possible to use the xacro package to improve readability and modularity of the model file descriptions.
 
 The following will create the `t07_xacro.xml` file equivalent to the `t05_subtrees.xml` example
 ```bash
@@ -228,3 +228,47 @@ rosrun xacro xacro t07_xacro_sweep_task.xml.xacro -o t07_xacro_sweep_task.xml ma
 
 Note how port variables need to be quoted (e.g.`$${var}`) to use the xacro syntax.
 The `{var}` notation also works.
+
+## t08_multimaster
+
+This example shows how to use the rosbridge interface to assign different hosts to each action in a multimaster application.
+https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t08_multimaster.xml
+
+To do this we declare the actions with the `<RemoteAction/>` tag in the `<TreeNodesModel/>`, and add a `host_name` and `host_port` field to it. As a normal action, it also requires to have the `server_name` field set.
+
+#### Run the code
+
+Run the first rosbridge_server:
+```bash
+roslaunch rosbridge_server rosbridge_websocket.launch
+```
+
+Run the first roseus server:
+```bash
+roscd roseus_bt_tutorials/euslisp
+roseus t08_multimaster-action-server.l
+```
+
+Run the second rosbridge_server:
+```bash
+export ROS_MASTER_URI=http://localhost:11312
+roslaunch rosbridge_server rosbridge_websocket.launch port:=9091
+```
+
+Run the second roseus server:
+```bash
+export ROS_MASTER_URI=http://localhost:11312
+roscd roseus_bt_tutorials/euslisp
+roseus t08_multimaster-action-server.l
+```
+
+Run the cpp client
+```bash
+rosrun roseus_bt_tutorials t08_multimaster
+```
+
+Optionally run Groot for visualization
+```bash
+rosrun groot Groot
+```
+
