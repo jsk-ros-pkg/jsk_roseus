@@ -14,6 +14,7 @@ protected:
    const unsigned msec = BT::TreeNode::getInput<unsigned>("timeout").value();
    const std::string server_name = BT::TreeNode::getInput<std::string>("service_name").value();
    ros::Duration timeout(static_cast<double>(msec) * 1e-3);
+   BT::RosServiceNode<ServiceT>::service_client_ = nh.serviceClient<ServiceT>( server_name, true );
 
    ROS_DEBUG("Connecting to service server at '%s'...", server_name.c_str());
    bool connected = BT::RosServiceNode<ServiceT>::service_client_.waitForExistence(timeout);
