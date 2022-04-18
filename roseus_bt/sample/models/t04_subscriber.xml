@@ -10,7 +10,7 @@
                     <Condition ID="atSpot" spot="table-front"/>
                     <Action ID="MoveTo" name="MoveToSpot" spot="table-front"/>
                 </Fallback>
-                <RetryUntilSuccesful name="WaitForTopicMessage" num_attempts="-1">
+                <RetryUntilSuccessful name="WaitForTopicMessage" num_attempts="-1">
                     <Fallback>
                         <Condition ID="CheckCoords" name="CheckBottleCoords"
                                    coords="${bottle_coords}"/>
@@ -18,7 +18,7 @@
                             <AlwaysFailure/>
                         </Delay>
                     </Fallback>
-                </RetryUntilSuccesful>
+                </RetryUntilSuccessful>
                 <Action ID="PickBottleAt" coords="${bottle_coords}" name="PickBottleAtCoords"/>
                 <Action ID="PourBottle"/>
                 <Action ID="PlaceBottle"/>
