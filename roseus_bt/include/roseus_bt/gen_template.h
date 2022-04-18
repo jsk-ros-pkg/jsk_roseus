@@ -261,7 +261,7 @@ int main(int argc, char **argv)
   {
     ros::spinOnce();
     status = tree.tickRoot();
-    ros::Duration sleep_time(0.05);
+    ros::Duration sleep_time(0.005);
     sleep_time.sleep();
   }
 
@@ -313,6 +313,9 @@ std::string GenTemplate::eus_server_template(std::string server_type,
 
 ;; create server instances
 %6%
+
+;; set rate
+(ros::rate 100)
 
 ;; spin
 (roseus_bt:spin)
