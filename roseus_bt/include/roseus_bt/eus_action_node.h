@@ -16,7 +16,18 @@ class EusActionNode: public BT::RosActionNode<ActionT>
 {
 protected:
   EusActionNode(ros::NodeHandle& nh, const std::string& name, const BT::NodeConfiguration& conf):
-  BT::RosActionNode<ActionT>(nh, name, conf) {};
+  BT::RosActionNode<ActionT>(nh, name, conf) {
+    // check connection at init time
+    const unsigned msec = BT::TreeNode::getInput<unsigned>("timeout").value();
+    const std::string server_name = BT::TreeNode::getInput<std::string>("server_name").value();
+    ros::Duration timeout(static_cast<double>(msec) * 1e-3);
+
+    ROS_DEBUG("Connecting to action server at '%s'...", server_name.c_str());
+    bool connected = BT::RosActionNode<ActionT>::action_client_->waitForServer(timeout);
+    if (!connected) {
+      throw BT::RuntimeError("Couldn't connect to action server at: ", server_name);
+    }
+  };
 
 public:
   using FeedbackType = typename ActionT::_action_feedback_type::_feedback_type;
