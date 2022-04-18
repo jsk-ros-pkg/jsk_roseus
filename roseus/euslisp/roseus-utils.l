@@ -1108,13 +1108,13 @@
 ;; misc function
 ;;
 (ros::roseus-add-srvs "std_srvs")
-(defun call-empty-service (srvname &key (wait nil) (timeout -1) (persistent t)) ;; If timeout is -1 (default), waits until the node is shutdown. If timeout is 0, returns immediately.
+(defun call-empty-service (srvname &key (wait nil) (timeout -1) (persistent nil)) ;; If timeout is -1 (default), waits until the node is shutdown. If timeout is 0, returns immediately.
   "Call empty service and return t"
   (when (ros::wait-for-service srvname (if wait timeout 0))
     (ros::service-call srvname (instance std_srvs::EmptyRequest :init) persistent)
     t))
 
-(defun call-trigger-service (srvname &key (wait nil) (timeout -1) (persistent t))
+(defun call-trigger-service (srvname &key (wait nil) (timeout -1) (persistent nil))
   "Call std_srv/Trigger service. Use (setq r (call-trigger-service \"/test\" t)) (and r (send r :success)) to check if it succeed. If r is nil, it fail to find service."
   (let (r)
     (when (ros::wait-for-service srvname (if wait timeout 0))
@@ -1123,7 +1123,7 @@
       (unless (send r :success) (ros::ros-warn "Call \"~A\" fails, it returns \"~A\"" srvname (send r :message)))
       r)))
 
-(defun call-set-bool-service (srvname data &key (wait nil) (timeout -1) (persistent t))
+(defun call-set-bool-service (srvname data &key (wait nil) (timeout -1) (persistent nil))
   "Call std_srv/SetBoolRequest service, Use (setq r (call-set-bool-service \"/test\" t)) (and r (send r :success)) to check if it succeed. If r is nil, it fail to find service."
   (let (r)
     (when (ros::wait-for-service srvname (if wait timeout 0))
