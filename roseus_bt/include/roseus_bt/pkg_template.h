@@ -55,6 +55,7 @@ find_package(catkin REQUIRED COMPONENTS
   roseus_bt
 %2%
 )
+find_package(fmt)
 
 add_service_files(
   FILES
@@ -77,10 +78,12 @@ catkin_package(
   CATKIN_DEPENDS
   message_runtime
 %2%
+  DEPENDS fmt
 )
 
 
 include_directories(${catkin_INCLUDE_DIRS})
+add_subdirectory(${roseus_bt_SOURCE_PREFIX}/include/rosbridgecpp rosbridgecpp)
 
 %5%
 )";
@@ -177,7 +180,7 @@ std::string PkgTemplate::generate_cmake_lists(std::string package_name,
     std::string fmt_string = 1+ R"(
 add_executable(%1% src/%1%.cpp)
 add_dependencies(%1% ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(%1% ${catkin_LIBRARIES})
+target_link_libraries(%1% ${catkin_LIBRARIES} rosbridgecpp fmt::fmt)
 
 )";
 

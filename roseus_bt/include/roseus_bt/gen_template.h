@@ -25,6 +25,11 @@ public:
                                       std::vector<std::string> provided_ports,
                                       std::vector<std::string> get_inputs,
                                       std::vector<std::string> set_outputs);
+  std::string remote_action_class_template(std::string package_name, std::string nodeID,
+                                           std::string host_name, int host_port,
+                                           std::vector<std::string> provided_ports,
+                                           std::vector<std::string> get_inputs,
+                                           std::vector<std::string> set_outputs);
   std::string  condition_class_template(std::string package_name, std::string nodeID,
                                         std::vector<std::string> provided_ports,
                                         std::vector<std::string> get_inputs);
@@ -144,6 +149,47 @@ EusActionNode<%1%::%2%Action>(handle, name, conf) {}
     boost::algorithm::join(provided_ports, ",\n") %
     boost::algorithm::join(get_inputs, "\n") %
     boost::algorithm::join(set_outputs, "\n");
+
+  return bfmt.str();
+}
+
+
+std::string GenTemplate::remote_action_class_template(
+     std::string package_name, std::string nodeID,
+     std::string host_name, int host_port,
+     std::vector<std::string> provided_ports,
+     std::vector<std::string> get_inputs,
+     std::vector<std::string> set_outputs)
+{
+  std::string fmt_string = 1 + R"(
+class %2%: public EusRemoteActionNode
+{
+
+public:
+  %2%(const std::string& name, const NodeConfiguration& conf):
+EusRemoteActionNode("%3%", %4%, "%1%/%2%ActionGoal", name, conf) {}
+
+  static PortsList providedPorts()
+  {
+    return  {
+%5%
+    };
+  }
+
+  bool sendGoal(rapidjson::Document& goal) override
+  {
+%6%
+    return true;
+  }
+};
+)";
+  boost::format bfmt = boost::format(fmt_string) %
+    package_name %
+    nodeID %
+    host_name %
+    host_port %
+    boost::algorithm::join(provided_ports, ",\n") %
+    boost::algorithm::join(get_inputs, "\n");
 
   return bfmt.str();
 }

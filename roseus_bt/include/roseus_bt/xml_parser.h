@@ -64,7 +64,8 @@ protected:
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
   std::string generate_headers(const std::string package_name);
-  std::string generate_action_class(const XMLElement* node, const std::string package_name);
+  std::string generate_action_class(const XMLElement* node, const std::string package_name,
+                                    bool remote);
   std::string generate_condition_class(const XMLElement* node, const std::string package_name);
   std::string generate_subscriber_class(const XMLElement* node);
   std::string generate_main_function(const std::string roscpp_node_name, const std::string xml_filename);
@@ -124,6 +125,7 @@ void XMLParser::check_xml_file(std::string filename) {
     std::string name = node->Name();
 
     if (name != "Action" &&
+        name != "RemoteAction" &&
         name != "Condition" &&
         name != "Subscriber" &&
         name != "SubTree") {
@@ -134,7 +136,7 @@ void XMLParser::check_xml_file(std::string filename) {
       throw XMLError::MissingRequiredAttribute("ID", node);
     }
 
-    if (name == "Action") {
+    if (name == "Action" || name == "RemoteAction") {
       if (!node->Attribute("server_name")) {
         throw XMLError::MissingRequiredAttribute("server_name", node);
       }
@@ -320,14 +322,17 @@ void XMLParser::collect_eus_actions(const std::string package_name,
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
 
-  for (auto action_node = root->FirstChildElement("Action");
-       action_node != nullptr;
-       action_node = action_node->NextSiblingElement("Action"))
+  for (auto node = root->FirstChildElement();
+       node != nullptr;
+       node = node->NextSiblingElement())
     {
-      std::string server_name = action_node->Attribute("server_name");
-      BOOST_LOG_TRIVIAL(trace) << "collect_eus_actions: transversing " << server_name << "...";
-      push_new(format_callback(action_node), callback_definition);
-      push_new(format_instance(action_node, server_name), instance_creation);
+      std::string name = node->Name();
+      if (name == "Action" || name == "RemoteAction") {
+        std::string server_name = node->Attribute("server_name");
+        BOOST_LOG_TRIVIAL(trace) << "collect_eus_actions: transversing " << server_name << "...";
+        push_new(format_callback(node), callback_definition);
+        push_new(format_instance(node, server_name), instance_creation);
+      }
     }
 }
 
@@ -517,6 +522,13 @@ std::string XMLParser::generate_headers(const std::string package_name) {
       headers.push_back(format_action_node(action_node, package_name));
     }
 
+   for (auto action_node = root->FirstChildElement("RemoteAction");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("RemoteAction"))
+    {
+      headers.push_back(format_action_node(action_node, package_name));
+    }
+
   for (auto condition_node = root->FirstChildElement("Condition");
        condition_node != nullptr;
        condition_node = condition_node->NextSiblingElement("Condition"))
@@ -534,7 +546,7 @@ std::string XMLParser::generate_headers(const std::string package_name) {
   return gen_template.headers_template(headers);
 }
 
-std::string XMLParser::generate_action_class(const XMLElement* node, const std::string package_name) {
+std::string XMLParser::generate_action_class(const XMLElement* node, const std::string package_name, bool remote=false) {
   auto format_server_name = [](const XMLElement* node) {
     return fmt::format("      InputPort<std::string>(\"server_name\", \"{0}\", \"name of the Action Server\")",
                        node->Attribute("server_name"));
@@ -588,6 +600,13 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const std::
                         provided_output_ports.end());
 
 
+  if (remote) {
+    return gen_template.remote_action_class_template(
+               package_name, node->Attribute("ID"),
+               node->Attribute("host_name"),
+               std::atoi(node->Attribute("host_port")),
+               provided_ports, get_inputs, set_outputs);
+  }
   return gen_template.action_class_template(package_name, node->Attribute("ID"),
                                             provided_ports, get_inputs, set_outputs);
 }
@@ -649,6 +668,10 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
     return fmt::format("  RegisterRosAction<{0}>(factory, \"{0}\", nh);",
                        node->Attribute("ID"));
   };
+  auto format_remote_action_node = [](const XMLElement* node) {
+    return fmt::format("  RegisterRemoteAction<{0}>(factory, \"{0}\");",
+                       node->Attribute("ID"));
+  };
   auto format_condition_node = [](const XMLElement* node) {
     return fmt::format("  RegisterRosService<{0}>(factory, \"{0}\", nh);",
                        node->Attribute("ID"));
@@ -668,6 +691,13 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
        action_node = action_node->NextSiblingElement("Action"))
     {
       register_actions.push_back(format_action_node(action_node));
+    }
+
+  for (auto action_node = root->FirstChildElement("RemoteAction");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("RemoteAction"))
+    {
+      register_actions.push_back(format_remote_action_node(action_node));
     }
 
   for (auto condition_node = root->FirstChildElement("Condition");
@@ -729,12 +759,21 @@ std::map<std::string, std::string> XMLParser::generate_all_action_files() {
 
   std::map<std::string, std::string> result;
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
+
   for (auto action_node = root->FirstChildElement("Action");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
     {
       result[format_filename(action_node)] = generate_action_file_contents(action_node);
     }
+
+  for (auto action_node = root->FirstChildElement("RemoteAction");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("RemoteAction"))
+    {
+      result[format_filename(action_node)] = generate_action_file_contents(action_node);
+    }
+
   return result;
 }
 
@@ -766,7 +805,15 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
     {
-      output.append(generate_action_class(action_node, package_name));
+      output.append(generate_action_class(action_node, package_name, false));
+      output.append("\n\n");
+    }
+
+  for (auto action_node = root->FirstChildElement("RemoteAction");
+       action_node != nullptr;
+       action_node = action_node->NextSiblingElement("RemoteAction"))
+    {
+      output.append(generate_action_class(action_node, package_name, true));
       output.append("\n\n");
     }
 
@@ -803,38 +850,30 @@ void XMLParser::push_dependencies(std::vector<std::string>* message_packages,
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
 
-  for (auto action_node = root->FirstChildElement("Action");
-       action_node != nullptr;
-       action_node = action_node->NextSiblingElement("Action"))
-    {
-      push_new(format_action_file(action_node), action_files);
-      for (auto port_node = action_node->FirstChildElement();
-           port_node != nullptr;
-           port_node = port_node->NextSiblingElement())
-        {
-          maybe_push_message_package(port_node, message_packages);
-        }
-    }
+   for (auto node = root->FirstChildElement();
+       node != nullptr;
+       node = node->NextSiblingElement()) {
 
-  for (auto condition_node = root->FirstChildElement("Condition");
-       condition_node != nullptr;
-       condition_node = condition_node->NextSiblingElement("Condition"))
-    {
-      push_new(format_service_file(condition_node), service_files);
-      for (auto port_node = condition_node->FirstChildElement();
-           port_node != nullptr;
-           port_node = port_node->NextSiblingElement())
-        {
-          maybe_push_message_package(port_node, message_packages);
-        }
-    }
+      std::string name = node->Name();
 
-  for (auto subscriber_node = root->FirstChildElement("Subscriber");
-       subscriber_node != nullptr;
-       subscriber_node = subscriber_node->NextSiblingElement("Subscriber"))
-    {
-      maybe_push_message_package(subscriber_node, message_packages);
-    }
+      if (name == "Action" || name == "RemoteAction") {
+        push_new(format_action_file(node), action_files);
+      }
+      if (name == "Condition") {
+        push_new(format_service_file(node), service_files);
+      }
+      if (name == "Action" || name == "RemoteAction" || name == "Condition") {
+        for (auto port_node = node->FirstChildElement();
+             port_node != nullptr;
+             port_node = port_node->NextSiblingElement())
+          {
+            maybe_push_message_package(port_node, message_packages);
+          }
+      }
+      if (name == "Subscriber") {
+        maybe_push_message_package(node, message_packages);
+      }
+   }
 }
 
 
