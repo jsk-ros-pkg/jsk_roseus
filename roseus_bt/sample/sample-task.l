@@ -92,4 +92,5 @@
       (send broom-obj :locate (float-vector (+ 400 (* 250 (sin (/ (incf i) 10.0)))) -1500 0) :world)
       (send *robot* :dual-arm-ik (send broom-obj :handle))
       (send *irtviewer* :draw-objects)
+      (unix:usleep 50000)
       (incf i))))
