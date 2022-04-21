@@ -4,8 +4,7 @@
 
 #include <behaviortree_cpp_v3/action_node.h>
 #include <behaviortree_cpp_v3/bt_factory.h>
-#include <rosbridgecpp/rosbridge_ws_client.hpp>
-#include <fmt/format.h>
+#include <roseus_bt/ws_action_client.h>
 
 
 namespace BT
@@ -18,17 +17,8 @@ protected:
 
   EusRemoteActionNode(const std::string& master, int port, const std::string message_type, const std::string& name, const BT::NodeConfiguration & conf): 
     BT::ActionNodeBase(name, conf),
-    rbc_(fmt::format("{}:{}", master, std::to_string(port)))
-  {
-    server_name_ = getInput<std::string>("server_name").value();
-    goal_topic_ = fmt::format("{}/goal", server_name_);
-    result_topic_ = fmt::format("{}/result", server_name_);
-    feedback_topic_ = fmt::format("{}/feedback", server_name_);
-
-    rbc_.addClient("goal_publisher");
-    rbc_.addClient("goal_advertiser");
-    rbc_.advertise("goal_advertiser", goal_topic_, message_type);
-  }
+    action_client_(master, port, getInput<std::string>("server_name").value(), message_type)
+  {}
 
 public:
 
@@ -62,7 +52,7 @@ public:
   }
 
 protected:
-  RosbridgeWsClient rbc_;
+  RosbridgeActionClient action_client_;
 
   std::string server_name_;
   std::string goal_topic_;
@@ -85,9 +75,8 @@ protected:
       rapidjson::Document action_goal;
       action_goal.SetObject();
       action_goal.AddMember("goal", goal, action_goal.GetAllocator());
-      // TODO: add header and goal_id
 
-      rbc_.publish(goal_topic_, action_goal);
+      action_client_.sendGoal(action_goal);
     }
 
     // TODO: wait for result
