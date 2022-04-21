@@ -124,13 +124,13 @@ EusActionNode<%1%::%2%Action>(handle, name, conf) {}
     return true;
   }
 
-  void onFeedback( const typename FeedbackType::ConstPtr& feedback) override
+  void onFeedback(const typename FeedbackType::ConstPtr& feedback) override
   {
 %5%
     return;
   }
 
-  NodeStatus onResult( const ResultType& result) override
+  NodeStatus onResult(const ResultType& result) override
   {
     if (result.success) return NodeStatus::SUCCESS;
     return NodeStatus::FAILURE;
@@ -181,6 +181,17 @@ EusRemoteActionNode("%3%", %4%, "%1%/%2%ActionGoal", name, conf) {}
 %6%
     return true;
   }
+
+  NodeStatus onResult(const rapidjson::Value& result) override
+  {
+    if (result.HasMember("success") &&
+        result["success"].IsBool() &&
+        result["success"].GetBool()) {
+      return NodeStatus::SUCCESS;
+    }
+    return NodeStatus::FAILURE;
+  }
+
 };
 )";
   boost::format bfmt = boost::format(fmt_string) %
