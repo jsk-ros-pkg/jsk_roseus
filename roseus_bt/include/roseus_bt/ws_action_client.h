@@ -9,7 +9,8 @@ class RosbridgeActionClient
 public:
   RosbridgeActionClient(const std::string& master, int port, const std::string& server_name, const std::string& action_type):
     rbc_(fmt::format("{}:{}", master, std::to_string(port))),
-    server_name_(server_name)
+    server_name_(server_name),
+    is_active_(false)
   {
     goal_topic_ = fmt::format("{}/goal", server_name_);
     result_topic_ = fmt::format("{}/result", server_name_);
@@ -51,7 +52,6 @@ public:
   void cancelGoal() {
     rapidjson::Document msg;
     msg.SetObject();
-    is_active_ = false;
     rbc_.publish(cancel_topic_, msg);
   }
 
@@ -62,6 +62,13 @@ public:
   rapidjson::Value getResult() {
     // TODO: reset result after getting
     return result_["msg"].GetObject()["result"].GetObject();
+  }
+
+  void waitForResult() {
+    std::cout << "RemoteAction: waiting for result: " << result_topic_ << std::endl;
+    while (is_active_) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
   }
 
 // waitForServer

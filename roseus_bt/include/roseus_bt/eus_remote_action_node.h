@@ -44,12 +44,11 @@ public:
 
   virtual void halt() override
   {
-    // if( status() == NodeStatus::RUNNING )
-    // {
-    //   action_client_->cancelGoal();
-    // }
+    if (action_client_.isActive()) {
+      action_client_.cancelGoal();
+    }
     setStatus(NodeStatus::IDLE);
-    // action_client_->waitForResult();
+    action_client_.waitForResult();
   }
 
 protected:
