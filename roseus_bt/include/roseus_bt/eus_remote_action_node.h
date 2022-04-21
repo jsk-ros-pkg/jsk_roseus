@@ -35,7 +35,8 @@ public:
 
   virtual bool sendGoal(rapidjson::Document& goal) = 0;
 
-  // virtual NodeStatus onResult( const ResultType& res) = 0;
+  virtual NodeStatus onResult(const rapidjson::Value& res) = 0;
+
   // virtual NodeStatus onFailedRequest(FailureCause failure)
   // {
   //   return NodeStatus::FAILURE;
@@ -72,16 +73,19 @@ protected:
         return NodeStatus::FAILURE;
       }
 
-      rapidjson::Document action_goal;
-      action_goal.SetObject();
-      action_goal.AddMember("goal", goal, action_goal.GetAllocator());
-
-      action_client_.sendGoal(action_goal);
+      action_client_.sendGoal(goal);
     }
 
     // TODO: wait for result
     // TODO: track feedback
-    return NodeStatus::SUCCESS;
+    if (action_client_.isActive()) {
+      return NodeStatus::RUNNING;
+    }
+
+    // TODO: check slots and raise errors
+    // throw BT::RuntimeError("EusRemoteActionNode: ActionResult is not set properly");
+
+    return onResult( action_client_.getResult() );
   }
 };
 

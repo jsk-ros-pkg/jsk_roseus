@@ -4,7 +4,6 @@
 #include <rosbridgecpp/rosbridge_ws_client.hpp>
 #include <fmt/format.h>
 
-
 class RosbridgeActionClient
 {
 public:
@@ -37,10 +36,16 @@ public:
     rbc_.removeClient("result_subscriber");
   }
 
-  void sendGoal(const rapidjson::Document& goal) {
+  void sendGoal(const rapidjson::Value& goal) {
     // TODO: add header and goal_id
+
+    rapidjson::Document action_goal;
+    action_goal.SetObject();
+    rapidjson::Value g(goal, action_goal.GetAllocator());
+    action_goal.AddMember("goal", g, action_goal.GetAllocator());
+
     is_active_ = true;
-    rbc_.publish(goal_topic_, goal);
+    rbc_.publish(goal_topic_, action_goal);
   }
 
   void cancelGoal() {
@@ -54,13 +59,18 @@ public:
     return is_active_;
   }
 
-// getResult
+  rapidjson::Value getResult() {
+    // TODO: reset result after getting
+    return result_["msg"].GetObject()["result"].GetObject();
+  }
+
 // waitForServer
 
 protected:
   RosbridgeWsClient rbc_;
 
   bool is_active_;
+  rapidjson::Value result_;
 
   std::string server_name_;
   std::string goal_topic_;
@@ -75,6 +85,12 @@ protected:
   {
     std::string message = in_message->string();
     std::cout << "resultCallback(): Message Received: " << message << std::endl;
+
+    rapidjson::Document document(rapidjson::kObjectType);
+    document.Parse(message.c_str());
+    rapidjson::Value res(document, document.GetAllocator());
+    result_ = res;
+
     is_active_ = false;
   }
 
