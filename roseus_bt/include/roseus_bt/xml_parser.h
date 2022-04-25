@@ -64,8 +64,8 @@ protected:
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
   std::string generate_headers(const std::string package_name);
-  std::string generate_action_class(const XMLElement* node, const std::string package_name,
-                                    bool remote);
+  std::string generate_action_class(const XMLElement* node, const std::string package_name);
+  std::string generate_remote_action_class(const XMLElement* node, const std::string package_name);
   std::string generate_condition_class(const XMLElement* node, const std::string package_name);
   std::string generate_subscriber_class(const XMLElement* node);
   std::string generate_main_function(const std::string roscpp_node_name, const std::string xml_filename);
@@ -546,7 +546,7 @@ std::string XMLParser::generate_headers(const std::string package_name) {
   return gen_template.headers_template(headers);
 }
 
-std::string XMLParser::generate_action_class(const XMLElement* node, const std::string package_name, bool remote=false) {
+std::string XMLParser::generate_action_class(const XMLElement* node, const std::string package_name) {
   auto format_server_name = [](const XMLElement* node) {
     return fmt::format("      InputPort<std::string>(\"server_name\", \"{0}\", \"name of the Action Server\")",
                        node->Attribute("server_name"));
@@ -567,7 +567,6 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const std::
     return fmt::format("    setOutput(\"{0}\", feedback->{0});",
                        node->Attribute("name"));
   };
-
 
   std::vector<std::string> provided_input_ports;
   std::vector<std::string> provided_output_ports;
@@ -600,15 +599,72 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const std::
                         provided_output_ports.end());
 
 
-  if (remote) {
-    return gen_template.remote_action_class_template(
-               package_name, node->Attribute("ID"),
-               node->Attribute("host_name"),
-               std::atoi(node->Attribute("host_port")),
-               provided_ports, get_inputs, set_outputs);
-  }
   return gen_template.action_class_template(package_name, node->Attribute("ID"),
                                             provided_ports, get_inputs, set_outputs);
+}
+
+std::string XMLParser::generate_remote_action_class(const XMLElement* node, const std::string package_name) {
+  auto format_server_name = [](const XMLElement* node) {
+    return fmt::format("      InputPort<std::string>(\"server_name\", \"{0}\", \"name of the Action Server\")",
+                       node->Attribute("server_name"));
+  };
+  auto format_input_port = [](const XMLElement* node) {
+    return fmt::format("      InputPort<std::string>(\"{0}\")",
+                         node->Attribute("name"));
+  };
+  auto format_output_port = [](const XMLElement* node) {
+    return fmt::format("      OutputPort<std::string>(\"{0}\")",
+                         node->Attribute("name"));
+  };
+  auto format_get_input = [](const XMLElement* node) {
+    return fmt::format(R"(
+    getInput("{0}", json);
+    document.Parse(json.c_str());
+    rapidjson::Value {0}(document, document.GetAllocator());
+    goal->AddMember("{0}", {0}, goal->GetAllocator());)",
+    node->Attribute("name"));
+  };
+  auto format_set_output = [](const XMLElement* node) {
+    return fmt::format("    setOutputFromMessage(\"{0}\", feedback);",
+                         node->Attribute("name"));
+   };
+
+  std::vector<std::string> provided_input_ports;
+  std::vector<std::string> provided_output_ports;
+  std::vector<std::string> get_inputs;
+  std::vector<std::string> set_outputs;
+
+  provided_input_ports.push_back(format_server_name(node));
+
+  for (auto port_node = node->FirstChildElement();
+       port_node != nullptr;
+       port_node = port_node->NextSiblingElement())
+    {
+      std::string name = port_node->Name();
+      if (name == "input_port" || name == "inout_port") {
+        provided_input_ports.push_back(format_input_port(port_node));
+        get_inputs.push_back(format_get_input(port_node));
+      }
+      if (name == "output_port" || name == "inout_port") {
+        provided_output_ports.push_back(format_output_port(port_node));
+        set_outputs.push_back(format_set_output(port_node));
+      }
+    }
+
+  std::vector<std::string> provided_ports;
+  provided_ports.insert(provided_ports.end(),
+                        provided_input_ports.begin(),
+                        provided_input_ports.end());
+  provided_ports.insert(provided_ports.end(),
+                        provided_output_ports.begin(),
+                        provided_output_ports.end());
+
+
+  return gen_template.remote_action_class_template(
+             package_name, node->Attribute("ID"),
+             node->Attribute("host_name"),
+             std::atoi(node->Attribute("host_port")),
+             provided_ports, get_inputs, set_outputs);
 }
 
 std::string XMLParser::generate_condition_class(const XMLElement* node, const std::string package_name) {
@@ -805,7 +861,7 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
     {
-      output.append(generate_action_class(action_node, package_name, false));
+      output.append(generate_action_class(action_node, package_name));
       output.append("\n\n");
     }
 
@@ -813,7 +869,7 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("RemoteAction"))
     {
-      output.append(generate_action_class(action_node, package_name, true));
+      output.append(generate_remote_action_class(action_node, package_name));
       output.append("\n\n");
     }
 

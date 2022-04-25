@@ -18,7 +18,12 @@ protected:
   EusRemoteActionNode(const std::string& master, int port, const std::string message_type, const std::string& name, const BT::NodeConfiguration & conf): 
     BT::ActionNodeBase(name, conf),
     action_client_(master, port, getInput<std::string>("server_name").value(), message_type)
-  {}
+  {
+    auto cb = std::bind(&EusRemoteActionNode::feedbackCallback, this,
+                        std::placeholders::_1,
+                        std::placeholders::_2);
+    action_client_.registerFeedbackCallback(cb);
+  }
 
 public:
 
@@ -33,9 +38,10 @@ public:
       };
   }
 
-  virtual bool sendGoal(rapidjson::Document& goal) = 0;
+  virtual bool sendGoal(rapidjson::Document *goal) = 0;
 
   virtual NodeStatus onResult(const rapidjson::Value& res) = 0;
+  virtual void onFeedback(const rapidjson::Value& feedback) = 0;
 
   // virtual NodeStatus onFailedRequest(FailureCause failure)
   // {
@@ -66,7 +72,7 @@ protected:
 
       rapidjson::Document goal;
       goal.SetObject();
-      bool valid_goal = sendGoal(goal);
+      bool valid_goal = sendGoal(&goal);
       if( !valid_goal )
       {
         return NodeStatus::FAILURE;
@@ -85,6 +91,34 @@ protected:
     // throw BT::RuntimeError("EusRemoteActionNode: ActionResult is not set properly");
 
     return onResult( action_client_.getResult() );
+  }
+
+  // port related
+  // TODO: avoid unnecessary dumping & parsing
+  // cannot use rapidjson::Value directly because it is not `CopyConstructible'
+  // TODO: translate to ROS message: how to loop through slots?
+
+  void feedbackCallback(std::shared_ptr<WsClient::Connection> connection,
+                        std::shared_ptr<WsClient::InMessage> in_message)
+  {
+    std::string message = in_message->string();
+    std::cout << "feedbackCallback(): Message Received: " << message << std::endl;
+
+    rapidjson::Document document, feedbackMessage;
+    document.Parse(message.c_str());
+    feedbackMessage.Swap(document["msg"]["feedback"]);
+
+    onFeedback(feedbackMessage);
+  }
+
+  void setOutputFromMessage(const std::string& name, const rapidjson::Value& message)
+  {
+    rapidjson::StringBuffer strbuf;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
+    rapidjson::Document document;
+    document.CopyFrom(message[name.c_str()], document.GetAllocator());
+    document.Accept(writer);
+    setOutput(name, strbuf.GetString());
   }
 };
 
