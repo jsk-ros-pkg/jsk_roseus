@@ -61,6 +61,10 @@ protected:
                                   std::vector<std::string>* message_packages);
   std::string format_eus_name(const std::string input);
   std::string format_message_description(const XMLElement* port_node);
+  std::string format_server_name(const XMLElement* node);
+  std::string format_service_name(const XMLElement* node);
+  std::string format_host_name(const XMLElement* node);
+  std::string format_host_port(const XMLElement* node);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
   std::string generate_headers(const std::string package_name);
@@ -458,6 +462,34 @@ std::string XMLParser::format_message_description(const XMLElement* port_node) {
   return output;
 }
 
+std::string XMLParser::format_server_name(const XMLElement* node) {
+  std::string output = fmt::format(
+    "      InputPort<std::string>(\"server_name\", \"{0}\", \"name of the Action Server\")",
+    node->Attribute("server_name"));
+  return output;
+}
+
+std::string XMLParser::format_service_name(const XMLElement* node) {
+  std::string output = fmt::format(
+    "      InputPort<std::string>(\"service_name\", \"{0}\", \"name of the ROS service\")",
+    node->Attribute("service_name"));
+  return output;
+}
+
+std::string XMLParser::format_host_name(const XMLElement* node) {
+  std::string output = fmt::format(
+    "      InputPort<std::string>(\"host_name\", \"{0}\", \"name of the rosbridge_server host\")",
+    node->Attribute("host_name"));
+  return output;
+ }
+
+std::string XMLParser::format_host_port(const XMLElement* node) {
+  std::string output = fmt::format(
+    "      InputPort<int>(\"host_port\", {0}, \"port of the rosbridge_server host\")",
+    node->Attribute("host_port"));
+  return output;
+}
+
 std::string XMLParser::generate_action_file_contents(const XMLElement* node) {
   std::vector<std::string> goal, feedback;
 
@@ -559,10 +591,6 @@ std::string XMLParser::generate_headers(const std::string package_name) {
 }
 
 std::string XMLParser::generate_action_class(const XMLElement* node, const std::string package_name) {
-  auto format_server_name = [](const XMLElement* node) {
-    return fmt::format("      InputPort<std::string>(\"server_name\", \"{0}\", \"name of the Action Server\")",
-                       node->Attribute("server_name"));
-  };
   auto format_input_port = [](const XMLElement* node) {
     return fmt::format("      InputPort<GoalType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
@@ -616,18 +644,6 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const std::
 }
 
 std::string XMLParser::generate_remote_action_class(const XMLElement* node, const std::string package_name) {
-  auto format_server_name = [](const XMLElement* node) {
-    return fmt::format("      InputPort<std::string>(\"server_name\", \"{0}\", \"name of the Action Server\")",
-                       node->Attribute("server_name"));
-  };
-  auto format_host_name = [](const XMLElement* node) {
-    return fmt::format("      InputPort<std::string>(\"host_name\", \"{0}\", \"name of the rosbridge_server host\")",
-                       node->Attribute("host_name"));
-  };
-  auto format_host_port = [](const XMLElement* node) {
-    return fmt::format("      InputPort<int>(\"host_port\", {0}, \"port of the rosbridge_server host\")",
-                       node->Attribute("host_port"));
-  };
   auto format_input_port = [](const XMLElement* node) {
     return fmt::format("      InputPort<std::string>(\"{0}\")",
                          node->Attribute("name"));
@@ -689,10 +705,6 @@ std::string XMLParser::generate_remote_action_class(const XMLElement* node, cons
 }
 
 std::string XMLParser::generate_condition_class(const XMLElement* node, const std::string package_name) {
-  auto format_service_name = [](const XMLElement* node) {
-    return fmt::format("      InputPort<std::string>(\"service_name\", \"{0}\", \"name of the ROS service\")",
-                       node->Attribute("service_name"));
-  };
   auto format_input_port = [](const XMLElement* node) {
     return fmt::format("      InputPort<RequestType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
@@ -720,18 +732,6 @@ std::string XMLParser::generate_condition_class(const XMLElement* node, const st
 }
 
 std::string XMLParser::generate_remote_condition_class(const XMLElement* node, const std::string package_name) {
-  auto format_service_name = [](const XMLElement* node) {
-    return fmt::format("      InputPort<std::string>(\"service_name\", \"{0}\", \"name of the ROS service\")",
-                       node->Attribute("service_name"));
-  };
-  auto format_host_name = [](const XMLElement* node) {
-    return fmt::format("      InputPort<std::string>(\"host_name\", \"{0}\", \"name of the rosbridge_server host\")",
-                       node->Attribute("host_name"));
-  };
-  auto format_host_port = [](const XMLElement* node) {
-    return fmt::format("      InputPort<int>(\"host_port\", {0}, \"port of the rosbridge_server host\")",
-                       node->Attribute("host_port"));
-  };
   auto format_input_port = [](const XMLElement* node) {
     return fmt::format("      InputPort<std::string>(\"{0}\")",
                        node->Attribute("name"));
