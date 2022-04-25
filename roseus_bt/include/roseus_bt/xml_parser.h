@@ -604,8 +604,9 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const std::
                        node->Attribute("name"));
   };
   auto format_set_output = [](const XMLElement* node) {
-    return fmt::format("    setOutput(\"{0}\", feedback->{0});",
-                       node->Attribute("name"));
+    return fmt::format(
+    "    if (feedback->update_field_name == \"{0}\") setOutput(\"{0}\", feedback->{0});",
+    node->Attribute("name"));
   };
 
   std::vector<std::string> provided_input_ports;

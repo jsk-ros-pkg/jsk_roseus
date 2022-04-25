@@ -116,6 +116,8 @@ protected:
 
   void setOutputFromMessage(const std::string& name, const rapidjson::Value& message)
   {
+    if (message["update_field_name"].GetString() != name) return;
+
     rapidjson::StringBuffer strbuf;
     rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
     rapidjson::Document document;

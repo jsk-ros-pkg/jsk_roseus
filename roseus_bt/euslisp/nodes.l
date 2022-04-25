@@ -88,6 +88,7 @@
     (send self :publish-status))
   (:set-output (name val)
     (let ((msg (send self :feedback (intern (string-upcase name) *keyword-package*) val)))
+      (send msg :feedback :update_field_name name)
       (send self :publish-feedback msg)))
   (:ok ()
      (send self :spin-monitor)
