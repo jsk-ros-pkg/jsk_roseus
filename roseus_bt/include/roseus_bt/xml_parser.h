@@ -51,7 +51,19 @@ protected:
                           std::vector<std::string>* output_list);
   void collect_eus_actions(const std::string package_name,
                            std::vector<std::string>* callback_definition,
+                           std::vector<std::string>* instance_creation,
+                           std::string host_name,
+                           std::string host_port);
+  void collect_eus_actions(const std::string package_name,
+                           std::vector<std::string>* callback_definition,
                            std::vector<std::string>* instance_creation);
+  void collect_eus_conditions(const std::string package_name,
+                              std::vector<std::string>* callback_definition,
+                              std::vector<std::string>* instance_creation,
+                              std::vector<std::string>* parallel_callback_definition,
+                              std::vector<std::string>* parallel_instance_creation,
+                              std::string host_name,
+                              std::string host_port);
   void collect_eus_conditions(const std::string package_name,
                               std::vector<std::string>* callback_definition,
                               std::vector<std::string>* instance_creation,
@@ -89,8 +101,13 @@ public:
                          std::vector<std::string>* service_files);
 
   virtual std::string generate_eus_action_server(const std::string package_name);
+  virtual std::string generate_eus_remote_action_server(const std::string package_name,
+                                                        std::string host_name,
+                                                        std::string host_port);
   virtual std::string generate_eus_condition_server(const std::string package_name);
-
+  virtual std::string generate_eus_remote_condition_server(const std::string package_name,
+                                                           std::string host_name,
+                                                           std::string host_port);
 };
 
 GenTemplate XMLParser::gen_template = GenTemplate();
@@ -279,8 +296,10 @@ void XMLParser::collect_param_list(const XMLElement* node,
 
 void XMLParser::collect_eus_actions(const std::string package_name,
                                     std::vector<std::string>* callback_definition,
-                                    std::vector<std::string>* instance_creation) {
-
+                                    std::vector<std::string>* instance_creation,
+                                    std::string host_name,
+                                    std::string host_port)
+{
   auto format_action_param = [](const XMLElement* node) {
     return fmt::format("({0} (send goal :goal :{0}))", node->Attribute("name"));
   };
@@ -335,6 +354,12 @@ void XMLParser::collect_eus_actions(const std::string package_name,
       std::string name = node->Name();
       if (name == "Action" || name == "RemoteAction") {
         std::string server_name = node->Attribute("server_name");
+        if ((name == "RemoteAction" && host_name.size() && host_port.size()) &&
+            (node->Attribute("host_name") != host_name ||
+             node->Attribute("host_port") != host_port)) {
+          BOOST_LOG_TRIVIAL(trace) << "collect_eus_actions: skipping " << server_name << "...";
+          continue;
+        }
         BOOST_LOG_TRIVIAL(trace) << "collect_eus_actions: transversing " << server_name << "...";
         push_new(format_callback(node), callback_definition);
         push_new(format_instance(node, server_name), instance_creation);
@@ -342,12 +367,21 @@ void XMLParser::collect_eus_actions(const std::string package_name,
     }
 }
 
+void XMLParser::collect_eus_actions(const std::string package_name,
+                                    std::vector<std::string>* callback_definition,
+                                    std::vector<std::string>* instance_creation)
+{
+  collect_eus_actions(package_name, callback_definition, instance_creation, "", "");
+}
+
 void XMLParser::collect_eus_conditions(const std::string package_name,
                                        std::vector<std::string>* callback_definition,
                                        std::vector<std::string>* instance_creation,
                                        std::vector<std::string>* parallel_callback_definition,
-                                       std::vector<std::string>* parallel_instance_creation) {
-
+                                       std::vector<std::string>* parallel_instance_creation,
+                                       std::string host_name,
+                                       std::string host_port)
+{
   auto format_condition_param = [](const XMLElement* node) {
     return fmt::format("({0} (send request :{0}))", node->Attribute("name"));
   };
@@ -403,6 +437,13 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
       std::string name = node->Name();
       if (name == "Condition" || name == "RemoteCondition") {
         std::string service_name = node->Attribute("service_name");
+        if ((name == "RemoteCondition" && host_name.size() && host_port.size()) &&
+            (node->Attribute("host_name") != host_name ||
+             node->Attribute("host_port") != host_port)) {
+          BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: skipping " << service_name << "...";
+          continue;
+        }
+
         BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: transversing " << service_name << "...";
 
         if (is_reactive(node)) {
@@ -420,6 +461,17 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
         }
       }
     }
+}
+
+void XMLParser::collect_eus_conditions(const std::string package_name,
+                                       std::vector<std::string>* callback_definition,
+                                       std::vector<std::string>* instance_creation,
+                                       std::vector<std::string>* parallel_callback_definition,
+                                       std::vector<std::string>* parallel_instance_creation)
+{
+  collect_eus_conditions(package_name, callback_definition, instance_creation,
+                         parallel_callback_definition, parallel_instance_creation,
+                         "", "");
 }
 
 void XMLParser::maybe_push_message_package(const XMLElement* node,
@@ -872,6 +924,25 @@ std::string XMLParser::generate_eus_action_server(const std::string package_name
                                           load_files);
 }
 
+std::string XMLParser::generate_eus_remote_action_server(const std::string package_name,
+                                                         std::string host_name,
+                                                         std::string host_port)
+{
+  std::vector<std::string> callback_definition;
+  std::vector<std::string> instance_creation;
+  std::vector<std::string> load_files;
+
+  collect_eus_actions(package_name, &callback_definition, &instance_creation, host_name, host_port);
+  collect_eus_conditions(package_name, &callback_definition, &instance_creation,
+                         NULL, NULL, host_name, host_port);
+
+  if (callback_definition.empty()) return "";
+
+  return gen_template.eus_server_template("action", package_name,
+                                          callback_definition, instance_creation,
+                                          load_files);
+}
+
 std::string XMLParser::generate_eus_condition_server(const std::string package_name) {
   std::vector<std::string> callback_definition;
   std::vector<std::string> instance_creation;
@@ -879,6 +950,25 @@ std::string XMLParser::generate_eus_condition_server(const std::string package_n
 
   collect_eus_conditions(package_name, NULL, NULL,
                          &callback_definition, &instance_creation);
+
+  if (callback_definition.empty()) return "";
+
+  return gen_template.eus_server_template("condition", package_name,
+                                          callback_definition, instance_creation,
+                                          load_files);
+}
+
+std::string XMLParser::generate_eus_remote_condition_server(const std::string package_name,
+                                                            std::string host_name,
+                                                            std::string host_port)
+{
+  std::vector<std::string> callback_definition;
+  std::vector<std::string> instance_creation;
+  std::vector<std::string> load_files;
+
+  collect_eus_conditions(package_name, NULL, NULL,
+                         &callback_definition, &instance_creation,
+                         host_name, host_port);
 
   if (callback_definition.empty()) return "";
 
