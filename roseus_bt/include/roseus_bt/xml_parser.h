@@ -620,7 +620,7 @@ std::string XMLParser::generate_remote_action_class(const XMLElement* node, cons
     return fmt::format("      InputPort<std::string>(\"server_name\", \"{0}\", \"name of the Action Server\")",
                        node->Attribute("server_name"));
   };
- auto format_host_name = [](const XMLElement* node) {
+  auto format_host_name = [](const XMLElement* node) {
     return fmt::format("      InputPort<std::string>(\"host_name\", \"{0}\", \"name of the rosbridge_server host\")",
                        node->Attribute("host_name"));
   };
@@ -655,9 +655,9 @@ std::string XMLParser::generate_remote_action_class(const XMLElement* node, cons
   std::vector<std::string> set_outputs;
 
   provided_input_ports.push_back(format_server_name(node));
- if (node->Attribute("host_name")) {
+  if (node->Attribute("host_name")) {
     provided_input_ports.push_back(format_host_name(node));}
- if (node->Attribute("host_port")) {
+  if (node->Attribute("host_port")) {
     provided_input_ports.push_back(format_host_port(node));}
 
   for (auto port_node = node->FirstChildElement();
