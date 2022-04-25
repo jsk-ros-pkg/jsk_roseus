@@ -67,6 +67,7 @@ protected:
   std::string generate_action_class(const XMLElement* node, const std::string package_name);
   std::string generate_remote_action_class(const XMLElement* node, const std::string package_name);
   std::string generate_condition_class(const XMLElement* node, const std::string package_name);
+  std::string generate_remote_condition_class(const XMLElement* node, const std::string package_name);
   std::string generate_subscriber_class(const XMLElement* node);
   std::string generate_main_function(const std::string roscpp_node_name, const std::string xml_filename);
 
@@ -127,6 +128,7 @@ void XMLParser::check_xml_file(std::string filename) {
     if (name != "Action" &&
         name != "RemoteAction" &&
         name != "Condition" &&
+        name != "RemoteCondition" &&
         name != "Subscriber" &&
         name != "SubTree") {
       throw XMLError::UnknownNode(node);
@@ -143,7 +145,7 @@ void XMLParser::check_xml_file(std::string filename) {
       check_push(node, &actions, &duplicated_nodes);
     }
 
-    if (name == "Condition") {
+    if (name == "Condition" || name == "RemoteCondition") {
       if (!node->Attribute("service_name")) {
         throw XMLError::MissingRequiredAttribute("service_name", node);
       }
@@ -390,24 +392,27 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
 
-  for (auto condition_node = root->FirstChildElement("Condition");
-       condition_node != nullptr;
-       condition_node = condition_node->NextSiblingElement("Condition"))
+  for (auto node = root->FirstChildElement();
+       node != nullptr;
+       node = node->NextSiblingElement())
     {
-      std::string service_name = condition_node->Attribute("service_name");
-      BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: transversing " << service_name << "...";
+      std::string name = node->Name();
+      if (name == "Condition" || name == "RemoteCondition") {
+        std::string service_name = node->Attribute("service_name");
+        BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: transversing " << service_name << "...";
 
-      if (is_reactive(condition_node)) {
-        if (parallel_callback_definition != NULL &&
-            parallel_instance_creation != NULL) {
-          push_new(format_callback(condition_node), parallel_callback_definition);
-          push_new(format_instance(condition_node, service_name), parallel_instance_creation);
+        if (is_reactive(node)) {
+          if (parallel_callback_definition != NULL &&
+              parallel_instance_creation != NULL) {
+            push_new(format_callback(node), parallel_callback_definition);
+            push_new(format_instance(node, service_name), parallel_instance_creation);
+          }
         }
-      }
-      else {
-        if (callback_definition != NULL && instance_creation != NULL) {
-          push_new(format_callback(condition_node), callback_definition);
-          push_new(format_instance(condition_node, service_name), instance_creation);
+        else {
+          if (callback_definition != NULL && instance_creation != NULL) {
+            push_new(format_callback(node), callback_definition);
+            push_new(format_instance(node, service_name), instance_creation);
+          }
         }
       }
     }
@@ -532,6 +537,13 @@ std::string XMLParser::generate_headers(const std::string package_name) {
   for (auto condition_node = root->FirstChildElement("Condition");
        condition_node != nullptr;
        condition_node = condition_node->NextSiblingElement("Condition"))
+    {
+      headers.push_back(format_condition_node(condition_node, package_name));
+    }
+
+  for (auto condition_node = root->FirstChildElement("RemoteCondition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("RemoteCondition"))
     {
       headers.push_back(format_condition_node(condition_node, package_name));
     }
@@ -707,6 +719,53 @@ std::string XMLParser::generate_condition_class(const XMLElement* node, const st
                                                provided_ports, get_inputs);
 }
 
+std::string XMLParser::generate_remote_condition_class(const XMLElement* node, const std::string package_name) {
+  auto format_service_name = [](const XMLElement* node) {
+    return fmt::format("      InputPort<std::string>(\"service_name\", \"{0}\", \"name of the ROS service\")",
+                       node->Attribute("service_name"));
+  };
+  auto format_host_name = [](const XMLElement* node) {
+    return fmt::format("      InputPort<std::string>(\"host_name\", \"{0}\", \"name of the rosbridge_server host\")",
+                       node->Attribute("host_name"));
+  };
+  auto format_host_port = [](const XMLElement* node) {
+    return fmt::format("      InputPort<int>(\"host_port\", {0}, \"port of the rosbridge_server host\")",
+                       node->Attribute("host_port"));
+  };
+  auto format_input_port = [](const XMLElement* node) {
+    return fmt::format("      InputPort<std::string>(\"{0}\")",
+                       node->Attribute("name"));
+  };
+  auto format_get_input = [](const XMLElement* node) {
+    return fmt::format(R"(
+    getInput("{0}", json);
+    document.Parse(json.c_str());
+    rapidjson::Value {0}(document, document.GetAllocator());
+    request->AddMember("{0}", {0}, request->GetAllocator());)",
+    node->Attribute("name"));
+  };
+
+  std::vector<std::string> provided_ports;
+  std::vector<std::string> get_inputs;
+
+  provided_ports.push_back(format_service_name(node));
+  if (node->Attribute("host_name")) {
+    provided_ports.push_back(format_host_name(node));}
+  if (node->Attribute("host_port")) {
+    provided_ports.push_back(format_host_port(node));}
+
+  for (auto port_node = node->FirstChildElement("input_port");
+       port_node != nullptr;
+       port_node = port_node->NextSiblingElement("input_port"))
+    {
+      provided_ports.push_back(format_input_port(port_node));
+      get_inputs.push_back(format_get_input(port_node));
+    }
+
+  return gen_template.remote_condition_class_template(package_name, node->Attribute("ID"),
+                                                      provided_ports, get_inputs);
+}
+
 std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
   auto format_type = [](const XMLElement* node) {
     std::string type = node->Attribute("type");
@@ -726,7 +785,6 @@ std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
                                                 format_field(node));
 }
 
-
 std::string XMLParser::generate_main_function(const std::string roscpp_node_name,
                                               const std::string xml_filename) {
   auto format_action_node = [](const XMLElement* node) {
@@ -739,6 +797,10 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
   };
   auto format_condition_node = [](const XMLElement* node) {
     return fmt::format("  RegisterRosService<{0}>(factory, \"{0}\", nh);",
+                       node->Attribute("ID"));
+  };
+  auto format_remote_condition_node = [](const XMLElement* node) {
+    return fmt::format("  RegisterRemoteCondition<{0}>(factory, \"{0}\");",
                        node->Attribute("ID"));
   };
   auto format_subscriber_node = [](const XMLElement* node) {
@@ -770,6 +832,13 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
       register_conditions.push_back(format_condition_node(condition_node));
+    }
+
+  for (auto condition_node = root->FirstChildElement("RemoteCondition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("RemoteCondition"))
+    {
+      register_conditions.push_back(format_remote_condition_node(condition_node));
     }
 
   for (auto subscriber_node = root->FirstChildElement("Subscriber");
@@ -855,6 +924,13 @@ std::map<std::string, std::string> XMLParser::generate_all_service_files() {
     {
       result[format_filename(condition_node)] = generate_service_file_contents(condition_node);
     }
+
+  for (auto condition_node = root->FirstChildElement("RemoteCondition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("RemoteCondition"))
+    {
+      result[format_filename(condition_node)] = generate_service_file_contents(condition_node);
+    }
   return result;
 }
 
@@ -887,6 +963,14 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
       output.append(generate_condition_class(condition_node, package_name));
+      output.append("\n\n");
+    }
+
+  for (auto condition_node = root->FirstChildElement("RemoteCondition");
+       condition_node != nullptr;
+       condition_node = condition_node->NextSiblingElement("RemoteCondition"))
+    {
+      output.append(generate_remote_condition_class(condition_node, package_name));
       output.append("\n\n");
     }
 
@@ -924,10 +1008,11 @@ void XMLParser::push_dependencies(std::vector<std::string>* message_packages,
       if (name == "Action" || name == "RemoteAction") {
         push_new(format_action_file(node), action_files);
       }
-      if (name == "Condition") {
+      if (name == "Condition" || name == "RemoteCondition") {
         push_new(format_service_file(node), service_files);
       }
-      if (name == "Action" || name == "RemoteAction" || name == "Condition") {
+      if (name == "Action" || name == "RemoteAction" ||
+          name == "Condition" || name == "RemoteCondition") {
         for (auto port_node = node->FirstChildElement();
              port_node != nullptr;
              port_node = port_node->NextSiblingElement())
