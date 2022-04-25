@@ -22,7 +22,11 @@ protected:
 
 public:
   virtual std::string generate_eus_action_server(const std::string package_name) override;
+  virtual std::string generate_eus_remote_action_server(const std::string package_name,
+                                                        const std::string remote_host) override;
   virtual std::string generate_eus_condition_server(const std::string package_name) override;
+  virtual std::string generate_eus_remote_condition_server(const std::string package_name,
+                                                           const std::string remote_host) override;
 };
 
 
@@ -85,6 +89,28 @@ std::string TutorialParser::generate_eus_action_server(const std::string package
                                           load_files);
 }
 
+std::string TutorialParser::generate_eus_remote_action_server(const std::string package_name,
+                                                              const std::string remote_host) {
+
+  std::vector<std::string> callback_definition;
+  std::vector<std::string> instance_creation;
+  std::vector<std::string> load_files;
+
+  // Add load files
+  load_files.push_back("package://roseus_bt/sample/sample-task.l");
+
+  collect_eus_actions(package_name, &callback_definition, &instance_creation, remote_host);
+  collect_eus_conditions(package_name, &callback_definition, &instance_creation,
+                         NULL, NULL,
+                         remote_host);
+
+  if (callback_definition.empty()) return "";
+
+  return gen_template.eus_server_template("action", package_name,
+                                          callback_definition, instance_creation,
+                                          load_files);
+}
+
 std::string TutorialParser::generate_eus_condition_server(const std::string package_name) {
   std::vector<std::string> callback_definition;
   std::vector<std::string> instance_creation;
@@ -103,6 +129,25 @@ std::string TutorialParser::generate_eus_condition_server(const std::string pack
                                           load_files);
 }
 
+std::string TutorialParser::generate_eus_remote_condition_server(const std::string package_name,
+                                                                 const std::string remote_host) {
+  std::vector<std::string> callback_definition;
+  std::vector<std::string> instance_creation;
+  std::vector<std::string> load_files;
+
+  // Add load files
+  load_files.push_back("package://roseus_bt/sample/sample-task.l");
+
+  collect_eus_conditions(package_name, NULL, NULL,
+                         &callback_definition, &instance_creation,
+                         remote_host);
+
+  if (callback_definition.empty()) return "";
+
+  return gen_template.eus_server_template("condition", package_name,
+                                          callback_definition, instance_creation,
+                                          load_files);
+}
 
 }  // namespace RoseusBT
 

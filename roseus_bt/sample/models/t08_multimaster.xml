@@ -22,8 +22,10 @@
         <RemoteAction ID="MoveToTable" server_name="/robot1/move"
                       host_name="localhost" host_port="9090"/>
 
-        <RemoteAction ID="InitWithBroom" server_name="/robot2/init"/>
-        <RemoteAction ID="MoveToBroom" server_name="/robot2/move"/>
+        <RemoteAction ID="InitWithBroom" server_name="/robot2/init"
+                      host_name="localhost" host_port="9091"/>
+        <RemoteAction ID="MoveToBroom" server_name="/robot2/move"
+                      host_name="localhost" host_port="9091"/>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>
