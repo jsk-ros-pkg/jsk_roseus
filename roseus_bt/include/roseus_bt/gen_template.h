@@ -26,7 +26,6 @@ public:
                                       std::vector<std::string> get_inputs,
                                       std::vector<std::string> set_outputs);
   std::string remote_action_class_template(std::string package_name, std::string nodeID,
-                                           std::string host_name, int host_port,
                                            std::vector<std::string> provided_ports,
                                            std::vector<std::string> get_inputs,
                                            std::vector<std::string> set_outputs);
@@ -156,7 +155,6 @@ EusActionNode<%1%::%2%Action>(handle, name, conf) {}
 
 std::string GenTemplate::remote_action_class_template(
      std::string package_name, std::string nodeID,
-     std::string host_name, int host_port,
      std::vector<std::string> provided_ports,
      std::vector<std::string> get_inputs,
      std::vector<std::string> set_outputs)
@@ -167,12 +165,12 @@ class %2%: public EusRemoteActionNode
 
 public:
   %2%(const std::string& name, const NodeConfiguration& conf):
-EusRemoteActionNode("%3%", %4%, "%1%/%2%Action", name, conf) {}
+EusRemoteActionNode("%1%/%2%Action", name, conf) {}
 
   static PortsList providedPorts()
   {
     return  {
-%5%
+%3%
     };
   }
 
@@ -180,13 +178,13 @@ EusRemoteActionNode("%3%", %4%, "%1%/%2%Action", name, conf) {}
   {
     std::string json;
     rapidjson::Document document;
-%6%
+%4%
     return true;
   }
 
   void onFeedback(const rapidjson::Value& feedback) override
   {
-%7%
+%5%
     return;
   }
 
@@ -205,8 +203,6 @@ EusRemoteActionNode("%3%", %4%, "%1%/%2%Action", name, conf) {}
   boost::format bfmt = boost::format(fmt_string) %
     package_name %
     nodeID %
-    host_name %
-    host_port %
     boost::algorithm::join(provided_ports, ",\n") %
     boost::algorithm::join(get_inputs, "\n") %
     boost::algorithm::join(set_outputs, "\n");
