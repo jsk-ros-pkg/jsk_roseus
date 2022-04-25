@@ -1,6 +1,5 @@
 #ifndef BEHAVIOR_TREE_EUS_REMOTE_ACTION_NODE_HPP_
 #define BEHAVIOR_TREE_EUS_REMOTE_ACTION_NODE_HPP_
-#define DEBUG
 
 #include <behaviortree_cpp_v3/action_node.h>
 #include <behaviortree_cpp_v3/bt_factory.h>
@@ -105,7 +104,9 @@ protected:
                         std::shared_ptr<WsClient::InMessage> in_message)
   {
     std::string message = in_message->string();
+#ifdef DEBUG
     std::cout << "feedbackCallback(): Message Received: " << message << std::endl;
+#endif
 
     rapidjson::Document document, feedbackMessage;
     document.Parse(message.c_str());
