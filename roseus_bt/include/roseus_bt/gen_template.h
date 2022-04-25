@@ -176,10 +176,18 @@ EusRemoteActionNode("%3%", %4%, "%1%/%2%Action", name, conf) {}
     };
   }
 
-  bool sendGoal(rapidjson::Document& goal) override
+  bool sendGoal(rapidjson::Document* goal) override
   {
+    std::string json;
+    rapidjson::Document document;
 %6%
     return true;
+  }
+
+  void onFeedback(const rapidjson::Value& feedback) override
+  {
+%7%
+    return;
   }
 
   NodeStatus onResult(const rapidjson::Value& result) override
@@ -200,7 +208,8 @@ EusRemoteActionNode("%3%", %4%, "%1%/%2%Action", name, conf) {}
     host_name %
     host_port %
     boost::algorithm::join(provided_ports, ",\n") %
-    boost::algorithm::join(get_inputs, "\n");
+    boost::algorithm::join(get_inputs, "\n") %
+    boost::algorithm::join(set_outputs, "\n");
 
   return bfmt.str();
 }
