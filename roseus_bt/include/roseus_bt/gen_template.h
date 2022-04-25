@@ -32,6 +32,9 @@ public:
   std::string  condition_class_template(std::string package_name, std::string nodeID,
                                         std::vector<std::string> provided_ports,
                                         std::vector<std::string> get_inputs);
+  std::string  remote_condition_class_template(std::string package_name, std::string nodeID,
+                                               std::vector<std::string> provided_ports,
+                                               std::vector<std::string> get_inputs);
   std::string subscriber_class_template(std::string nodeID, std::string message_type,
                                           std::string message_field);
   std::string main_function_template(std::string roscpp_node_name,
@@ -250,6 +253,53 @@ public:
 
   boost::format bfmt = boost::format(fmt_string) %
     package_name %
+    nodeID %
+    boost::algorithm::join(provided_ports, ",\n") %
+    boost::algorithm::join(get_inputs, "\n");
+
+  return bfmt.str();
+}
+
+
+std::string GenTemplate::remote_condition_class_template(std::string package_name, std::string nodeID,
+                                                         std::vector<std::string> provided_ports,
+                                                         std::vector<std::string> get_inputs) {
+  std::string fmt_string = 1 + R"(
+class %1%: public EusRemoteConditionNode
+{
+
+public:
+  %1%(const std::string& name, const NodeConfiguration& conf):
+  EusRemoteConditionNode(name, conf) {}
+
+  static PortsList providedPorts()
+  {
+    return  {
+%2%
+    };
+  }
+
+  void sendRequest(rapidjson::Document *request) override
+  {
+    std::string json;
+    rapidjson::Document document;
+%3%
+  }
+
+  NodeStatus onResponse(const rapidjson::Value& result) override
+  {
+    if (result.HasMember("success") &&
+        result["success"].IsBool() &&
+        result["success"].GetBool()) {
+      return NodeStatus::SUCCESS;
+    }
+    return NodeStatus::FAILURE;
+  }
+
+};
+)";
+
+  boost::format bfmt = boost::format(fmt_string) %
     nodeID %
     boost::algorithm::join(provided_ports, ",\n") %
     boost::algorithm::join(get_inputs, "\n");
