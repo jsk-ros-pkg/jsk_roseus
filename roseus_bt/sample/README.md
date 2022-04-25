@@ -235,6 +235,7 @@ This example shows how to use the rosbridge interface to assign different hosts 
 https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t08_multimaster.xml
 
 To do this we declare the actions with the `<RemoteAction/>` tag in the `<TreeNodesModel/>`, and add a `host_name` and `host_port` field to it. As a normal action, it also requires to have the `server_name` field set.
+The `host_name` and `host_port` can be set either statically (in the `TreeNodesModel` definition) or dynamically (within the `BehaviorTree` node instance), although we recommend to set it statically to avoid possible runtime errors.
 
 #### Run the code
 

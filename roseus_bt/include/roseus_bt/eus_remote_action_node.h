@@ -15,9 +15,12 @@ class EusRemoteActionNode : public BT::ActionNodeBase
 {
 protected:
 
-  EusRemoteActionNode(const std::string& master, int port, const std::string message_type, const std::string& name, const BT::NodeConfiguration & conf): 
+  EusRemoteActionNode(const std::string message_type, const std::string& name, const BT::NodeConfiguration & conf):
     BT::ActionNodeBase(name, conf),
-    action_client_(master, port, getInput<std::string>("server_name").value(), message_type)
+    action_client_(getInput<std::string>("host_name").value(),
+                   getInput<int>("host_port").value(),
+                   getInput<std::string>("server_name").value(),
+                   message_type)
   {
     auto cb = std::bind(&EusRemoteActionNode::feedbackCallback, this,
                         std::placeholders::_1,
@@ -34,7 +37,9 @@ public:
   static PortsList providedPorts()
   {
     return  {
-      InputPort<std::string>("server_name", "name of the Action Server")
+      InputPort<std::string>("server_name", "name of the Action Server"),
+      InputPort<std::string>("host_name", "name of the rosbridge_server host"),
+      InputPort<int>("host_port", "port of the rosbridge_server host")
       };
   }
 

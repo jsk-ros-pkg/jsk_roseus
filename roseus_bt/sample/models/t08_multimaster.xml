@@ -5,15 +5,13 @@
         <Parallel failure_threshold="1" success_threshold="2">
             <Sequence name="Robot1">
                 <Action ID="Init"/>
-                <Delay delay_msec="3000">
-                  <Action ID="MoveToTable"/>
-                </Delay>
+                <Action ID="MoveToTable"/>
             </Sequence>
             <Sequence name="Robot2">
-                <Action ID="InitWithBroom"/>
-                <Delay delay_msec="3000">
-                  <Action ID="MoveToBroom"/>
-                </Delay>
+                <Action ID="InitWithBroom"
+                        host_name="localhost" host_port="9091"/>
+                <Action ID="MoveToBroom"
+                        host_name="localhost" host_port="9091"/>
             </Sequence>
         </Parallel>
     </BehaviorTree>
@@ -24,10 +22,8 @@
         <RemoteAction ID="MoveToTable" server_name="/robot1/move"
                       host_name="localhost" host_port="9090"/>
 
-        <RemoteAction ID="InitWithBroom" server_name="/robot2/init"
-                      host_name="localhost" host_port="9091"/>
-        <RemoteAction ID="MoveToBroom" server_name="/robot2/move"
-                      host_name="localhost" host_port="9091"/>
+        <RemoteAction ID="InitWithBroom" server_name="/robot2/init"/>
+        <RemoteAction ID="MoveToBroom" server_name="/robot2/move"/>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>
