@@ -59,7 +59,9 @@ protected:
   void serviceCallback(std::shared_ptr<WsClient::Connection> connection, std::shared_ptr<WsClient::InMessage> in_message)
   {
     std::string message = in_message->string();
+#ifdef DEBUG
     std::cout << "serviceResponseCallback(): Message Received: " << message << std::endl;
+#endif
 
     rapidjson::Document document(rapidjson::kObjectType);
     document.Parse(message.c_str());
