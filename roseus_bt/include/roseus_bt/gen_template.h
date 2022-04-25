@@ -57,6 +57,7 @@ std::string GenTemplate::action_file_template(std::vector<std::string> goal,
 ---
 bool success
 ---
+string update_field_name
 %2%
 )";
 
