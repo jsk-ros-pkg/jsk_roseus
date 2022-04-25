@@ -89,6 +89,7 @@ std::string GenTemplate::headers_template(std::vector<std::string> headers) {
 #include <roseus_bt/eus_nodes.h>
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
 #include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
+#include <behaviortree_cpp_v3/loggers/bt_file_logger.h>
 
 %1%
 
@@ -364,7 +365,11 @@ int main(int argc, char **argv)
 %3%%4%%5%
 %2%
 
+  std::string timestamp = std::to_string(ros::Time::now().toNSec());
+  std::string log_filename(fmt::format("%6%", timestamp));
+
   StdCoutLogger logger_cout(tree);
+  FileLogger logger_file(tree, log_filename.c_str());
   PublisherZMQ publisher_zmq(tree);
 
   NodeStatus status = NodeStatus::IDLE;
@@ -377,6 +382,7 @@ int main(int argc, char **argv)
     sleep_time.sleep();
   }
 
+  std::cout << "Writed log to file: " << log_filename << std::endl;
   return 0;
 }
 )";
@@ -385,12 +391,16 @@ int main(int argc, char **argv)
   if (register_conditions.size() != 0) register_conditions.push_back("");
   if (register_subscribers.size() != 0) register_subscribers.push_back("");
 
+  boost::format file_format = boost::format("%1%/.ros/%2%_{0}.fbl") %
+    getenv("HOME") %
+    roscpp_node_name;
   boost::format bfmt = boost::format(fmt_string) %
     format_ros_init() %
     format_create_tree() %
     boost::algorithm::join(register_actions, "\n") %
     boost::algorithm::join(register_conditions, "\n") %
-    boost::algorithm::join(register_subscribers, "\n");
+    boost::algorithm::join(register_subscribers, "\n") %
+    file_format.str();
 
   return bfmt.str();
 }
