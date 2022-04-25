@@ -364,21 +364,30 @@ void XMLParser::collect_eus_actions(const std::string package_name,
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
 
-  for (auto node = root->FirstChildElement();
-       node != nullptr;
-       node = node->NextSiblingElement())
-    {
-      std::string name = node->Name();
-      if (name == "Action" || name == "RemoteAction") {
+  if (remote_host.empty()) {
+    for (auto node = root->FirstChildElement("Action");
+         node != nullptr;
+         node = node->NextSiblingElement("Action"))
+      {
         std::string server_name = node->Attribute("server_name");
-        if (name == "RemoteAction" && remote_host.empty() &&
-            node->Attribute("host_name") && node->Attribute("host_port")) {
-          // host is clear; callback should only be defined when remote_host matches
-          BOOST_LOG_TRIVIAL(trace) << "collect_eus_actions: skipping " << server_name << "...";
+        BOOST_LOG_TRIVIAL(trace) << "collect_eus_actions: transversing " << server_name << "...";
+        push_new(format_callback(node), callback_definition);
+        push_new(format_instance(node, server_name), instance_creation);
+      }
+  }
+  else {
+    for (auto node = root->FirstChildElement("RemoteAction");
+         node != nullptr;
+         node = node->NextSiblingElement("RemoteAction"))
+      {
+        std::string server_name = node->Attribute("server_name");
+        if (!node->Attribute("host_name") || !node->Attribute("host_port")) {
+          BOOST_LOG_TRIVIAL(warning) << 
+            fmt::format("Ignoring {} node {} with improper host specification at line {}",
+            node->Name(), node->Attribute("ID"), node->GetLineNum());
           continue;
         }
-        if (name == "RemoteAction" && !remote_host.empty() &&
-            format_remote_host(node) != remote_host) {
+        if (format_remote_host(node) != remote_host) {
           BOOST_LOG_TRIVIAL(trace) << "collect_eus_actions: skipping " << server_name << "...";
           continue;
         }
@@ -449,42 +458,52 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
                        service_name);
   };
 
+  auto maybe_push = [=] (const XMLElement* node, std::string service_name) {
+    if (is_reactive(node)) {
+      if (parallel_callback_definition != NULL &&
+          parallel_instance_creation != NULL) {
+        push_new(format_callback(node), parallel_callback_definition);
+        push_new(format_instance(node, service_name), parallel_instance_creation);
+      }
+    }
+    else {
+      if (callback_definition != NULL && instance_creation != NULL) {
+        push_new(format_callback(node), callback_definition);
+        push_new(format_instance(node, service_name), instance_creation);
+      }
+    }
+  };
+
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
 
-  for (auto node = root->FirstChildElement();
-       node != nullptr;
-       node = node->NextSiblingElement())
-    {
-      std::string name = node->Name();
-      if (name == "Condition" || name == "RemoteCondition") {
+  if (remote_host.empty()) {
+    for (auto node = root->FirstChildElement("Condition");
+         node != nullptr;
+         node = node->NextSiblingElement("Condition"))
+      {
         std::string service_name = node->Attribute("service_name");
-        if (name == "RemoteCondition" && remote_host.empty() &&
-            node->Attribute("host_name") && node->Attribute("host_port")) {
-          // host is clear; callback should only be defined when remote_host matches
-          BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: skipping " << service_name << "...";
-          continue;
-        }
-        if (name == "RemoteCondition" && !remote_host.empty() &&
-            format_remote_host(node) != remote_host) {
-          BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: skipping " << service_name << "...";
-          continue;
-        }
-
         BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: transversing " << service_name << "...";
-
-        if (is_reactive(node)) {
-          if (parallel_callback_definition != NULL &&
-              parallel_instance_creation != NULL) {
-            push_new(format_callback(node), parallel_callback_definition);
-            push_new(format_instance(node, service_name), parallel_instance_creation);
-          }
+        maybe_push(node, service_name);
+      }
+  }
+  else {
+    for (auto node = root->FirstChildElement("RemoteCondition");
+         node != nullptr;
+         node = node->NextSiblingElement("RemoteCondition"))
+      {
+        std::string service_name = node->Attribute("service_name");
+        if (!node->Attribute("host_name") || !node->Attribute("host_port")) {
+          BOOST_LOG_TRIVIAL(warning) <<
+            fmt::format("Ignoring {} node {} with improper host specification at line {}",
+            node->Name(), node->Attribute("ID"), node->GetLineNum());
+          continue;
         }
-        else {
-          if (callback_definition != NULL && instance_creation != NULL) {
-            push_new(format_callback(node), callback_definition);
-            push_new(format_instance(node, service_name), instance_creation);
-          }
+        if (format_remote_host(node) != remote_host) {
+          BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: skipping " << service_name << "...";
+          continue;
         }
+        BOOST_LOG_TRIVIAL(trace) << "collect_eus_conditions: transversing " << service_name << "...";
+        maybe_push(node, service_name);
       }
     }
 }
