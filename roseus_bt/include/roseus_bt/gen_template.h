@@ -167,7 +167,7 @@ class %2%: public EusRemoteActionNode
 
 public:
   %2%(const std::string& name, const NodeConfiguration& conf):
-EusRemoteActionNode("%3%", %4%, "%1%/%2%ActionGoal", name, conf) {}
+EusRemoteActionNode("%3%", %4%, "%1%/%2%Action", name, conf) {}
 
   static PortsList providedPorts()
   {
