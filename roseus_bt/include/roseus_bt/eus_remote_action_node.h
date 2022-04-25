@@ -86,8 +86,6 @@ protected:
       action_client_.sendGoal(goal);
     }
 
-    // TODO: wait for result
-    // TODO: track feedback
     if (action_client_.isActive()) {
       return NodeStatus::RUNNING;
     }
@@ -129,7 +127,6 @@ protected:
 
 
 /// Method to register the service into a factory.
-/// It gives you the opportunity to set the ros::NodeHandle.
   template <class DerivedT> static
   void RegisterRemoteAction(BT::BehaviorTreeFactory& factory,
                             const std::string& registration_ID)
