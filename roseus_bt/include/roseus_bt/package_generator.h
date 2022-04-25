@@ -185,17 +185,21 @@ void PackageGenerator<Parser>::write_eus_action_server(Parser* parser,
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
-  std::string dest_file = fmt::format("{}/{}-action-server.l", base_dir, target_filename);
-  if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
-    return;
+  std::map<std::string, std::string> server_files = parser->generate_all_eus_action_servers(package_name);
 
-  BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
-  std::string body = parser->generate_eus_action_server(package_name);
-  if (body.empty()) return;
+  for (auto it=server_files.begin(); it!=server_files.end(); ++it) {
+    std::string remote_host = it->first;
+    std::string body = it->second;
+    std::string dest_file = fmt::format("{}/{}{}-action-server.l",
+                                        base_dir, target_filename, remote_host);
+    if (body.empty()) continue;
+    if (boost::filesystem::exists(dest_file) && !overwrite(dest_file)) continue;
 
-  std::ofstream output_file(dest_file);
-  output_file << body;
-  output_file.close();
+    BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
+    std::ofstream output_file(dest_file);
+    output_file << body;
+    output_file.close();
+  }
 }
 
 template<class Parser>
@@ -204,17 +208,21 @@ void PackageGenerator<Parser>::write_eus_condition_server(Parser* parser,
   std::string base_dir = fmt::format("{}/euslisp", package_name);
   boost::filesystem::create_directories(base_dir);
 
-  std::string dest_file = fmt::format("{}/{}-condition-server.l", base_dir, target_filename);
-  if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
-    return;
+  std::map<std::string, std::string> server_files = parser->generate_all_eus_condition_servers(package_name);
 
-  std::string body = parser->generate_eus_condition_server(package_name);
-  if (body.empty()) return;
+  for (auto it=server_files.begin(); it!=server_files.end(); ++it) {
+    std::string remote_host = it->first;
+    std::string body = it->second;
+    std::string dest_file = fmt::format("{}/{}{}-condition-server.l",
+                                        base_dir, target_filename, remote_host);
+    if (body.empty()) continue;
+    if (boost::filesystem::exists(dest_file) && !overwrite(dest_file)) continue;
 
-  BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
-  std::ofstream output_file(dest_file);
-  output_file << body;
-  output_file.close();
+    BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
+    std::ofstream output_file(dest_file);
+    output_file << body;
+    output_file.close();
+  }
 }
 
 template<class Parser>
