@@ -87,6 +87,7 @@ std::string GenTemplate::headers_template(std::vector<std::string> headers) {
   std::string fmt_string = 1 + R"(
 #include <ros/ros.h>
 
+#define DEBUG  // rosbridgecpp logging
 #include <roseus_bt/eus_nodes.h>
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
 #include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
