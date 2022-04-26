@@ -5,25 +5,56 @@
         <Parallel failure_threshold="1" success_threshold="2">
             <Sequence name="Robot1">
                 <Action ID="Init"/>
-                <Action ID="MoveToTable"/>
+                <Fallback>
+                    <Condition ID="atTableSpot" spot="table-front"/>
+                    <Action ID="MoveToTable"/>
+                </Fallback>
+                <Action ID="PickBottle"/>
+                <Action ID="PourBottle"/>
+                <Action ID="PlaceBottle"/>
             </Sequence>
             <Sequence name="Robot2">
-                <Action ID="InitWithBroom"
-                        host_name="localhost" host_port="9091"/>
-                <Action ID="MoveToBroom"
-                        host_name="localhost" host_port="9091"/>
+                <Action ID="InitWithBroom"/>
+                <Fallback>
+                    <Condition ID="atBroomSpot" spot="broom-front"/>
+                    <Action ID="MoveToBroom"/>
+                </Fallback>
+                <Timeout msec="5000">
+                    <Action ID="SweepFloor"/>
+                </Timeout>
             </Sequence>
         </Parallel>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <RemoteAction ID="Init" server_name="/robot1/init"
+        <!-- Robot1 -->
+        <RemoteAction ID="Init" server_name="/t08_multimaster/robot1/init"
                       host_name="localhost" host_port="9090"/>
-        <RemoteAction ID="MoveToTable" server_name="/robot1/move"
+        <RemoteAction ID="MoveToTable" server_name="/t08_multimaster/robot1/move"
                       host_name="localhost" host_port="9090"/>
+        <RemoteAction ID="PickBottle" server_name="/t08_multimaster/robot1/pick"
+                      host_name="localhost" host_port="9090"/>
+        <RemoteAction ID="PourBottle" server_name="/t08_multimaster/robot1/pour"
+                      host_name="localhost" host_port="9090"/>
+        <RemoteAction ID="PlaceBottle" server_name="/t08_multimaster/robot1/place"
+                      host_name="localhost" host_port="9090"/>
+        <RemoteCondition ID="atTableSpot" service_name="/t08_multimaster/robot1/atspot"
+                         host_name="localhost" host_port="9090">
+          <input_port name="spot" type="string"/>
+        </RemoteCondition>
 
-        <RemoteAction ID="InitWithBroom" server_name="/robot2/init"/>
-        <RemoteAction ID="MoveToBroom" server_name="/robot2/move"/>
+        <!-- Robot2 -->
+        <RemoteAction ID="InitWithBroom" server_name="/t08_multimaster/robot2/init"
+                      host_name="localhost" host_port="9091"/>
+        <RemoteAction ID="MoveToBroom" server_name="/t08_multimaster/robot2/move"
+                      host_name="localhost" host_port="9091"/>
+        <RemoteAction ID="SweepFloor" server_name="/t08_multimaster/robot2/sweep"
+                      host_name="localhost" host_port="9091"/>
+        <RemoteCondition ID="atBroomSpot" service_name="/t08_multimaster/robot2/atspot"
+                         host_name="localhost" host_port="9091">
+          <input_port name="spot" type="string"/>
+        </RemoteCondition>
+
     </TreeNodesModel>
     <!-- ////////// -->
 </root>
