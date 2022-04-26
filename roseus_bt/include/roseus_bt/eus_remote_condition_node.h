@@ -10,6 +10,7 @@ namespace BT
 {
 
 // Helper Node to call a rosbridge websocket inside a BT::ActionNode
+template<class ServiceT>
 class EusRemoteConditionNode : public BT::ActionNodeBase
 {
 protected:
@@ -23,8 +24,11 @@ protected:
 
 public:
 
-  EusRemoteConditionNode() = delete;
+  using BaseClass   = EusRemoteConditionNode<ServiceT>;
+  using ServiceType = ServiceT;
+  using RequestType = typename ServiceT::Request;
 
+  EusRemoteConditionNode() = delete;
   virtual ~EusRemoteConditionNode() = default;
 
   static PortsList providedPorts()
@@ -94,7 +98,7 @@ template <class DerivedT> static
   manifest.type = getType<DerivedT>();
   manifest.ports = DerivedT::providedPorts();
   manifest.registration_ID = registration_ID;
-  const auto& basic_ports = EusRemoteConditionNode::providedPorts();
+  const auto& basic_ports = EusRemoteConditionNode<typename DerivedT::ServiceType>::providedPorts();
   manifest.ports.insert( basic_ports.begin(), basic_ports.end() );
 
   factory.registerBuilder( manifest, builder );
