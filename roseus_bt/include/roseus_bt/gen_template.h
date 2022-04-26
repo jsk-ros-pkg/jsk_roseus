@@ -165,6 +165,16 @@ std::string GenTemplate::remote_action_class_template(
      std::vector<std::string> get_inputs,
      std::vector<std::string> set_outputs)
 {
+  auto format_send_goal = [](const std::string body) {
+    std::string decl = 1 + R"(
+    std::string json;
+    rapidjson::Document document;
+    GoalType ros_msg;
+)";
+    if (!body.empty()) return fmt::format("{}{}", decl, body);
+    return body;
+  };
+
   std::string fmt_string = 1 + R"(
 class %2%: public EusRemoteActionNode<%1%::%2%Action>
 {
@@ -182,9 +192,6 @@ EusRemoteActionNode("%1%/%2%Action", name, conf) {}
 
   bool sendGoal(rapidjson::Document* goal) override
   {
-    std::string json;
-    rapidjson::Document document;
-    GoalType ros_msg;
 %4%
     return true;
   }
@@ -211,7 +218,7 @@ EusRemoteActionNode("%1%/%2%Action", name, conf) {}
     package_name %
     nodeID %
     boost::algorithm::join(provided_ports, ",\n") %
-    boost::algorithm::join(get_inputs, "\n") %
+    format_send_goal(boost::algorithm::join(get_inputs, "\n")) %
     boost::algorithm::join(set_outputs, "\n");
 
   return bfmt.str();
@@ -268,6 +275,16 @@ public:
 std::string GenTemplate::remote_condition_class_template(std::string package_name, std::string nodeID,
                                                          std::vector<std::string> provided_ports,
                                                          std::vector<std::string> get_inputs) {
+  auto format_send_request = [](const std::string body) {
+    std::string decl = 1 + R"(
+    std::string json;
+    rapidjson::Document document;
+    RequestType ros_msg;
+)";
+    if (!body.empty()) return fmt::format("{}{}", decl, body);
+    return body;
+  };
+
   std::string fmt_string = 1 + R"(
 class %2%: public EusRemoteConditionNode<%1%::%2%>
 {
@@ -285,9 +302,6 @@ public:
 
   void sendRequest(rapidjson::Document *request) override
   {
-    std::string json;
-    rapidjson::Document document;
-    RequestType ros_msg;
 %4%
   }
 
@@ -308,7 +322,7 @@ public:
     package_name %
     nodeID %
     boost::algorithm::join(provided_ports, ",\n") %
-    boost::algorithm::join(get_inputs, "\n");
+    format_send_request(boost::algorithm::join(get_inputs, "\n"));
 
   return bfmt.str();
 }
