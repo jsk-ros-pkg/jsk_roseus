@@ -39,7 +39,8 @@ std::string TutorialParser::format_node_body(const XMLElement* node, int padding
   // Conditions
   if (id == "CheckTrue") return std::string("(send value :data)").insert(0, padding, ' ');
   if (id == "atTable")   return std::string("(at-spot \"table-front\")").insert(0, padding, ' ');
-  if (id == "atSpot")    return fmt::format("{}(at-spot {})", pad, param_list.at(0));
+  if (id == "atSpot" || id == "atTableSpot" || id == "atBroomSpot")
+    return fmt::format("{}(at-spot {})", pad, param_list.at(0));
   if (id == "CheckCoords") return fmt::format(
     "{}(not (equal (instance geometry_msgs::Pose :init) {}))", pad, param_list.at(0));
 
