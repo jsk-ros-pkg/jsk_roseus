@@ -66,13 +66,19 @@ public:
 class UnknownPortNode: public XMLError {
 public:
   UnknownPortNode(const XMLElement* node) :
-    XMLError(fmt::format("Unknown port type {}{}", node->Name(), get_place(node))) {};
+    XMLError(fmt::format("Unknown port node {}{}", node->Name(), get_place(node))) {};
 };
 
 class InvalidTopicType: public XMLError {
 public:
   InvalidTopicType(std::string type, const XMLElement* node) :
     XMLError(fmt::format("Invalid topic type {}{}", type, get_place(node))) {};
+};
+
+class InvalidPortType: public XMLError {
+public:
+  InvalidPortType(std::string type, const XMLElement* node) :
+    XMLError(fmt::format("Invalid port type {}{}", type, get_place(node))) {};
 };
 
 

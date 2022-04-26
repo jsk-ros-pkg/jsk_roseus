@@ -10,6 +10,7 @@ namespace BT
 {
 
 // Helper Node to call a rosbridge websocket inside a BT::ActionNode
+template<class ActionT>
 class EusRemoteActionNode : public BT::ActionNodeBase
 {
 protected:
@@ -29,8 +30,11 @@ protected:
 
 public:
 
-  EusRemoteActionNode() = delete;
+  using BaseClass  = EusRemoteActionNode<ActionT>;
+  using ActionType = ActionT;
+  using GoalType = typename ActionT::_action_goal_type::_goal_type;
 
+  EusRemoteActionNode() = delete;
   virtual ~EusRemoteActionNode() = default;
 
   static PortsList providedPorts()
@@ -130,7 +134,7 @@ protected:
 
 
 /// Method to register the service into a factory.
-  template <class DerivedT> static
+template <class DerivedT> static
   void RegisterRemoteAction(BT::BehaviorTreeFactory& factory,
                             const std::string& registration_ID)
 {
@@ -142,7 +146,7 @@ protected:
   manifest.type = getType<DerivedT>();
   manifest.ports = DerivedT::providedPorts();
   manifest.registration_ID = registration_ID;
-  const auto& basic_ports = EusRemoteActionNode::providedPorts();
+  const auto& basic_ports = EusRemoteActionNode<typename DerivedT::ActionType>::providedPorts();
   manifest.ports.insert( basic_ports.begin(), basic_ports.end() );
   factory.registerBuilder( manifest, builder );
 }

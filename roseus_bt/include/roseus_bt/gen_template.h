@@ -166,7 +166,7 @@ std::string GenTemplate::remote_action_class_template(
      std::vector<std::string> set_outputs)
 {
   std::string fmt_string = 1 + R"(
-class %2%: public EusRemoteActionNode
+class %2%: public EusRemoteActionNode<%1%::%2%Action>
 {
 
 public:
@@ -184,6 +184,7 @@ EusRemoteActionNode("%1%/%2%Action", name, conf) {}
   {
     std::string json;
     rapidjson::Document document;
+    GoalType ros_msg;
 %4%
     return true;
   }
@@ -268,17 +269,17 @@ std::string GenTemplate::remote_condition_class_template(std::string package_nam
                                                          std::vector<std::string> provided_ports,
                                                          std::vector<std::string> get_inputs) {
   std::string fmt_string = 1 + R"(
-class %1%: public EusRemoteConditionNode
+class %2%: public EusRemoteConditionNode<%1%::%2%>
 {
 
 public:
-  %1%(const std::string& name, const NodeConfiguration& conf):
+  %2%(const std::string& name, const NodeConfiguration& conf):
   EusRemoteConditionNode(name, conf) {}
 
   static PortsList providedPorts()
   {
     return  {
-%2%
+%3%
     };
   }
 
@@ -286,7 +287,8 @@ public:
   {
     std::string json;
     rapidjson::Document document;
-%3%
+    RequestType ros_msg;
+%4%
   }
 
   NodeStatus onResponse(const rapidjson::Value& result) override
@@ -303,6 +305,7 @@ public:
 )";
 
   boost::format bfmt = boost::format(fmt_string) %
+    package_name %
     nodeID %
     boost::algorithm::join(provided_ports, ",\n") %
     boost::algorithm::join(get_inputs, "\n");
