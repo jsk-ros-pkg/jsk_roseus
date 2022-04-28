@@ -333,7 +333,7 @@ std::string GenTemplate::subscriber_class_template(std::string nodeID, std::stri
   if (!message_field.empty()) {
     std::string fmt_string = R"(
   virtual void callback(%1% msg) {
-    setOutput("to", msg.%2%);
+    setOutput("output_port", msg.%2%);
   }
 )";
 

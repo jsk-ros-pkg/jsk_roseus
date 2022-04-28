@@ -4,7 +4,7 @@
     <BehaviorTree ID="BehaviorTree">
         <SequenceStar name="InitSequence">
             <Action ID="Init" name="Initialize Task"/>
-            <Action ID="setSubscriber" name="setBottleCoords" to="bottle_coords" topic_name="/petbottle/coords"/>
+            <Action ID="setSubscriber" name="setBottleCoords" output_port="bottle_coords" topic_name="/petbottle/coords"/>
             <Sequence name="MainSequence">
                 <Fallback name="MoveToTable">
                     <Condition ID="atSpot" spot="table-front"/>
@@ -44,7 +44,7 @@
             <input_port name="spot" type="string"/>
         </Condition>
 
-        <Subscriber ID="setSubscriber" type="geometry_msgs/Pose"/>
+        <Subscriber ID="setSubscriber" message_type="geometry_msgs/Pose"/>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>

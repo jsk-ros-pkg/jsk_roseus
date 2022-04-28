@@ -28,12 +28,12 @@ public:
   static PortsList providedPorts() {
     return {
       InputPort<std::string>("topic_name", "name of the subscribed topic"),
-      OutputPort<MessageT>("to", "port to where messages are redirected")
+      OutputPort<MessageT>("output_port", "port to where messages are redirected")
         };
   }
 
   virtual void callback(MessageT msg) {
-    setOutput("to", msg);
+    setOutput("output_port", msg);
   }
 
   virtual BT::NodeStatus tick() override final
