@@ -107,7 +107,7 @@ The fourth example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/rose
 
 Such port variables are initialized with an empty message instance and updated every time a new topic message arrives.
 
-To do this we add an action with the `topic_name` and `to` fields in the `<BehaviorTree/>` section and declare it as a `<Subscriber/>` and specify its type in the `<TreeNodesModel/>` section.
+To do this we add an action with the `topic_name` and `output_port` fields in the `<BehaviorTree/>` section, and declare it as a `<Subscriber/>` and specify `message_type` and optionally `message_field` in the `<TreeNodesModel/>` section.
 Only proper ROS message types are supported by subscriber nodes (e.g. `std_msgs/Int64` instead of `int64`).
 
 Note how we also add a step to verify and wait for messages.

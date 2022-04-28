@@ -68,7 +68,7 @@ protected:
                               std::vector<std::string>* instance_creation,
                               std::vector<std::string>* parallel_callback_definition,
                               std::vector<std::string>* parallel_instance_creation);
-  void maybe_push_message_package(const XMLElement* node,
+  void maybe_push_message_package(const std::string message_type,
                                   std::vector<std::string>* message_packages);
   std::string format_eus_name(const std::string input);
   std::string format_message_description(const XMLElement* port_node);
@@ -175,8 +175,8 @@ void XMLParser::check_xml_file(std::string filename) {
     }
 
     if (name == "Subscriber") {
-      if (!node->Attribute("type")) {
-        throw XMLError::MissingRequiredAttribute("type", node);
+      if (!node->Attribute("message_type")) {
+        throw XMLError::MissingRequiredAttribute("message_type", node);
       }
       check_push(node, &subscribers, &duplicated_nodes);
     }
@@ -520,12 +520,11 @@ void XMLParser::collect_eus_conditions(const std::string package_name,
                          "");
 }
 
-void XMLParser::maybe_push_message_package(const XMLElement* node,
+void XMLParser::maybe_push_message_package(const std::string message_type,
                                            std::vector<std::string>* message_packages) {
-  std::string msg_type = node->Attribute("type");
-  std::size_t pos = msg_type.find('/');
+  std::size_t pos = message_type.find('/');
   if (pos != std::string::npos) {
-    std::string pkg = msg_type.substr(0, pos);
+    std::string pkg = message_type.substr(0, pos);
     push_new(pkg, message_packages);
   }
 }
@@ -695,7 +694,7 @@ std::string XMLParser::generate_headers(const std::string package_name) {
   };
 
   auto format_subscriber_node = [](const XMLElement* node) {
-    return fmt::format("#include <{}.h>", node->Attribute("type"));
+    return fmt::format("#include <{}.h>", node->Attribute("message_type"));
   };
 
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
@@ -907,7 +906,7 @@ std::string XMLParser::generate_remote_condition_class(const XMLElement* node, c
 
 std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
   auto format_type = [](const XMLElement* node) {
-    std::string type = node->Attribute("type");
+    std::string type = node->Attribute("message_type");
     std::size_t pos = type.find('/');
     if (pos == std::string::npos) {
       throw XMLError::InvalidTopicType(type, node);
@@ -915,8 +914,8 @@ std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
     return fmt::format("{}::{}", type.substr(0, pos), type.substr(1+pos));
   };
   auto format_field = [](const XMLElement* node) {
-    if (!node->Attribute("field")) return "";
-    return node->Attribute("field");
+    if (!node->Attribute("message_field")) return "";
+    return node->Attribute("message_field");
   };
 
   return gen_template.subscriber_class_template(node->Attribute("ID"),
@@ -1224,11 +1223,11 @@ void XMLParser::push_dependencies(std::vector<std::string>* message_packages,
              port_node != nullptr;
              port_node = port_node->NextSiblingElement())
           {
-            maybe_push_message_package(port_node, message_packages);
+            maybe_push_message_package(port_node->Attribute("type"), message_packages);
           }
       }
       if (name == "Subscriber") {
-        maybe_push_message_package(node, message_packages);
+        maybe_push_message_package(node->Attribute("message_type"), message_packages);
       }
    }
 }

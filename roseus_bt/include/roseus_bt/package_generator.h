@@ -277,7 +277,9 @@ void PackageGenerator<Parser>::write_all_files() {
 
     BOOST_LOG_TRIVIAL(info) << "Generating " << xml_filename << " files...";
 
+    BOOST_LOG_TRIVIAL(info) << "Checking dependencies...";
     parser->push_dependencies(&message_packages, &service_files, &action_files);
+
     copy_xml_file(&xml_filename);
     write_action_files(parser);
     write_service_files(parser);
