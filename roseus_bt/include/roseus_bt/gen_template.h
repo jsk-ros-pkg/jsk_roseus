@@ -38,6 +38,8 @@ public:
   std::string subscriber_class_template(std::string nodeID, std::string message_type,
                                         std::string message_field,
                                         std::vector<std::string> provided_ports);
+  std::string remote_subscriber_class_template(std::string nodeID, std::string message_type,
+                                               std::vector<std::string> provided_ports);
   std::string main_function_template(std::string roscpp_node_name,
                                        std::string xml_filename,
                                        std::vector<std::string> register_actions,
@@ -234,8 +236,8 @@ class %2%: public EusConditionNode<%1%::%2%>
 {
 
 public:
-  %2%(ros::NodeHandle& handle, const std::string& node_name, const NodeConfiguration& conf):
-  EusConditionNode<%1%::%2%>(handle, node_name, conf) {}
+  %2%(ros::NodeHandle& handle, const std::string& name, const NodeConfiguration& conf):
+  EusConditionNode<%1%::%2%>(handle, name, conf) {}
 
   static PortsList providedPorts()
   {
@@ -367,8 +369,8 @@ std::string GenTemplate::subscriber_class_template(std::string nodeID,
 class %1%: public EusSubscriberNode<%2%>
 {
 public:
-  %1%(ros::NodeHandle& handle, const std::string& node_name, const NodeConfiguration& conf) :
-    EusSubscriberNode<%2%>(handle, node_name, conf) {}
+  %1%(ros::NodeHandle& handle, const std::string& name, const NodeConfiguration& conf) :
+    EusSubscriberNode<%2%>(handle, name, conf) {}
 %3%
 %4%
 };
@@ -378,6 +380,44 @@ public:
     message_type %
     provided_ports_body %
     message_field;
+
+  return bfmt.str();
+}
+
+
+std::string GenTemplate::remote_subscriber_class_template(std::string nodeID,
+                                                          std::string message_type,
+                                                          std::vector<std::string> provided_ports) {
+  std::string provided_ports_body;
+
+  if (!provided_ports.empty()) {
+      std::string fmt_string = R"(
+  static PortsList providedPorts()
+  {
+    return  {
+%1%
+    };
+  })";
+
+    boost::format bfmt = boost::format(fmt_string) %
+        boost::algorithm::join(provided_ports, ",\n");
+
+    provided_ports_body = bfmt.str();
+  }
+
+  std::string fmt_string = 1 + R"(
+class %1%: public EusRemoteSubscriberNode<%2%>
+{
+public:
+  %1%(const std::string& name, const NodeConfiguration& conf) :
+    EusRemoteSubscriberNode<%2%>(name, conf) {}
+%3%
+};
+)";
+  boost::format bfmt = boost::format(fmt_string) %
+    nodeID %
+    message_type %
+    provided_ports_body;
 
   return bfmt.str();
 }

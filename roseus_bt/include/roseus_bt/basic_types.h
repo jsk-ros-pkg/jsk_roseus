@@ -18,6 +18,7 @@ enum class NodeType
     SUBSCRIBER,
     REMOTE_ACTION,
     REMOTE_CONDITION,
+    REMOTE_SUBSCRIBER,
 };
 
 std::string toStr(NodeType type);

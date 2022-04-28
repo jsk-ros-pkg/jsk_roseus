@@ -19,6 +19,8 @@ std::string toStr(NodeType type)
             return "SubTree";
         case NodeType::SUBSCRIBER:
             return "Subscriber";
+        case NodeType::REMOTE_SUBSCRIBER:
+            return "RemoteSubscriber";
         case NodeType::REMOTE_ACTION:
             return "RemoteAction";
         case NodeType::REMOTE_CONDITION:
@@ -36,6 +38,7 @@ NodeType convertFromString(BT::StringView str)
     if( str == "Decorator" ) return NodeType::DECORATOR;
     if( str == "SubTree" || str == "SubTreePlus" ) return NodeType::SUBTREE;
     if( str == "Subscriber" )      return NodeType::SUBSCRIBER;
+    if( str == "RemoteSubscriber" )  return NodeType::REMOTE_SUBSCRIBER;
     if( str == "RemoteAction" )    return NodeType::ACTION;
     if( str == "RemoteCondition" ) return NodeType::CONDITION;
     return NodeType::UNDEFINED;
