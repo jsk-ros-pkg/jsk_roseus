@@ -38,9 +38,9 @@ NodeType convertFromString(BT::StringView str)
     if( str == "Decorator" ) return NodeType::DECORATOR;
     if( str == "SubTree" || str == "SubTreePlus" ) return NodeType::SUBTREE;
     if( str == "Subscriber" )      return NodeType::SUBSCRIBER;
+    if( str == "RemoteAction" )    return NodeType::REMOTE_ACTION;
+    if( str == "RemoteCondition" ) return NodeType::REMOTE_CONDITION;
     if( str == "RemoteSubscriber" )  return NodeType::REMOTE_SUBSCRIBER;
-    if( str == "RemoteAction" )    return NodeType::ACTION;
-    if( str == "RemoteCondition" ) return NodeType::CONDITION;
     return NodeType::UNDEFINED;
 }
 
