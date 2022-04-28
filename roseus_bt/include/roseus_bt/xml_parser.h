@@ -86,6 +86,7 @@ protected:
   std::string generate_condition_class(const XMLElement* node, const std::string package_name);
   std::string generate_remote_condition_class(const XMLElement* node, const std::string package_name);
   std::string generate_subscriber_class(const XMLElement* node);
+  std::string generate_remote_subscriber_class(const XMLElement* node);
   std::string generate_main_function(const std::string roscpp_node_name, const std::string xml_filename);
 
   virtual std::string format_node_body(const XMLElement* node, int padding);
@@ -152,6 +153,7 @@ void XMLParser::check_xml_file(std::string filename) {
         name != "Condition" &&
         name != "RemoteCondition" &&
         name != "Subscriber" &&
+        name != "RemoteSubscriber" &&
         name != "SubTree") {
       throw XMLError::UnknownNode(node);
     }
@@ -174,7 +176,7 @@ void XMLParser::check_xml_file(std::string filename) {
       check_push(node, &conditions, &duplicated_nodes);
     }
 
-    if (name == "Subscriber") {
+    if (name == "Subscriber" || name == "RemoteSubscriber") {
       if (!node->Attribute("message_type")) {
         throw XMLError::MissingRequiredAttribute("message_type", node);
       }
@@ -735,6 +737,13 @@ std::string XMLParser::generate_headers(const std::string package_name) {
       headers.push_back(format_subscriber_node(subscriber_node));
     }
 
+   for (auto subscriber_node = root->FirstChildElement("RemoteSubscriber");
+       subscriber_node != nullptr;
+       subscriber_node = subscriber_node->NextSiblingElement("RemoteSubscriber"))
+    {
+      headers.push_back(format_subscriber_node(subscriber_node));
+    }
+
   return gen_template.headers_template(headers);
 }
 
@@ -918,15 +927,9 @@ std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
     return node->Attribute("message_field");
   };
   auto format_port = [](const XMLElement* port_node) {
-      std::string name = port_node->Attribute("name");
-      if (name == "topic_name" &&
-          port_node->Attribute("default"))
-      {
-        return fmt::format(
-          "      InputPort<std::string>(\"topic_name\", \"{0}\", \"name of the subscribed topic\")",
-          port_node->Attribute("default"));
-      }
-      return std::string();
+    return fmt::format(
+      "      InputPort<std::string>(\"topic_name\", \"{0}\", \"name of the subscribed topic\")",
+      port_node->Attribute("default"));
   };
 
   std::vector<std::string> provided_ports;
@@ -935,9 +938,9 @@ std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
        port_node != nullptr;
        port_node = port_node->NextSiblingElement("input_port"))
   {
-    std::string port = format_port(port_node);
-    if (!port.empty()) {
-        provided_ports.push_back(port);
+    std::string name = port_node->Attribute("name");
+    if (name == "topic_name" && port_node->Attribute("default")) {
+      provided_ports.push_back(format_port(port_node));
     }
   }
 
@@ -945,6 +948,43 @@ std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
                                                 format_type(node),
                                                 format_field(node),
                                                 provided_ports);
+}
+
+std::string XMLParser::generate_remote_subscriber_class(const XMLElement* node) {
+  auto format_type = [](const XMLElement* node) {
+    std::string type = node->Attribute("message_type");
+    std::size_t pos = type.find('/');
+    if (pos == std::string::npos) {
+      throw XMLError::InvalidTopicType(type, node);
+    }
+    return fmt::format("{}::{}", type.substr(0, pos), type.substr(1+pos));
+  };
+  auto format_port = [](const XMLElement* port_node) {
+    return fmt::format(
+      "      InputPort<std::string>(\"topic_name\", \"{0}\", \"name of the subscribed topic\")",
+      port_node->Attribute("default"));
+  };
+
+  std::vector<std::string> provided_ports;
+
+  if (node->Attribute("host_name")) {
+    provided_ports.push_back(format_host_name(node));}
+  if (node->Attribute("host_port")) {
+    provided_ports.push_back(format_host_port(node));}
+
+  for (auto port_node = node->FirstChildElement("input_port");
+       port_node != nullptr;
+       port_node = port_node->NextSiblingElement("input_port"))
+  {
+    std::string name = port_node->Attribute("name");
+    if (name == "topic_name" && port_node->Attribute("default")) {
+      provided_ports.push_back(format_port(port_node));
+    }
+  }
+
+  return gen_template.remote_subscriber_class_template(node->Attribute("ID"),
+                                                       format_type(node),
+                                                       provided_ports);
 }
 
 std::string XMLParser::generate_main_function(const std::string roscpp_node_name,
@@ -967,6 +1007,10 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
   };
   auto format_subscriber_node = [](const XMLElement* node) {
     return fmt::format("  RegisterSubscriberNode<{0}>(factory, \"{0}\", nh);",
+                       node->Attribute("ID"));
+  };
+  auto format_remote_subscriber_node = [](const XMLElement* node) {
+    return fmt::format("  RegisterRemoteSubscriber<{0}>(factory, \"{0}\");",
                        node->Attribute("ID"));
   };
 
@@ -1008,6 +1052,13 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
        subscriber_node = subscriber_node->NextSiblingElement("Subscriber"))
     {
       register_subscribers.push_back(format_subscriber_node(subscriber_node));
+    }
+
+  for (auto subscriber_node = root->FirstChildElement("RemoteSubscriber");
+       subscriber_node != nullptr;
+       subscriber_node = subscriber_node->NextSiblingElement("RemoteSubscriber"))
+    {
+      register_subscribers.push_back(format_remote_subscriber_node(subscriber_node));
     }
 
   return gen_template.main_function_template(roscpp_node_name, xml_filename,
@@ -1212,6 +1263,14 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
       output.append("\n\n");
     }
 
+  for (auto subscriber_node = root->FirstChildElement("RemoteSubscriber");
+       subscriber_node != nullptr;
+       subscriber_node = subscriber_node->NextSiblingElement("RemoteSubscriber"))
+    {
+      output.append(generate_remote_subscriber_class(subscriber_node));
+      output.append("\n\n");
+    }
+
   output.append(generate_main_function(roscpp_node_name, xml_filename));
 
   return output;
@@ -1250,7 +1309,7 @@ void XMLParser::push_dependencies(std::vector<std::string>* message_packages,
             maybe_push_message_package(port_node->Attribute("type"), message_packages);
           }
       }
-      if (name == "Subscriber") {
+      if (name == "Subscriber" || name == "RemoteSubscriber") {
         maybe_push_message_package(node->Attribute("message_type"), message_packages);
       }
    }
