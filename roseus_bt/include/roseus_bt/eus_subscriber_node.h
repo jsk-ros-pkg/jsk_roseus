@@ -22,6 +22,9 @@ private:
   ros::Subscriber sub_;
 
 public:
+
+  using MessageType = MessageT;
+
   EusSubscriberNode() = delete;
   virtual ~EusSubscriberNode() = default;
 
@@ -62,6 +65,8 @@ template <class DerivedT> static
   manifest.type = getType<DerivedT>();
   manifest.ports = DerivedT::providedPorts();
   manifest.registration_ID = registration_ID;
+  const auto& basic_ports = EusSubscriberNode< typename DerivedT::MessageType>::providedPorts();
+  manifest.ports.insert( basic_ports.begin(), basic_ports.end() );
   factory.registerBuilder( manifest, builder );
 }
 
