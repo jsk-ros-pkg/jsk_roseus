@@ -1,7 +1,6 @@
 #ifndef BEHAVIOR_TREE_EUS_SUBSCRIBER_NODE_HPP_
 #define BEHAVIOR_TREE_EUS_SUBSCRIBER_NODE_HPP_
 
-#include <geometry_msgs/Point.h>
 
 namespace BT
 {
@@ -17,10 +16,6 @@ protected:
     sub_ = node_.subscribe(topic_name, 1000, &EusSubscriberNode::callback, this);
   }
 
-private:
-  ros::NodeHandle& node_;
-  ros::Subscriber sub_;
-
 public:
 
   using MessageType = MessageT;
@@ -35,10 +30,6 @@ public:
         };
   }
 
-  virtual void callback(MessageT msg) {
-    setOutput("output_port", msg);
-  }
-
   virtual BT::NodeStatus tick() override final
   {
     return NodeStatus::SUCCESS;
@@ -48,6 +39,16 @@ public:
   {
     setStatus(NodeStatus::IDLE);
   }
+
+protected:
+  ros::NodeHandle& node_;
+  ros::Subscriber sub_;
+
+protected:
+  virtual void callback(MessageT msg) {
+    setOutput("output_port", msg);
+  }
+
 };
 
 
