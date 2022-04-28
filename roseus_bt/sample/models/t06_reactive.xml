@@ -39,7 +39,9 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <SubTree ID="PourTask"/>
+        <SubTree ID="PourTask">
+            <input_port default="bottle_coords" name="coords" type=""/>
+        </SubTree>
         <SubTree ID="SweepTask"/>
 
         <Action ID="InitWithBroom" server_name="/t06_reactive/init"/>
@@ -63,7 +65,10 @@
           <input_port name="value" type="std_msgs/Bool"/>
         </Condition>
 
-        <Subscriber ID="setRequestSubscriber" message_type="std_msgs/Bool"/>
+        <Subscriber ID="setRequestSubscriber" message_type="std_msgs/Bool">
+            <output_port name="output_port" type=""/>
+            <input_port name="topic_name" type=""/>
+        </Subscriber>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>

@@ -44,7 +44,10 @@
             <input_port name="spot" type="string"/>
         </Condition>
 
-        <Subscriber ID="setSubscriber" message_type="geometry_msgs/Pose"/>
+        <Subscriber ID="setSubscriber" message_type="geometry_msgs/Pose">
+            <output_port name="output_port" type=""/>
+            <input_port name="topic_name" type=""/>
+        </Subscriber>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>
