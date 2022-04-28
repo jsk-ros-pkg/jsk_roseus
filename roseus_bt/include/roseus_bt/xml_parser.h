@@ -917,10 +917,34 @@ std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
     if (!node->Attribute("message_field")) return "";
     return node->Attribute("message_field");
   };
+  auto format_port = [](const XMLElement* port_node) {
+      std::string name = port_node->Attribute("name");
+      if (name == "topic_name" &&
+          port_node->Attribute("default"))
+      {
+        return fmt::format(
+          "      InputPort<std::string>(\"topic_name\", \"{0}\", \"name of the subscribed topic\")",
+          port_node->Attribute("default"));
+      }
+      return std::string();
+  };
+
+  std::vector<std::string> provided_ports;
+
+  for (auto port_node = node->FirstChildElement("input_port");
+       port_node != nullptr;
+       port_node = port_node->NextSiblingElement("input_port"))
+  {
+    std::string port = format_port(port_node);
+    if (!port.empty()) {
+        provided_ports.push_back(port);
+    }
+  }
 
   return gen_template.subscriber_class_template(node->Attribute("ID"),
                                                 format_type(node),
-                                                format_field(node));
+                                                format_field(node),
+                                                provided_ports);
 }
 
 std::string XMLParser::generate_main_function(const std::string roscpp_node_name,
