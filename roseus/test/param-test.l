@@ -147,6 +147,19 @@
     )
   )
 
+(deftest test-set-param-recursive ()
+  (assert (ros::has-param "/test_dictionary") "[/test_dictionary] (ros::has-param) failed")
+  (assert (null (ros::has-param "/test_recursive")) "[/test_recursive] (ros::has-param) failed")
+  (let ((test-dict (ros::get-param "/test_dictionary"))
+        test-rec)
+    (ros::ros-info "/test_dictionary ~S" test-dict)
+    (ros::set-param "/test_recursive" test-dict)
+    (setq test-rec (ros::get-param "/test_recursive"))
+    (ros::ros-info "/test_recursive ~S" test-rec)
+    (assert (equal test-dict test-rec) "unable to perform ros::set-param recursively")
+    (assert (ros::delete-param "/test_recursive")
+            "(ros::delete-param \"test_recursive\") returns nil")))
+
 (deftest test-param-default-value ()
   ;; Read parameter 1000 times with default value
   (dotimes (i 1000)
