@@ -1279,7 +1279,7 @@ void EusValueToXmlRpc(register context *ctx, pointer argp, XmlRpc::XmlRpcValue& 
 {
   numunion nu;
 
-  if ( islist(argp) && islist(ccar(argp))) { // alist
+  if ( islist(argp) && islist(ccar(argp)) && !islist(ccar(ccar(argp))) ) { // alist
     pointer a;
     int j;
     // set keys
