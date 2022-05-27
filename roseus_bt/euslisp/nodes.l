@@ -3,7 +3,8 @@
 
 (in-package "ROSEUS_BT")
 
-(export '(action-node resumable-action-node condition-node spin-once spin))
+(export '(action-node resumable-action-node condition-node
+          cancel-action spin-once spin))
 ;; import relevant ros::simple-action-server symbols
 (import '(ros::name-space ros::status ros::execute-cb
           ros::goal ros::goal-id))
@@ -51,7 +52,7 @@
 ;; classes
 (defclass action-node :super ros::simple-action-server :slots (monitor-groupname))
 (defmethod action-node
-  (:init (ns spec &key execute-cb preempt-cb accept-cb groupname
+  (:init (ns spec &key execute-cb (preempt-cb 'signals-cancel) accept-cb groupname
              ((:monitor-groupname monitor-gn)))
       (check-fn-closure execute-cb)
       (check-fn-closure preempt-cb)
