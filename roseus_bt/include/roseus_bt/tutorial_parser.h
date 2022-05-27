@@ -54,8 +54,6 @@ std::string TutorialParser::format_node_body(const XMLElement* node, int padding
 
   if (id == "PlaceBottle")
     return  fmt::format("{0}(place-sushi-bottle)\n{0}(reset-pose)", pad);
-  if (id == "SweepFloor")
-    return  fmt::format("{0}(sweep-floor #'send server :ok)\n{0}(reset-pose)", pad);
   if (id == "MoveTo")
     return fmt::format("{}(go-to-spot {})", pad, param_list.at(0));
   if (id == "PickBottleAt")
@@ -65,6 +63,13 @@ std::string TutorialParser::format_node_body(const XMLElement* node, int padding
 {0}(send server :set-output "{1}"
 {0}      (ros::coords->tf-pose (make-coords :pos #f(1850 400 700)))))";
     return fmt::format(fmt_string, pad, output_list.at(0));
+  }
+  if (id == "SweepFloor") {
+      std::string fmt_string = 1 + R"(
+{0}(handler-case (sweep-floor)
+{0}  (roseus_bt:cancel-action () nil))
+{0}(reset-pose))";
+      return fmt::format(fmt_string, pad);
   }
 
   throw XMLError::UnknownNode(node);
