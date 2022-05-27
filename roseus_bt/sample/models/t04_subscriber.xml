@@ -4,7 +4,7 @@
     <BehaviorTree ID="BehaviorTree">
         <SequenceStar name="InitSequence">
             <Action ID="Init" name="Initialize Task"/>
-            <Action ID="setSubscriber" name="setBottleCoords" output_port="bottle_coords" topic_name="/petbottle/coords"/>
+            <Action ID="setSubscriber" name="setBottleCoords" output_port="bottle_coords" received_port="found_coords" topic_name="/petbottle/coords"/>
             <Sequence name="MainSequence">
                 <Fallback name="MoveToTable">
                     <Condition ID="atSpot" spot="table-front"/>
@@ -13,7 +13,7 @@
                 <RetryUntilSuccessful name="WaitForTopicMessage" num_attempts="-1">
                     <Fallback>
                         <Condition ID="CheckCoords" name="CheckBottleCoords"
-                                   coords="${bottle_coords}"/>
+                                   found_coords="${found_coords}"/>
                         <Delay delay_msec="1000" name="Sleep">
                             <AlwaysFailure/>
                         </Delay>
@@ -38,7 +38,7 @@
         <Action ID="PlaceBottle" server_name="/t04_subscriber/placebottle"/>
 
         <Condition ID="CheckCoords" service_name="t04_subscriber/checkcoords">
-            <input_port name="coords" type="geometry_msgs/Pose"/>
+            <input_port name="found_coords" type="bool"/>
         </Condition>
         <Condition ID="atSpot" service_name="/t04_subscriber/atspot">
             <input_port name="spot" type="string"/>
@@ -46,6 +46,7 @@
 
         <Subscriber ID="setSubscriber" message_type="geometry_msgs/Pose">
             <output_port name="output_port" type=""/>
+            <output_port name="received_port" type=""/>
             <input_port name="topic_name" type=""/>
         </Subscriber>
     </TreeNodesModel>
