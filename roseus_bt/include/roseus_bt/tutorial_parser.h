@@ -42,7 +42,7 @@ std::string TutorialParser::format_node_body(const XMLElement* node, int padding
   if (id == "atSpot" || id == "atTableSpot" || id == "atBroomSpot")
     return fmt::format("{}(at-spot {})", pad, param_list.at(0));
   if (id == "CheckCoords") return fmt::format(
-    "{}(not (equal (instance geometry_msgs::Pose :init) {}))", pad, param_list.at(0));
+    "{}{}", pad, param_list.at(0));
 
   // Actions
   if (id == "Init")  return std::string("(init nil t)").insert(0, padding, ' ');
