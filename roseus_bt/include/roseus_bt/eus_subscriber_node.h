@@ -26,7 +26,8 @@ public:
   static PortsList providedPorts() {
     return {
       InputPort<std::string>("topic_name", "name of the subscribed topic"),
-      OutputPort<MessageT>("output_port", "port to where messages are redirected")
+      OutputPort<MessageT>("output_port", "port to where messages are redirected"),
+      OutputPort<uint8_t>("received_port", "port set to true every time a message is received")
         };
   }
 
@@ -47,6 +48,7 @@ protected:
 protected:
   virtual void callback(MessageT msg) {
     setOutput("output_port", msg);
+    setOutput("received_port", (uint8_t)true);
   }
 
 };
