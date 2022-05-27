@@ -177,8 +177,16 @@ The sixth example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseu
 
 The main difference of reactive nodes (e.g. `<ReactiveSequence/>` and `<ReactiveFallback/>`) is that when a child returns RUNNING the reactive node will resume ticking from its first child. This forces the node to re-evaluate any conditions preceding the execution node, therefore achieving enhanced reactivity.
 
-Because in such scenario the condition nodes must be evaluated alongside the running action, we prepare two distinct roseus servers -- one for actions and the other for conditions.
-On the action side it is also necessary to check for the presence of interruption requests with the `(roseus_bt:ok)` function.
+In order to compose a reactive program in single-threded eus, we need to ensure that:
+1. Condition nodes can be evaluated while executing actions
+2. Interruption requests are checked while executing actions
+
+In this example, we achieve the first point by preparing two distinct roseus servers -- one for actions and the other for conditions.
+The second point is achieved by constantly spinning the ros node during the execution loop, which by default raises a `roseus_bt:cancel-action` condition whenever an interruption request is received. Finally, the execution callback is also responsible for correctly handling this condition.
+
+When using the real robot, the suggested way to achieve concurrent evaluation is to register condition nodes `:groupname` and action nodes `:monitor-groupname` with the robot's interface groupname (e.g. `(*ri* . groupname)`). This allows for checking conditions and interruption requests at every robot spin, which naturally happens at several points of the control loop, such as during `:wait-interpolation`.
+
+It is also possible to manually spin the monitor groupname with `(send server :spin-monitor)`, or to check for the presence of interruption requests with the `(send server :ok)` when using custom preemption callbacks.
 
 #### Run the code
 
