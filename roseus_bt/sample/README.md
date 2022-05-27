@@ -107,10 +107,9 @@ The fourth example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/rose
 
 Such port variables are initialized with an empty message instance and updated every time a new topic message arrives.
 
-To do this we add an action with the `topic_name` and `output_port` fields in the `<BehaviorTree/>` section, and declare it as a `<Subscriber/>` and specify `message_type` and optionally `message_field` in the `<TreeNodesModel/>` section.
-Only proper ROS message types are supported by subscriber nodes (e.g. `std_msgs/Int64` instead of `int64`).
+To do this we add a `<Subscriber/>` node, specifying the input ports `topic_name` and `message_type` and the output ports `output_port` and `received_port`. The `output_port` variable is initilized with an instance of the given message type and updated every time a new message is received. The `received_port` variable is a boolean initialized with false and set to true at every new message. Optionally, `message_field` can also be assigned.
 
-Note how we also add a step to verify and wait for messages.
+Only proper ROS message types are supported by subscriber nodes (e.g. `std_msgs/Int64` instead of `int64`).
 
 
 #### Run the code
@@ -178,8 +177,8 @@ The sixth example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseu
 
 The main difference of reactive nodes (e.g. `<ReactiveSequence/>` and `<ReactiveFallback/>`) is that when a child returns RUNNING the reactive node will resume ticking from its first child. This forces the node to re-evaluate any conditions preceding the execution node, therefore achieving enhanced reactivity.
 
-Because in such scenario the condition nodes must be evaluated alongside the running action we prepare two distinct roseus servers -- one for actions and one for conditions.
-On the action side it is also necessary to catch any interruption requests signalized by the `roseus_bt:cancel-action` condition. It is also possible to actively check for the presence of interruption requests with the `(send server :ok)`, when using custom preemption callbacks.
+Because in such scenario the condition nodes must be evaluated alongside the running action, we prepare two distinct roseus servers -- one for actions and the other for conditions.
+On the action side it is also necessary to check for the presence of interruption requests with the `(roseus_bt:ok)` function.
 
 #### Run the code
 
