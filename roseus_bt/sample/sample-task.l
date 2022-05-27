@@ -82,12 +82,13 @@
 
 
 ;; Sweep task
-(defun sweep-floor (&optional (check-fn #'(lambda () t)) &rest args)
+(defun sweep-floor ()
   (let ((broom-obj (send *room* :object "broom"))
         (i 0))
     (send *robot* :dual-arm-ik (send broom-obj :handle) :debug-view t)
 
-    (while (apply check-fn args)
+    (while (ros::ok)
+      (ros::spin-once)
       (send broom-obj :rpy -pi/2 0 (* 0.2 (sin (/ i 10.0))))
       (send broom-obj :locate (float-vector (+ 400 (* 250 (sin (/ (incf i) 10.0)))) -1500 0) :world)
       (send *robot* :dual-arm-ik (send broom-obj :handle))
