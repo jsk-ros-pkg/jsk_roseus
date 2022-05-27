@@ -243,11 +243,15 @@ https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models
 
 To do this we declare the actions with the `<RemoteAction/>` and conditions with the `<RemoteCondition/>` tag in the `<TreeNodesModel/>`, and add a `host_name` and `host_port` field to them.
 
+Make sure that the rosbridge server is started after sourcing all of the package's messages and services. Setting a large `unregister_timeout` is also desirable to avoid problems described in https://github.com/knorth55/jsk_robot/pull/230 .
+
+
 #### Run the code
 
 Run the first rosbridge_server:
 ```bash
-roslaunch rosbridge_server rosbridge_websocket.launch
+# source package before running this
+roslaunch rosbridge_server rosbridge_websocket.launch unregister_timeout:=100000
 ```
 
 Run the first roseus server:
@@ -258,8 +262,9 @@ roseus t08_multimaster_localhost9090-action-server.l
 
 Run the second rosbridge_server:
 ```bash
+# source package before running this
 export ROS_MASTER_URI=http://localhost:11312
-roslaunch rosbridge_server rosbridge_websocket.launch port:=9091
+roslaunch rosbridge_server rosbridge_websocket.launch port:=9091 unregister_timeout:=100000
 ```
 
 Run the second roseus server:
