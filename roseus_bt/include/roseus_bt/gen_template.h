@@ -464,7 +464,8 @@ int main(int argc, char **argv)
   }
 
   std::cout << "Writed log to file: " << log_filename << std::endl;
-  return 0;
+  std::cout << "Behavior Tree execution finished with " << toStr(status, true).c_str() << std::endl;
+  return (status != NodeStatus::SUCCESS);
 }
 )";
 
