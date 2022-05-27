@@ -35,6 +35,7 @@ public:
     return {
       InputPort<std::string>("topic_name", "name of the subscribed topic"),
       OutputPort<std::string>("output_port", "port to where messages are redirected"),
+      OutputPort<uint8_t>("received_port", "port set to true every time a message is received"),
       InputPort<std::string>("host_name", "name of the rosbridge_server host"),
       InputPort<int>("host_port", "port of the rosbridge_server host")
         };
@@ -56,6 +57,7 @@ protected:
 protected:
   virtual void callback(const rapidjson::Value& msg) {
     setOutputFromMessage("output_port", msg);
+    setOutput("received_port", (uint8_t)true);
   }
 
   void topicCallback(std::shared_ptr<WsClient::Connection> connection, std::shared_ptr<WsClient::InMessage> in_message)
