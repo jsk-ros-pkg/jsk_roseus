@@ -72,7 +72,7 @@
                         :groupname monitor-groupname))
       (push self *action-list*)
       (if *condition-list*
-          (ros::ros-warn "Actions and Conditions detected in the same node! Start two separate nodes when reacitivity is required."))
+          (ros::ros-warn "Actions and Conditions detected in the same node! Start two separate nodes when reactivity is required."))
       self)
   (:publish-status ()
     (let ((msg (instance actionlib_msgs::GoalStatusArray :init)))
