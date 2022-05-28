@@ -42,7 +42,7 @@
     (if (and (cdr obj) (atom (cdr obj)))
         (send self :save-cons obj)
 ;;    (if (every #'(lambda(it)(and (consp it) (cdr it) (atom (cdr it)))) obj)
-      (if (and dict (every #'consp obj))
+      (if (and dict (every #'(lambda (x) (and (consp x) (not (consp (car x))))) obj))
           (send self :save-dict obj) ;; all items are cons
         (send self :save-list obj))))
          ((stringp obj) (send self :save-string obj))
