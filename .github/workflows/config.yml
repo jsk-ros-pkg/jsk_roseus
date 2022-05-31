@@ -35,6 +35,7 @@ jobs:
             CONTAINER: jskrobotics/ros-ubuntu:14.04
             USE_DEB: false
             NOT_TEST_INSTALL : false
+            BEFORE_SCRIPT: "wget https://raw.githubusercontent.com/tork-a/jskeus-release/master/patches/CMakeLists.txt -O jskeus/CMakeLists.txt"
           - ROS_DISTRO: indigo
             CONTAINER: jskrobotics/ros-ubuntu:14.04
             USE_DEB: source
