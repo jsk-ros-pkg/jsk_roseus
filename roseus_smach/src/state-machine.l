@@ -1,7 +1,7 @@
 ;; state-machine.l
 
 ;; manipulate a list of cons as a associative array
-(defun set-alist (k v alist &key (key 'car) (test 'eq))
+(defun set-alist (k v alist &key (key) (test 'eq))
   (let ((cur-cons (assoc k alist :key key :test test)))
     (if cur-cons
         (progn (setf (cdr cur-cons) v) alist)
