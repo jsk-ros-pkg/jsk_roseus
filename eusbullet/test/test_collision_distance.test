@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="test_collision_distance" pkg="eusbullet" type="test-collision-distance.l" time-limit="2000.0">
+  </test>
+</launch>
