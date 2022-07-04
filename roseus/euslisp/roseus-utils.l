@@ -300,7 +300,9 @@
 			       ((:alpha a) 1.0)
                                ((:id idx) 0) ns lifetime rainbow)
   "Convert euslisp body object to visualization_msgs::Marker"
-  (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
+  (let ((bodies (if (find-method obj :bodies)
+		    (mapcan #'(lambda (b) (cond ((find-method b :faces) (list b))
+						(t nil))) (send obj :bodies)) (list obj))))
     (send-all bodies :worldcoords) ;; make sure to update vertices
     (let* ((msg (instance visualization_msgs::Marker :init
 			  :type visualization_msgs::Marker::*TRIANGLE_LIST*
