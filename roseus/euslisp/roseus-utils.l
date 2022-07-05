@@ -353,6 +353,18 @@
       (if lifetime (send msg :lifetime (ros::time lifetime)))
       msg)))
 
+(defun object->marker-array-msg (obj header &rest args)
+  (let* ((bodies (mapcan #'(lambda (b)
+                             (cond ((find-method b :faces) (list b))
+                                   (t nil)))
+                         (send obj :bodies)))
+         (b1 (mapcan #'(lambda (b) (let ((c (get b :face-color))) (if (not (and (vectorp c) (= (length c) 4) (< (elt c 3) 1.0))) (list b)))) bodies)) ;; flat color
+         (b2 (mapcan #'(lambda (b) (let ((c (get b :face-color))) (if (and (vectorp c) (= (length c) 4) (< (elt c 3) 1.0)) (list b)))) bodies))) ;; transparent color
+    (instance visualization_msgs::MarkerArray :init
+              :markers
+              (list (apply #'object->marker-msg (instance bodyset-link :init obj :bodies b1) header :id 1 args)
+                    (apply #'object->marker-msg (instance bodyset-link :init obj :bodies b2) header :id 2 args)))))
+
 (defun wireframe->marker-msg (wf header &rest args)
   "Convert euslisp object to visualization_msgs::Marker as wireframe"
   (apply #'line-list->marker-msg (mapcan #'(lambda (eds) (send eds :vertices)) (send wf :edges)) header args))
