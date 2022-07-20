@@ -43,7 +43,7 @@
   (:state-machine (&rest args) (forward-message-to sm args))
   ;;
   (:publish-status
-   (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
+   (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)) (info))
    (let ((msg (instance smach_msgs::SmachContainerStatus :init))
          (initial (send-all (flatten (list (send machine :start-state))) :name))
          (active (send-all (flatten (list (send machine :active-state))) :name)))
@@ -54,6 +54,7 @@
      (send msg :initial_states (mapcar #'string initial))
      (send msg :active_states (mapcar #'string active))
      (send msg :local_data (pickle::dump userdata))
+     (send msg :info info)
      (ros::publish (concatenate string srv-name "/smach/container_status") msg)
      ;; recursive call for publish active sub-machines
      (dolist (active-state (flatten (list (send machine :active-state))))

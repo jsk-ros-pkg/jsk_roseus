@@ -18,7 +18,7 @@ Args:
 Returns:
   the last active state
 "
-  (let ((insp (instance state-machine-inspector :init sm :root-name root-name :srv-name srv-name)))
+  (let ((insp (instance state-machine-inspector :init sm :root-name root-name :srv-name srv-name)) acs act doc)
     (unix::usleep (round (* 0.5 1e6)))
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
@@ -31,7 +31,20 @@ Returns:
       (when spin
         (send insp :spin-once)
         (if (and (boundp '*ri*) *ri*) (send *ri* :spin-once)))
-      (send insp :publish-status mydata)
+      (setq acs (send sm :active-state))
+      (if (atom acs) (setq acs (list acs)))
+      (setq doc "")
+      (dolist (a acs)
+        (setq act (send a :action))
+        (setq d
+                (cond ((and (functionp act) (not (listp act)))
+                       (documentation act))
+                      ((and (listp act) (eq (car act) 'lambda))
+                       (format nil "~A ~A..." (butlast act) (if (listp (car (last act))) (subseq (car (last act)) 0 3) act)))
+                      (t
+                       (format nil "~A" act))))
+        (push (cond ((stringp d) d) (t (string (send (send sm :active-state) :name)))) doc))
+      (send insp :publish-status mydata sm (format nil "/~A" root-name) (apply #'concatenate string doc))
       (when (send sm :goal-reached)
         (return))
       (when iterate
