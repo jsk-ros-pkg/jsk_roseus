@@ -141,6 +141,25 @@
      ;; TODO apply userdata
      (setq init-tm (ros::time-now))
      ))
+  (:register-exit-signal-hook
+    (&optional es userdata)
+    (if (null es) (return-from :exit-state (send sm :exit-state)))
+    (setq es (send sm :exit-state es))
+    (let ((exit-signal-hook
+            `(lambda-closure nil 0 0 (sig code)
+               (send ,self :exit-signal-hook ,es ,userdata))))
+      (unix:signal 2 exit-signal-hook)
+      (unix:signal 9 exit-signal-hook)
+      (unix:signal 15 exit-signal-hook)))
+  (:exit-signal-hook (&optional es userdata)
+    (if (null es) (return-from :exit-signal-hook (exit)))
+    (ros::ros-error "exit-signal-hook called.~%")
+    (send sm :active-state es)
+    (send sm :append-goal-state es)
+    (send self :publish-status userdata)
+    (send sm :execute userdata :step -1)
+    (ros::ros-error "exit-signal-hook finished.~%")
+    (exit))
   ;;
   ;; utility for users
   ;;
