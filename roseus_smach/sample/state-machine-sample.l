@@ -7,6 +7,8 @@
 
 ;;
 ;; sample 1: simple state machine
+;;  Euslisp version of http://wiki.ros.org/smach/Tutorials/Getting%20Started#Example
+;;      https://raw.githubusercontent.com/rhaschke/executive_smach_tutorials/indigo-devel/examples/state_machine_simple.py
 ;;
 (setq count 0)
 (defun func-foo (&rest args)
@@ -32,8 +34,39 @@
     (send sm :add-transition :BAR :FOO :outcome2)
     sm ))
 
+(defun smach-simple2 ()
+  (let (sm)
+    (setq sm
+          (make-state-machine
+           ;; define graph,  list of (<from-node> <transition> <to-node>)
+           ;; if <transition> is ->, it corresponds when node returns t and !-> for nil.
+           '((:foo :outcome2 :outcome4)
+             (:foo :outcome1 :bar)
+             (:bar :outcome2 :foo))
+           ;; define function map
+           '((:foo 'func-foo)  ;; foo returns :outcome1 3 times and then returns :outcome2
+             (:bar 'func-bar)) ;; bar always returns :outcome2
+           ;; initial state
+           '(:foo)
+           ;; goal state
+           '(:outcome4)))))
+
+(defun smach-simple3 ()
+  (let (sm)
+    (setq sm
+          (make-state-machine
+           '((:foo -> :outcome4)
+             (:foo !-> :bar)
+             (:bar -> :foo))
+           '((:foo '(lambda (&rest args) (cond ((< count 3) (incf count) nil) (t t))))  ;; foo returns nil 3 times and then returns t
+             (:bar '(lambda (&rest args) t)))                                           ;; bar always returns t
+           '(:foo)
+           '(:outcome4)))))
+
 ;;
 ;; sample 2: nodes can contain other state machine
+;;  Euslisp version of http://wiki.ros.org/smach/Tutorials/Create%20a%20hierarchical%20state%20machine
+;;      https://raw.githubusercontent.com/rhaschke/executive_smach_tutorials/indigo-devel/examples/state_machine_nesting2.py
 ;;
 (defun func-bas (&rest args)
   (format t "Execute state BAS~%")
@@ -63,9 +96,34 @@
     sm-top ))
 
 
+(defun smach-simple-nested ()
+  (let (sm-top sm-sub)
+    (setq sm-sub
+          (make-state-machine
+           '((:foo :outcome2 :outcome4) ;; transitions
+             (:foo :outcome1 :bar)
+             (:bar :outcome2 :foo))
+           '((:foo 'func-foo) ;; function maps
+             (:bar 'func-bar))
+           '(:foo)      ;; initial
+           '(:outcome4) ;; goal
+           ))
+    (setq sm-top
+          (make-state-machine
+           '((:bas :outcome3 :sub) ;; transitions
+             (:sub :outcome4 :outcome5))
+           '((:bas 'func-bas)  ;; functon maps
+             (:sub sm-sub))   ;; set "nestaed state machine"
+           '(:bas)      ;; initial
+           '(:outcome5) ;; goal
+           ))
+    sm-top))
+
 ;;
 ;; sample 3: A State machine reperesents only transitions between conditions.
 ;;           There is no local variable in state machine.
+;;  Euslisp version of http://wiki.ros.org/smach/Tutorials/User%20Data
+;;      https://raw.githubusercontent.com/rhaschke/executive_smach_tutorials/indigo-devel/examples/user_data2.py
 ;;
 (defun func-foo-data (args)
   (format t "Execute state FOO~%")

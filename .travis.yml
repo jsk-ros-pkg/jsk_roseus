@@ -1,8 +1,16 @@
-language: c++
-sudo: required
-dist: trusty
+sudo: true
+dist: bionic
+language: python
 services:
   - docker
+cache:
+  apt: true
+  pip: true
+  directories:
+    - $HOME/.ccache
+    - $HOME/.cache/pip
+    - $HOME/apt-cacher-ng
+    - $HOME/.ros/data
 notifications:
   email:
     on_success: always
@@ -33,17 +41,27 @@ env:
     - ROS_DISTRO=melodic USE_DEB=false  NOT_TEST_INSTALL=true
     - ROS_DISTRO=melodic USE_DEB=source NOT_TEST_INSTALL=true
     - ROS_DISTRO=melodic USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_pr2eus" TEST_PKGS="pr2eus pr2eus_moveit"
+    #
+    - ROS_DISTRO=noetic USE_DEB=true
+    - ROS_DISTRO=noetic USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_planning" TEST_PKGS="task_compiler"
+    - ROS_DISTRO=noetic USE_DEB=true   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - ROS_DISTRO=noetic USE_DEB=false  NOT_TEST_INSTALL=true
+    - ROS_DISTRO=noetic USE_DEB=source NOT_TEST_INSTALL=true
+    - ROS_DISTRO=noetic USE_DEB=true   NOT_TEST_INSTALL=true INSTALL_SRC="http://github.com/jsk-ros-pkg/jsk_pr2eus" TEST_PKGS="pr2eus pr2eus_moveit"
 matrix:
   fast_finish: true
-  # allow_failures:
+  allow_failures:
   #   - env: ROS_DISTRO=melodic USE_DEB=true     ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu TEST_PKGS="roseus roseus_smach" NOT_TEST_INSTALL=true
+    - env: ROS_DISTRO=noetic USE_DEB=true   ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
 before_script:
   - set -x
   - if [ "${TRAVIS_SECURE_ENV_VARS}" == "true" ]; then openssl aes-256-cbc -K $encrypted_b79fc5843df3_key -iv $encrypted_b79fc5843df3_iv -in .secrets.tar.enc -out .secrets.tar -d; tar -C ~/ -xvf .secrets.tar; if [ "${INSTALL_SRC_SECURE}" != "" ]; then export INSTALL_SRC="$INSTALL_SRC $INSTALL_SRC_SECURE"; fi; if [ "$TEST_PKGS_SECURE" != "" ]; then export TEST_PKGS="$TEST_PKGS $TEST_PKGS_SECURE"; fi; fi
   - export REPOSITORY_NAME=`basename $PWD`
-  - if [ "${INSTALL_SRC}" != "" ] ;then sudo apt-get install python-yaml; rm .travis.rosinstall; for src in $INSTALL_SRC; do name=`basename $src`; python -c "import yaml;print yaml.dump([{'git':{'uri':'$src','local-name':'$name'}}], default_flow_style=False)" >> .travis.rosinstall; done; cat .travis.rosinstall; export USE_DEB=false; fi; # set USE_DEB false to enable .travis.rosinstall
+  - if [ "${INSTALL_SRC}" != "" ] ;then pip install pyyaml; rm .travis.rosinstall; for src in $INSTALL_SRC; do name=`basename $src`; which python; echo $PYTHONPATH; python --version; python -m pip freeze; python -c "import yaml;print(yaml.dump([{'git':{'uri':'$src','local-name':'$name'}}], default_flow_style=False))" >> .travis.rosinstall; done; cat .travis.rosinstall; export USE_DEB=false; fi; # set USE_DEB false to enable .travis.rosinstall
 script:
-  - .travis/travis.sh
+  - if [ "${ROS_DISTRO}" == "indigo" ] ;then sed -i "s@http://github.com/jsk-ros-pkg/geneus@https://github.com/tork-a/geneus-release.git\n    version:\ release/indigo/geneus@" .travis.rosinstall; cat .travis.rosinstall; fi
+  - if [ "${ROS_DISTRO}" == "indigo" ] ;then sed -i "s@jsk-ros-pkg/geneus@tork-a/geneus-release@" setup_upstream.sh; sed -i "/^wstool update/a (cd \$WORKSPACE/src/geneus; git checkout release/indigo/geneus)" setup_upstream.sh; cat setup_upstream.sh; fi
+  - source .travis/travis.sh
 after_script:
   - sudo pkill -KILL Xorg
   - sudo apt-get remove --purge xvfb

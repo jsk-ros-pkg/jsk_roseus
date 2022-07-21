@@ -103,6 +103,9 @@
     (assert (marker-msg->shape (cylinder->marker-msg (make-cylinder 100 100) (instance std_msgs::header))))
     (assert (marker-msg->shape (cube->marker-msg (make-cube 100 100 100) (instance std_msgs::header))))
     (assert (marker-msg->shape (sphere->marker-msg (make-sphere 100) (instance std_msgs::header))))
+    (assert (shape-msg->shape (cylinder->shape-msg (make-cylinder 100 100))))
+    (assert (shape-msg->shape (cube->shape-msg (make-cube 100 100 100))))
+    (assert (shape-msg->shape (sphere->shape-msg (make-sphere 100))))
     ;;
     ))
 

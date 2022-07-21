@@ -1,11 +1,11 @@
 #!/usr/bin/env roseus
 
 (require :unittest "lib/llib/unittest.l")
+(ros::roseus "read_parameter") ;; some test depends on this namespace, do not change test-name "read_parameter" of test-parameter.test
 
 (init-unit-test)
 
 (deftest test-get-param ()
-  (ros::roseus "param_test")
   (assert (ros::has-param "~test") "[~test] (ros::has-param) failed")
   (let ((ret (ros::get-param "~test")))
     (ros::ros-info "~test ~A" ret)
@@ -70,7 +70,6 @@
   )
 
 (deftest test-set-param ()
-  (ros::roseus "param_test")
   (assert (null (ros::has-param "~test2")) "[~test2] (ros::has-param) failed")
   (let (ret)
     (ros::set-param "~test2" "test_private2")
@@ -172,6 +171,27 @@
   (assert (< (bench2 (dotimes (i 100) (ros::get-param-cached "test")))
              (bench2 (dotimes (i 100) (ros::get-param "test"))))
           "(ros::get-param-cached test) has less performance than (ros::get-param test)"))
+
+;; this should be call after test-set-param
+(deftest test-list-param ()
+  (let ((ret (ros::list-param)) diff)
+    (assert ret "list-param returns nil")
+    (setq diff (set-difference (cdr ret)
+                               '("/test_dictionary/str_value" "/test_dictionary/dictionary/key_bool" "/test_dictionary/dictionary/key_dbl" "/test_dictionary/dictionary/key_str" "/test_dictionary/dictionary/key_int" "/test_dictionary/dictionary/key_list" "/test_dictionary/list" "/test_dictionary/bool_value" "/test_dictionary/int_value" "/test_dictionary/dbl_value" "/rosversion" "/run_id" "/param/test" "/param/read_parameter/test" "/test" "/rosdistro"
+                                 "/test2" "/param/read_parameter/test2" "/param/test2" "/test_dictionary2/str_value" "/test_dictionary2/dictionary/key_bool" "/test_dictionary2/dictionary/key_dbl" "/test_dictionary2/dictionary/key_str" "/test_dictionary2/dictionary/key_int" "/test_dictionary2/dictionary/key_list" "/test_dictionary2/bool_value" "/test_dictionary2/list" "/test_dictionary2/int_value" "/test_dictionary2/dbl_value")
+                               :test #'equal))
+    (setq diff (remove-if #'(lambda (x) (substringp "/roslaunch/uris/host_" x)) diff)) ;; from noetic roslaunch set params https://github.com/ros/ros_comm/blob/07fb5469c71e10e4a05fa3a631897d9adece61c5/tools/roslaunch/src/roslaunch/launch.py#L448-L449
+    (assert (not diff) "list-param ~A failed" diff)
+    ))
+
+(deftest test-search-param ()
+  (let (ret)
+    ;; search param only look for upper namespace
+    (setq ret (ros::search-param "test"))
+    (assert (string= ret "/param/read_parameter/test") "search-param returns ~A" ret)
+    (setq ret (ros::search-param "rosdistro"))
+    (assert (string= ret "/rosdistro")  "search-param returns ~A" ret)
+    ))
 
 (run-all-tests)
 
