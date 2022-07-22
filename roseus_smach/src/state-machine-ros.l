@@ -147,19 +147,19 @@
     (setq es (send sm :exit-state es))
     (let ((exit-signal-hook
             `(lambda-closure nil 0 0 (sig code)
-               (send ,self :exit-signal-hook ,es ,userdata))))
+               (send ,self :exit-signal-hook sig code ,es ,userdata))))
       (unix:signal 2 exit-signal-hook)
       (unix:signal 9 exit-signal-hook)
       (unix:signal 15 exit-signal-hook)))
-  (:exit-signal-hook (&optional es userdata)
-    (if (null es) (return-from :exit-signal-hook (exit)))
+  (:exit-signal-hook (sig code &optional es userdata)
+    (if (null es) (return-from :exit-signal-hook (exit sig)))
     (ros::ros-error "exit-signal-hook called.~%")
     (send sm :active-state es)
     (send sm :append-goal-state es)
     (send self :publish-status userdata)
     (send sm :execute userdata :step -1)
     (ros::ros-error "exit-signal-hook finished.~%")
-    (exit))
+    (exit sig))
   ;;
   ;; utility for users
   ;;
