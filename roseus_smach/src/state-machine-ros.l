@@ -14,7 +14,7 @@
 (defclass state-machine-inspector
   :super propertied-object
   :slots (sm root-name srv-name init-tm state-counter structure-counter
-             groupname))
+             groupname exit-state))
 (defmethod state-machine-inspector
   (:init
    (sm-obj &key ((:root-name rn) "SM_ROOT") ((:srv-name sn) "/server_name") ((:groupname gp)))
@@ -143,8 +143,11 @@
      ))
   (:register-exit-signal-hook
     (&optional es userdata)
-    (if (null es) (return-from :exit-state (send sm :exit-state)))
-    (setq es (send sm :exit-state es))
+    (if (null es) (return-from :exit-state exit-state))
+    (if (null (derivedp es state))
+      (setq es (send self :state-machine :node es)))
+    ;; update exit-state slot
+    (setq exit-state es)
     (let ((exit-signal-hook
             `(lambda-closure nil 0 0 (sig code)
                (send ,self :exit-signal-hook sig code ,es ,userdata))))

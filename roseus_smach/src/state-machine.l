@@ -15,9 +15,7 @@
 (defclass state-machine
   :super graph
   :slots (active-state arg-keys
-          parallel-action-p parallel-exec-result parallel-trans-test
-          exit-state))
-
+          parallel-action-p parallel-exec-result parallel-trans-test))
 (defmethod state-machine
   (:init (&key (parallel nil))
      (setq parallel-action-p parallel)
@@ -91,12 +89,6 @@
    (send-super :goal-state (append goal-state gs)))
   (:goal-test (gs) (not (null (intersection (flatten (list gs)) goal-state))))
   (:goal-reached () (send self :goal-test active-state))
-  (:exit-state
-    (&optional es)
-    (if (null es) (return-from :exit-state exit-state))
-    (if (null (derivedp es state)) (setq es (send self :node es)))
-    (setq exit-state es)
-    exit-state)
   ;;
   (:sub-sm-node () (remove-if-not #'(lambda(n)(send n :submachine)) nodes))
   ;; @ from,to: state instance or its name
