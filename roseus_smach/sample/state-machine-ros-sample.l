@@ -46,5 +46,6 @@
 (defun exec-smach-simple () (setq count 0) (exec-state-machine (smach-simple)))
 (defun exec-smach-nested () (setq count 0) (exec-state-machine (smach-nested)))
 (defun exec-smach-userdata () (exec-state-machine (smach-userdata) '((count . 1))))
+(defun exec-smach-exit-state () (setq count 0) (exec-state-machine (smach-simple) nil :exit-state :BAR))
 
-(warn ";;(exec-smach-simple)~%;;(exec-smach-nested)~%;;(exec-smach-userdata)~%")
+(warn ";;(exec-smach-simple)~%;;(exec-smach-nested)~%;;(exec-smach-userdata)~%;;(exec-smach-exit-state)~%")
