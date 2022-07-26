@@ -142,7 +142,7 @@
      (setq init-tm (ros::time-now))
      ))
   (:register-exit-signal-hook
-    (&optional es userdata)
+    (&optional es userdata exit-signal-hook-func)
     (if (null es) (return-from :exit-state exit-state))
     (if (null (derivedp es state))
       (setq es (send self :state-machine :node es)))
@@ -151,19 +151,18 @@
     (send self :put 'userdata userdata)
     (let ((exit-signal-hook
             `(lambda-closure nil 0 0 (sig code)
+               (funcall ',exit-signal-hook-func (send ,self :get 'userdata))
                (send ,self :exit-signal-hook sig code ,es (send ,self :get 'userdata)))))
-      (unix:signal 2 exit-signal-hook)
-      (unix:signal 9 exit-signal-hook)
-      (unix:signal 15 exit-signal-hook)))
+      (unix:signal unix::sigint exit-signal-hook)))
   (:exit-signal-hook (sig code &optional es userdata)
     (if (null es) (return-from :exit-signal-hook (exit sig)))
     (ros::ros-error "exit-signal-hook called.~%")
+    (ros::ros-warn " Called ~A~%" (unix:signal unix::sigint))
+    (ros::ros-warn " Force transit to ~A.~%" es)
     (send sm :active-state es)
-    (send sm :append-goal-state es)
     (send self :publish-status userdata)
-    (send sm :execute userdata :step -1)
-    (ros::ros-error "exit-signal-hook finished.~%")
-    (exit sig))
+    (unix:signal unix::sigint 'ros::roseus-sigint-handler)  ;; if C-c twise, kill roseus
+    )
   ;;
   ;; utility for users
   ;;
