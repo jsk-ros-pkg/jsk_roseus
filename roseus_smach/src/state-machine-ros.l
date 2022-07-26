@@ -161,7 +161,7 @@
     (ros::ros-warn " Force transit to ~A.~%" es)
     (send sm :active-state es)
     (send self :publish-status userdata)
-    (unix:signal unix::sigint 'ros::roseus-sigint-handler)  ;; if C-c twise, kill roseus
+    (unix:signal unix::sigint 'ros::roseus-sigint-handler)  ;; if C-c twice, kill roseus
     )
   ;;
   ;; utility for users
