@@ -148,9 +148,10 @@
       (setq es (send self :state-machine :node es)))
     ;; update exit-state slot
     (setq exit-state es)
+    (send self :put 'userdata userdata)
     (let ((exit-signal-hook
             `(lambda-closure nil 0 0 (sig code)
-               (send ,self :exit-signal-hook sig code ,es ,userdata))))
+               (send ,self :exit-signal-hook sig code ,es (send ,self :get 'userdata)))))
       (unix:signal 2 exit-signal-hook)
       (unix:signal 9 exit-signal-hook)
       (unix:signal 15 exit-signal-hook)))
