@@ -169,9 +169,10 @@
          (warning-message 3 "Concurent state '~A' retuned outcome '~A' on termination~%"
                           (send (elt active-state i) :name) (elt ret i)))
        (warning-message 3 "Concurrent Outcomes ~A~%" (mapcar #'(lambda (s r) (cons (send s :name) r)) active-state ret)))
-     (warning-message 3 "State machine ~A '~A' :'~A' --> '~A'~%"
+     (warning-message 3 "State machine ~A '~A' :'~A' --> '~A'~A~%"
                       (if (send self :goal-test next-active-state) "terminating" "transitioning")
-                      (send-all active-state :name) (send-all (flatten trans-list) :name) (send-all next-active-state :name))
+                      (send-all active-state :name) (send-all (flatten trans-list) :name) (send-all next-active-state :name)
+                      (if userdata (format nil " with userdata '~A'" userdata) ""))
      (setq active-state (unique next-active-state))
      ret))
 
