@@ -40,6 +40,19 @@
                                   #'(lambda(n)(send (send n :submachine) :active-state node))
                                   (send self :sub-sm-node)))))
      ))
+  (:bottom-active-state (&optional top-active-state)
+    (if (null top-active-state)
+      (setq top-active-state active-state))
+    (if (and top-active-state (listp top-active-state))
+      (flatten
+        (mapcar #'(lambda (x) (send self :bottom-active-state x))
+                top-active-state))
+      (if (and top-active-state (send top-active-state :submachine))
+        (let ((sub-active-state
+                (send (send top-active-state :submachine) :bottom-active-state)))
+          (if sub-active-state
+            sub-active-state top-active-state))
+        top-active-state)))
   (:next-arc-list
    (&optional state)
    (send state :arc-list))
