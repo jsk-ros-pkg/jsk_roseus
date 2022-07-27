@@ -92,7 +92,7 @@
     (assert (string= "test_global2" (setq as ret)) "[/test2] test_global2 != ~A" as))
 
   (assert (null (ros::has-param "/test_dictionary2")) "[/test_dictionary2] (ros::has-param) failed")
-  (let (ret (param '((bool_value . nil) (dbl_value . 20000) (dictionary (key_bool . t) (key_dbl . 2000.0) (key_int . 1000) (key_list "0" 1 2.0 t) (key_str . "0000")) (int_value . 10000) (list "0" 1 2.0 t (nest0 100 200.0 t) ((nest_bool . t) (nest_dbl . 20.0) (nest_int . 10) (nest_str . nest))) (str_value . "00000"))))
+  (let (ret (param '((bool_value . nil) (dbl_value . 20000) (dictionary (key_bool . t) (key_dbl . 2000.0) (key_int . 1000) (key_list "0" 1 2.0 t) (key_str . "0000")) (int_value . 10000) (list "0" 1 2.0 t (nest0 100 200.0 t) ((nest_bool . t) (nest_dbl . 20.0) (nest_int . 10) (nest_str . nest))) (list2 ((nest_bool . t) (nest_dbl . 20.0) (nest_int . 10) (nest_str . nest))) (str_value . "00000"))))
     (ros::ros-info "/test_dictionary2 param ~A" param)
     (ros::set-param "/test_dictionary2" param)
     (setq ret (ros::get-param "/test_dictionary2"))
@@ -125,6 +125,9 @@
         ;; check list
         ;; check dictionary
         ))
+    (let ((l1 (cdr (assoc "list" ret :test #'string=)))
+          (l2 (cdr (assoc "list2" ret :test #'string=))))
+      (assert (equal (nth 5 l1) (nth 0 l2)) "list objects differ"))
     (let ((val (assoc "dictionary" ret :test #'string=)))
       (assert val "dictionary not found")
       (let ((lst (cdr val)))
@@ -147,6 +150,19 @@
     )
   )
 
+(deftest test-set-param-recursive ()
+  (assert (ros::has-param "/test_dictionary") "[/test_dictionary] (ros::has-param) failed")
+  (assert (null (ros::has-param "/test_recursive")) "[/test_recursive] (ros::has-param) failed")
+  (let ((test-dict (ros::get-param "/test_dictionary"))
+        test-rec)
+    (ros::ros-info "/test_dictionary ~S" test-dict)
+    (ros::set-param "/test_recursive" test-dict)
+    (setq test-rec (ros::get-param "/test_recursive"))
+    (ros::ros-info "/test_recursive ~S" test-rec)
+    (assert (equal test-dict test-rec) "unable to perform ros::set-param recursively")
+    (assert (ros::delete-param "/test_recursive")
+            "(ros::delete-param \"test_recursive\") returns nil")))
+
 (deftest test-param-default-value ()
   ;; Read parameter 1000 times with default value
   (dotimes (i 1000)
@@ -166,7 +182,7 @@
   (assert (not (ros::delete-param "param_not_exists")) "(ros::delete-param param_not_exists) returns value even if param does not exists"))
 
 (deftest test-param-cache ()
-  (assert (ros::has-param "test")  "[cached] (ros::has-parm test) failed")
+  (assert (ros::has-param "test")  "[cached] (ros::has-param test) failed")
   (assert (string= (ros::get-param "test") (ros::get-param-cached "test")) "(ros::get-param-cached test) has different value from (ros::get-param test): ~A" (ros::get-param-cached "test"))
   (assert (< (bench2 (dotimes (i 100) (ros::get-param-cached "test")))
              (bench2 (dotimes (i 100) (ros::get-param "test"))))
@@ -177,8 +193,8 @@
   (let ((ret (ros::list-param)) diff)
     (assert ret "list-param returns nil")
     (setq diff (set-difference (cdr ret)
-                               '("/test_dictionary/str_value" "/test_dictionary/dictionary/key_bool" "/test_dictionary/dictionary/key_dbl" "/test_dictionary/dictionary/key_str" "/test_dictionary/dictionary/key_int" "/test_dictionary/dictionary/key_list" "/test_dictionary/list" "/test_dictionary/bool_value" "/test_dictionary/int_value" "/test_dictionary/dbl_value" "/rosversion" "/run_id" "/param/test" "/param/read_parameter/test" "/test" "/rosdistro"
-                                 "/test2" "/param/read_parameter/test2" "/param/test2" "/test_dictionary2/str_value" "/test_dictionary2/dictionary/key_bool" "/test_dictionary2/dictionary/key_dbl" "/test_dictionary2/dictionary/key_str" "/test_dictionary2/dictionary/key_int" "/test_dictionary2/dictionary/key_list" "/test_dictionary2/bool_value" "/test_dictionary2/list" "/test_dictionary2/int_value" "/test_dictionary2/dbl_value")
+                               '("/test_dictionary/str_value" "/test_dictionary/dictionary/key_bool" "/test_dictionary/dictionary/key_dbl" "/test_dictionary/dictionary/key_str" "/test_dictionary/dictionary/key_int" "/test_dictionary/dictionary/key_list" "/test_dictionary/list" "/test_dictionary/list2" "/test_dictionary/bool_value" "/test_dictionary/int_value" "/test_dictionary/dbl_value" "/rosversion" "/run_id" "/param/test" "/param/read_parameter/test" "/test" "/rosdistro"
+                                 "/test2" "/param/read_parameter/test2" "/param/test2" "/test_dictionary2/str_value" "/test_dictionary2/dictionary/key_bool" "/test_dictionary2/dictionary/key_dbl" "/test_dictionary2/dictionary/key_str" "/test_dictionary2/dictionary/key_int" "/test_dictionary2/dictionary/key_list" "/test_dictionary2/bool_value" "/test_dictionary2/list" "/test_dictionary2/list2" "/test_dictionary2/int_value" "/test_dictionary2/dbl_value")
                                :test #'equal))
     (setq diff (remove-if #'(lambda (x) (substringp "/roslaunch/uris/host_" x)) diff)) ;; from noetic roslaunch set params https://github.com/ros/ros_comm/blob/07fb5469c71e10e4a05fa3a631897d9adece61c5/tools/roslaunch/src/roslaunch/launch.py#L448-L449
     (assert (not diff) "list-param ~A failed" diff)
