@@ -1791,8 +1791,11 @@ pointer ROSEUS_GETNAMESPACE(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
 {
-  ckarg(1);
-  int log_level = intval(argv[0]);
+  ckarg2(1,2);
+  int log_level;
+  if (n==1) log_level = intval(argv[0]);
+  else log_level = intval(argv[1]);
+
   ros::console::levels::Level  level = ros::console::levels::Debug;
   switch(log_level){
   case 1:
@@ -1816,6 +1819,7 @@ pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
 
   // roseus currently does not support multiple loggers
   // which must be outputted using the 'ROS_DEBUG_NAMED'-like macros
+  // set all logging to the ROSCONSOLE_DEFAULT_NAME, independent of the argument
   bool success = ::ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, level);
   if (success)
     {
