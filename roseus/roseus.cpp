@@ -643,12 +643,12 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
 
   /*
     clear ros::master::g_uri which is defined in ros::master::init in __roseus.
-    this occurs if user set unix::setenv("ROS_MASTER_URI") between __roseus and
+    this occurs if user set (unix::putenv "ROS_MASTER_URI") between __roseus and
     ROSEUS.
    */
   if (!ros::master::g_uri.empty()) {
     if ( ros::master::g_uri != getenv("ROS_MASTER_URI") ) {
-      ROS_WARN("ROS master uri will be changed!!, master uri %s, which is defineed previously is differ from current ROS_MASTE_URI(%s)", ros::master::g_uri.c_str(), getenv("ROS_MASTER_URI"));
+      ROS_WARN("ROS master uri will be changed!!, master uri %s, which is defined previously is differ from current ROS_MASTER_URI(%s)", ros::master::g_uri.c_str(), getenv("ROS_MASTER_URI"));
       ros::master::g_uri.clear();
     }
   }
