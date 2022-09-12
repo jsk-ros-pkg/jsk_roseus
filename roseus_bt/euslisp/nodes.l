@@ -109,7 +109,7 @@
 
 (defclass condition-node :super propertied-object)
 (defmethod condition-node
-  (:init (ns spec &key execute-cb)
+  (:init (ns spec &key execute-cb groupname)
     (unless (eq (get (get-fn-sym execute-cb) :function-type) :condition-node-callback)
       (ros::ros-error 
        (concatenate-string 
@@ -117,7 +117,7 @@
         "Make sure to define execution callbacks using the define-condition-callback macro"))
       (error "condition-node-callback function expected for execute-cb"))
 
-    (ros::advertise-service ns spec execute-cb)
+    (ros::advertise-service ns spec execute-cb :groupname groupname)
     (push self *condition-list*)
     (if *action-list*
         (ros::ros-warn "Actions and Conditions detected in the same node! Start two separate nodes when reacitivity is required."))
