@@ -100,6 +100,17 @@ jobs:
             CONTAINER: ubuntu:20.04
             USE_DEB: source
             NOT_TEST_INSTALL : true
+          # arm
+          - ROS_DISTRO: kinetic
+            USE_DOCKER: true
+            DOCKER_IMAGE: osrf/ubuntu_armhf:xenial
+            USE_DEB: deb
+            NOT_TEST_INSTALL : true
+          - ROS_DISTRO: kinetic
+            USE_DOCKER: true
+            DOCKER_IMAGE: osrf/ubuntu_arm64:xenial
+            USE_DEB: deb
+            NOT_TEST_INSTALL : true
 
 
     container: ${{ matrix.CONTAINER }}
