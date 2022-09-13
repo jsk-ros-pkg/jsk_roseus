@@ -15,100 +15,100 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - ROS_DISTRO: indigo
-            CONTAINER: jskrobotics/ros-ubuntu:14.04
-            USE_DEB: true
-          - ROS_DISTRO: indigo
-            CONTAINER: jskrobotics/ros-ubuntu:14.04
-            USE_DEB: false
-            NOT_TEST_INSTALL : true
-            INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_planning"
-            TEST_PKGS : "task_compiler"
-          - ROS_DISTRO: indigo
-            CONTAINER: jskrobotics/ros-ubuntu:14.04
-            USE_DEB: false
-            NOT_TEST_INSTALL : true
-            INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_pr2eus"
-            TEST_PKGS : "pr2eus pr2eus_moveit"
-            BEFORE_SCRIPT: "echo 'deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main' | sudo tee /etc/apt/sources.list.d/gazebo-stable.list; wget --no-check-certificate https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt update -y; sudo apt dist-upgrade -y; mkdir -p ~/.gazebo/; git clone --depth=1 https://github.com/osrf/gazebo_models.git ~/.gazebo/models"
-          - ROS_DISTRO: indigo
-            CONTAINER: jskrobotics/ros-ubuntu:14.04
-            USE_DEB: false
-            NOT_TEST_INSTALL : false
-            BEFORE_SCRIPT: "wget https://raw.githubusercontent.com/tork-a/jskeus-release/master/patches/CMakeLists.txt -O jskeus/CMakeLists.txt"
-          - ROS_DISTRO: indigo
-            CONTAINER: jskrobotics/ros-ubuntu:14.04
-            USE_DEB: source
-            NOT_TEST_INSTALL : false
-          - ROS_DISTRO: kinetic
-            CONTAINER: ubuntu:16.04
-            USE_DEB: true
-          - ROS_DISTRO: kinetic
-            CONTAINER: ubuntu:16.04
-            USE_DEB: false
-            NOT_TEST_INSTALL : true
-            INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_planning"
-            TEST_PKGS : "task_compiler"
-          - ROS_DISTRO: kinetic
-            CONTAINER: ubuntu:16.04
-            USE_DEB: false
-            NOT_TEST_INSTALL : true
-            INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_pr2eus"
-            TEST_PKGS : "pr2eus pr2eus_moveit"
-            BEFORE_SCRIPT: "echo 'deb http://packages.osrfoundation.org/gazebo/ubuntu xenial main' | sudo tee /etc/apt/sources.list.d/gazebo-stable.list; wget --no-check-certificate https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt update -y"
-          - ROS_DISTRO: kinetic
-            CONTAINER: ubuntu:16.04
-            USE_DEB: false
-            NOT_TEST_INSTALL : true
-          - ROS_DISTRO: kinetic
-            CONTAINER: ubuntu:16.04
-            USE_DEB: source
-            NOT_TEST_INSTALL : true
-          - ROS_DISTRO: melodic
-            CONTAINER: ubuntu:18.04
-            USE_DEB: true
-          - ROS_DISTRO: melodic
-            CONTAINER: ubuntu:18.04
-            USE_DEB: false
-            NOT_TEST_INSTALL : true
-          - ROS_DISTRO: melodic
-            CONTAINER: ubuntu:18.04
-            USE_DEB: source
-            NOT_TEST_INSTALL : true
-          - ROS_DISTRO: noetic
-            CONTAINER: ubuntu:20.04
-            USE_DEB: true
-          # - ROS_DISTRO: noetic
-          #   CONTAINER: ubuntu:20.04
+          # - ROS_DISTRO: indigo
+          #   CONTAINER: jskrobotics/ros-ubuntu:14.04
+          #   USE_DEB: true
+          # - ROS_DISTRO: indigo
+          #   CONTAINER: jskrobotics/ros-ubuntu:14.04
           #   USE_DEB: false
           #   NOT_TEST_INSTALL : true
           #   INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_planning"
           #   TEST_PKGS : "task_compiler"
-          #   experimental: true
-          # - ROS_DISTRO: noetic
-          #   CONTAINER: ubuntu:20.04
+          # - ROS_DISTRO: indigo
+          #   CONTAINER: jskrobotics/ros-ubuntu:14.04
           #   USE_DEB: false
           #   NOT_TEST_INSTALL : true
           #   INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_pr2eus"
           #   TEST_PKGS : "pr2eus pr2eus_moveit"
-          #   experimental: true
-          - ROS_DISTRO: noetic
-            CONTAINER: ubuntu:20.04
-            USE_DEB: false
-            NOT_TEST_INSTALL : true
-          - ROS_DISTRO: noetic
-            CONTAINER: ubuntu:20.04
-            USE_DEB: source
-            NOT_TEST_INSTALL : true
+          #   BEFORE_SCRIPT: "echo 'deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main' | sudo tee /etc/apt/sources.list.d/gazebo-stable.list; wget --no-check-certificate https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt update -y; sudo apt dist-upgrade -y; mkdir -p ~/.gazebo/; git clone --depth=1 https://github.com/osrf/gazebo_models.git ~/.gazebo/models"
+          # - ROS_DISTRO: indigo
+          #   CONTAINER: jskrobotics/ros-ubuntu:14.04
+          #   USE_DEB: false
+          #   NOT_TEST_INSTALL : false
+          #   BEFORE_SCRIPT: "wget https://raw.githubusercontent.com/tork-a/jskeus-release/master/patches/CMakeLists.txt -O jskeus/CMakeLists.txt"
+          # - ROS_DISTRO: indigo
+          #   CONTAINER: jskrobotics/ros-ubuntu:14.04
+          #   USE_DEB: source
+          #   NOT_TEST_INSTALL : false
+          # - ROS_DISTRO: kinetic
+          #   CONTAINER: ubuntu:16.04
+          #   USE_DEB: true
+          # - ROS_DISTRO: kinetic
+          #   CONTAINER: ubuntu:16.04
+          #   USE_DEB: false
+          #   NOT_TEST_INSTALL : true
+          #   INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_planning"
+          #   TEST_PKGS : "task_compiler"
+          # - ROS_DISTRO: kinetic
+          #   CONTAINER: ubuntu:16.04
+          #   USE_DEB: false
+          #   NOT_TEST_INSTALL : true
+          #   INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_pr2eus"
+          #   TEST_PKGS : "pr2eus pr2eus_moveit"
+          #   BEFORE_SCRIPT: "echo 'deb http://packages.osrfoundation.org/gazebo/ubuntu xenial main' | sudo tee /etc/apt/sources.list.d/gazebo-stable.list; wget --no-check-certificate https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt update -y"
+          # - ROS_DISTRO: kinetic
+          #   CONTAINER: ubuntu:16.04
+          #   USE_DEB: false
+          #   NOT_TEST_INSTALL : true
+          # - ROS_DISTRO: kinetic
+          #   CONTAINER: ubuntu:16.04
+          #   USE_DEB: source
+          #   NOT_TEST_INSTALL : true
+          # - ROS_DISTRO: melodic
+          #   CONTAINER: ubuntu:18.04
+          #   USE_DEB: true
+          # - ROS_DISTRO: melodic
+          #   CONTAINER: ubuntu:18.04
+          #   USE_DEB: false
+          #   NOT_TEST_INSTALL : true
+          # - ROS_DISTRO: melodic
+          #   CONTAINER: ubuntu:18.04
+          #   USE_DEB: source
+          #   NOT_TEST_INSTALL : true
+          # - ROS_DISTRO: noetic
+          #   CONTAINER: ubuntu:20.04
+          #   USE_DEB: true
+          # # - ROS_DISTRO: noetic
+          # #   CONTAINER: ubuntu:20.04
+          # #   USE_DEB: false
+          # #   NOT_TEST_INSTALL : true
+          # #   INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_planning"
+          # #   TEST_PKGS : "task_compiler"
+          # #   experimental: true
+          # # - ROS_DISTRO: noetic
+          # #   CONTAINER: ubuntu:20.04
+          # #   USE_DEB: false
+          # #   NOT_TEST_INSTALL : true
+          # #   INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_pr2eus"
+          # #   TEST_PKGS : "pr2eus pr2eus_moveit"
+          # #   experimental: true
+          # - ROS_DISTRO: noetic
+          #   CONTAINER: ubuntu:20.04
+          #   USE_DEB: false
+          #   NOT_TEST_INSTALL : true
+          # - ROS_DISTRO: noetic
+          #   CONTAINER: ubuntu:20.04
+          #   USE_DEB: source
+          #   NOT_TEST_INSTALL : true
           # arm
-          - ROS_DISTRO: kinetic
+          - ROS_DISTRO: melodic
             USE_DOCKER: true
-            DOCKER_IMAGE: osrf/ubuntu_armhf:xenial
+            DOCKER_IMAGE: osrf/ubuntu_armhf:bionic
             USE_DEB: deb
             NOT_TEST_INSTALL : true
-          - ROS_DISTRO: kinetic
+          - ROS_DISTRO: melodic
             USE_DOCKER: true
-            DOCKER_IMAGE: osrf/ubuntu_arm64:xenial
+            DOCKER_IMAGE: osrf/ubuntu_arm64:bionic
             USE_DEB: deb
             NOT_TEST_INSTALL : true
 
@@ -183,3 +183,4 @@ jobs:
           NOT_TEST_INSTALL : ${{ matrix.NOT_TEST_INSTALL }}
           TEST_PKGS : ${{ matrix.TEST_PKGS }}
           BEFORE_SCRIPT : ${{ matrix.BEFORE_SCRIPT }}
+          USE_DOCKER : ${{ matrix.USE_DOCKER }}
