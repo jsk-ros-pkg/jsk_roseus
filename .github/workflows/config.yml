@@ -181,10 +181,10 @@ jobs:
         include:
           # arm
           - ROS_DISTRO: melodic
-            CONTAINER: ubuntu:18.04
+            CONTAINER: ubuntu18.04
             ARCH: aarch64
           - ROS_DISTRO: melodic
-            CONTAINER: ubuntu:18.04
+            CONTAINER: ubuntu18.04
             ARCH: armv7
 
     steps:
