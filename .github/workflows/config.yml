@@ -181,9 +181,11 @@ jobs:
         include:
           # arm
           - ROS_DISTRO: melodic
-            CONTAINER: osrf/ubuntu_armhf:bionic
+            CONTAINER: ubuntu:18.04
+            ARCH: aarch64
           - ROS_DISTRO: melodic
-            CONTAINER: osrf/ubuntu_arm64:bionic
+            CONTAINER: ubuntu:18.04
+            ARCH: armv7
 
     steps:
       - uses: actions/checkout@v2.1.0
@@ -192,7 +194,7 @@ jobs:
       - uses: uraimo/run-on-arch-action@v2
         name: Run commands
         with:
-          arch: aarch64
+          arch: ${{ matrix.ARCH }}
           distro: ${{ matrix.CONTAINER }}
           install: |
             apt-get update -q -y
