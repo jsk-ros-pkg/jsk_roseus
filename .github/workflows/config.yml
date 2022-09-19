@@ -207,5 +207,6 @@ jobs:
             export USE_TRAVIS=true
             export USE_DOCKER=false
             export NOT_TEST_INSTALL=true
+            export CATKIN_TOOLS_BUILD_OPTION="-DNO_GENERATE_EUSDOC=TRUE"
             set +o nounset
             source .travis/travis.sh
