@@ -13,34 +13,6 @@
 (defvar *condition-list*)
 
 
-;; utility
-(defun get-fn-sym (fn)
-  (when (functionp fn)
-    (cond
-      ((symbolp fn) fn)
-      ((and (listp fn) (memq (car fn) '(lambda lambda-closure)))
-       (cadr fn))
-      ((derivedp fn compiled-code)
-       (send fn :name))
-      (t nil))))
-
-(defun check-fn-closure (fn)
-  (when (and (consp fn)
-             (eql (car fn) 'lambda-closure)
-             (or (not (zerop (third fn)))
-                 (not (zerop (fourth fn)))))
-    (let ((name (get-fn-sym fn)))
-      (if name
-          (ros::ros-warn
-           (format nil "Possibly harmful lambda-closure in #'~A! Try using '~A instead."
-                   name
-                   name))
-          (ros::ros-warn
-           (format nil "Possibly harmful lambda context in ~A! Reseting to 0..."
-                   (append (subseq fn 0 5) '(...)))
-           (setf (third fn) 0)
-           (setf (fourth fn) 0))))))
-
 (defcondition cancel-action :slots (server goal))
 
 (defun signals-cancel (server goal)
@@ -54,9 +26,6 @@
 (defmethod action-node
   (:init (ns spec &key execute-cb (preempt-cb 'signals-cancel) accept-cb groupname
              ((:monitor-groupname monitor-gn)))
-      (check-fn-closure execute-cb)
-      (check-fn-closure preempt-cb)
-      (check-fn-closure accept-cb)
 
       (send-super :init ns spec
               :execute-cb execute-cb
@@ -111,7 +80,6 @@
   (:init (ns spec &key execute-cb preempt-cb ((:resume-cb rsm-cb)) accept-cb groupname
              ((:monitor-groupname monitor-gn))
              ((:resume-if res-if) 'check-goal) ((:timeout tmout) 10))
-    (check-fn-closure res-if)
     (assert (numberp tmout))
     (setq resume-if res-if)
     (setq timeout tmout)
@@ -155,7 +123,6 @@
 (defclass condition-node :super propertied-object :slots (execute-cb groupname))
 (defmethod condition-node
   (:init (ns spec &key ((:execute-cb exec-cb)) ((:groupname gn)))
-    (check-fn-closure exec-cb)
     (setq execute-cb exec-cb)
     (setq groupname gn)
     (if groupname
