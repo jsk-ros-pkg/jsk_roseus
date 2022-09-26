@@ -12,43 +12,19 @@
 (defvar *condition-list*)
 
 
-;; utility
-(defun get-fn-sym (fn)
-  (when (functionp fn)
-    (cond
-      ((symbolp fn) fn)
-      ((and (listp fn) (memq (car fn) '(lambda lambda-closure)))
-       (cadr fn))
-      ((derivedp fn compiled-code)
-       (send fn :name))
-      (t nil))))
+(defcondition cancel-action :slots (server goal))
 
-(defun check-fn-closure (fn)
-  (when (and (consp fn)
-             (eql (car fn) 'lambda-closure)
-             (or (not (zerop (third fn)))
-                 (not (zerop (fourth fn)))))
-    (let ((name (get-fn-sym fn)))
-      (if name
-          (ros::ros-warn
-           (format nil "Possibly harmful lambda-closure in #'~A! Try using '~A instead."
-                   name
-                   name))
-          (ros::ros-warn
-           (format nil "Possibly harmful lambda context in ~A! Reseting to 0..."
-                   (append (subseq fn 0 5) '(...)))
-           (setf (third fn) 0)
-           (setf (fourth fn) 0))))))
+(defun signals-cancel (server goal)
+  (signals cancel-action :server server :goal goal))
 
+(defun check-goal (server new-goal old-goal)
+  (equal (send new-goal :goal) (send old-goal :goal)))
 
 ;; classes
 (defclass action-node :super ros::simple-action-server :slots (monitor-groupname))
 (defmethod action-node
   (:init (ns spec &key execute-cb (preempt-cb 'signals-cancel) accept-cb groupname
              ((:monitor-groupname monitor-gn)))
-      (check-fn-closure execute-cb)
-      (check-fn-closure preempt-cb)
-      (check-fn-closure accept-cb)
 
       (send-super :init ns spec
               :execute-cb execute-cb
@@ -102,7 +78,6 @@
 (defclass condition-node :super propertied-object :slots (execute-cb groupname))
 (defmethod condition-node
   (:init (ns spec &key ((:execute-cb exec-cb)) ((:groupname gn)))
-    (check-fn-closure exec-cb)
     (setq execute-cb exec-cb)
     (setq groupname gn)
     (if groupname
