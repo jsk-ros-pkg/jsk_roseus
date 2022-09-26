@@ -75,7 +75,7 @@
         (ros::spin-once monitor-groupname)
         (send self :spin-once))))
 
-(defclass resumable-action-node :super action-node :slots (resume-if timeout cancel-cb))
+(defclass resumable-action-node :super action-node :slots (resume-if timeout resume-cb cancel-cb))
 (defmethod resumable-action-node
   (:init (ns spec &key execute-cb preempt-cb ((:resume-cb rsm-cb)) accept-cb groupname
              ((:monitor-groupname monitor-gn))
