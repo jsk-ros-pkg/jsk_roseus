@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
   // Help
   if (args.count("help")) {
-    std::cout << "\n" << "Create behavior tree package." << "\n";
+    std::cout << "\n" << "Create a behavior tree package with tutorial code." << "\n";
     std::cout << desc << std::endl;
     return 0;
   }
