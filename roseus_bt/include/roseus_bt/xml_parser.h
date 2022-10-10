@@ -606,11 +606,11 @@ std::string XMLParser::format_get_remote_input(const XMLElement* node, const std
     if (msg_type == "int8" || msg_type == "int16" || msg_type == "int32")
       return fmt::format("SetInt(ros_msg.{0})", node->Attribute("name"));
     if (msg_type == "uint8" || msg_type == "uint16" || msg_type == "uint32")
-      return fmt::format("SetUInt(ros_msg.{0})", node->Attribute("name"));
+      return fmt::format("SetUint(ros_msg.{0})", node->Attribute("name"));
     if (msg_type == "int64")
       return fmt::format("SetInt64(ros_msg.{0})", node->Attribute("name"));
      if (msg_type == "uint64")
-      return fmt::format("SetUInt64(ros_msg.{0})", node->Attribute("name"));
+      return fmt::format("SetUint64(ros_msg.{0})", node->Attribute("name"));
     if (msg_type == "float32" || msg_type == "float64")
       return fmt::format("SetDouble(ros_msg.{0})", node->Attribute("name"));
     if (msg_type == "string")
