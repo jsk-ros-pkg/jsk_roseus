@@ -76,9 +76,8 @@ protected:
       service_client_.call(request);
     }
 
-    if (service_client_.isActive()) {
-      return NodeStatus::RUNNING;
-    }
+    // Conditions cannot operate asynchronously
+    service_client_.waitForResult();
 
     return onResponse(service_client_.getResult());
   }
