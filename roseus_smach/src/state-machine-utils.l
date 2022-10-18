@@ -23,30 +23,31 @@ Returns:
     (apply #'send sm :arg-keys (union (send sm :arg-keys) (mapcar #'car mydata)))
 
     (ros::rate hz)
-    (while (ros::ok)
-      (when spin
-        (send insp :spin-once)
-        (if (and (boundp '*ri*) *ri*) (send *ri* :spin-once)))
-      (send insp :publish-status mydata)
-      (when (send sm :goal-reached)
-        (return))
-      (when iterate
-        (cond
-          ((functionp iterate)
-           (unless (funcall iterate (send sm :active-state))
-             (ros::ros-warn "set abort in iteration")
-             (return))
-          (iterate
-           (unless (y-or-n-p (format nil "Execute ~A ? "
-                                     (send (send sm :active-state) :name)))
-             (ros::ros-warn "aborting...")
-             (return))
-          (t (error "value of key :iterate must be t or function"))))))
-      (if before-hook-func (funcall before-hook-func))
-      (send sm :execute mydata :step -1)
-      (if after-hook-func (funcall after-hook-func))
-      (ros::sleep))
-    (send sm :active-state)))
+    (catch :exec-state-machine-loop
+      (while (ros::ok)
+        (when spin
+          (send insp :spin-once)
+          (if (and (boundp '*ri*) *ri*) (send *ri* :spin-once)))
+        (send insp :publish-status mydata)
+        (when (send sm :goal-reached)
+          (return))
+        (when iterate
+          (cond
+            ((functionp iterate)
+             (unless (funcall iterate (send sm :active-state))
+               (ros::ros-warn "set abort in iteration")
+               (return))
+            (iterate
+             (unless (y-or-n-p (format nil "Execute ~A ? "
+                                       (send (send sm :active-state) :name)))
+               (ros::ros-warn "aborting...")
+               (return))
+            (t (error "value of key :iterate must be t or function"))))))
+        (if before-hook-func (funcall before-hook-func))
+        (send sm :execute mydata :step -1)
+        (if after-hook-func (funcall after-hook-func))
+        (ros::sleep))
+      (send sm :active-state))))
 
 (defun smach-exec (sm)
   "Deprecated function"
