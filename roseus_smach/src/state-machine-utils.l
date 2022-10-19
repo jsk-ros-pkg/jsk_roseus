@@ -16,7 +16,8 @@ Args:
 Returns:
   the last active state
 "
-  (let ((insp (instance state-machine-inspector :init sm :root-name root-name :srv-name srv-name)))
+  (let ((insp (instance state-machine-inspector :init sm :root-name root-name :srv-name srv-name))
+        (userdata mydata))
     (unix::usleep (round (* 0.5 1e6)))
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
