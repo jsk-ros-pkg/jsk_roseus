@@ -74,7 +74,12 @@
   (assert (eq (send *sm* :active-state) (send *sm* :node :end))))
 
 (deftest test-exec-state-machine
-  (exec-state-machine *sm* '((count . 0)) :spin t :hz 0.5 :root-name "SM_ROOT"))
+  (exec-state-machine *sm* '((count . 0)) :spin t :hz 0.5 :root-name "SM_ROOT"
+                      :before-hook-func
+                      #'(lambda (userdata) (ros::ros-warn (format nil "userdata (before): ~A" userdata)))
+                      :after-hook-func
+                      #'(lambda (userdata) (ros::ros-warn (format nil "userdata (after): ~A" userdata)))
+                      ))
 
 (run-all-tests)
 (exit)
