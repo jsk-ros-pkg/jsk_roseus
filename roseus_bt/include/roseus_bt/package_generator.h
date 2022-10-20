@@ -211,6 +211,7 @@ void PackageGenerator<Parser>::write_eus_action_server(Parser* parser,
     std::string body = it->second;
     std::string euslisp_filename = fmt::format("{}{}-action-server",
                                                target_filename, remote_host);
+    std::replace(euslisp_filename.begin(), euslisp_filename.end(), '_', '-');
     std::string dest_file = fmt::format("{}/{}.l",
                                         base_dir, euslisp_filename);
     if (body.empty()) continue;
@@ -237,6 +238,7 @@ void PackageGenerator<Parser>::write_eus_condition_server(Parser* parser,
     std::string body = it->second;
     std::string euslisp_filename = fmt::format("{}{}-condition-server",
                                                target_filename, remote_host);
+    std::replace(euslisp_filename.begin(), euslisp_filename.end(), '_', '-');
     std::string dest_file = fmt::format("{}/{}.l",
                                         base_dir, euslisp_filename);
     if (body.empty()) continue;
