@@ -16,8 +16,7 @@ Args:
 Returns:
   the last active state
 "
-  (let ((insp (instance state-machine-inspector :init sm :root-name root-name :srv-name srv-name))
-        (userdata mydata))
+  (let ((insp (instance state-machine-inspector :init sm :root-name root-name :srv-name srv-name)))
     (unix::usleep (round (* 0.5 1e6)))
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
@@ -44,9 +43,9 @@ Returns:
                (ros::ros-warn "aborting...")
                (return))
             (t (error "value of key :iterate must be t or function"))))))
-        (if before-hook-func (funcall before-hook-func))
+        (if before-hook-func (funcall before-hook-func mydata))
         (send sm :execute mydata :step -1)
-        (if after-hook-func (funcall after-hook-func))
+        (if after-hook-func (funcall after-hook-func mydata))
         (ros::sleep))
       (send sm :active-state))))
 
