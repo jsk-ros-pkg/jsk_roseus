@@ -1,7 +1,7 @@
 ;; state-machine-utils.l
 
 (defun exec-state-machine (sm &optional (mydata '(nil))
-                           &key (spin t) (hz 1) (root-name "SM_ROOT") iterate)
+                           &key (spin t) (hz 1) (root-name "SM_ROOT") (srv-name "/server_name") iterate)
   "Execute state machine
 
 Args:
@@ -14,7 +14,7 @@ Args:
 Returns:
   the last active state
 "
-  (let ((insp (instance state-machine-inspector :init sm :root-name root-name)))
+  (let ((insp (instance state-machine-inspector :init sm :root-name root-name :srv-name srv-name)))
     (unix::usleep (round (* 0.5 1e6)))
     (send sm :reset-state)
     (send insp :publish-structure) ;; publish once and latch
