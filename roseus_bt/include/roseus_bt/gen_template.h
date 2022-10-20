@@ -19,6 +19,7 @@ public:
   std::string action_file_template(std::vector<std::string> goal,
                                    std::vector<std::string> feedback);
   std::string service_file_template(std::vector<std::string> request);
+  std::string launch_file_template(std::vector<std::string> launch_nodes);
   std::string headers_template(std::vector<std::string> headers);
 
   std::string action_class_template(std::string package_name, std::string nodeID,
@@ -82,6 +83,23 @@ bool success
   boost::format bfmt = boost::format(fmt_string) %
     boost::algorithm::join(request, "\n");
 
+  return bfmt.str();
+}
+
+
+std::string GenTemplate::launch_file_template(std::vector<std::string> launch_nodes)
+{
+  std::string fmt_string = 1 + R"(
+<launch>
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+
+%1%
+
+</launch>
+)";
+
+  boost::format bfmt = boost::format(fmt_string) %
+    boost::algorithm::join(launch_nodes, "\n");
   return bfmt.str();
 }
 

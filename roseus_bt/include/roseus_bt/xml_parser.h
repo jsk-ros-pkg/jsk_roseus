@@ -78,6 +78,8 @@ protected:
   std::string format_host_port(const XMLElement* node);
   std::string format_remote_host(const XMLElement* node);
   std::string format_get_remote_input(const XMLElement* node, const std::string name);
+  std::string format_launch_node(const std::string package_name,
+                                 const std::string euslisp_filename);
   std::string generate_action_file_contents(const XMLElement* node);
   std::string generate_service_file_contents(const XMLElement* node);
   std::string generate_headers(const std::string package_name);
@@ -107,6 +109,8 @@ public:
   std::string generate_cpp_file(const std::string package_name,
                                 const std::string roscpp_node_name,
                                 const std::string xml_filename);
+  std::string generate_launch_file(const std::string package_name,
+                                   std::vector<std::string> euslisp_filenames);
   void push_dependencies(std::vector<std::string>* message_packages,
                          std::vector<std::string>* action_files,
                          std::vector<std::string>* service_files);
@@ -639,6 +643,24 @@ std::string XMLParser::format_get_remote_input(const XMLElement* node, const std
     name,
     format_setvalue(node));
 }
+
+std::string XMLParser::format_launch_node(const std::string package_name,
+                                          const std::string euslisp_filename) {
+    std::string fmt_string = 1 + R"(
+  <node pkg="roseus" type="roseus" name="%3%"
+        args="$(find %1%)/euslisp/%2%.l"
+        output="screen"/>
+)";
+
+    std::string node_name = euslisp_filename;
+    std::replace(node_name.begin(), node_name.end(), '-', '_');
+
+    boost::format bfmt = boost::format(fmt_string) %
+      package_name %
+      euslisp_filename %
+      node_name;
+    return bfmt.str();
+  };
 
 std::string XMLParser::generate_action_file_contents(const XMLElement* node) {
   std::vector<std::string> goal, feedback;
@@ -1274,6 +1296,16 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
   output.append(generate_main_function(roscpp_node_name, xml_filename));
 
   return output;
+}
+
+std::string XMLParser::generate_launch_file(const std::string package_name,
+                                            std::vector<std::string> euslisp_filenames) {
+  std::vector<std::string> launch_nodes;
+  for (auto eus_file: euslisp_filenames) {
+    launch_nodes.push_back(format_launch_node(package_name, eus_file));
+  }
+
+  return gen_template.launch_file_template(launch_nodes);
 }
 
 void XMLParser::push_dependencies(std::vector<std::string>* message_packages,
