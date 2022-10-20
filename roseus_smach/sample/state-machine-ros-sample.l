@@ -46,5 +46,13 @@
 (defun exec-smach-simple () (setq count 0) (exec-state-machine (smach-simple)))
 (defun exec-smach-nested () (setq count 0) (exec-state-machine (smach-nested)))
 (defun exec-smach-userdata () (exec-state-machine (smach-userdata) '((count . 1))))
+(defun exec-smach-userdata-hook ()
+  (exec-state-machine
+    (smach-userdata) '((count . 1))
+    :before-hook-func
+    #'(lambda (userdata) (ros::ros-warn (format nil "userdata (before): ~A" userdata)))
+    :after-hook-func
+    #'(lambda (userdata) (ros::ros-warn (format nil "userdata (after): ~A" userdata)))
+    ))
 
-(warn ";;(exec-smach-simple)~%;;(exec-smach-nested)~%;;(exec-smach-userdata)~%")
+(warn ";;(exec-smach-simple)~%;;(exec-smach-nested)~%;;(exec-smach-userdata)~%;;(exec-smach-userdata-hook)~%")
