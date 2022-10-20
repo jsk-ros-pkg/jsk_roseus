@@ -61,10 +61,11 @@ public:
 private:
   Query query;
   PkgTemplate pkg_template;
-   std::vector<Parser> parser_vector;
+  std::vector<Parser> parser_vector;
   std::string package_name;
   std::vector<std::string> xml_filenames;
   std::vector<std::string> target_filenames;
+  std::vector<std::string> euslisp_filenames;
   std::string author_name;
   bool force_overwrite;
 
@@ -75,6 +76,8 @@ public:
   void copy_xml_file(std::string* xml_filename);
   void write_action_files(Parser* parser);
   void write_service_files(Parser* parser);
+  void write_launch_file(Parser* parser,
+                         const std::string target_filename);
   void write_cpp_file(Parser* parser,
                       const std::string target_filename, const std::string xml_filename);
   void write_eus_action_server(Parser* parser, const std::string target_filename);
@@ -160,6 +163,22 @@ void PackageGenerator<Parser>::write_service_files(Parser* parser) {
 }
 
 template<class Parser>
+void PackageGenerator<Parser>::write_launch_file(Parser* parser,
+                                                 const std::string target_filename) {
+  std::string base_dir = fmt::format("{}/launch", package_name);
+  boost::filesystem::create_directories(base_dir);
+
+  std::string dest_file = fmt::format("{}/{}_server.launch", base_dir, target_filename);
+  if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
+    return;
+
+  BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
+  std::ofstream output_file(dest_file);
+  output_file << parser->generate_launch_file(package_name, euslisp_filenames);
+  output_file.close();
+}
+
+template<class Parser>
 void PackageGenerator<Parser>::write_cpp_file(Parser* parser,
                                               const std::string target_filename,
                                               const std::string xml_filename) {
@@ -190,9 +209,12 @@ void PackageGenerator<Parser>::write_eus_action_server(Parser* parser,
   for (auto it=server_files.begin(); it!=server_files.end(); ++it) {
     std::string remote_host = it->first;
     std::string body = it->second;
-    std::string dest_file = fmt::format("{}/{}{}-action-server.l",
-                                        base_dir, target_filename, remote_host);
+    std::string euslisp_filename = fmt::format("{}{}-action-server",
+                                               target_filename, remote_host);
+    std::string dest_file = fmt::format("{}/{}.l",
+                                        base_dir, euslisp_filename);
     if (body.empty()) continue;
+    euslisp_filenames.push_back(euslisp_filename);
     if (boost::filesystem::exists(dest_file) && !overwrite(dest_file)) continue;
 
     BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
@@ -213,9 +235,12 @@ void PackageGenerator<Parser>::write_eus_condition_server(Parser* parser,
   for (auto it=server_files.begin(); it!=server_files.end(); ++it) {
     std::string remote_host = it->first;
     std::string body = it->second;
-    std::string dest_file = fmt::format("{}/{}{}-condition-server.l",
-                                        base_dir, target_filename, remote_host);
+    std::string euslisp_filename = fmt::format("{}{}-condition-server",
+                                               target_filename, remote_host);
+    std::string dest_file = fmt::format("{}/{}.l",
+                                        base_dir, euslisp_filename);
     if (body.empty()) continue;
+    euslisp_filenames.push_back(euslisp_filename);
     if (boost::filesystem::exists(dest_file) && !overwrite(dest_file)) continue;
 
     BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
@@ -274,6 +299,7 @@ void PackageGenerator<Parser>::write_all_files() {
     Parser* parser = &parser_vector.at(i);
     std::string xml_filename = xml_filenames.at(i);
     std::string target_filename = target_filenames.at(i);
+    euslisp_filenames.clear();
 
     BOOST_LOG_TRIVIAL(info) << "Generating " << xml_filename << " files...";
 
@@ -286,6 +312,7 @@ void PackageGenerator<Parser>::write_all_files() {
     write_cpp_file(parser, target_filename, xml_filename);
     write_eus_action_server(parser, target_filename);
     write_eus_condition_server(parser, target_filename);
+    write_launch_file(parser, target_filename);
   }
 
   write_cmake_lists(message_packages, service_files, action_files);
