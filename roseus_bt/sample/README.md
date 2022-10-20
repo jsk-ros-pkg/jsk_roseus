@@ -27,7 +27,7 @@ Both the `<BehaviorTree/>` tag in the xml model file and the euslisp server are 
 Run the roseus server
 ```bash
 roscd roseus_bt_tutorials/euslisp
-roseus t01_simple_tree-action-server.l
+roseus t01-simple-tree-action-server.l
 ```
 
 Run the cpp client
@@ -52,7 +52,7 @@ Every `<Condition/>` tag in the `<TreeNodesModel/>` must be provided with an arb
 Run the roseus server
 ```bash
 roscd roseus_bt_tutorials/euslisp
-roseus t02_conditions-action-server.l
+roseus t02-conditions-action-server.l
 ```
 
 Run the cpp client
@@ -87,7 +87,7 @@ Conditions only support input ports, as they are not meant to do any changes in 
 Run the roseus server
 ```bash
 roscd roseus_bt_tutorials/euslisp
-roseus t03_ports-action-server.l
+roseus t03-ports-action-server.l
 ```
 
 Run the cpp client
@@ -130,7 +130,7 @@ orientation:
 Run the roseus server
 ```bash
 roscd roseus_bt_tutorials/euslisp
-roseus t04_subscriber-action-server.l
+roseus t04-subscriber-action-server.l
 ```
 
 Run the cpp client
@@ -157,7 +157,7 @@ Each subtree inherits a separate blackboard and accepts remaps in the `inner_nam
 Run the roseus server
 ```bash
 roscd roseus_bt_tutorials/euslisp
-roseus t05_subtrees-action-server.l
+roseus t05-subtrees-action-server.l
 ```
 
 Run the cpp client
@@ -193,13 +193,13 @@ It is also possible to manually spin the monitor groupname with `(send server :s
 Run the roseus action server
 ```bash
 roscd roseus_bt_tutorials/euslisp
-roseus t06_reactive-action-server.l
+roseus t06-reactive-action-server.l
 ```
 
 Run the roseus condition server
 ```bash
 roscd roseus_bt_tutorials/euslisp
-roseus t06_reactive-condition-server.l
+roseus t06-reactive-condition-server.l
 ```
 
 Run the cpp client
@@ -257,7 +257,7 @@ roslaunch rosbridge_server rosbridge_websocket.launch unregister_timeout:=100000
 Run the first roseus server:
 ```bash
 roscd roseus_bt_tutorials/euslisp
-roseus t08_multimaster_localhost9090-action-server.l
+roseus t08-multimaster-localhost9090-action-server.l
 ```
 
 Run the second rosbridge_server:
@@ -271,7 +271,7 @@ Run the second roseus server:
 ```bash
 export ROS_MASTER_URI=http://localhost:11312
 roscd roseus_bt_tutorials/euslisp
-roseus t08_multimaster_localhost9091-action-server.l
+roseus t08-multimaster-localhost9091-action-server.l
 ```
 
 Run the cpp client
