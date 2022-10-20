@@ -45,7 +45,7 @@
 
 (defun exec-smach-simple () (setq count 0) (exec-state-machine (smach-simple)))
 (defun exec-smach-nested () (setq count 0) (exec-state-machine (smach-nested)))
-(defun exec-smach-nested-nested () (setq count 0) (exec-state-machine (smach-nested-nested)))
+(defun exec-smach-double-nested () (setq count 0) (exec-state-machine (smach-double-nested)))
 (defun exec-smach-userdata () (exec-state-machine (smach-userdata) '((count . 1))))
 
-(warn ";;(exec-smach-simple)~%;;(exec-smach-nested)~%;;(exec-smach-nested-nested)~%;;(exec-smach-userdata)~%")
+(warn ";;(exec-smach-simple)~%;;(exec-smach-nested)~%;;(exec-smach-double-nested)~%;;(exec-smach-userdata)~%")

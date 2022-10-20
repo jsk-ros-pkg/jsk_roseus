@@ -102,7 +102,7 @@
     sm-top ))
 
 
-(defun smach-nested-nested ()
+(defun smach-double-nested ()
   (let ((sm-top (instance state-machine :init))
         (sm-sub (instance state-machine :init)))
     ;; state instance can include other state-machine like function

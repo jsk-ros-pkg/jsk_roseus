@@ -40,7 +40,7 @@
 (run-test-smach exec-smach-simple3 :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
 
 (run-test-smach exec-smach-nested :outcome5 '(nil (FOO) (BAR) (FOO) (BAR) (FOO) (BAR) nil (BAS) nil))
-(run-test-smach exec-smach-nested-nested :outcome5 '(nil (FOO) nil (BARBAR) (FOOFOO) (FOO) nil (BARBAR) (FOOFOO) (FOO) nil (BARBAR) nil nil (BAS)) :duration 20.0)
+(run-test-smach exec-smach-double-nested :outcome5 '(nil (FOO) nil (BARBAR) (FOOFOO) (FOO) nil (BARBAR) (FOOFOO) (FOO) nil (BARBAR) nil nil (BAS)) :duration 20.0)
 (run-test-smach exec-smach-simple-nested :outcome5 '(nil (FOO) (BAR) (FOO) (BAR) (FOO) (BAR) nil (BAS) nil))
 
 (run-test-smach exec-smach-userdata :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO)))
