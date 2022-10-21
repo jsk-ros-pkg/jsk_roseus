@@ -4,6 +4,7 @@
 #include <behaviortree_cpp_v3/action_node.h>
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <roseus_bt/ws_action_client.h>
+#include <roseus_bt/copy_document.h>
 
 
 namespace BT
@@ -123,12 +124,9 @@ protected:
   {
     if (message["update_field_name"].GetString() != name) return;
 
-    rapidjson::StringBuffer strbuf;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
-    rapidjson::Document document;
+    rapidjson::CopyDocument document;
     document.CopyFrom(message[name.c_str()], document.GetAllocator());
-    document.Accept(writer);
-    setOutput(name, strbuf.GetString());
+    setOutput(name, document);
   }
 };
 

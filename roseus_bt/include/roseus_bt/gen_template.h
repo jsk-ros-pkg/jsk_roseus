@@ -188,8 +188,7 @@ std::string GenTemplate::remote_action_class_template(
 {
   auto format_send_goal = [](const std::string body) {
     std::string decl = 1 + R"(
-    std::string json;
-    rapidjson::Document document;
+    rapidjson::CopyDocument document;
     GoalType ros_msg;
 )";
     if (!body.empty()) return fmt::format("{}{}", decl, body);

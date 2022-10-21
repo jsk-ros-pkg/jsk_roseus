@@ -628,8 +628,7 @@ std::string XMLParser::format_get_remote_input(const XMLElement* node, const std
   if (msg_type.find('/') != std::string::npos)
     // parse ros message from json string
     return fmt::format(R"(
-    getInput("{0}", json);
-    document.Parse(json.c_str());
+    getInput("{0}", document);
     rapidjson::Value {0}(document, document.GetAllocator());
     {1}->AddMember("{0}", {0}, {1}->GetAllocator());)",
     node->Attribute("name"),
@@ -827,14 +826,14 @@ std::string XMLParser::generate_remote_action_class(const XMLElement* node, cons
   auto format_input_port = [](const XMLElement* node) {
     std::string msg_type = node->Attribute("type");
     if (msg_type.find('/') != std::string::npos)
-      // ros messages are parsed from json
-      return fmt::format("      InputPort<std::string>(\"{0}\")",
+      // ros messages are represented as json documents
+      return fmt::format("      InputPort<rapidjson::CopyDocument>(\"{0}\")",
                          node->Attribute("name"));
     return fmt::format("      InputPort<GoalType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
   };
   auto format_output_port = [](const XMLElement* node) {
-    return fmt::format("      OutputPort<std::string>(\"{0}\")",
+    return fmt::format("      OutputPort<rapidjson::CopyDocument>(\"{0}\")",
                          node->Attribute("name"));
   };
   auto format_set_output = [](const XMLElement* node) {
