@@ -90,7 +90,9 @@ protected:
   std::string generate_remote_condition_class(const XMLElement* node, const std::string package_name);
   std::string generate_subscriber_class(const XMLElement* node);
   std::string generate_remote_subscriber_class(const XMLElement* node);
-  std::string generate_main_function(const std::string roscpp_node_name, const std::string xml_filename);
+  std::string generate_main_function(const std::string roscpp_node_name,
+                                     const std::string program_description,
+                                     const std::string xml_filename);
 
   virtual std::string format_node_body(const XMLElement* node, int padding);
 
@@ -109,6 +111,7 @@ public:
   std::map<std::string, std::string> generate_all_eus_condition_servers(const std::string package_name);
   std::string generate_cpp_file(const std::string package_name,
                                 const std::string roscpp_node_name,
+                                const std::string program_description,
                                 const std::string xml_filename);
   std::string generate_launch_file(const std::string package_name,
                                    std::vector<std::string> euslisp_filenames);
@@ -1045,6 +1048,7 @@ std::string XMLParser::generate_remote_subscriber_class(const XMLElement* node) 
 }
 
 std::string XMLParser::generate_main_function(const std::string roscpp_node_name,
+                                              const std::string program_description,
                                               const std::string xml_filename) {
   auto format_action_node = [](const XMLElement* node) {
     return fmt::format("  RegisterRosAction<{0}>(factory, \"{0}\", nh);",
@@ -1118,7 +1122,9 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
       register_subscribers.push_back(format_remote_subscriber_node(subscriber_node));
     }
 
-  return gen_template.main_function_template(roscpp_node_name, xml_filename,
+  return gen_template.main_function_template(roscpp_node_name,
+                                             program_description,
+                                             xml_filename,
                                              register_actions,
                                              register_conditions,
                                              register_subscribers);
@@ -1274,6 +1280,7 @@ std::map<std::string, std::string> XMLParser::generate_all_eus_condition_servers
 
 std::string XMLParser::generate_cpp_file(const std::string package_name,
                                          const std::string roscpp_node_name,
+                                         const std::string program_description,
                                          const std::string xml_filename) {
   const XMLElement* root = doc.RootElement()->FirstChildElement("TreeNodesModel");
   std::string output;
@@ -1328,7 +1335,7 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
       output.append("\n\n");
     }
 
-  output.append(generate_main_function(roscpp_node_name, xml_filename));
+  output.append(generate_main_function(roscpp_node_name, program_description, xml_filename));
 
   return output;
 }
