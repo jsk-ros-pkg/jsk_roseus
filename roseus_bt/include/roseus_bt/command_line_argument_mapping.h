@@ -1,3 +1,6 @@
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_COMMAND_LINE_ARGUMENT_MAPPING_
+#define BEHAVIOR_TREE_ROSEUS_BT_COMMAND_LINE_ARGUMENT_MAPPING_
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -6,6 +9,9 @@
 #include <boost/program_options.hpp>
 #include <behaviortree_cpp_v3/bt_factory.h>
 
+
+namespace roseus_bt
+{
 
 namespace po = boost::program_options;
 
@@ -52,6 +58,9 @@ bool parse_command_line(int argc, char** argv,
 void register_blackboard_variables(BT::Tree* tree,
                                    const std::map<std::string, std::string>& argument_map)
 {
+  // New variables are registered as strings.
+  // However, if the port has already been registered
+  // in the tree, it can be default-casted.
   for (const auto it: argument_map) {
 #ifdef DEBUG
     std::cout << "Initializing blackboard variable: " << it.first <<
@@ -60,3 +69,7 @@ void register_blackboard_variables(BT::Tree* tree,
     tree->rootBlackboard()->set<std::string>(it.first, it.second);
   }
 }
+
+}  // namespace roseus_bt
+
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_COMMAND_LINE_ARGUMENT_MAPPING_

@@ -1,8 +1,12 @@
-#ifndef WS_SUBSCRIBER_CLIENT_
-#define WS_SUBSCRIBER_CLIENT_
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_WS_SUBSCRIBER_CLIENT_
+#define BEHAVIOR_TREE_ROSEUS_BT_WS_SUBSCRIBER_CLIENT_
 
 #include <rosbridgecpp/rosbridge_ws_client.hpp>
 #include <fmt/format.h>
+
+
+namespace roseus_bt
+{
 
 class RosbridgeSubscriberClient
 {
@@ -27,4 +31,6 @@ protected:
   std::string topic_name_;
 };
 
-#endif  // WS_SUBSCRIBER_CLIENT_
+}  // namespace roseus_bt
+
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_WS_SUBSCRIBER_CLIENT_

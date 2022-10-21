@@ -1,8 +1,12 @@
-#ifndef WS_ACTION_CLIENT_
-#define WS_ACTION_CLIENT_
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_WS_ACTION_CLIENT_
+#define BEHAVIOR_TREE_ROSEUS_BT_WS_ACTION_CLIENT_
 
 #include <rosbridgecpp/rosbridge_ws_client.hpp>
 #include <fmt/format.h>
+
+
+namespace roseus_bt
+{
 
 class RosbridgeActionClient
 {
@@ -108,7 +112,8 @@ protected:
 
     is_active_ = false;
   }
-
 };
 
-#endif  // WS_ACTION_CLIENT_
+}  // namespace roseus_bt
+
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_WS_ACTION_CLIENT_

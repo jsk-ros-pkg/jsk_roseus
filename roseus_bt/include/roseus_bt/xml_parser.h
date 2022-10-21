@@ -18,7 +18,8 @@ void push_new(std::string elem, std::vector<std::string>* vec) {
 
 namespace RoseusBT
 {
-  using namespace tinyxml2;
+
+using namespace tinyxml2;
 
 class XMLParser
 {
