@@ -28,7 +28,12 @@ bool parse_command_line(int argc, char** argv,
     ("arg", po::value<std::vector<std::string>>()->multitoken(),
      "Initial blackboard variable-value pairs");
 
-  po::parsed_options parsed_options = po::command_line_parser(argc, argv).options(desc).run();
+  po::positional_options_description pos;
+  po::parsed_options parsed_options = po::command_line_parser(argc, argv).
+    options(desc).
+    positional(pos).
+    style(po::command_line_style::unix_style ^ po::command_line_style::allow_short).
+    run();
 
   po::variables_map vm;
   po::store(parsed_options, vm);
