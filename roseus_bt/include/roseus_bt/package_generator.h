@@ -186,6 +186,7 @@ void PackageGenerator<Parser>::write_cpp_file(Parser* parser,
   boost::filesystem::create_directories(base_dir);
 
   std::string roscpp_node_name = fmt::format("{}_engine", target_filename);
+  std::string program_description = fmt::format("Run the {} task.", target_filename);
   std::string dest_file = fmt::format("{}/{}.cpp", base_dir, target_filename);
 
   if (boost::filesystem::exists(dest_file) && !overwrite(dest_file))
@@ -193,7 +194,7 @@ void PackageGenerator<Parser>::write_cpp_file(Parser* parser,
 
   BOOST_LOG_TRIVIAL(info) << "Writing " << dest_file << "...";
   std::ofstream output_file(dest_file);
-  output_file << parser->generate_cpp_file(package_name, roscpp_node_name,
+  output_file << parser->generate_cpp_file(package_name, roscpp_node_name, program_description,
                         boost::filesystem::absolute(xml_filename).c_str());
   output_file.close();
 }
