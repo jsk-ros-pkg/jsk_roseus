@@ -1,8 +1,12 @@
-#ifndef WS_SERVICE_CLIENT_
-#define WS_SERVICE_CLIENT_
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_WS_SERVICE_CLIENT_
+#define BEHAVIOR_TREE_ROSEUS_BT_WS_SERVICE_CLIENT_
 
 #include <rosbridgecpp/rosbridge_ws_client.hpp>
 #include <fmt/format.h>
+
+
+namespace roseus_bt
+{
 
 class RosbridgeServiceClient
 {
@@ -71,7 +75,8 @@ protected:
     is_active_ = false;
     connection->send_close(1000);
   }
-
 };
 
-#endif  // WS_SERVICE_CLIENT_
+}  // namespace roseus_bt
+
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_WS_SERVICE_CLIENT_

@@ -6,7 +6,8 @@
 
 namespace RoseusBT
 {
-  using namespace tinyxml2;
+
+using namespace tinyxml2;
 
 class TutorialParser : public XMLParser
 {

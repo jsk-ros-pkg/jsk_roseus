@@ -459,7 +459,7 @@ std::string GenTemplate::main_function_template(std::string roscpp_node_name,
 int main(int argc, char **argv)
 {
   std::map<std::string, std::string> init_variables;
-  if (!parse_command_line(argc, argv, "%1%", init_variables)) {
+  if (!roseus_bt::parse_command_line(argc, argv, "%1%", init_variables)) {
     return 1;
   }
 
@@ -470,7 +470,7 @@ int main(int argc, char **argv)
 
 %4%%5%%6%
 %3%
-  register_blackboard_variables(&tree, init_variables);
+  roseus_bt::register_blackboard_variables(&tree, init_variables);
 
   std::string timestamp = std::to_string(ros::Time::now().toNSec());
   std::string log_filename(fmt::format("%7%", timestamp));
@@ -562,7 +562,6 @@ std::string GenTemplate::eus_server_template(std::string server_type,
 
   return bfmt.str();
 }
-
 
 }  // namespace RoseusBT
 
