@@ -42,6 +42,7 @@ public:
   std::string remote_subscriber_class_template(std::string nodeID, std::string message_type,
                                                std::vector<std::string> provided_ports);
   std::string main_function_template(std::string roscpp_node_name,
+                                       std::string program_description,
                                        std::string xml_filename,
                                        std::vector<std::string> register_actions,
                                        std::vector<std::string> register_conditions,
@@ -110,6 +111,7 @@ std::string GenTemplate::headers_template(std::vector<std::string> headers) {
 
 #define DEBUG  // rosbridgecpp logging
 #include <roseus_bt/eus_nodes.h>
+#include <roseus_bt/command_line_argument_mapping.h>
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
 #include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
 #include <behaviortree_cpp_v3/loggers/bt_file_logger.h>
@@ -441,6 +443,7 @@ public:
 
 
 std::string GenTemplate::main_function_template(std::string roscpp_node_name,
+                                                std::string program_description,
                                                 std::string xml_filename,
                                                 std::vector<std::string> register_actions,
                                                 std::vector<std::string> register_conditions,
@@ -455,16 +458,22 @@ std::string GenTemplate::main_function_template(std::string roscpp_node_name,
   std::string fmt_string = 1 + R"(
 int main(int argc, char **argv)
 {
-%1%
+  std::map<std::string, std::string> init_variables;
+  if (!parse_command_line(argc, argv, "%1%", init_variables)) {
+    return 1;
+  }
+
+%2%
   ros::NodeHandle nh;
 
   BehaviorTreeFactory factory;
 
-%3%%4%%5%
-%2%
+%4%%5%%6%
+%3%
+  register_blackboard_variables(&tree, init_variables);
 
   std::string timestamp = std::to_string(ros::Time::now().toNSec());
-  std::string log_filename(fmt::format("%6%", timestamp));
+  std::string log_filename(fmt::format("%7%", timestamp));
 
   StdCoutLogger logger_cout(tree);
   FileLogger logger_file(tree, log_filename.c_str());
@@ -494,6 +503,7 @@ int main(int argc, char **argv)
     getenv("HOME") %
     roscpp_node_name;
   boost::format bfmt = boost::format(fmt_string) %
+    program_description %
     format_ros_init() %
     format_create_tree() %
     boost::algorithm::join(register_actions, "\n") %
