@@ -34,6 +34,7 @@ public:
   using BaseClass  = EusRemoteActionNode<ActionT>;
   using ActionType = ActionT;
   using GoalType = typename ActionT::_action_goal_type::_goal_type;
+  using FeedbackType = typename ActionT::_action_feedback_type::_feedback_type;
 
   EusRemoteActionNode() = delete;
   virtual ~EusRemoteActionNode() = default;

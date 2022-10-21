@@ -78,6 +78,7 @@ protected:
   std::string format_host_port(const XMLElement* node);
   std::string format_remote_host(const XMLElement* node);
   std::string format_get_remote_input(const XMLElement* node, const std::string name);
+  std::string format_set_remote_output(const XMLElement* node);
   std::string format_launch_node(const std::string package_name,
                                  const std::string euslisp_filename);
   std::string generate_action_file_contents(const XMLElement* node);
@@ -626,7 +627,6 @@ std::string XMLParser::format_get_remote_input(const XMLElement* node, const std
 
   std::string msg_type = node->Attribute("type");
   if (msg_type.find('/') != std::string::npos)
-    // parse ros message from json string
     return fmt::format(R"(
     getInput("{0}", document);
     rapidjson::Value {0}(document, document.GetAllocator());
@@ -641,6 +641,42 @@ std::string XMLParser::format_get_remote_input(const XMLElement* node, const std
     node->Attribute("name"),
     name,
     format_setvalue(node));
+}
+
+std::string XMLParser::format_set_remote_output(const XMLElement* node) {
+  auto format_getvalue = [](const XMLElement* node) {
+    // all ros types defined in: http://wiki.ros.org/msg
+    // TODO: accept arrays
+    std::string msg_type = node->Attribute("type");
+    if (msg_type == "bool")
+      return "GetBool()";
+    if (msg_type == "int8" || msg_type == "int16" || msg_type == "int32")
+      return "GetInt()";
+    if (msg_type == "uint8" || msg_type == "uint16" || msg_type == "uint32")
+      return "GetUint";
+    if (msg_type == "int64")
+      return "GetInt64()";
+     if (msg_type == "uint64")
+       return "GetUint64()";
+    if (msg_type == "float32" || msg_type == "float64")
+      return "GetDouble()";
+    if (msg_type == "string")
+      return "GetString()";
+    // time, duration
+    throw XMLError::InvalidPortType(msg_type, node);
+  };
+
+  std::string msg_type = node->Attribute("type");
+  if (msg_type.find('/') != std::string::npos)
+    return fmt::format(1 + R"(
+    setOutputFromMessage("{0}", feedback);)",
+    node->Attribute("name"));
+  return fmt::format(1 + R"(
+    if (feedback["update_field_name"].GetString() == std::string("{0}")) {{
+      setOutput("{0}", feedback["{0}"].{1});
+    }})",
+    node->Attribute("name"),
+    format_getvalue(node));
 }
 
 std::string XMLParser::format_launch_node(const std::string package_name,
@@ -833,13 +869,13 @@ std::string XMLParser::generate_remote_action_class(const XMLElement* node, cons
                        node->Attribute("name"));
   };
   auto format_output_port = [](const XMLElement* node) {
-    return fmt::format("      OutputPort<rapidjson::CopyDocument>(\"{0}\")",
+    std::string msg_type = node->Attribute("type");
+    if (msg_type.find('/') != std::string::npos)
+      return fmt::format("      OutputPort<rapidjson::CopyDocument>(\"{0}\")",
                          node->Attribute("name"));
+    return fmt::format("      OutputPort<FeedbackType::_{0}_type>(\"{0}\")",
+                       node->Attribute("name"));
   };
-  auto format_set_output = [](const XMLElement* node) {
-    return fmt::format("    setOutputFromMessage(\"{0}\", feedback);",
-                         node->Attribute("name"));
-   };
 
   std::vector<std::string> provided_input_ports;
   std::vector<std::string> provided_output_ports;
@@ -863,7 +899,7 @@ std::string XMLParser::generate_remote_action_class(const XMLElement* node, cons
       }
       if (name == "output_port" || name == "inout_port") {
         provided_output_ports.push_back(format_output_port(port_node));
-        set_outputs.push_back(format_set_output(port_node));
+        set_outputs.push_back(format_set_remote_output(port_node));
       }
     }
 
