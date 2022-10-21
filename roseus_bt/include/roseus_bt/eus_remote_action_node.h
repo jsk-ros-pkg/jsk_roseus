@@ -1,5 +1,5 @@
-#ifndef BEHAVIOR_TREE_EUS_REMOTE_ACTION_NODE_HPP_
-#define BEHAVIOR_TREE_EUS_REMOTE_ACTION_NODE_HPP_
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_EUS_REMOTE_ACTION_NODE_HPP_
+#define BEHAVIOR_TREE_ROSEUS_BT_EUS_REMOTE_ACTION_NODE_HPP_
 
 #include <behaviortree_cpp_v3/action_node.h>
 #include <behaviortree_cpp_v3/bt_factory.h>
@@ -68,7 +68,7 @@ public:
   }
 
 protected:
-  RosbridgeActionClient action_client_;
+  roseus_bt::RosbridgeActionClient action_client_;
 
   std::string server_name_;
   std::string goal_topic_;
@@ -150,8 +150,6 @@ template <class DerivedT> static
   factory.registerBuilder( manifest, builder );
 }
 
-
 }  // namespace BT
 
-
-#endif  // BEHAVIOR_TREE_BT_REMOTE_ACTION_NODE_HPP_
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_EUS_REMOTE_ACTION_NODE_HPP_

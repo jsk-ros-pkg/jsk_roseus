@@ -1,5 +1,5 @@
-#ifndef BEHAVIOR_TREE_EUS_REMOTE_CONDITION_NODE_HPP_
-#define BEHAVIOR_TREE_EUS_REMOTE_CONDITION_NODE_HPP_
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_EUS_REMOTE_CONDITION_NODE_HPP_
+#define BEHAVIOR_TREE_ROSEUS_BT_EUS_REMOTE_CONDITION_NODE_HPP_
 
 #include <behaviortree_cpp_v3/action_node.h>
 #include <behaviortree_cpp_v3/bt_factory.h>
@@ -63,7 +63,7 @@ public:
   }
 
 protected:
-  RosbridgeServiceClient service_client_;
+  roseus_bt::RosbridgeServiceClient service_client_;
 
   BT::NodeStatus tick() override
   {
@@ -105,4 +105,4 @@ template <class DerivedT> static
 
 }  // namespace BT
 
-#endif  // BEHAVIOR_TREE_EUS_REMOTE_CONDITION_NODE_HPP_
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_EUS_REMOTE_CONDITION_NODE_HPP_

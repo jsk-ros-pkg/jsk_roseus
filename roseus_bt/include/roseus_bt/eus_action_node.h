@@ -1,5 +1,5 @@
-#ifndef BEHAVIOR_TREE_EUS_ACTION_NODE_HPP_
-#define BEHAVIOR_TREE_EUS_ACTION_NODE_HPP_
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_EUS_ACTION_NODE_HPP_
+#define BEHAVIOR_TREE_ROSEUS_BT_EUS_ACTION_NODE_HPP_
 
 #include <behaviortree_ros/bt_action_node.h>
 
@@ -111,4 +111,4 @@ protected:
 
 }  // namespace BT
 
-#endif  // BEHAVIOR_TREE_EUS_ACTION_NODE_HPP_
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_EUS_ACTION_NODE_HPP_

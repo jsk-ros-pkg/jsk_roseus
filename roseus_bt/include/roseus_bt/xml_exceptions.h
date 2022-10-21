@@ -9,7 +9,8 @@
 
 namespace XMLError
 {
-  using namespace tinyxml2;
+
+using namespace tinyxml2;
 
 class XMLError: public std::exception {
 public:
@@ -81,7 +82,6 @@ public:
     XMLError(fmt::format("Invalid port type {}{}", type, get_place(node))) {};
 };
 
-
-}  // namespace RoseusBT
+}  // namespace XMLError
 
 #endif  // BEHAVIOR_TREE_ROSEUS_BT_XML_EXCEPTIONS_

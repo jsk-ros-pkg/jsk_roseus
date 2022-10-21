@@ -52,7 +52,7 @@ public:
   }
 
 protected:
-  RosbridgeSubscriberClient subscriber_client_;
+  roseus_bt::RosbridgeSubscriberClient subscriber_client_;
 
 protected:
   virtual void callback(const rapidjson::Value& msg) {

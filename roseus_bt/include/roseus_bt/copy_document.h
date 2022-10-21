@@ -1,6 +1,5 @@
-#ifndef JSON_COPY_DOCUMENT_
-#define JSON_COPY_DOCUMENT_
-
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_JSON_COPY_DOCUMENT_
+#define BEHAVIOR_TREE_ROSEUS_BT_JSON_COPY_DOCUMENT_
 
 #include "rapidjson/include/rapidjson/document.h"
 #include "rapidjson/include/rapidjson/writer.h"
@@ -61,6 +60,6 @@ protected:
   }
 };
 
-}
+}  // namespace rapidjson
 
-#endif  // JSON_COPY_DOCUMENT
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_JSON_COPY_DOCUMENT_

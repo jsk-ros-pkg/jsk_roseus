@@ -1,5 +1,5 @@
-#ifndef BEHAVIOR_TREE_EUS_NODE_TYPE_HPP_
-#define BEHAVIOR_TREE_EUS_NODE_TYPE_HPP_
+#ifndef BEHAVIOR_TREE_ROSEUS_BT_EUS_NODE_TYPE_HPP_
+#define BEHAVIOR_TREE_ROSEUS_BT_EUS_NODE_TYPE_HPP_
 
 #include <behaviortree_cpp_v3/basic_types.h>
 
@@ -27,4 +27,4 @@ std::ostream& operator<<(std::ostream& os, const NodeType& type);
 
 }  // namespace roseus_bt
 
-#endif  // BEHAVIOR_TREE_EUS_NODE_TYPE_HPP_
+#endif  // BEHAVIOR_TREE_ROSEUS_BT_EUS_NODE_TYPE_HPP_
