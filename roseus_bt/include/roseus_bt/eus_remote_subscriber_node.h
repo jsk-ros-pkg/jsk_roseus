@@ -17,7 +17,8 @@ protected:
     BT::ActionNodeBase(name, conf),
     subscriber_client_(getInput<std::string>("host_name").value(),
                        getInput<int>("host_port").value(),
-                       getInput<std::string>("topic_name").value())
+                       getInput<std::string>("topic_name").value(),
+                       getInput<std::string>("message_type").value())
   {
     auto cb = std::bind(&EusRemoteSubscriberNode::topicCallback, this,
                         std::placeholders::_1,
