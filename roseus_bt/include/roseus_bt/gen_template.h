@@ -91,7 +91,9 @@ std::string GenTemplate::launch_file_template(std::vector<std::string> launch_no
 {
   std::string fmt_string = 1 + R"(
 <launch>
-  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+    <arg name="unregister_timeout" value="100000"/>
+  </include>
 
 %1%
 
