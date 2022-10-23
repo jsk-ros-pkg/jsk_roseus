@@ -37,7 +37,6 @@ public:
                                                std::vector<std::string> provided_ports,
                                                std::vector<std::string> get_inputs);
   std::string subscriber_class_template(std::string nodeID, std::string message_type,
-                                        std::string message_field,
                                         std::vector<std::string> provided_ports);
   std::string remote_subscriber_class_template(std::string nodeID, std::string message_type,
                                                std::vector<std::string> provided_ports);
@@ -352,22 +351,8 @@ public:
 
 std::string GenTemplate::subscriber_class_template(std::string nodeID,
                                                    std::string message_type,
-                                                   std::string message_field,
                                                    std::vector<std::string> provided_ports) {
   std::string provided_ports_body;
-
-  if (!message_field.empty()) {
-    std::string fmt_string = R"(
-  virtual void callback(%1% msg) {
-    setOutput("output_port", msg.%2%);
-  })";
-
-    boost::format bfmt = boost::format(fmt_string) %
-      message_type %
-      message_field;
-
-    message_field = bfmt.str();
-  }
 
   if (!provided_ports.empty()) {
       std::string fmt_string = R"(
@@ -391,14 +376,12 @@ public:
   %1%(ros::NodeHandle& handle, const std::string& name, const NodeConfiguration& conf) :
     EusSubscriberNode<%2%>(handle, name, conf) {}
 %3%
-%4%
 };
 )";
   boost::format bfmt = boost::format(fmt_string) %
     nodeID %
     message_type %
-    provided_ports_body %
-    message_field;
+    provided_ports_body;
 
   return bfmt.str();
 }
