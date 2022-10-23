@@ -983,10 +983,6 @@ std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
     }
     return fmt::format("{}::{}", type.substr(0, pos), type.substr(1+pos));
   };
-  auto format_field = [](const XMLElement* node) {
-    if (!node->Attribute("message_field")) return "";
-    return node->Attribute("message_field");
-  };
   auto format_port = [](const XMLElement* port_node) {
     return fmt::format(
       "      InputPort<std::string>(\"topic_name\", \"{0}\", \"name of the subscribed topic\")",
@@ -1007,7 +1003,6 @@ std::string XMLParser::generate_subscriber_class(const XMLElement* node) {
 
   return gen_template.subscriber_class_template(node->Attribute("ID"),
                                                 format_type(node),
-                                                format_field(node),
                                                 provided_ports);
 }
 
