@@ -767,42 +767,42 @@ std::string XMLParser::generate_headers(const std::string package_name) {
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("Action"))
     {
-      headers.push_back(format_action_node(action_node, package_name));
+       push_new(format_action_node(action_node, package_name), &headers);
     }
 
    for (auto action_node = root->FirstChildElement("RemoteAction");
        action_node != nullptr;
        action_node = action_node->NextSiblingElement("RemoteAction"))
     {
-      headers.push_back(format_action_node(action_node, package_name));
+       push_new(format_action_node(action_node, package_name), &headers);
     }
 
   for (auto condition_node = root->FirstChildElement("Condition");
        condition_node != nullptr;
        condition_node = condition_node->NextSiblingElement("Condition"))
     {
-      headers.push_back(format_condition_node(condition_node, package_name));
+      push_new(format_condition_node(condition_node, package_name), &headers);
     }
 
   for (auto condition_node = root->FirstChildElement("RemoteCondition");
        condition_node != nullptr;
        condition_node = condition_node->NextSiblingElement("RemoteCondition"))
     {
-      headers.push_back(format_condition_node(condition_node, package_name));
+      push_new(format_condition_node(condition_node, package_name), &headers);
     }
 
   for (auto subscriber_node = root->FirstChildElement("Subscriber");
        subscriber_node != nullptr;
        subscriber_node = subscriber_node->NextSiblingElement("Subscriber"))
     {
-      headers.push_back(format_subscriber_node(subscriber_node));
+      push_new(format_subscriber_node(subscriber_node), &headers);
     }
 
    for (auto subscriber_node = root->FirstChildElement("RemoteSubscriber");
        subscriber_node != nullptr;
        subscriber_node = subscriber_node->NextSiblingElement("RemoteSubscriber"))
     {
-      headers.push_back(format_subscriber_node(subscriber_node));
+      push_new(format_subscriber_node(subscriber_node), &headers);
     }
 
   return gen_template.headers_template(headers);
