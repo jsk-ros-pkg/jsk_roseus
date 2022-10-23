@@ -3,6 +3,7 @@
 
 #include "rapidjson/include/rapidjson/document.h"
 #include "rapidjson/include/rapidjson/writer.h"
+#include "rapidjson/include/rapidjson/prettywriter.h"
 #include "rapidjson/include/rapidjson/stringbuffer.h"
 
 
@@ -12,6 +13,8 @@ class CopyDocument : public rapidjson::Document
 {
 public:
   CopyDocument() : Document() {}
+
+  CopyDocument(Type type) : Document(type) {}
 
   CopyDocument(const CopyDocument& document) {
     _clone(document);
