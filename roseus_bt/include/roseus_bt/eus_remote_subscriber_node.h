@@ -4,6 +4,7 @@
 #include <behaviortree_cpp_v3/action_node.h>
 #include <behaviortree_cpp_v3/bt_factory.h>
 #include <roseus_bt/ws_subscriber_client.h>
+#include <roseus_bt/copy_document.h>
 
 namespace BT
 {
@@ -34,7 +35,7 @@ public:
   static PortsList providedPorts() {
     return {
       InputPort<std::string>("topic_name", "name of the subscribed topic"),
-      OutputPort<std::string>("output_port", "port to where messages are redirected"),
+      OutputPort<rapidjson::CopyDocument>("output_port", "port to where messages are redirected"),
       OutputPort<uint8_t>("received_port", "port set to true every time a message is received"),
       InputPort<std::string>("host_name", "name of the rosbridge_server host"),
       InputPort<int>("host_port", "port of the rosbridge_server host")
@@ -76,12 +77,9 @@ protected:
 
   void setOutputFromMessage(const std::string& name, const rapidjson::Value& message)
   {
-    rapidjson::StringBuffer strbuf;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
-    rapidjson::Document document;
+    rapidjson::CopyDocument document;
     document.CopyFrom(message, document.GetAllocator());
-    document.Accept(writer);
-    setOutput(name, strbuf.GetString());
+    setOutput(name, document);
   }
 };
 
