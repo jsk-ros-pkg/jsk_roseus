@@ -11,9 +11,12 @@ namespace roseus_bt
 class RosbridgeSubscriberClient
 {
 public:
-  RosbridgeSubscriberClient(const std::string& master, int port, const std::string& topic_name):
+  RosbridgeSubscriberClient(const std::string& master, int port,
+                            const std::string& topic_name,
+                            const std::string& topic_type):
     rbc_(fmt::format("{}:{}", master, std::to_string(port))),
-    topic_name_(topic_name)
+    topic_name_(topic_name),
+    topic_type_(topic_type)
   {
     rbc_.addClient("topic_subscriber");
   }
@@ -23,12 +26,13 @@ public:
   }
 
   void registerCallback(auto callback) {
-    rbc_.subscribe("topic_subscriber", topic_name_, callback);
+    rbc_.subscribe("topic_subscriber", topic_name_, callback, "", topic_type_);
   }
 
 protected:
   RosbridgeWsClient rbc_;
   std::string topic_name_;
+  std::string topic_type_;
 };
 
 }  // namespace roseus_bt
