@@ -102,8 +102,6 @@ protected:
   }
 
   // port related
-  // TODO: avoid unnecessary dumping & parsing
-  // cannot use rapidjson::Value directly because it is not `CopyConstructible'
   // TODO: translate to ROS message: how to loop through slots?
 
   void feedbackCallback(std::shared_ptr<WsClient::Connection> connection,
