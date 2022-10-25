@@ -160,8 +160,8 @@ std::string PkgTemplate::package_xml_template(std::string package_name,
     package_name %
     author_name %
     author_email %
-    boost::algorithm::join(build_dependencies, ",\n") %
-    boost::algorithm::join(exec_dependencies, ",\n");
+    boost::algorithm::join(build_dependencies, "\n") %
+    boost::algorithm::join(exec_dependencies, "\n");
 
   return bfmt.str();
 }
