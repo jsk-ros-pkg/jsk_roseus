@@ -632,13 +632,15 @@ std::string XMLParser::format_get_remote_input(const XMLElement* node, const std
   std::string msg_type = node->Attribute("type");
   if (msg_type.find('/') != std::string::npos)
     return fmt::format(R"(
-    getInput("{0}", document);
+    res = getInput("{0}", document);
+    if (!res) throw BT::RuntimeError(res.error());
     rapidjson::Value {0}(document, document.GetAllocator());
     {1}->AddMember("{0}", {0}, {1}->GetAllocator());)",
     node->Attribute("name"),
     name);
   return fmt::format(R"(
-    getInput("{0}", ros_msg.{0});
+    res = getInput("{0}", ros_msg.{0});
+    if (!res) throw BT::RuntimeError(res.error());
     rapidjson::Value {0};
     {0}.{2};
     {1}->AddMember("{0}", {0}, {1}->GetAllocator());)",
@@ -818,8 +820,10 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const std::
                        node->Attribute("name"));
   };
   auto format_get_input = [](const XMLElement* node) {
-    return fmt::format("    getInput(\"{0}\", goal.{0});",
-                       node->Attribute("name"));
+    return fmt::format(1 + R"(
+    res = getInput("{0}", goal.{0});
+    if (!res) throw BT::RuntimeError(res.error());)",
+        node->Attribute("name"));
   };
   auto format_set_output = [](const XMLElement* node) {
     return fmt::format(
@@ -926,8 +930,10 @@ std::string XMLParser::generate_condition_class(const XMLElement* node, const st
                        node->Attribute("name"));
   };
   auto format_get_input = [](const XMLElement* node) {
-    return fmt::format("    getInput(\"{0}\", request.{0});",
-                       node->Attribute("name"));
+    return fmt::format(1 + R"(
+    res = getInput("{0}", request.{0});
+    if (!res) throw BT::RuntimeError(res.error());)",
+        node->Attribute("name"));
   };
 
   std::vector<std::string> provided_ports;

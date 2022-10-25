@@ -132,6 +132,14 @@ std::string GenTemplate::action_class_template(std::string package_name, std::st
                                                std::vector<std::string> provided_ports,
                                                std::vector<std::string> get_inputs,
                                                std::vector<std::string> set_outputs) {
+  auto format_send_goal = [](const std::string body) {
+    std::string decl = 1 + R"(
+    BT::Result res;
+)";
+    if (!body.empty()) return fmt::format("{}{}", decl, body);
+    return body;
+  };
+
   std::string fmt_string = 1 + R"(
 class %2%: public EusActionNode<%1%::%2%Action>
 {
@@ -176,7 +184,7 @@ EusActionNode<%1%::%2%Action>(handle, name, conf) {}
     package_name %
     nodeID %
     boost::algorithm::join(provided_ports, ",\n") %
-    boost::algorithm::join(get_inputs, "\n") %
+    format_send_goal(boost::algorithm::join(get_inputs, "\n")) %
     boost::algorithm::join(set_outputs, "\n");
 
   return bfmt.str();
@@ -193,6 +201,7 @@ std::string GenTemplate::remote_action_class_template(
     std::string decl = 1 + R"(
     rapidjson::CopyDocument document;
     GoalType ros_msg;
+    BT::Result res;
 )";
     if (!body.empty()) return fmt::format("{}{}", decl, body);
     return body;
@@ -251,6 +260,14 @@ EusRemoteActionNode("%1%/%2%Action", name, conf) {}
 std::string GenTemplate::condition_class_template(std::string package_name, std::string nodeID,
                                                  std::vector<std::string> provided_ports,
                                                  std::vector<std::string> get_inputs) {
+  auto format_send_request = [](const std::string body) {
+    std::string decl = 1 + R"(
+    BT::Result res;
+)";
+    if (!body.empty()) return fmt::format("{}{}", decl, body);
+    return body;
+  };
+
   std::string fmt_string = 1 + R"(
 class %2%: public EusConditionNode<%1%::%2%>
 {
@@ -289,7 +306,7 @@ public:
     package_name %
     nodeID %
     boost::algorithm::join(provided_ports, ",\n") %
-    boost::algorithm::join(get_inputs, "\n");
+    format_send_request(boost::algorithm::join(get_inputs, "\n"));
 
   return bfmt.str();
 }
@@ -303,6 +320,7 @@ std::string GenTemplate::remote_condition_class_template(std::string package_nam
     std::string json;
     rapidjson::Document document;
     RequestType ros_msg;
+    BT::Result res;
 )";
     if (!body.empty()) return fmt::format("{}{}", decl, body);
     return body;
