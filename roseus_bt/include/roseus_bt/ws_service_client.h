@@ -15,7 +15,11 @@ public:
     rbc_(fmt::format("{}:{}", master, std::to_string(port))),
     service_name_(service_name),
     is_active_(false)
-  {}
+  {
+    if (service_name_.front() != '/') {
+      service_name_ = '/' + service_name_;
+    }
+  }
 
   ~RosbridgeServiceClient() {}
 
