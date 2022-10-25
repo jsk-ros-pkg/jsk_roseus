@@ -20,6 +20,9 @@ protected:
                        getInput<std::string>("topic_name").value(),
                        getInput<std::string>("message_type").value())
   {
+    setOutput<uint8_t>("received_port", false);
+    setOutput<rapidjson::CopyDocument>("output_port",
+                                       rapidjson::CopyDocument(rapidjson::kObjectType));
     auto cb = std::bind(&EusRemoteSubscriberNode::topicCallback, this,
                         std::placeholders::_1,
                         std::placeholders::_2);
@@ -59,7 +62,7 @@ protected:
 protected:
   virtual void callback(const rapidjson::Value& msg) {
     setOutputFromMessage("output_port", msg);
-    setOutput("received_port", (uint8_t)true);
+    setOutput<uint8_t>("received_port", true);
   }
 
   void topicCallback(std::shared_ptr<WsClient::Connection> connection, std::shared_ptr<WsClient::InMessage> in_message)

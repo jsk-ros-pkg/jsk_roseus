@@ -12,6 +12,8 @@ protected:
   EusSubscriberNode(ros::NodeHandle& nh, const std::string& name, const BT::NodeConfiguration& conf):
     BT::ActionNodeBase(name, conf), node_(nh)
   {
+    setOutput<uint8_t>("received_port", false);
+    setOutput<MessageT>("output_port", MessageT());
     const std::string topic_name = getInput<std::string>("topic_name").value();
     sub_ = node_.subscribe(topic_name, 1000, &EusSubscriberNode::callback, this);
   }
@@ -48,7 +50,7 @@ protected:
 protected:
   virtual void callback(MessageT msg) {
     setOutput("output_port", msg);
-    setOutput("received_port", (uint8_t)true);
+    setOutput<uint8_t>("received_port", true);
   }
 
 };
