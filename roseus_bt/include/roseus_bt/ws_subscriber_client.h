@@ -18,6 +18,9 @@ public:
     topic_name_(topic_name),
     topic_type_(topic_type)
   {
+    if (topic_name_.front() != '/') {
+      topic_name_ = '/' + topic_name_;
+    }
     rbc_.addClient("topic_subscriber");
   }
 

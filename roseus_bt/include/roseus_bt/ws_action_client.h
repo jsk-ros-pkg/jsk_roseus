@@ -16,6 +16,9 @@ public:
     server_name_(server_name),
     is_active_(false)
   {
+    if (server_name_.front() != '/') {
+      server_name_ = '/' + server_name_;
+    }
     goal_topic_ = fmt::format("{}/goal", server_name_);
     result_topic_ = fmt::format("{}/result", server_name_);
     cancel_topic_ = fmt::format("{}/cancel", server_name_);
