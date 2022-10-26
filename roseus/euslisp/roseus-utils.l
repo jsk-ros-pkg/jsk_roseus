@@ -1132,10 +1132,13 @@
       (unless (ros r :success) (ros::ros-warn "Call \"~A\" fails, it returns \"~A\"" srvname (send r :message)))
       r)))
 
-(defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
+(defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp))
   "Subscribe message, just for once"
   (let (lmsg)
-    (unless (ros::get-num-publishers topic-name)
+    (if (ros::get-topic-subscriber topic-name)
+      (progn
+        (ros::ros-error (format nil "There is already subscriber for ~A. If you want to use this function, please (ros::unsubscribe \"~A\")." topic-name topic-name))
+        (return-from one-shot-subscribe))
       (cond
        (after-stamp
         (ros::subscribe topic-name mclass
@@ -1147,15 +1150,16 @@
        (t
         (ros::subscribe topic-name mclass
                         #'(lambda (msg) (setq lmsg msg))))))
-    (let ((finishtm (if timeout (ros::time-now))))
-      (when finishtm
-        (setq finishtm (ros::time+ finishtm (ros::time (/ timeout 1000.0)))))
-      (while (not (and finishtm
-                       (< (send (ros::time- finishtm (ros::time-now)) :to-Sec) 0)))
-        (unix::usleep (* 50 1000))
-        (ros::spin-once)
-        (if lmsg (return))))
-    (if unsubscribe (ros::unsubscribe topic-name))
+    (unwind-protect
+         (let ((finishtm (if timeout (ros::time-now))))
+           (when finishtm
+             (setq finishtm (ros::time+ finishtm (ros::time (/ timeout 1000.0)))))
+           (while (not (and finishtm
+                            (< (send (ros::time- finishtm (ros::time-now)) :to-Sec) 0)))
+             (unix::usleep (* 50 1000))
+             (ros::spin-once)
+             (if lmsg (return))))
+      (ros::unsubscribe topic-name))
     lmsg))
 
 (defun one-shot-publish (topic-name msg &key (wait 500) (after-stamp) (unadvertise t))
