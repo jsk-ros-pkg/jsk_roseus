@@ -1238,13 +1238,16 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
 
   EuslispMessage message(emessage);
   vpush(message._message);      // to avoid GC in csend
+  vpush(args);
   pointer request(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_REQUEST));
   pointer response(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_RESPONSE));
-  vpop();                       // pop message._message
   boost::shared_ptr<EuslispServiceCallbackHelper> *callback =
     (new boost::shared_ptr<EuslispServiceCallbackHelper>
      (new EuslispServiceCallbackHelper(fncallback, args, message.__getMD5Sum(),
                                        message.__getDataType(), request, response)));
+  vpop();  // pop args
+  vpop();  // pop message._message
+
   AdvertiseServiceOptions aso;
   aso.service.assign(service);
   aso.datatype = (*callback->get()).getDataType();
@@ -1975,8 +1978,10 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   for (int i=n-1;i>=2;i--) args=cons(ctx,argv[i],args);
 
   // avoid gc
+  vpush(args);
   pointer p=gensym(ctx);
   setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
+  vpop();
 
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
