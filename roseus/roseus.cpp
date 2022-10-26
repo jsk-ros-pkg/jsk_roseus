@@ -227,19 +227,17 @@ public:
   }
   EuslispMessage(const EuslispMessage &r) {
     context *ctx = current_ctx;
+    vpush(r._message);
     if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     if ( isclass(r._message) ) {
       //ROS_ASSERT(isclass(r._message));
-      vpush(r._message);
       _message = makeobject(r._message);
-      vpush(_message);
       csend(ctx,_message,K_ROSEUS_INIT,0);
-      vpop();                   // _message
-      vpop();                   // r._message
     } else {
       ROS_WARN("r._message must be class");prinx(ctx,r._message,ERROUT);flushstream(ERROUT);terpri(ERROUT);
       _message = r._message;
     }
+    vpop();
   }
   virtual ~EuslispMessage() { }
 
@@ -277,9 +275,7 @@ public:
     context *ctx = current_ctx;
     if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     pointer a,curclass;
-    vpush(_message);            // to avoid GC
     uint32_t len = serializationLength();
-    vpop();                     // pop _message
     a = (pointer)findmethod(ctx,K_ROSEUS_SERIALIZE,classof(_message),&curclass);
     ROS_ASSERT(a!=NIL);
     pointer r = csend(ctx,_message,K_ROSEUS_SERIALIZE,0);
@@ -410,7 +406,6 @@ public:
     int argc=0;
     //ROS_WARN("func");prinx(ctx,_scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,argp,ERROUT);flushstream(ERROUT);terpri(ERROUT);
-    vpush(eus_msg->_message);    // to avoid GC
     if ( ! ( issymbol(_scb) || piscode(_scb) || ccar(_scb)==LAMCLOSURE ) ) {
       ROS_ERROR("%s : can't find callback function", __PRETTY_FUNCTION__);
     }
@@ -423,7 +418,6 @@ public:
     
     ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_scb,(pointer)(ctx->vsp-argc),NULL,argc);
     while(argc-->0)vpop();
-    vpop();    // remove eus_msg._message
   }
   virtual const std::type_info& getTypeInfo() {
     return typeid(EuslispMessage);
@@ -504,7 +498,6 @@ public:
     }
     // Deserialization
     EuslispMessage eus_msg(_req);
-    vpush(eus_msg._message);    // _res._message, _req._message, eus_msg._message
     eus_msg.deserialize(params.request.message_start, params.request.num_bytes);
 
     // store connection header
@@ -517,11 +510,9 @@ public:
     r = ufuncall(ctx, (ctx->callfp?ctx->callfp->form:NIL),
                  _scb, (pointer)(ctx->vsp-argc),
                  NULL, argc);
-    while(argc-->0)vpop();// _res._message, _req._message, eus_msg._message
-    vpush(r); // _res._message, _req._message, eus_msg._message, r, 
-    // Serializaion
-    EuslispMessage eus_res(_res);
-    eus_res.replaceContents(r);
+    while(argc-->0)vpop();// _res._message, _req._message
+    // Serialization
+    EuslispMessage eus_res(r);
     // check return value is valid
     pointer ret_serialize_method, ret_class;
     if (ispointer(r)) {
@@ -534,7 +525,6 @@ public:
       vpop(); // _res._message
       return false;
     }
-    vpush(eus_res._message);    // _res._message, _req._message, eus_msg._message, r, eus_res._message
     uint32_t serialized_length = eus_res.serializationLength();
     params.response.num_bytes = serialized_length + 5; // add 5 bytes of message header
     params.response.buf.reset (new uint8_t[params.response.num_bytes]);
@@ -560,9 +550,6 @@ public:
       ROS_INFO("%X", tmp[i]);
     }
 #endif
-    vpop(); // _res._message, _req._message, eus_msg._message, r, eus_res._message
-    vpop(); // _res._message, _req._message, eus_msg._message, r
-    vpop(); // _res._message, _req._message, eus_msg._message
     vpop(); // _res._message, _req._message,
     vpop(); // _res._message
     return true;
@@ -766,10 +753,8 @@ pointer ROSEUS_TIME_NOW(register context *ctx,int n,pointer *argv)
   ros::Time t = ros::Time::now();
 
   timevec=makevector(C_INTVECTOR,2);
-  vpush(timevec);
   timevec->c.ivec.iv[0]=t.sec;
   timevec->c.ivec.iv[1]=t.nsec;
-  vpop();
   return (timevec);
 }
 
@@ -898,12 +883,10 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   args=NIL;
   for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
 
-  vpush(args);
   EuslispMessage msg(message);
    boost::shared_ptr<SubscriptionCallbackHelper> *callback =
      (new boost::shared_ptr<SubscriptionCallbackHelper>
       (new EuslispSubscriptionCallbackHelper(fncallback, args, message)));
-  vpop();
   SubscribeOptions so(topicname, queuesize, msg.__getMD5Sum(), msg.__getDataType());
   so.helper = *callback;
   Subscriber subscriber = lnode->subscribe(so);
@@ -1284,9 +1267,8 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
     return (NIL);
   }
 
-  EuslispMessage message(emessage);
-  vpush(message._message);      // to avoid GC in csend
   vpush(args);
+  EuslispMessage message(emessage);
   pointer request(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_REQUEST));
   pointer response(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_RESPONSE));
   boost::shared_ptr<EuslispServiceCallbackHelper> *callback =
@@ -1294,7 +1276,6 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
      (new EuslispServiceCallbackHelper(fncallback, args, message.__getMD5Sum(),
                                        message.__getDataType(), request, response)));
   vpop();  // pop args
-  vpop();  // pop message._message
 
   AdvertiseServiceOptions aso;
   aso.service.assign(service);
@@ -1899,10 +1880,8 @@ pointer ROSEUS_GET_TOPICS(register context *ctx,int n,pointer *argv)
   for (ros::master::V_TopicInfo::iterator it = topics.begin() ; it != topics.end(); it++) {
     const ros::master::TopicInfo& info = *it;
     pointer tmp = cons(ctx,makestring((char*)info.name.c_str(), info.name.length()), makestring((char*)info.datatype.c_str(), info.datatype.length()));
-    vpush(tmp);
     ccdr(ret) = cons(ctx, tmp, NIL);
     ret = ccdr(ret);
-    vpop(); // vpush(tmp)
   }
   vpop(); // vpush(ret)
 
