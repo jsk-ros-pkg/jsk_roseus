@@ -207,6 +207,16 @@ int getInteger(pointer message, pointer method) {
   return 0;
 }
 
+void store_pointer(context *ctx, pointer value) {
+  // Stores a callback list as a symbol in the lisp package.
+  // This prevents that the callable gets collected by the gc,
+  // even if there are no other references to it.
+  // TODO: cleanup when unsubscribed
+  vpush(value);
+  pointer p=gensym(ctx);
+  defconst(ctx, (char*)(p->c.sym.pname->c.str.chars), vpop(), lisppkg);
+}
+
 class EuslispMessage
 {
 public:
@@ -371,8 +381,7 @@ public:
       ROS_ERROR("subscription callback function install error");
     }
     // avoid gc
-    pointer p=gensym(ctx);
-    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    store_pointer(ctx, cons(ctx,scb,args));
   }
   ~EuslispSubscriptionCallbackHelper() {
       ROS_ERROR("subscription gc");
@@ -454,8 +463,7 @@ public:
       ROS_ERROR("service callback function install error");
     }
     // avoid gc
-    pointer p=gensym(ctx);
-    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    store_pointer(ctx, cons(ctx,scb,args));
 
     requestDataType = _req.__getDataType();
     responseDataType = _res.__getDataType();
@@ -2021,10 +2029,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   for (int i=n-1;i>=2;i--) args=cons(ctx,argv[i],args);
 
   // avoid gc
-  vpush(args);
-  pointer p=gensym(ctx);
-  setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
-  vpop();
+  store_pointer(ctx, cons(ctx,fncallback,args));
 
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
