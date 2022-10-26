@@ -310,6 +310,7 @@ void StoreConnectionHeader(EuslispMessage *eus_msg) {
     return;
   }
   context *ctx = current_ctx;
+  vpush(eus_msg->_message);
   // store conection headers
   register pointer ret, header;
   ret = cons(ctx, NIL, NIL);
@@ -323,7 +324,8 @@ void StoreConnectionHeader(EuslispMessage *eus_msg) {
   /* (setslot obj class index newval) */
   pointer slot_args[4] = {eus_msg->_message, classof(eus_msg->_message), K_ROSEUS_CONNECTION_HEADER, ccdr(header)};
   SETSLOT(ctx, 4, slot_args);
-  vpop();
+  vpop();  // ret
+  vpop();  // eus_msg->_message
 }
 
 namespace ros{
