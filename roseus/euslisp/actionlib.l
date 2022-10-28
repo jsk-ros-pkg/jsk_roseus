@@ -225,10 +225,10 @@
   (:get-state ()
     (let (state)
       (setq state (send (send comm-state :latest-goal-status) :status))
-      (case state
-        (actionlib_msgs::GoalStatus::*recalling*
+      (cond
+        ((= state actionlib_msgs::GoalStatus::*recalling*)
          (setq state actionlib_msgs::GoalStatus::*pending*))
-        (actionlib_msgs::GoalStatus::*preempting*
+        ((= state actionlib_msgs::GoalStatus::*preempting*)
          (setq state actionlib_msgs::GoalStatus::*active*)))
       state))
   (:get-goal-status-text () (send (send comm-state :latest-goal-status) :text))
