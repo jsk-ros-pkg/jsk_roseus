@@ -35,20 +35,39 @@
 (defun exec-smach-simple2 () (setq count 0) (exec-state-machine (smach-simple2)))
 (defun exec-smach-simple3 () (setq count 0) (exec-state-machine (smach-simple3)))
 (defun exec-smach-simple-nested () (setq count 0) (exec-state-machine (smach-simple-nested)))
-(run-test-smach exec-smach-simple :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
-(run-test-smach exec-smach-simple2 :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
-(run-test-smach exec-smach-simple3 :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
+; (run-test-smach exec-smach-simple :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
+; (run-test-smach exec-smach-simple2 :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
+; (run-test-smach exec-smach-simple3 :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO) (BAR) (FOO)))
+;
+; (run-test-smach exec-smach-nested :outcome5 '(nil (FOO) (BAR) (FOO) (BAR) (FOO) (BAR) nil (BAS) nil))
+; (run-test-smach exec-smach-simple-nested :outcome5 '(nil (FOO) (BAR) (FOO) (BAR) (FOO) (BAR) nil (BAS) nil))
+;
+; (run-test-smach exec-smach-userdata :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO)))
+; (run-test-smach exec-smach-userdata-hook :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO)))
+;
+; (deftest test-smach-sample-userdata ()
+; ;  (assert (eq (send (exec-smach-userdata) :name) :outcome4)
+; ;	  "sample of smach with userdata")
+;   (assert (eq (send (exec-state-machine (smach-userdata)) :name) :outcome4)
+;           "exec (smach-userdata) without initial userdata"))
 
-(run-test-smach exec-smach-nested :outcome5 '(nil (FOO) (BAR) (FOO) (BAR) (FOO) (BAR) nil (BAS) nil))
-(run-test-smach exec-smach-simple-nested :outcome5 '(nil (FOO) (BAR) (FOO) (BAR) (FOO) (BAR) nil (BAS) nil))
+(deftest test-smach-sample-userdata-no-hook ()
+  (let ((mydata '((count . 1) (test-count . 0))))
+    (exec-state-machine (smach-userdata) mydata)
+    (assert (eq (cdr (assoc 'test-count mydata)) 0)
+            "exec (smach-userdata) without hook failed")))
 
-(run-test-smach exec-smach-userdata :outcome4 '((FOO) (BAR) (FOO) (BAR) (FOO)))
-
-(deftest test-smach-sample-userdata ()
-;  (assert (eq (send (exec-smach-userdata) :name) :outcome4)
-;	  "sample of smach with userdata")
-  (assert (eq (send (exec-state-machine (smach-userdata)) :name) :outcome4)
-          "exec (smach-userdata) without initial userdata"))
+(deftest test-smach-sample-userdata-hook ()
+  (let ((mydata '((count . 1) (test-count . 0))))
+    (exec-state-machine
+      (smach-userdata) mydata
+      :before-hook-func
+      #'(lambda (userdata) (incf (cdr (assoc 'test-count userdata))))
+      :after-hook-func
+      #'(lambda (userdata) (incf (cdr (assoc 'test-count userdata))))
+      )
+    (assert (eq (cdr (assoc 'test-count mydata)) 10)
+            "exec (smach-userdata) with hook failed")))
 
 (run-test-smach exec-sample-parallel-state-machine :success '((PRESS-BUTTON) (CLOSE-DOOR) (PUT-SOAP PUT-CLOTH) (OPEN-DOOR)))
 
