@@ -6,7 +6,7 @@
 (setq ros::*debug* t)
 ;;;
 ;;;
-(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A ~A~%" (sys::thread-self) a b)))
+(setq sys::*gc-debug* t)
 (ros::roseus "clear")
 
 (ros::advertise "robotsound" sound_play::SoundRequest 5)

@@ -8,7 +8,7 @@
 
 ;;;
 ;;;
-(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
+(setq sys::*gc-debug* t)
 
 (ros::roseus "fibonacci")
 (defun fibonacci-execute-cb (server goal)

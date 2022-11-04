@@ -2,7 +2,7 @@
 ;;;
 ;;;
 
-(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
+(setq sys::*gc-debug* t)
 
 (require :unittest "lib/llib/unittest.l")
 (ros::load-ros-manifest "roseus")

@@ -8,7 +8,7 @@
 ;;(unix::putenv "ROSCONSOLE_CONFIG_FILE=/home/k-okada/ros/electric/jsk-ros-pkg/roseus/roseus.config")
 (ros::roseus "test-tf")
 
-;;(setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
+;(setq sys::*gc-debug* t)
 
 (init-unit-test)
 

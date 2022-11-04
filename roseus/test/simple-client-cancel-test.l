@@ -12,7 +12,7 @@
 ;;;
 ;;;
 
-(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
+(setq sys::*gc-debug* t)
 
 (deftest test-client-cancel-by-myself ()
   (let (c1 g1)

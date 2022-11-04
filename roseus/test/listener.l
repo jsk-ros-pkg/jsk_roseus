@@ -9,7 +9,7 @@
 ;;;
 ;;;
 (ros::roseus "listener")
-;;(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
+;(setq sys::*gc-debug* t)
 
 ;; callback function
 ;(defun string-cb (msg) (print (list 'cb (sys::thread-self) (send msg :data))))
