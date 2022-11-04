@@ -22,8 +22,8 @@
       (ros::spin-once))
     (ros::unadvertise-service topic)))
 
-(deftest test-service ()
-  (dotimes (i 5000)
+(deftest test-memory-service ()
+  (dotimes (i 2000)
      (if (zerop (mod i 100)) (ros::ros-warn "service: ~A~%" i))
      (test-once "/roseus_test/srv")))
 

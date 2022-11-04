@@ -17,8 +17,8 @@
       (ros::spin-once)
       (ros::sleep))))
 
-(deftest test-timer ()
-  (dotimes (i 3000)
+(deftest test-memory-timer ()
+  (dotimes (i 2000)
     (if (zerop (mod i 100)) (ros::ros-warn "timer: ~A~%" i))
     (test-once)))
 

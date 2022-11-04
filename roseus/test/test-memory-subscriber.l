@@ -18,8 +18,8 @@
      (ros::sleep))
    (send sub :get)))
 
-(deftest test-subscriber ()
-  (dotimes (i 5000)
+(deftest test-memory-subscriber ()
+  (dotimes (i 2000)
      (if (zerop (mod i 100)) (ros::ros-warn "subscriber: ~A" i))
      (test-once "/roseus_test/msg" std_msgs::String)))
 
