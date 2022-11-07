@@ -541,8 +541,9 @@ void XMLParser::maybe_push_message_package(const std::string message_type,
 }
 
 std::string XMLParser::format_eus_name(const std::string input) {
-  std::regex e ("([^A-Z]+)([A-Z]+)");
+  std::regex e ("([a-z]+)([A-Z]+)");
   std::string out = std::regex_replace(input, e, "$1-$2");
+  std::replace(out.begin(), out.end(), '_', '-');
   std::transform(out.begin(), out.end(), out.begin(),
                  [](unsigned char c){ return std::tolower(c); });
   return out;
