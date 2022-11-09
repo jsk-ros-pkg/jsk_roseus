@@ -859,8 +859,9 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   if (isstring(argv[0])) topicname = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
-  if (n > 1 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
-    if (argv[n-2] == K_ROSEUS_GROUPNAME) {
+  if (n > 1 && issymbol(argv[n-2]) && argv[n-2] == K_ROSEUS_GROUPNAME) {
+    if (argv[n-1] != NIL) {
+      if (!isstring(argv[n-1])) error(E_NOSTRING);
       string groupname;
       groupname.assign((char *)get_string(argv[n-1]));
       map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
@@ -872,8 +873,8 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
                   groupname.c_str(), topicname.c_str(), groupname.c_str());
         return (NIL);
       }
-      n -= 2;
     }
+    n -= 2;
   }
   if (isint(argv[n-1])) {queuesize = ckintval(argv[n-1]);n--;}
   ROS_DEBUG("subscribe %s queuesize=%d", topicname.c_str(), queuesize);
@@ -1243,8 +1244,9 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   emessage = argv[1];
   fncallback = argv[2];
 
-  if (n >= 5 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
-    if (argv[n-2] == K_ROSEUS_GROUPNAME) {
+  if (n >= 5 && issymbol(argv[n-2]) && argv[n-2] == K_ROSEUS_GROUPNAME) {
+    if (argv[n-1] != NIL) {
+      if (!isstring(argv[n-1])) error(E_NOSTRING);
       string groupname;
       groupname.assign((char *)get_string(argv[n-1]));
       map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
@@ -1256,8 +1258,8 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
                   groupname.c_str(), service.c_str(), groupname.c_str());
         return (NIL);
       }
-      n -= 2;
     }
+    n -= 2;
   }
 
   args=NIL;
@@ -1965,23 +1967,26 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   {
     if (n > 1 && issymbol(argv[n-2])) {
       // ;; oneshot ;;
-      if (argv[n-2] == K_ROSEUS_ONESHOT && issymbol(argv[n-1])) {
+      if (argv[n-2] == K_ROSEUS_ONESHOT) {
         if ( argv[n-1] != NIL ) {
           oneshot = true;
         }
         n -= 2;
       }
       // ;; groupname ;;
-      else if (argv[n-2] == K_ROSEUS_GROUPNAME && isstring(argv[n-1])) {
-        groupname.assign((char *)get_string(argv[n-1]));
-        map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
-        if( it != s_mapHandle.end() ) {
-          ROS_DEBUG("create-timer with groupname=%s", groupname.c_str());
-          lnode = (it->second).get();
-        } else {
-          ROS_ERROR("Groupname %s is missing. Call (ros::create-nodehandle \"%s\") first.",
-                    groupname.c_str(), groupname.c_str());
-          return (NIL);
+      else if (argv[n-2] == K_ROSEUS_GROUPNAME) {
+        if (argv[n-1] != NIL) {
+          if (!isstring(argv[n-1])) error(E_NOSTRING);
+          groupname.assign((char *)get_string(argv[n-1]));
+          map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+          if( it != s_mapHandle.end() ) {
+            ROS_DEBUG("create-timer with groupname=%s", groupname.c_str());
+            lnode = (it->second).get();
+          } else {
+            ROS_ERROR("Groupname %s is missing. Call (ros::create-nodehandle \"%s\") first.",
+                      groupname.c_str(), groupname.c_str());
+            return (NIL);
+          }
         }
         n -= 2;
       }
