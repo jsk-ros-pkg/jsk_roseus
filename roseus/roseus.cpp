@@ -98,7 +98,8 @@ extern "C" {
   byte *get_string(register pointer s){
     if (isstring(s)) return(s->c.str.chars);
     if (issymbol(s)) return(s->c.sym.pname->c.str.chars);
-    else error(E_NOSTRING); return NULL; }
+    else error(E_NOSTRING);
+    return NULL; }
 }
 
 #undef class
