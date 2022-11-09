@@ -229,7 +229,7 @@ public:
   EuslispMessage(const EuslispMessage &r) {
     context *ctx = current_ctx;
     vpush(r._message);
-    if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
+    // if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     if ( isclass(r._message) ) {
       //ROS_ASSERT(isclass(r._message));
       _message = makeobject(r._message);
@@ -264,7 +264,7 @@ public:
 
   uint32_t serializationLength() const {
     context *ctx = current_ctx;
-    if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
+    // if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     pointer a,curclass;
     a = (pointer)findmethod(ctx,K_ROSEUS_SERIALIZATION_LENGTH,classof(_message),&curclass);
     ROS_ASSERT(a!=NIL);
@@ -274,7 +274,7 @@ public:
   virtual uint8_t *serialize(uint8_t *writePtr, uint32_t seqid) const
   {
     context *ctx = current_ctx;
-    if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
+    // if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     pointer a,curclass;
     uint32_t len = serializationLength();
     a = (pointer)findmethod(ctx,K_ROSEUS_SERIALIZE,classof(_message),&curclass);
@@ -290,7 +290,7 @@ public:
   virtual uint8_t *deserialize(uint8_t *readPtr, uint32_t sz)
   {
     context *ctx = current_ctx;
-    if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
+    // if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     pointer a,curclass;
 
     if ( sz == 0 ) {
