@@ -1891,8 +1891,11 @@ pointer ROSEUS_GET_TOPICS(register context *ctx,int n,pointer *argv)
 class TimerFunction
 {
   pointer _scb, _args;
+  string _funcname;
+  bool _oneshot;
 public:
-  TimerFunction(pointer scb, pointer args) : _scb(scb), _args(args) {
+  TimerFunction(pointer scb, pointer args, string funcname, bool oneshot) :
+    _scb(scb), _args(args), _funcname(funcname), _oneshot(oneshot) {
     //context *ctx = current_ctx;
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
@@ -1932,6 +1935,16 @@ public:
     ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_scb,(pointer)(ctx->vsp-argc),NULL,argc);
     while(argc-->0)vpop();
 
+    // unregister callback when finished
+    if (_oneshot) {
+      bool bSuccess = s_mapTimered.erase(_funcname)>0;
+      if (bSuccess) {
+        ROS_DEBUG("one shot timer successfully exited: %s", _funcname.c_str());
+      }
+      else {
+        ROS_ERROR("could not unregister oneshot timer: %s", _funcname.c_str());
+      }
+    }
   }
 };
 
@@ -2012,7 +2025,8 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
 
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
-  s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), TimerFunction(fncallback, args), oneshot);
+  TimerFunction t_fn(fncallback, args, fncallname, oneshot);
+  s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), t_fn, oneshot);
 
   return (T);
 }
