@@ -14,6 +14,15 @@
 
 (in-package "ROS")
 
+(defvar ros::*compile-message* nil)
+(defvar ros::*static-data-vector*
+  (vector
+   (make-hash-table :size 32 :test #'string=)  ;; s_mapSubscribed
+   (make-hash-table :size 32 :test #'string=)  ;; s_mapServiced
+   (make-hash-table :size 16 :test #'string=)  ;; s_mapTimered
+   ))
+
+
 (defun ros::roseus-sigint-handler (sig)
   (ros::ros-error "Received shutdown request (SIGINT)")
   (exit 1))
@@ -54,8 +63,6 @@
                         (elt lisp::*eustop-argument* i)))))
       (ros::set-logger-level level)
       )))
-
-(setq ros::*compile-message* nil)
 
 (shadow 'object *package*)
 (defclass ros::object

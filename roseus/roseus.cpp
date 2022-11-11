@@ -196,7 +196,12 @@ static bool s_bInstalled = false;
 #define s_mapTimered s_staticdata.mapTimered
 #define s_mapHandle s_staticdata.mapHandle
 
+#define s_mapSubscribedIndex 0
+#define s_mapServicedIndex 1
+#define s_mapTimeredIndex 2
+
 pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_CONNECTION_HEADER,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,K_ROSEUS_ONESHOT,K_ROSEUS_LAST_EXPECTED,K_ROSEUS_LAST_REAL,K_ROSEUS_CURRENT_EXPECTED,K_ROSEUS_CURRENT_REAL,K_ROSEUS_LAST_DURATION,K_ROSEUS_SEC,K_ROSEUS_NSEC,QANON,QNOOUT,QREPOVERSION,QROSDEBUG,QROSINFO,QROSWARN,QROSERROR,QROSFATAL;
+pointer QSTATICDATAVECTOR, K_ROSEUS_ENTER, K_ROSEUS_DELETE;
 extern pointer LAMCLOSURE;
 
 /***********************************************************
@@ -254,14 +259,21 @@ int getInteger(pointer message, pointer method) {
   return 0;
 }
 
-void store_pointer(context *ctx, pointer value) {
-  // Stores a callback list as a symbol in the lisp package.
+void store_pointer(context *ctx, string name, int index, pointer value) {
+  // Stores a callback list in ros::*static-data-vector*
   // This prevents that the callable gets collected by the gc,
   // even if there are no other references to it.
-  // TODO: cleanup when unsubscribed
   vpush(value);
-  pointer p=gensym(ctx);
-  defconst(ctx, (char*)(p->c.sym.pname->c.str.chars), vpop(), lisppkg);
+  pointer p=makestring((char *)name.c_str(), name.size());
+  csend(ctx,speval(QSTATICDATAVECTOR)->c.vec.v[index],K_ROSEUS_ENTER,2,p,vpop());
+}
+
+void erase_pointer(context *ctx, string name, int index) {
+  // Removes the entry for ros::*static-data-vector*,
+  // meaning that the pointers can be deallocated if
+  // there are no other references to them.
+  pointer p=makestring((char *)name.c_str(), name.size());
+  csend(ctx,speval(QSTATICDATAVECTOR)->c.vec.v[index],K_ROSEUS_DELETE,1,p);
 }
 
 class EuslispMessage
@@ -408,7 +420,9 @@ public:
   pointer _scb,_args;
   EuslispMessage _msg;
 
-  EuslispSubscriptionCallbackHelper(pointer scb, pointer args,pointer tmpl) :  _args(args), _msg(tmpl) {
+  EuslispSubscriptionCallbackHelper(string name, pointer scb, pointer args, pointer tmpl) :
+    _args(args), _msg(tmpl)
+  {
     context *ctx = current_ctx;
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
@@ -424,7 +438,7 @@ public:
       ROS_ERROR("subscription callback function install error");
     }
     // avoid gc
-    store_pointer(ctx, cons(ctx,scb,args));
+    store_pointer(ctx, name, s_mapSubscribedIndex, cons(ctx,scb,args));
   }
   ~EuslispSubscriptionCallbackHelper() {
       ROS_ERROR("subscription gc");
@@ -487,7 +501,9 @@ public:
   string md5, datatype, requestDataType, responseDataType,
     requestMessageDefinition, responseMessageDefinition;
 
-  EuslispServiceCallbackHelper(pointer scb, pointer args, string smd5, string sdatatype, pointer reqclass, pointer resclass) : _args(args), _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype) {
+  EuslispServiceCallbackHelper(string name, pointer scb, pointer args, string smd5, string sdatatype, pointer reqclass, pointer resclass) :
+    _args(args), _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype)
+  {
     context *ctx = current_ctx;
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
@@ -504,7 +520,7 @@ public:
       ROS_ERROR("service callback function install error");
     }
     // avoid gc
-    store_pointer(ctx, cons(ctx,scb,args));
+    store_pointer(ctx, name, s_mapServicedIndex, cons(ctx,scb,args));
 
     requestDataType = _req.__getDataType();
     responseDataType = _res.__getDataType();
@@ -665,6 +681,8 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   K_ROSEUS_LAST_DURATION = defkeyword(ctx,"LAST-DURATION");
   K_ROSEUS_SEC = defkeyword(ctx,"SEC");
   K_ROSEUS_NSEC = defkeyword(ctx,"NSEC");
+  K_ROSEUS_ENTER = defkeyword(ctx,"ENTER");
+  K_ROSEUS_DELETE = defkeyword(ctx,"DELETE");
 
   s_mapAdvertised.clear();
   s_mapSubscribed.clear();
@@ -934,7 +952,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   EuslispMessage msg(message);
    boost::shared_ptr<SubscriptionCallbackHelper> *callback =
      (new boost::shared_ptr<SubscriptionCallbackHelper>
-      (new EuslispSubscriptionCallbackHelper(fncallback, args, message)));
+      (new EuslispSubscriptionCallbackHelper(topicname, fncallback, args, message)));
   SubscribeOptions so(topicname, queuesize, msg.__getMD5Sum(), msg.__getDataType());
   so.helper = *callback;
   Subscriber subscriber = lnode->subscribe(so);
@@ -957,6 +975,7 @@ pointer ROSEUS_UNSUBSCRIBE(register context *ctx,int n,pointer *argv)
   else error(E_NOSTRING);
 
   bool bSuccess = s_mapSubscribed.erase(topicname)>0;
+  erase_pointer(ctx, topicname, s_mapSubscribedIndex);
 
   return (bSuccess?T:NIL);
 }
@@ -1322,7 +1341,7 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   pointer response(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_RESPONSE));
   boost::shared_ptr<EuslispServiceCallbackHelper> *callback =
     (new boost::shared_ptr<EuslispServiceCallbackHelper>
-     (new EuslispServiceCallbackHelper(fncallback, args, message.__getMD5Sum(),
+     (new EuslispServiceCallbackHelper(service, fncallback, args, message.__getMD5Sum(),
                                        message.__getDataType(), request, response)));
   vpop();  // pop args
 
@@ -1354,6 +1373,7 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
 
   ROS_DEBUG("unadvertise %s", service.c_str());
   bool bSuccess = s_mapServiced.erase(service)>0;
+  erase_pointer(ctx, service, s_mapServicedIndex);
 
   return (bSuccess?T:NIL);
 }
@@ -1987,6 +2007,7 @@ public:
     // unregister callback when finished
     if (_oneshot) {
       bool bSuccess = s_mapTimered.erase(_funcname)>0;
+      erase_pointer(ctx, _funcname, s_mapTimeredIndex);
       if (bSuccess) {
         ROS_DEBUG("one shot timer successfully exited: %s", _funcname.c_str());
       }
@@ -2073,7 +2094,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   for (int i=n-1;i>=2;i--) args=cons(ctx,argv[i],args);
 
   // avoid gc
-  store_pointer(ctx, cons(ctx,fncallback,args));
+  store_pointer(ctx, fncallname, s_mapTimeredIndex, cons(ctx,fncallback,args));
 
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
@@ -2109,6 +2130,8 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   QROSWARN=defvar(ctx,"*ROSWARN*",makeint(3),rospkg);
   QROSERROR=defvar(ctx,"*ROSERROR*",makeint(4),rospkg);
   QROSFATAL=defvar(ctx,"*ROSFATAL*",makeint(5),rospkg);
+  QSTATICDATAVECTOR=intern(ctx,"*STATIC-DATA-VECTOR*",20,rospkg);
+
   defun(ctx,"SPIN",argv[0],(pointer (*)())ROSEUS_SPIN, "Enter simple event loop");
 
   defun(ctx,"SPIN-ONCE",argv[0],(pointer (*)())ROSEUS_SPINONCE,
