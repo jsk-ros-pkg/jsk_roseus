@@ -62,6 +62,13 @@
         (ros::subscribe (format nil "~A/cancel" ns)
                         actionlib_msgs::GoalID #'send self :cancel-callback 50
                         :groupname monitor-groupname))
+
+      ;; Publishing the status topic is required to make a
+      ;; connection with the action client, but doing so on
+      ;; high frequencies is slow. Throttle it to 5Hz.
+      (ros::create-timer 0.2 #'(lambda (event) (send self :publish-status))
+                         :groupname groupname)
+
       (push self *action-list*)
       (if *condition-list*
           (ros::ros-warn "Actions and Conditions detected in the same node! Start two separate nodes when reactivity is required."))
@@ -82,10 +89,7 @@
       (let ((res (funcall execute-cb self goal)))
         (when (send self :is-active)
           (send self :set-succeeded
-                (send self :result :success (not (not res)))))))
-    ;; TODO: publishing status at high frequencies is slow, but
-    ;; required to make a connection with the action client
-    (send self :publish-status))
+                (send self :result :success (not (not res))))))))
   (:set-output (name val)
     (let ((msg (send self :feedback (intern (string-upcase name) *keyword-package*) val)))
       (send msg :feedback :update_field_name name)
