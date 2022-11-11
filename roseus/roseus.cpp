@@ -124,6 +124,52 @@ using namespace std;
 #define isInstalledCheck \
   if( ! ros::ok() ) { error(E_USER,"You must call (ros::roseus \"name\") before creating the first NodeHandle"); }
 
+
+template<class Key, class Value>
+class SharedMap
+{
+public:
+  Value get(const Key& key) {
+    boost::shared_lock<boost::shared_mutex> lock(_mutex);
+    return(_map[key]);
+  }
+
+  void set(const Key& key, const Value& value) {
+    boost::unique_lock<boost::shared_mutex> lock(_mutex);
+    _map[key] = value;
+  }
+
+  size_t erase(const Key& key) {
+    boost::unique_lock<boost::shared_mutex> lock(_mutex);
+    return _map.erase(key);
+  }
+
+  void clear() {
+    boost::unique_lock<boost::shared_mutex> lock(_mutex);
+    _map.clear();
+  }
+
+  typename map<Key,Value>::iterator find(const Key& key) {
+    boost::shared_lock<boost::shared_mutex> lock(_mutex);
+    return(_map.find(key));
+  }
+
+  typename map<Key,Value>::iterator begin() {
+    boost::shared_lock<boost::shared_mutex> lock(_mutex);
+    return(_map.end());
+  }
+
+  typename map<Key,Value>::iterator end() {
+    boost::shared_lock<boost::shared_mutex> lock(_mutex);
+    return(_map.end());
+  }
+
+private:
+  map<Key,Value> _map;
+  boost::shared_mutex _mutex;
+};
+
+
 class RoseusStaticData
 {
 public:
@@ -132,12 +178,12 @@ public:
   }
   boost::shared_ptr<ros::NodeHandle> node;
   boost::shared_ptr<ros::Rate> rate;
-  map<string, boost::shared_ptr<Publisher> > mapAdvertised; ///< advertised topics
-  map<string, boost::shared_ptr<Subscriber> > mapSubscribed; ///< subscribed topics
-  map<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
-  map<string, Timer > mapTimered; ///< subscribed timers
+  SharedMap<string, boost::shared_ptr<Publisher> > mapAdvertised; ///< advertised topics
+  SharedMap<string, boost::shared_ptr<Subscriber> > mapSubscribed; ///< subscribed topics
+  SharedMap<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
+  SharedMap<string, Timer > mapTimered; ///< subscribed timers
 
-  map<string, boost::shared_ptr<NodeHandle> > mapHandle; ///< for grouping nodehandle
+  SharedMap<string, boost::shared_ptr<NodeHandle> > mapHandle; ///< for grouping nodehandle
 };
 
 static RoseusStaticData s_staticdata;
@@ -694,10 +740,10 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
   boost::shared_ptr<NodeHandle> hd;
   if ( n > 1 ) {
     hd = boost::shared_ptr<NodeHandle> (new NodeHandle(ns));
-    s_mapHandle[groupname] = hd;
+    s_mapHandle.set(groupname, hd);
   } else {
     hd = boost::shared_ptr<NodeHandle>(new NodeHandle());
-    s_mapHandle[groupname] = hd;
+    s_mapHandle.set(groupname, hd);
   }
   //add callbackqueue to hd
   hd->setCallbackQueue( new CallbackQueue() );
@@ -894,7 +940,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   Subscriber subscriber = lnode->subscribe(so);
   boost::shared_ptr<Subscriber> sub = boost::shared_ptr<Subscriber>(new Subscriber(subscriber));
   if ( !!sub ) {
-    s_mapSubscribed[topicname] = sub;
+    s_mapSubscribed.set(topicname, sub);
   } else {
     ROS_ERROR("s_mapSubscribed");
   }
@@ -992,7 +1038,7 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   Publisher publisher = s_node->advertise(ao);
   boost::shared_ptr<Publisher> pub = boost::shared_ptr<Publisher>(new Publisher(publisher));
   if ( !!pub ) {
-    s_mapAdvertised[topicname] = pub;
+    s_mapAdvertised.set(topicname, pub);
   } else {
     ROS_ERROR("s_mapAdvertised");
   }
@@ -1290,7 +1336,7 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   ServiceServer server = lnode->advertiseService(aso);
   boost::shared_ptr<ServiceServer> ser = boost::shared_ptr<ServiceServer>(new ServiceServer(server));
   if ( !!ser ) {
-    s_mapServiced[service] = ser;
+    s_mapServiced.set(service, ser);
   } else {
     ROS_ERROR("s_mapServiced");
   }
@@ -2032,7 +2078,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
   TimerFunction t_fn(fncallback, args, fncallname, oneshot);
-  s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), t_fn, oneshot);
+  s_mapTimered.set(fncallname, lnode->createTimer(ros::Duration(period), t_fn, oneshot));
 
   return (T);
 }
