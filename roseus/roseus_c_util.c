@@ -18,7 +18,7 @@ extern pointer ___roseus_c_util();
 #define ismatrix(p) ((isarray(p) && \
                       p->c.ary.rank==makeint(2) && \
                       elmtypeof(p->c.ary.entity)==ELM_FLOAT))
-#define ckvsize(a,b) ((a->c.vec.size==b->c.vec.size)?vecsize(a):(int)error(E_VECINDEX))
+#define ckvsize(a,b) ((a->c.vec.size==b->c.vec.size)?vecsize(a):error(E_VECINDEX))
 
 pointer CONV_MSG2_PC (ctx,n,argv)
      register context *ctx;
