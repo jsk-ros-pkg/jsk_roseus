@@ -14,6 +14,7 @@ public:
   RosbridgeActionClient(const std::string& master, int port, const std::string& server_name, const std::string& action_type):
     rbc_(fmt::format("{}:{}", master, std::to_string(port))),
     server_name_(server_name),
+    result_(rapidjson::kObjectType),
     is_active_(false)
   {
     if (server_name_.front() != '/') {
@@ -89,7 +90,7 @@ protected:
   RosbridgeWsClient rbc_;
 
   bool is_active_;
-  rapidjson::Value result_;
+  rapidjson::Document result_;
 
   std::string server_name_;
   std::string goal_topic_;
@@ -108,10 +109,7 @@ protected:
     std::cout << "resultCallback(): Message Received: " << message << std::endl;
 #endif
 
-    rapidjson::Document document(rapidjson::kObjectType);
-    document.Parse(message.c_str());
-    rapidjson::Value res(document, document.GetAllocator());
-    result_ = res;
+    result_.Parse(message.c_str());
 
     is_active_ = false;
   }

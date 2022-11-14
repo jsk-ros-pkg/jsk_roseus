@@ -14,6 +14,7 @@ public:
   RosbridgeServiceClient(const std::string& master, int port, const std::string& service_name):
     rbc_(fmt::format("{}:{}", master, std::to_string(port))),
     service_name_(service_name),
+    result_(rapidjson::kObjectType),
     is_active_(false)
   {
     if (service_name_.front() != '/') {
@@ -46,7 +47,9 @@ public:
   }
 
   void waitForResult() {
+#ifdef DEBUG
     std::cout << "RemoteService: waiting for result: " << service_name_ << std::endl;
+#endif
     while (is_active_) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -58,7 +61,7 @@ protected:
   RosbridgeWsClient rbc_;
 
   bool is_active_;
-  rapidjson::Value result_;
+  rapidjson::Document result_;
 
   std::string service_name_;
 
@@ -71,10 +74,7 @@ protected:
     std::cout << "serviceResponseCallback(): Message Received: " << message << std::endl;
 #endif
 
-    rapidjson::Document document(rapidjson::kObjectType);
-    document.Parse(message.c_str());
-    rapidjson::Value res(document, document.GetAllocator());
-    result_ = res;
+    result_.Parse(message.c_str());
 
     is_active_ = false;
     connection->send_close(1000);
