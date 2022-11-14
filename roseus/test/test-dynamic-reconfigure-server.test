@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="test_dynamic_reconfigure_server" pkg="roseus" type="roseus" args="$(find roseus)/test/test-dynamic-reconfigure-server.l" />
+</launch>
