@@ -173,11 +173,6 @@ EusActionNode<%1%::%2%Action>(handle, name, conf) {}
     return NodeStatus::FAILURE;
   }
 
-  virtual NodeStatus onFailedRequest(FailureCause failure) override
-  {
-    return NodeStatus::FAILURE;
-  }
-
 };
 )";
   boost::format bfmt = boost::format(fmt_string) %
@@ -291,11 +286,6 @@ public:
   NodeStatus onResponse(const ResponseType& res) override
   {
     if (res.success) return NodeStatus::SUCCESS;
-    return NodeStatus::FAILURE;
-  }
-
-  virtual NodeStatus onFailedRequest(FailureCause failure) override
-  {
     return NodeStatus::FAILURE;
   }
 
@@ -484,12 +474,19 @@ int main(int argc, char **argv)
 
   NodeStatus status = NodeStatus::IDLE;
 
-  while( ros::ok() && (status == NodeStatus::IDLE || status == NodeStatus::RUNNING))
-  {
-    ros::spinOnce();
-    status = tree.tickRoot();
-    ros::Duration sleep_time(0.005);
-    sleep_time.sleep();
+  std::cout << "Writing log to file: " << log_filename << std::endl;
+
+  try {
+    while( ros::ok() && (status == NodeStatus::IDLE || status == NodeStatus::RUNNING))
+      {
+        ros::spinOnce();
+        status = tree.tickRoot();
+        ros::Duration sleep_time(0.005);
+        sleep_time.sleep();
+      }
+  }
+  catch(BT::RuntimeError& err) {
+    std::cerr << "Behavior Tree execution terminated after throwing an instance of 'BT::RuntimeError'" << "\n  what():  " << err.what() << std::endl;
   }
 
   std::cout << "Writed log to file: " << log_filename << std::endl;

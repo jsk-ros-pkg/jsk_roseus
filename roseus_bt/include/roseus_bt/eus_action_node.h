@@ -40,10 +40,18 @@ public:
   virtual NodeStatus onResult( const typename BT::RosActionNode<ActionT>::ResultType& res) = 0;
   virtual void onFeedback( const typename FeedbackType::ConstPtr& feedback) = 0;
 
+  virtual NodeStatus onFailedRequest(enum BT::RosActionNode<ActionT>::FailureCause failure) override
+  {
+    const std::string server_name = BT::TreeNode::getInput<std::string>("server_name").value();
+    throw BT::RuntimeError("Lost connection to action server at: ", server_name);
+  }
+
   virtual void halt() override
   {
     BT::RosActionNode<ActionT>::halt();
-    BT::RosActionNode<ActionT>::action_client_->waitForResult();
+    if (BT::RosActionNode<ActionT>::action_client_->isServerConnected()) {
+      BT::RosActionNode<ActionT>::action_client_->waitForResult();
+    }
   }
 
 protected:

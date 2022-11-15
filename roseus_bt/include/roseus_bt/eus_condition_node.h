@@ -26,6 +26,12 @@ protected:
 public:
   EusConditionNode() = delete;
   virtual ~EusConditionNode() = default;
+
+  virtual NodeStatus onFailedRequest(enum BT::RosServiceNode<ServiceT>::FailureCause failure) override
+  {
+    const std::string server_name = BT::TreeNode::getInput<std::string>("service_name").value();
+    throw BT::RuntimeError("Lost connection to service server at: ", server_name);
+  }
 };
 
 }  // namespace BT
