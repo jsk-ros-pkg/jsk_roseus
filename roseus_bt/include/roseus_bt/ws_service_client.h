@@ -2,6 +2,7 @@
 #define BEHAVIOR_TREE_ROSEUS_BT_WS_SERVICE_CLIENT_
 
 #include <rosbridgecpp/rosbridge_ws_client.hpp>
+#include <behaviortree_cpp_v3/exceptions.h>
 #include <fmt/format.h>
 
 
@@ -42,6 +43,14 @@ public:
   }
 
   rapidjson::Value getResult() {
+    if (!(result_["result"].GetBool())) {
+      std::string err = "Error calling remote service: " + service_name_;
+      if (result_["values"].IsString()) {
+        err += "\n  what():  ";
+        err += result_["values"].GetString();
+      }
+      throw BT::RuntimeError(err);
+    }
     // TODO: reset result after getting
     return result_["values"].GetObject();
   }
