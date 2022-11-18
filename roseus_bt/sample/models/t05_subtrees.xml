@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <SequenceStar name="InitSequence">
+            <Action ID="InitWithBroom" name="Initialize Task"/>
+            <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"/>
+            <Sequence>
+                <SubTree ID="PourTask" coords="bottle_coords"/>
+                <SubTree ID="SweepTask"/>
+            </Sequence>
+        </SequenceStar>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="PourTask">
+        <Sequence name="MainSequence">
+            <Fallback name="MoveToTable">
+                <Condition ID="atSpot" spot="table-front"/>
+                <Action ID="MoveTo" name="MoveToSpot" spot="table-front"/>
+            </Fallback>
+            <Action ID="PickBottleAt" coords="${coords}" name="PickBottleAtCoords"/>
+            <Action ID="PourBottle"/>
+            <Action ID="PlaceBottle"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="SweepTask">
+        <Sequence name="MainSequence">
+            <Fallback name="MoveToBroom">
+                <Condition ID="atSpot" spot="broom-front"/>
+                <Action ID="MoveTo" spot="broom-front"/>
+            </Fallback>
+            <Timeout msec="5000">
+                <Action ID="SweepFloor"/>
+            </Timeout>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <SubTree ID="PourTask"/>
+        <SubTree ID="SweepTask"/>
+
+        <Action ID="InitWithBroom" server_name="/t05_subtrees/init"/>
+        <Action ID="MoveTo" server_name="/t05_subtrees/moveto">
+            <input_port name="spot" type="string"/>
+        </Action>
+        <Action ID="PickBottleAt" server_name="/t05_subtrees/pickbottleat">
+            <input_port name="coords" type="geometry_msgs/Pose"/>
+        </Action>
+        <Action ID="PourBottle" server_name="/t05_subtrees/pourbottle"/>
+        <Action ID="PlaceBottle" server_name="/t05_subtrees/placebottle"/>
+        <Action ID="SweepFloor" server_name="/t05_subtrees/sweepfloor"/>
+        <Action ID="setCoords" server_name="/t05_subtrees/setcoords">
+            <output_port name="coords" type="geometry_msgs/Pose"/>
+        </Action>
+
+        <Condition ID="atSpot" service_name="/t05_subtrees/atspot">
+            <input_port name="spot" type="string"/>
+        </Condition>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+

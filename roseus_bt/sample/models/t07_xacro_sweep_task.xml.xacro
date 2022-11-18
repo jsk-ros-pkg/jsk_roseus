@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<root xmlns:xacro="http://www.ros.org/wiki/xacro" main_tree_to_execute="BehaviorTree">
+
+  <xacro:arg name="main" default="false"/>
+
+  <xacro:macro name="generate_bt" params="ID">
+    <BehaviorTree ID="${ID}">
+        <Sequence name="MainSequence">
+            <Fallback name="MoveToBroom">
+                <Condition ID="atSpot" spot="broom-front"/>
+                <Action ID="MoveTo" spot="broom-front"/>
+            </Fallback>
+            <Timeout msec="5000">
+                <Action ID="SweepFloor"/>
+            </Timeout>
+        </Sequence>
+    </BehaviorTree>
+  </xacro:macro>
+
+  <xacro:macro name="list_nodes" params="namespace">
+    <Action ID="MoveTo" server_name="${namespace}/moveto">
+        <input_port name="spot" type="string"/>
+    </Action>
+    <Action ID="SweepFloor" server_name="${namespace}/sweepfloor"/>
+    <Condition ID="atSpot" service_name="${namespace}/atspot">
+        <input_port name="spot" type="string"/>
+    </Condition>
+  </xacro:macro>
+
+  <xacro:if value="$(arg main)">
+    <xacro:generate_bt ID="BehaviorTree"/>
+    <!-- ////////// -->
+    <TreeNodesModel>
+      <xacro:list_nodes namespace="/t07_xacro_sweep_task"/>
+    </TreeNodesModel>
+  </xacro:if>
+</root>
