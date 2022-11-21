@@ -64,7 +64,6 @@ public:
       action_client_.cancelGoal();
     }
     setStatus(NodeStatus::IDLE);
-    action_client_.waitForResult();
   }
 
 protected:
