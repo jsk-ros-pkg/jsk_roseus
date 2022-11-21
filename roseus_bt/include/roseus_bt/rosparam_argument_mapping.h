@@ -5,9 +5,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <fmt/format.h>
-#include <boost/program_options.hpp>
-#include <behaviortree_cpp_v3/bt_factory.h>
 #include <ros/ros.h>
 #include <xmlrpcpp/XmlRpc.h>
 
@@ -23,17 +20,18 @@ bool parse_rosparam(ros::NodeHandle pnh, std::map<std::string, std::string>& arg
   std::string n_name = pnh.resolveName("") + "/";
   pnh.getParamNames(param_names);
 
-  for (int i = 0; i < param_names.size(); ++i)
+  for (std::string p_name : param_names)
   {
-    std::string p_name = param_names[i];
-    XmlRpc::XmlRpcValue p_value;
     if (!(p_name.size() > n_name.size() &&
             std::equal(std::begin(n_name), std::end(n_name), std::begin(p_name))))
     {
       continue;
     }
-    bool is_get = pnh.getParam(p_name, p_value);
-    if (!is_get) return false;
+    XmlRpc::XmlRpcValue p_value;
+    if (!pnh.getParam(p_name, p_value))
+    {
+      return false;
+    }
     p_name = p_name.substr(n_name.size());
     if (p_value.getType() == XmlRpc::XmlRpcValue::TypeString)
     {
@@ -53,14 +51,12 @@ bool parse_rosparam(ros::NodeHandle pnh, std::map<std::string, std::string>& arg
     }
     else if (p_value.getType() == XmlRpc::XmlRpcValue::TypeArray)
     {
-      std::cout << "Array param is not supported, so skipped!\n";
-      std::cout <<  p_name << "\n";
+      std::cout << "Array param is not supported! Skipping: " << p_name << "\n";
       continue;
     }
     else
     {
-      std::cerr << "Unknown param type!\n";
-      std::cerr <<  p_name << "\n";
+      std::cerr << "Unknown param type: " << p_name << "\n";
       return false;
     }
   }

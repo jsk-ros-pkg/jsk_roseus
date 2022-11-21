@@ -7,7 +7,6 @@
 #include <vector>
 #include <fmt/format.h>
 #include <boost/program_options.hpp>
-#include <behaviortree_cpp_v3/bt_factory.h>
 #include <ros/init.h>
 
 #include <roseus_bt/common_argument_mapping.h>
