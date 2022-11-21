@@ -812,6 +812,10 @@ std::string XMLParser::generate_headers(const std::string package_name) {
 }
 
 std::string XMLParser::generate_action_class(const XMLElement* node, const std::string package_name) {
+  auto format_timeout_port = []() {
+    return fmt::format("      InputPort<unsigned>(\"timeout\", 500, \"{0}\")",
+                       "timeout to connect (milliseconds)");
+  };
   auto format_input_port = [](const XMLElement* node) {
     return fmt::format("      InputPort<GoalType::_{0}_type>(\"{0}\")",
                        node->Attribute("name"));
@@ -838,6 +842,7 @@ std::string XMLParser::generate_action_class(const XMLElement* node, const std::
   std::vector<std::string> set_outputs;
 
   provided_input_ports.push_back(format_server_name(node));
+  provided_input_ports.push_back(format_timeout_port());
 
   for (auto port_node = node->FirstChildElement();
        port_node != nullptr;
