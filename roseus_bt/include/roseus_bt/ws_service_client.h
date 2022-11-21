@@ -26,6 +26,10 @@ public:
   ~RosbridgeServiceClient() {}
 
   bool call(const rapidjson::Document& request) {
+    // reset result
+    rapidjson::Document(rapidjson::kObjectType).Swap(result_);
+    result_.SetObject();
+
     auto service_cb = std::bind(&RosbridgeServiceClient::serviceCallback, this,
                                 std::placeholders::_1,
                                 std::placeholders::_2);
@@ -36,6 +40,7 @@ public:
 
   void cancelRequest() {
     // connection->send_close(1000);
+    is_active_ = false;
   }
 
   bool isActive() {
@@ -43,6 +48,12 @@ public:
   }
 
   rapidjson::Value getResult() {
+    if (!(result_.HasMember("result") &&
+          result_["result"].IsBool() &&
+          result_.HasMember("values"))) {
+      std::string err = "Invalid remote service result at: " + service_name_;
+      throw BT::RuntimeError(err);
+    }
     if (!(result_["result"].GetBool())) {
       std::string err = "Error calling remote service: " + service_name_;
       if (result_["values"].IsString()) {
@@ -51,7 +62,6 @@ public:
       }
       throw BT::RuntimeError(err);
     }
-    // TODO: reset result after getting
     return result_["values"].GetObject();
   }
 

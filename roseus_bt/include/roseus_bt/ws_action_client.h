@@ -53,6 +53,10 @@ public:
   void sendGoal(const rapidjson::Value& goal) {
     // TODO: add header and goal_id
 
+    // reset result
+    rapidjson::Document(rapidjson::kObjectType).Swap(result_);
+    result_.SetObject();
+
     rapidjson::Document action_goal;
     action_goal.SetObject();
     rapidjson::Value g(goal, action_goal.GetAllocator());
@@ -66,6 +70,15 @@ public:
     rapidjson::Document msg;
     msg.SetObject();
     rbc_.publish(cancel_topic_, msg);
+    // check if the request has been successfully processed
+    for (int i=0; i<50; i++) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      if (!is_active_) {
+        return;
+      }
+    }
+    // timed out. Force is_active_ to false
+    is_active_ = false;
   }
 
   bool isActive() {
@@ -73,12 +86,20 @@ public:
   }
 
   rapidjson::Value getResult() {
-    // TODO: reset result after getting
+    if (!(result_.HasMember("msg") &&
+          result_["msg"].IsObject() &&
+          result_["msg"].GetObject().HasMember("result") &&
+          result_["msg"].GetObject()["result"].IsObject())) {
+      std::string err = "Invalid remote action result at: " + server_name_;
+      throw BT::RuntimeError(err);
+    }
     return result_["msg"].GetObject()["result"].GetObject();
   }
 
   void waitForResult() {
+#ifdef DEBUG
     std::cout << "RemoteAction: waiting for result: " << result_topic_ << std::endl;
+#endif
     while (is_active_) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

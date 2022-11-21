@@ -59,7 +59,6 @@ public:
       service_client_.cancelRequest();
     }
     setStatus(NodeStatus::IDLE);
-    service_client_.waitForResult();
   }
 
 protected:
