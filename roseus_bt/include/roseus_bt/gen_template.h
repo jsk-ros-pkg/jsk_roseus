@@ -40,7 +40,8 @@ public:
                                         std::vector<std::string> provided_ports);
   std::string remote_subscriber_class_template(std::string nodeID, std::string message_type,
                                                std::vector<std::string> provided_ports);
-  std::string main_function_template(std::string roscpp_node_name,
+  std::string main_function_template(std::string package_name,
+                                       std::string roscpp_node_name,
                                        std::string program_description,
                                        std::string xml_filename,
                                        std::vector<std::string> register_actions,
@@ -109,6 +110,7 @@ std::string GenTemplate::launch_file_template(std::vector<std::string> launch_no
 std::string GenTemplate::headers_template(std::vector<std::string> headers) {
   std::string fmt_string = 1 + R"(
 #include <ros/ros.h>
+#include <ros/package.h>
 
 #define DEBUG  // rosbridgecpp logging
 #include <roseus_bt/eus_nodes.h>
@@ -436,7 +438,8 @@ public:
 }
 
 
-std::string GenTemplate::main_function_template(std::string roscpp_node_name,
+std::string GenTemplate::main_function_template(std::string package_name,
+                                                std::string roscpp_node_name,
                                                 std::string program_description,
                                                 std::string xml_filename,
                                                 std::vector<std::string> register_actions,
@@ -445,8 +448,12 @@ std::string GenTemplate::main_function_template(std::string roscpp_node_name,
   auto format_ros_init = [roscpp_node_name]() {
     return fmt::format("  ros::init(argc, argv, \"{}\");", roscpp_node_name);
   };
-  auto format_create_tree = [xml_filename]() {
-    return fmt::format("  auto tree = factory.createTreeFromFile(\"{}\");", xml_filename);
+  auto format_ros_filename = [package_name, xml_filename]() {
+    return fmt::format("fmt::format(\"{{0}}/{1}\", ros::package::getPath(\"{0}\"))",
+                       package_name, xml_filename);
+  };
+  auto format_create_tree = [format_ros_filename]() {
+    return fmt::format("  auto tree = factory.createTreeFromFile({});", format_ros_filename());
   };
 
   std::string fmt_string = 1 + R"(

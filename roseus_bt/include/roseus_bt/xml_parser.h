@@ -91,7 +91,8 @@ protected:
   std::string generate_remote_condition_class(const XMLElement* node, const std::string package_name);
   std::string generate_subscriber_class(const XMLElement* node);
   std::string generate_remote_subscriber_class(const XMLElement* node);
-  std::string generate_main_function(const std::string roscpp_node_name,
+  std::string generate_main_function(const std::string package_name,
+                                     const std::string roscpp_node_name,
                                      const std::string program_description,
                                      const std::string xml_filename);
 
@@ -1055,7 +1056,8 @@ std::string XMLParser::generate_remote_subscriber_class(const XMLElement* node) 
                                                        provided_ports);
 }
 
-std::string XMLParser::generate_main_function(const std::string roscpp_node_name,
+std::string XMLParser::generate_main_function(const std::string package_name,
+                                              const std::string roscpp_node_name,
                                               const std::string program_description,
                                               const std::string xml_filename) {
   auto format_action_node = [](const XMLElement* node) {
@@ -1130,7 +1132,8 @@ std::string XMLParser::generate_main_function(const std::string roscpp_node_name
       register_subscribers.push_back(format_remote_subscriber_node(subscriber_node));
     }
 
-  return gen_template.main_function_template(roscpp_node_name,
+  return gen_template.main_function_template(package_name,
+                                             roscpp_node_name,
                                              program_description,
                                              xml_filename,
                                              register_actions,
@@ -1343,7 +1346,8 @@ std::string XMLParser::generate_cpp_file(const std::string package_name,
       output.append("\n\n");
     }
 
-  output.append(generate_main_function(roscpp_node_name, program_description, xml_filename));
+  output.append(generate_main_function(package_name, roscpp_node_name, program_description,
+                                       xml_filename));
 
   return output;
 }
