@@ -66,18 +66,25 @@ public:
     rbc_.publish(goal_topic_, action_goal);
   }
 
-  void cancelGoal() {
+  void cancelGoal(int timeout=-1) {
     rapidjson::Document msg;
     msg.SetObject();
     rbc_.publish(cancel_topic_, msg);
+    if (timeout < 0) {
+      return;
+    }
     // check if the request has been successfully processed
-    for (int i=0; i<50; i++) {
+    int times = timeout/10;
+    for (int i=0; i<times; i++) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
       if (!is_active_) {
         return;
       }
     }
     // timed out. Force is_active_ to false
+#ifdef DEBUG
+    std::cout << "RemoteAction: cancel request timeout" << std::endl;
+#endif
     is_active_ = false;
   }
 
