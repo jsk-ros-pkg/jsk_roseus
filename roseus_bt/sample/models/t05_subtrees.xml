@@ -6,8 +6,8 @@
             <Action ID="InitWithBroom" name="Initialize Task"/>
             <Action ID="setCoords" name="setBottleCoords" coords="${bottle_coords}"/>
             <Sequence>
-                <SubTree ID="PourTask" coords="bottle_coords"/>
-                <SubTree ID="SweepTask"/>
+                <SubTreePlus ID="PourTask" coords="bottle_coords"/>
+                <SubTreePlus ID="SweepTask"/>
             </Sequence>
         </SequenceStar>
     </BehaviorTree>
@@ -37,8 +37,8 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <SubTree ID="PourTask"/>
-        <SubTree ID="SweepTask"/>
+        <SubTreePlus ID="PourTask"/>
+        <SubTreePlus ID="SweepTask"/>
 
         <Action ID="InitWithBroom" server_name="/t05_subtrees/init"/>
         <Action ID="MoveTo" server_name="/t05_subtrees/moveto">
