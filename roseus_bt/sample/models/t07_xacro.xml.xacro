@@ -14,8 +14,8 @@
             <Action ID="InitWithBroom" name="Initialize Task"/>
             <Action ID="setCoords" name="setBottleCoords" coords="$${bottle_coords}"/>
             <Sequence>
-                <SubTree ID="PourTask" coords="bottle_coords"/>
-                <SubTree ID="SweepTask"/>
+                <SubTreePlus ID="PourTask" coords="bottle_coords"/>
+                <SubTreePlus ID="SweepTask"/>
             </Sequence>
         </SequenceStar>
     </BehaviorTree>
@@ -25,8 +25,8 @@
     <xacro:sweep_task.generate_bt ID="SweepTask"/>
     <!-- ////////// -->
     <TreeNodesModel>
-        <SubTree ID="PourTask"/>
-        <SubTree ID="SweepTask"/>
+        <SubTreePlus ID="PourTask"/>
+        <SubTreePlus ID="SweepTask"/>
 
         <Action ID="InitWithBroom" server_name="${namespace}/init"/>
         <Action ID="setCoords" server_name="${namespace}/setcoords">

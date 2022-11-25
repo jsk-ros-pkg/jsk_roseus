@@ -164,6 +164,7 @@ void XMLParser::check_xml_file(std::string filename) {
         name != "RemoteCondition" &&
         name != "Subscriber" &&
         name != "RemoteSubscriber" &&
+        name != "SubTreePlus" &&
         name != "SubTree") {
       throw XMLError::UnknownNode(node);
     }

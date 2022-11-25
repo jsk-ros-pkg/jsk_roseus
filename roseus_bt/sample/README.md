@@ -148,7 +148,7 @@ rosrun groot Groot
 
 The fifth example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseus_bt/sample/models/t05_subtrees.xml wraps up the previous task in a subtree and adds another example task.
 
-Nested trees can be defined with multiple `<BehaviorTree/>` tags and referenced with the `<SubTree/>` tag.
+Nested trees can be defined with multiple `<BehaviorTree/>` tags and referenced with the `<SubTree/>` or `<SubTreePlus/>` tag. The `<SubTreePlus/>` allows for passing both port mappings and/or static values to the subtree, and should be generally preferred over the `<SubTree/>` notation.
 
 Each subtree inherits a separate blackboard and accepts remaps in the `inner_name="outer_name"` syntax.
 
