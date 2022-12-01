@@ -17,7 +17,7 @@ case $1 in
         shift # past argument
         GDB_OPTIONS=/tmp/roseus_gdbinit
         cat <<EOF > $GDB_OPTIONS
-break error
+break -qualified error
 commands
 where
 end
