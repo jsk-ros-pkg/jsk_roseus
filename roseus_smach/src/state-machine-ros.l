@@ -141,9 +141,9 @@
      ;; TODO apply userdata
      (setq init-tm (ros::time-now))
      ))
+  (:exit-state () exit-state)
   (:register-exit-signal-hook
-    (&optional es userdata exit-signal-hook-func)
-    (if (null es) (return-from :exit-state exit-state))
+    (es userdata exit-signal-hook-func)
     (if (null (derivedp es state))
       (setq es (send self :state-machine :node es)))
     ;; update exit-state slot
