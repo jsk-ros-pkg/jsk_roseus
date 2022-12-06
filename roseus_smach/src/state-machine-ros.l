@@ -151,14 +151,14 @@
     (send self :put 'userdata userdata)
     (let ((exit-signal-hook
             `(lambda-closure nil 0 0 (sig code)
+               (ros::ros-warn " Signal ~A called.~%" (unix:signal unix::sigint))
+               (ros::ros-error "Calling exit-signal-hook.~%")
                (funcall ',exit-signal-hook-func (send ,self :get 'userdata))
+               (ros::ros-warn " Forcing transition to ~A.~%" ,es)
                (send ,self :exit-signal-hook sig code ,es (send ,self :get 'userdata)))))
       (unix:signal unix::sigint exit-signal-hook)))
   (:exit-signal-hook (sig code &optional es userdata)
     (if (null es) (return-from :exit-signal-hook (exit sig)))
-    (ros::ros-error "exit-signal-hook called.~%")
-    (ros::ros-warn " Called ~A~%" (unix:signal unix::sigint))
-    (ros::ros-warn " Force transit to ~A.~%" es)
     (send sm :active-state es)
     (send self :publish-status userdata)
     (unix:signal unix::sigint 'ros::roseus-sigint-handler)  ;; if C-c twice, kill roseus
