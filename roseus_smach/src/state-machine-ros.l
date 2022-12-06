@@ -27,6 +27,8 @@
    (ros::advertise
     (concatenate string srv-name "/smach/container_structure")
     smach_msgs::SmachContainerStructure 100 t) ;; latch type
+   ;; we need to sleep a bit for waiting publisher's initialization
+   ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/695
    (unix::usleep (round (* 0.5 1e6)))
    (if groupname
      (ros::subscribe (concatenate string srv-name "/smach/container_init")
@@ -89,6 +91,10 @@
    (&optional (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStructure :init))
          transitions from-nodes to-nodes exec-nodes)
+     ;; we need to sleep a bit to avoid too quick publication in the same topic name 
+     ;; :publish-structure calls :publish-structure itself inside,
+     ;; which causes to quick publication in the same topic name
+     ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/695
      (unix::usleep (round (* 0.1 1e6)))
      (send msg :header :seq (incf structure-counter))
      (send msg :header :stamp (ros::time-now))
