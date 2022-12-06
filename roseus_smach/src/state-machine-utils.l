@@ -12,7 +12,7 @@ Args:
   :spin (bool, default: t): call (send insp :spin-once) every time before executing state if T, call nothing otherwise.
   :hz (integer, default: 1): rate of execution loop
   :iterate (t or function): Enable asking [Y/N] on each action execution if given t, if function is given, then it is called before execution. If function returns nil, next action is not executed. Otherwise the action is executed
-  :exit-state (state or symbol): register smach's exit state when cathing sigint signal
+  :exit-state (state or symbol): register smach's exit state when catching sigint signal
   :exit-signal-hook-func (function): custom function when calling exit-state. Due to https://github.com/jsk-ros-pkg/jsk_roseus/issues/666#issuecomment-843640159 issue, you need to use '(lambda-closure nil 0 0 (userdata) ... , instead of #'(lambda (userdata) ...
 
 Returns:
