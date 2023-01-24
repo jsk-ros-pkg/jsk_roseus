@@ -1,7 +1,7 @@
 (if (not (find-package "ACTIONLIB_MSGS")) (ros::roseus-add-msgs "actionlib_msgs"))
 
 (defun goal-status-to-string (i)
-  (elt '(actionlib_msgs::GoalStatus::*pending* actionlib_msgs::GoalStatus::*active* actionlib_msgs::GoalStatus::*preempted* actionlib_msgs::GoalStatus::*succeeded* actionlib_msgs::GoalStatus::*aborted* actionlib_msgs::GoalStatus::*rejected* actionlib_msgs::GoalStatus::*preempting* actionlib_msgs::GoalStatus::*recalling* actionlib_msgs::GoalStatus::*recalled* actionlib_msgs::lost) i))
+  (elt '(actionlib_msgs::GoalStatus::*pending* actionlib_msgs::GoalStatus::*active* actionlib_msgs::GoalStatus::*preempted* actionlib_msgs::GoalStatus::*succeeded* actionlib_msgs::GoalStatus::*aborted* actionlib_msgs::GoalStatus::*rejected* actionlib_msgs::GoalStatus::*preempting* actionlib_msgs::GoalStatus::*recalling* actionlib_msgs::GoalStatus::*recalled* actionlib_msgs::GoalStatus::*lost*) i))
 
 ;; state machine transition
 (setq
