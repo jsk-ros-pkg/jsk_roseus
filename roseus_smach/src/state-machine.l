@@ -20,6 +20,17 @@
   (:init (&key (parallel nil))
      (setq parallel-action-p parallel)
      self)
+  (:node (name &key (flatten nil))
+    (if (and flatten (send self :sub-sm-node))
+      (find name (send self :nodes :flatten t)
+            :key #'(lambda (x) (send x :name)) :test #'equal)
+      (send-super :node name)))
+  (:nodes (&key (flatten nil))
+    (if (and flatten (send self :sub-sm-node))
+      (append
+        (send-super :nodes)
+        (flatten (send-all (send-all (send self :sub-sm-node) :submachine) :nodes :flatten t)))
+      (send-super :nodes)))
   (:active-state
    (&rest args)
    (let ((node (car args)))
