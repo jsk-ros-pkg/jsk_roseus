@@ -18,6 +18,12 @@
 (defun func-bar (&rest args)
   (format t "Execute state BAR~%")
   :outcome2)
+(defun func-foo-foo (&rest args)
+  (format t "Execute state FOOFOO~%")
+  :outcome6)
+(defun func-bar-bar (&rest args)
+  (format t "Execute state BARBAR~%")
+  :outcome6)
 
 (defun smach-simple ()
   (let ((sm (instance state-machine :init)))
@@ -93,6 +99,37 @@
       (send sm-sub :add-transition foo-node :outcome4 :outcome2)
       (send sm-sub :add-transition bar-node foo-node :outcome2))
 
+    sm-top ))
+
+
+(defun smach-double-nested ()
+  (let ((sm-top (instance state-machine :init))
+        (sm-sub (instance state-machine :init)))
+    ;; state instance can include other state-machine like function
+    (send sm-top :add-node (instance state :init "SUB" sm-sub))
+    (send sm-top :add-node (instance state :init "BAS" 'func-bas))
+    (send sm-top :goal-state :outcome5)
+    (send sm-top :start-state "BAS")
+    (send sm-top :add-transition "BAS" "SUB" :outcome3)
+    (send sm-top :add-transition "SUB" :outcome5 :outcome4)
+    ;; node instance can be args of :add-node, :start-state, :add-transition
+    (let ((foo-node (instance state :init "FOO" 'func-foo))
+          (sm-sub-sub (instance state-machine :init)))
+      (send sm-sub :add-node foo-node)
+      (send sm-sub :add-node (instance state :init "BAR" sm-sub-sub))
+      (send sm-sub :goal-state :outcome4)
+      (send sm-sub :start-state foo-node)
+      (send sm-sub :add-transition "FOO" "BAR" :outcome1)
+      (send sm-sub :add-transition "FOO" :outcome4 :outcome2)
+      (send sm-sub :add-transition "BAR" "FOO" :outcome7)
+      (let ((foo-foo-node (instance state :init "FOOFOO" 'func-foo-foo))
+            (bar-bar-node (instance state :init "BARBAR" 'func-bar-bar)))
+        (send sm-sub-sub :add-node foo-foo-node)
+        (send sm-sub-sub :add-node bar-bar-node)
+        (send sm-sub-sub :goal-state :outcome7)
+        (send sm-sub-sub :start-state foo-foo-node)
+        (send sm-sub-sub :add-transition "FOOFOO" "BARBAR" :outcome6)
+        (send sm-sub-sub :add-transition "BARBAR" :outcome7 :outcome6)))
     sm-top ))
 
 
