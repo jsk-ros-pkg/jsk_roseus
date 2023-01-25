@@ -1082,15 +1082,16 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
   string service;
+  numunion nu;
 
   ckarg2(1,2);
   if (isstring(argv[0])) service = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
-  int32_t timeout = -1;
+  float timeout = -1;
 
   if( n > 1 )
-    timeout = (int32_t)ckintval(argv[1]);
+    timeout = ckfltval(argv[1]);
 
   bool bSuccess = service::waitForService(service, ros::Duration(timeout));
 
@@ -1279,7 +1280,7 @@ void EusValueToXmlRpc(register context *ctx, pointer argp, XmlRpc::XmlRpcValue& 
 {
   numunion nu;
 
-  if ( islist(argp) && islist(ccar(argp))) { // alist
+  if ( islist(argp) && islist(ccar(argp)) && !islist(ccar(ccar(argp))) ) { // alist
     pointer a;
     int j;
     // set keys
@@ -1293,8 +1294,12 @@ void EusValueToXmlRpc(register context *ctx, pointer argp, XmlRpc::XmlRpcValue& 
           string skey = string((char *)get_string(ccar(v)->c.sym.pname));
           boost::algorithm::to_lower(skey);
           stringstream << "<member><name>" << skey << "</name><value><boolean>0</boolean></value></member>";
+        }
+        else if ( isstring(ccar(v)) ) {
+          string skey = string((char *)get_string(ccar(v)));
+          stringstream << "<member><name>" << skey << "</name><value><boolean>0</boolean></value></member>";
         }else{
-          ROS_ERROR("ROSEUS_SET_PARAM: EusValueToXmlRpc: assuming symbol");prinx(ctx,ccar(v),ERROUT);flushstream(ERROUT);terpri(ERROUT);
+          ROS_ERROR("ROSEUS_SET_PARAM: EusValueToXmlRpc: invalid param name; requires symbol or string");prinx(ctx,ccar(v),ERROUT);flushstream(ERROUT);terpri(ERROUT);
         }
       }else{
         ROS_ERROR("ROSEUS_SET_PARAM: EusValueToXmlRpc: assuming alist");prinx(ctx,argp,ERROUT);flushstream(ERROUT);terpri(ERROUT);
@@ -1311,6 +1316,12 @@ void EusValueToXmlRpc(register context *ctx, pointer argp, XmlRpc::XmlRpcValue& 
         if ( issymbol(ccar(v)) ) {
           string skey = string((char *)get_string(ccar(v)->c.sym.pname));
           boost::algorithm::to_lower(skey);
+          XmlRpc::XmlRpcValue p;
+          EusValueToXmlRpc(ctx, ccdr(v), p);
+          rpc_value[skey] = p;
+        }
+        else if ( isstring(ccar(v)) ) {
+          string skey = string((char *)get_string(ccar(v)));
           XmlRpc::XmlRpcValue p;
           EusValueToXmlRpc(ctx, ccdr(v), p);
           rpc_value[skey] = p;

@@ -30,10 +30,12 @@ jobs:
             NOT_TEST_INSTALL : true
             INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_pr2eus"
             TEST_PKGS : "pr2eus pr2eus_moveit"
+            BEFORE_SCRIPT: "echo 'deb http://packages.osrfoundation.org/gazebo/ubuntu trusty main' | sudo tee /etc/apt/sources.list.d/gazebo-stable.list; wget --no-check-certificate https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt update -y; sudo apt dist-upgrade -y; mkdir -p ~/.gazebo/; git clone --depth=1 https://github.com/osrf/gazebo_models.git ~/.gazebo/models"
           - ROS_DISTRO: indigo
             CONTAINER: jskrobotics/ros-ubuntu:14.04
             USE_DEB: false
             NOT_TEST_INSTALL : false
+            BEFORE_SCRIPT: "wget https://raw.githubusercontent.com/tork-a/jskeus-release/master/patches/CMakeLists.txt -O jskeus/CMakeLists.txt"
           - ROS_DISTRO: indigo
             CONTAINER: jskrobotics/ros-ubuntu:14.04
             USE_DEB: source
@@ -53,6 +55,7 @@ jobs:
             NOT_TEST_INSTALL : true
             INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_pr2eus"
             TEST_PKGS : "pr2eus pr2eus_moveit"
+            BEFORE_SCRIPT: "echo 'deb http://packages.osrfoundation.org/gazebo/ubuntu xenial main' | sudo tee /etc/apt/sources.list.d/gazebo-stable.list; wget --no-check-certificate https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt update -y"
           - ROS_DISTRO: kinetic
             CONTAINER: ubuntu:16.04
             USE_DEB: false
@@ -122,11 +125,14 @@ jobs:
              git config --global --add safe.directory $GITHUB_WORKSPACE
           fi
 
-      - name: Chcekout
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3.0.2
 
       - name: Start X server
+        if: ${{ matrix.ROS_DISTRO == 'kinetic' && matrix.TEST_PKGS == 'pr2eus pr2eus_moveit' }}
+
         run: |
+          if [[ "${{ matrix.CONTAINER }}" =~ "jskrobotics/ros-ubuntu:14.04" ]]; then exit 0; fi
           echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections || echo "failing on ros-ubuntu is OK" # set non interactive tzdata https://stackoverflow.com/questions/8671308/non-interactive-method-for-dpkg-reconfigure-tzdata
           sudo apt-get -y -qq install mesa-utils x11-xserver-utils xserver-xorg-video-dummy wget
           export DISPLAY=:0
@@ -135,6 +141,7 @@ jobs:
           sleep 3 # wait x server up
           export QT_X11_NO_MITSHM=1 # http://wiki.ros.org/docker/Tutorials/GUI
           xhost +local:root
+        shell: bash
 
       - name: Fix geneus source tree
         run: |
@@ -158,11 +165,12 @@ jobs:
       - name: Run jsk_travis
         uses: jsk-ros-pkg/jsk_travis@master
         with:
-          ROS_PARALLEL_JOBS : "-j2"
+          ROS_PARALLEL_JOBS : "-j1"
           CATKIN_PARALLEL_JOBS : "-p2"
-          ROS_PARALLEL_TEST_JOBS : "-j2"
+          ROS_PARALLEL_TEST_JOBS : "-j1"
           CATKIN_PARALLEL_TEST_JOBS : "-p2"
           ROS_DISTRO : ${{ matrix.ROS_DISTRO }}
           USE_DEB :  ${{ matrix.USE_DEB }}
           NOT_TEST_INSTALL : ${{ matrix.NOT_TEST_INSTALL }}
           TEST_PKGS : ${{ matrix.TEST_PKGS }}
+          BEFORE_SCRIPT : ${{ matrix.BEFORE_SCRIPT }}

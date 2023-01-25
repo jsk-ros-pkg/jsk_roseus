@@ -20,6 +20,17 @@
   (:init (&key (parallel nil))
      (setq parallel-action-p parallel)
      self)
+  (:node (name &key (flatten nil))
+    (if (and flatten (send self :sub-sm-node))
+      (find name (send self :nodes :flatten t)
+            :key #'(lambda (x) (send x :name)) :test #'equal)
+      (send-super :node name)))
+  (:nodes (&key (flatten nil))
+    (if (and flatten (send self :sub-sm-node))
+      (append
+        (send-super :nodes)
+        (flatten (send-all (send-all (send self :sub-sm-node) :submachine) :nodes :flatten t)))
+      (send-super :nodes)))
   (:active-state
    (&rest args)
    (let ((node (car args)))
@@ -40,6 +51,19 @@
                                   #'(lambda(n)(send (send n :submachine) :active-state node))
                                   (send self :sub-sm-node)))))
      ))
+  (:bottom-active-state (&optional top-active-state)
+    (if (null top-active-state)
+      (setq top-active-state active-state))
+    (if (and top-active-state (listp top-active-state))
+      (flatten
+        (mapcar #'(lambda (x) (send self :bottom-active-state x))
+                top-active-state))
+      (if (and top-active-state (send top-active-state :submachine))
+        (let ((sub-active-state
+                (send (send top-active-state :submachine) :bottom-active-state)))
+          (if sub-active-state
+            sub-active-state top-active-state))
+        top-active-state)))
   (:next-arc-list
    (&optional state)
    (send state :arc-list))
