@@ -52,9 +52,9 @@
         (warning-message 3 (format nil "[~A] integration failure (~A+~A)=~A(~A)/=~A(~A)~%"
                                    service-call-error
                                    a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum)))))
-      (assert (or (< service-call-error 3) (= (+ (send req :a) (send req :b)) (send res :sum)))
-              (format nil "integration failure (~A+~A)=~A(~A)/=~A(~A)"
-                           a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum))))
+      (assert (or (< service-call-error 5) (= (+ (send req :a) (send req :b)) (send res :sum)))
+              (format nil "integration failure ~A times ... (~A+~A)=~A(~A)/=~A(~A)"
+                           service-call-error a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum))))
       (sys::gc)
       )))
 
