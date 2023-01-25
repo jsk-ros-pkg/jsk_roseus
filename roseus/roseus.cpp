@@ -1082,15 +1082,16 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
   string service;
+  numunion nu;
 
   ckarg2(1,2);
   if (isstring(argv[0])) service = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
-  int32_t timeout = -1;
+  float timeout = -1;
 
   if( n > 1 )
-    timeout = (int32_t)ckintval(argv[1]);
+    timeout = ckfltval(argv[1]);
 
   bool bSuccess = service::waitForService(service, ros::Duration(timeout));
 
