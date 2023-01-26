@@ -52,3 +52,25 @@ roseus_mongo
 ## How to use
 
 see [euslisp/mongo-client-sample.l](euslisp/mongo-client-sample.l)
+
+### roseus json example
+
+Parse from json string
+```
+> load "package://roseus_mongo/euslisp/json/json-decode.l"
+> setq *parsed* (json::parse-from-string "{\"key1\" : \"value1\", \"key2\" : \"value2\"}") ;; parse json-string
+> assoc :key1 *parsed* 
+(:key1 . "value1")
+> car (assoc :key1 *parsed*)
+:key1
+> cdr (assoc :key1 *parsed*)
+"value1"
+```
+
+Convert lisp-alist to json string
+``` 
+> load "package://roseus_mongo/euslisp/json/json-encode.l"
+> setq *alist* '(("key1" . "value1") ("key2" . "value2"))
+> json::stream->string #'json::encode-alist *alist*
+"{\"key1\":\"value1\",\"key2\":\"value2\"}"
+```

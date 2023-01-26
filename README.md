@@ -7,7 +7,7 @@
 
 ### Run roseus on gdb
 ```
-gdb --args bash roseus foo.l
+roseus --gdb foo.l
 ```
 
 

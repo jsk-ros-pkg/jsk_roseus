@@ -1175,7 +1175,7 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
 
   float timeout = -1;
 
-  if( n > 1 )
+  if( n > 1 && argv[1] != NIL)
     timeout = ckfltval(argv[1]);
 
   bool bSuccess = service::waitForService(service, ros::Duration(timeout));

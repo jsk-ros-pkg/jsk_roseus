@@ -14,7 +14,7 @@
 (defclass state-machine-inspector
   :super propertied-object
   :slots (sm root-name srv-name init-tm state-counter structure-counter
-             groupname))
+             groupname exit-state exit-signal-hook))
 (defmethod state-machine-inspector
   (:init
    (sm-obj &key ((:root-name rn) "SM_ROOT") ((:srv-name sn) "/server_name") ((:groupname gp)))
@@ -27,6 +27,9 @@
    (ros::advertise
     (concatenate string srv-name "/smach/container_structure")
     smach_msgs::SmachContainerStructure 100 t) ;; latch type
+   ;; we need to sleep a bit for waiting publisher's initialization
+   ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/695
+   (unix::usleep (round (* 0.5 1e6)))
    (if groupname
      (ros::subscribe (concatenate string srv-name "/smach/container_init")
                      smach_msgs::SmachContainerInitialStatusCmd
@@ -88,6 +91,11 @@
    (&optional (machine sm) (path (format nil "/~A" root-name)))
    (let ((msg (instance smach_msgs::SmachContainerStructure :init))
          transitions from-nodes to-nodes exec-nodes)
+     ;; we need to sleep a bit to avoid too quick publication in the same topic name 
+     ;; :publish-structure calls :publish-structure itself inside,
+     ;; which causes to quick publication in the same topic name
+     ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/695
+     (unix::usleep (round (* 0.1 1e6)))
      (send msg :header :seq (incf structure-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
@@ -141,6 +149,33 @@
      ;; TODO apply userdata
      (setq init-tm (ros::time-now))
      ))
+  (:exit-state () exit-state)
+  (:exit-signal-hook () exit-signal-hook)
+  (:register-exit-signal-hook
+    (es userdata exit-signal-hook-func)
+    (if (null (derivedp es state))
+      (setq es (send self :state-machine :node es)))
+    ;; update exit-state slot
+    (setq exit-state es)
+    (send self :put 'userdata userdata)
+    ;; we need to set exit-signal-hook in slot
+    ;; to avoid memory error, GC causes this error?
+    (setq exit-signal-hook
+          `(lambda-closure nil 0 0 (sig code)
+             (ros::ros-warn " Signal ~A called." unix::sigint)
+             (ros::ros-warn "Calling exit-signal-hook.")
+             (funcall ',exit-signal-hook-func (send ,self :get 'userdata))
+             (ros::ros-warn " Forcing transition to ~A." ,es)
+             (send ,self :exit-signal-hook sig code ,es (send ,self :get 'userdata))
+             ))
+    (unix:signal unix::sigint exit-signal-hook)
+    )
+  (:exit-signal-hook (sig code &optional es userdata)
+    (if (null es) (return-from :exit-signal-hook (exit sig)))
+    (send sm :active-state es)
+    (send self :publish-status userdata)
+    (unix:signal unix::sigint 'ros::roseus-sigint-handler)  ;; if C-c twice, kill roseus
+    )
   ;;
   ;; utility for users
   ;;
