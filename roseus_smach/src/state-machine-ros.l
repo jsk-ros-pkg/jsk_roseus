@@ -14,7 +14,7 @@
 (defclass state-machine-inspector
   :super propertied-object
   :slots (sm root-name srv-name init-tm state-counter structure-counter
-             groupname))
+             groupname exit-state exit-signal-hook))
 (defmethod state-machine-inspector
   (:init
    (sm-obj &key ((:root-name rn) "SM_ROOT") ((:srv-name sn) "/server_name") ((:groupname gp)))
@@ -149,6 +149,33 @@
      ;; TODO apply userdata
      (setq init-tm (ros::time-now))
      ))
+  (:exit-state () exit-state)
+  (:exit-signal-hook () exit-signal-hook)
+  (:register-exit-signal-hook
+    (es userdata exit-signal-hook-func)
+    (if (null (derivedp es state))
+      (setq es (send self :state-machine :node es)))
+    ;; update exit-state slot
+    (setq exit-state es)
+    (send self :put 'userdata userdata)
+    ;; we need to set exit-signal-hook in slot
+    ;; to avoid memory error, GC causes this error?
+    (setq exit-signal-hook
+          `(lambda-closure nil 0 0 (sig code)
+             (ros::ros-warn " Signal ~A called." unix::sigint)
+             (ros::ros-warn "Calling exit-signal-hook.")
+             (funcall ',exit-signal-hook-func (send ,self :get 'userdata))
+             (ros::ros-warn " Forcing transition to ~A." ,es)
+             (send ,self :exit-signal-hook sig code ,es (send ,self :get 'userdata))
+             ))
+    (unix:signal unix::sigint exit-signal-hook)
+    )
+  (:exit-signal-hook (sig code &optional es userdata)
+    (if (null es) (return-from :exit-signal-hook (exit sig)))
+    (send sm :active-state es)
+    (send self :publish-status userdata)
+    (unix:signal unix::sigint 'ros::roseus-sigint-handler)  ;; if C-c twice, kill roseus
+    )
   ;;
   ;; utility for users
   ;;

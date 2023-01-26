@@ -1,0 +1,14 @@
+<launch>
+  <arg name="gui" default="true" />
+  <arg name="userdata" default="true" />
+
+  <node name="exec_smach_exit_state" pkg="roseus_smach" type="state-machine-ros-sample.l"
+        args="&quot;(exec-smach-exit-state)&quot;" unless="$(arg userdata)" output="screen" />
+
+  <node name="exec_smach_userdata_exit_state" pkg="roseus_smach" type="state-machine-ros-sample.l"
+        args="&quot;(exec-smach-userdata-exit-state)&quot;" if="$(arg userdata)" output="screen" />
+
+  <node name="$(anon smach_viewer)" pkg="smach_viewer" type="smach_viewer.py"
+        if="$(arg gui)" />
+
+</launch>
