@@ -44,7 +44,7 @@ def send_msgs():
     rospy.init_node('test_geneus_send_msgs', anonymous=True)
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():
-        for p,i in pubs.iteritems():
+        for p,i in pubs.items():
             p.publish(i)
         rate.sleep()
 
