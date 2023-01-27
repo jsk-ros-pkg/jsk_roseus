@@ -2057,6 +2057,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   // ;; arguments ;;
   args=NIL;
   for (int i=n-1;i>=2;i--) args=cons(ctx,argv[i],args);
+  vpush(args); // avoid gc
 
   // avoid gc
   pointer p=gensym(ctx);
@@ -2065,6 +2066,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
   s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), TimerFunction(fncallback, args), oneshot);
+  vpop();  // pop args
 
   return (T);
 }
