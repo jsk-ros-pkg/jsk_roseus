@@ -28,8 +28,11 @@
     (send server :worker)
     (send client :spin-once)
     (ros::ros-info "action server returned with status: ~S" (send client :get-state))
-    (assert (equal actionlib_msgs::GoalStatus::*PREEMPTED*
-                   (send client :get-state)))))))
+    (assert (equal actionlib_msgs::GoalStatus::*PREEMPTED* (send client :get-state))
+            (format nil "GoalStatus is not equal to actionlib_msgs::GoalStatus::*PREEMPTED*: ~A is expected, but client get ~A"
+                    actionlib_msgs::GoalStatus::*PREEMPTED*
+                    (send client :get-state)))
+    ))
 
 (ros::roseus "server_cancel")
 (run-all-tests)
