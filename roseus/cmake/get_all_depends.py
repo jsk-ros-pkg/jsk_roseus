@@ -48,7 +48,7 @@ def get_pkg_map():
     for ws in workspaces.get_spaces():
         pkgs = packages.find_packages(ws)
         for pkg in pkgs.values():
-            if not pkg_map.has_key(pkg.name):
+            if pkg.name not in pkg_map:
                 pkg_map[pkg.name] = pkg
     return pkg_map
 geneus.geneus_main.pkg_map = get_pkg_map()
