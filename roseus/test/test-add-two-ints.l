@@ -29,9 +29,9 @@
       (warning-message 2 "Requesting ~A(~A) + ~A(~A) -> ~A(~A)~%" a (class a) b (class b) (+ a b) (class (+ a b)))
       (setq req (instance roseus::AddTwoIntsRequest :init :a a :b b))
       (setq res (ros::service-call "add_two_ints" req))
-      (assert (= (+ (send req :a) (send req :b)) (send res :sum))
+      (assert (and res (= (+ (send req :a) (send req :b)) (send res :sum)))
               (format nil "integration failure (~A+~A)=~A(~A)/=~A(~A)"
-                           a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum))))
+                           a b (+ a b) (class (+ a b)) (if res (send res :sum)) (class (if res (send res :sum)))))
       (sys::gc)
       )))
 
@@ -47,14 +47,14 @@
       (setq res (ros::service-call "add_two_ints" req))
       ;; https://github.com/ros/ros_comm/issues/1976
       ;; service call sometimes fail
-      (when (not (= (+ (send req :a) (send req :b)) (send res :sum)))
+      (when (not (and res (= (+ (send req :a) (send req :b)) (send res :sum))))
         (incf service-call-error)
         (warning-message 3 (format nil "[~A] integration failure (~A+~A)=~A(~A)/=~A(~A)~%"
                                    service-call-error
-                                   a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum)))))
-      (assert (or (< service-call-error 5) (= (+ (send req :a) (send req :b)) (send res :sum)))
+                                   a b (+ a b) (class (+ a b)) (if res (send res :sum)) (if res (class (send res :sum))))))
+      (assert (or (< service-call-error 5) (and res (= (+ (send req :a) (send req :b)) (send res :sum))))
               (format nil "integration failure ~A times ... (~A+~A)=~A(~A)/=~A(~A)"
-                           service-call-error a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum))))
+                           service-call-error a b (+ a b) (class (+ a b)) (if res (send res :sum)) (if res (class (send res :sum)))))
       (sys::gc)
       )))
 
@@ -67,9 +67,9 @@
       (ros::ros-info "Requesting ~A(~A) + ~A(~A) -> ~A(~A)" a (class a) b (class b) (+ a b) (class (+ a b)))
       (setq req (instance roseus::AddTwoIntsRequest :init :a a :b b))
       (setq res (ros::service-call "add_two_ints" req t))
-      (assert (= (+ (send req :a) (send req :b)) (send res :sum))
+      (assert (and res (= (+ (send req :a) (send req :b)) (send res :sum)))
               (format nil "integration failure (~A+~A)=~A(~A)/=~A(~A)"
-                           a b (+ a b) (class (+ a b)) (send res :sum) (class (send res :sum))))
+                           a b (+ a b) (class (+ a b)) (if res (send res :sum)) (if res (class (send res :sum)))))
       (sys::gc)
       )))
 
