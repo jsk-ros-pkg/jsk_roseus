@@ -370,7 +370,7 @@ public:
     }
     // avoid gc
     pointer p=gensym(ctx);
-    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    defconst(ctx, (char*)(p->c.sym.pname->c.str.chars), cons(ctx,scb,args), lisppkg);
   }
   ~EuslispSubscriptionCallbackHelper() {
       ROS_ERROR("subscription gc");
@@ -453,7 +453,7 @@ public:
     }
     // avoid gc
     pointer p=gensym(ctx);
-    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    defconst(ctx, (char*)(p->c.sym.pname->c.str.chars), cons(ctx,scb,args), lisppkg);
 
     requestDataType = _req.__getDataType();
     responseDataType = _res.__getDataType();
@@ -564,6 +564,7 @@ void roseusSignalHandler(int sig)
     // memoize for euslisp handler...
     context *ctx=euscontexts[thr_self()];
     ctx->intsig = sig;
+    ros::Time::shutdown();
 }
 
 /************************************************************
@@ -688,7 +689,7 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
   }
 
   if( s_mapHandle.find(groupname) != s_mapHandle.end() ) {
-    ROS_DEBUG("groupname %s is already used", groupname.c_str());
+    ROS_DEBUG("groupname \"%s\" is already used", groupname.c_str());
     return (NIL);
   }
 
@@ -709,7 +710,8 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
-  while (ctx->intsig==0 && ros::ok()) {
+  while (ros::ok()) {
+    breakck;
     ros::spinOnce();
     s_rate->sleep();
   }
@@ -722,6 +724,7 @@ pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
   ckarg2(0, 1);
   // ;; arguments ;;
   // [ groupname ]
+  CallbackQueue* queue;
 
   if ( n > 0 ) {
     string groupname;
@@ -730,18 +733,20 @@ pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
 
     map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
     if( it == s_mapHandle.end() ) {
-      ROS_ERROR("Groupname %s is missing", groupname.c_str());
-      return (T);
+      ROS_ERROR("Groupname \"%s\" is missing", groupname.c_str());
+      error(E_USER, "groupname not found");
     }
     boost::shared_ptr<NodeHandle > hdl = (it->second);
-    // spin this nodehandle
-    ((CallbackQueue *)hdl->getCallbackQueue())->callAvailable();
-
-    return (NIL);
+    queue = (CallbackQueue *)hdl->getCallbackQueue();
   } else {
-    ros::spinOnce();
-    return (NIL);
+    queue = ros::getGlobalCallbackQueue();
   }
+  if (queue->isEmpty()) {
+    return (NIL);}
+  else {
+    // execute callbacks
+    queue->callAvailable();}
+  return (T);
 }
 
 pointer ROSEUS_TIME_NOW(register context *ctx,int n,pointer *argv)
@@ -781,7 +786,19 @@ pointer ROSEUS_DURATION_SLEEP(register context *ctx,int n,pointer *argv)
   numunion nu;
   ckarg(1);
   float sleep=ckfltval(argv[0]);
-  ros::Duration(sleep).sleep();
+  // overwrite in order to check for interruptions
+  // original behaviour is stated at `ros_wallsleep', in time.cpp
+  if (ros::Time::useSystemTime()) {
+    int sleep_sec=(int)sleep;
+    int sleep_nsec=(int)(1000000000*(sleep-sleep_sec));
+    struct timespec treq,trem;
+    GC_REGION(treq.tv_sec  =  sleep_sec;
+              treq.tv_nsec =  sleep_nsec);
+    while (nanosleep(&treq, &trem)<0) {
+      breakck;
+      treq=trem;}}
+  else {
+    ros::Duration(sleep).sleep();}
   return(T);
 }
 
@@ -820,12 +837,12 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
   ROS_INFO("%s", __PRETTY_FUNCTION__);
   if( s_bInstalled ) {
     ROS_INFO("exiting roseus %ld", (n==0)?n:ckintval(argv[0]));
+    ros::shutdown();
     s_mapAdvertised.clear();
     s_mapSubscribed.clear();
     s_mapServiced.clear();
     s_mapTimered.clear();
     s_mapHandle.clear();
-    ros::shutdown();
   }
   if (n==0) _exit(0);
   else _exit(ckintval(argv[0]));
@@ -856,7 +873,7 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
         ROS_DEBUG("subscribe with groupname=%s", groupname.c_str());
         lnode = (it->second).get();
       } else {
-        ROS_ERROR("Groupname %s is missing. Topic %s is not subscribed. Call (ros::create-nodehandle \"%s\") first.",
+        ROS_ERROR("Groupname \"%s\" is missing. Topic %s is not subscribed. Call (ros::create-nodehandle \"%s\") first.",
                   groupname.c_str(), topicname.c_str(), groupname.c_str());
         return (NIL);
       }
@@ -871,10 +888,12 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   args=NIL;
   for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
 
+  vpush(args);
   EuslispMessage msg(message);
    boost::shared_ptr<SubscriptionCallbackHelper> *callback =
      (new boost::shared_ptr<SubscriptionCallbackHelper>
       (new EuslispSubscriptionCallbackHelper(fncallback, args, message)));
+  vpop();
   SubscribeOptions so(topicname, queuesize, msg.__getMD5Sum(), msg.__getDataType());
   so.helper = *callback;
   Subscriber subscriber = lnode->subscribe(so);
@@ -1081,6 +1100,7 @@ pointer ROSEUS_GETTOPICPUBLISHER(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
+  ros::Time start_time = ros::Time::now();
   string service;
   numunion nu;
 
@@ -1093,9 +1113,28 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
   if( n > 1 && argv[1] != NIL)
     timeout = ckfltval(argv[1]);
 
-  bool bSuccess = service::waitForService(service, ros::Duration(timeout));
+  // Overwrite definition on service.cpp L87 to check for signal interruptions
+  // http://docs.ros.org/electric/api/roscpp/html/service_8cpp_source.html
+  bool printed = false;
+  bool result = false;
+  ros::Duration timeout_duration = ros::Duration(timeout);
+  while (ctx->intsig==0 && ros::ok()) {
+    if (service::exists(service, !printed)) {
+      result = true;
+      break;}
+    else {
+      printed = true;
+      if (timeout >= 0) {
+        ros::Time current_time = ros::Time::now();
+        if ((current_time - start_time) >= timeout_duration)
+          return(NIL);}
+      ros::Duration(0.02).sleep();}
+  }
 
-  return (bSuccess?T:NIL);
+  if (result && printed && ros::ok())
+    ROS_INFO("waitForService: Service [%s] is now available.", service.c_str());
+
+  return (result?T:NIL);
 }
 
 pointer ROSEUS_SERVICE_EXISTS(register context *ctx,int n,pointer *argv)
@@ -1747,11 +1786,8 @@ pointer ROSEUS_GETNAMESPACE(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
 {
-  ckarg(2);
-  string logger;
-  if (isstring(argv[0])) logger.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
-  int log_level = intval(argv[1]);
+  ckarg(1);
+  int log_level = intval(argv[0]);
   ros::console::levels::Level  level = ros::console::levels::Debug;
   switch(log_level){
   case 1:
@@ -1773,7 +1809,9 @@ pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
     return (NIL);
   }
 
-  bool success = ::ros::console::set_logger_level(logger, level);
+  // roseus currently does not support multiple loggers
+  // which must be outputted using the 'ROS_DEBUG_NAMED'-like macros
+  bool success = ::ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, level);
   if (success)
     {
       console::notifyLoggerLevelsChanged();
@@ -1975,7 +2013,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
 
   // avoid gc
   pointer p=gensym(ctx);
-  setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
+  defconst(ctx, (char*)(p->c.sym.pname->c.str.chars), cons(ctx,fncallback,args), lisppkg);
 
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
@@ -2118,7 +2156,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "	(ros::subscribe \"/test\" std_msgs::String #'(lambda (m) (print m)) :groupname \"mygroup\")\n"
          "	(ros::create-timer 0.1 #'(lambda (event) (print \"timer called\")) :groupname \"mygroup\")\n"
          "	(while (ros::ok)  (ros::spin-once \"mygroup\"))\n");
-  defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL, "");
+  defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL, "(level)");
 
   defun(ctx,"GET-HOST",argv[0],(pointer (*)())ROSEUS_GET_HOST, "Get the hostname where the master runs.");
   defun(ctx,"GET-NODES",argv[0],(pointer (*)())ROSEUS_GET_NODES, "Retreives the currently-known list of nodes from the master.");
