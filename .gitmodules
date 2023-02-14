@@ -1,3 +1,6 @@
 [submodule ".travis"]
 	path = .travis
 	url = https://github.com/jsk-ros-pkg/jsk_travis
+[submodule "roseus_bt/include/rosbridgecpp"]
+	path = roseus_bt/include/rosbridgecpp
+	url = https://github.com/ppianpak/rosbridgecpp
