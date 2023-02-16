@@ -26,8 +26,7 @@ Both the `<BehaviorTree/>` tag in the xml model file and the euslisp server are 
 
 Run the roseus server
 ```bash
-roscd roseus_bt_tutorials/euslisp
-roseus t01-simple-tree-action-server.l
+roslaunch roseus_bt_tutorials t01_simple_tree_server.launch
 ```
 
 Run the cpp client
@@ -35,10 +34,11 @@ Run the cpp client
 rosrun roseus_bt_tutorials t01_simple_tree
 ```
 
-Optionally run Groot for visualization
+Optionally run Groot. Select the Monitor mode for real-time visualization of the ongoing task, or the Interpreter mode for interactive evaluation. In the Interpreter mode, the cpp client is not needed.
 ```bash
 rosrun groot Groot
 ```
+
 
 ## t02_conditions
 ![t02](https://user-images.githubusercontent.com/20625381/125036852-707c2100-e0ce-11eb-99b8-a8d568e6e97c.gif)
@@ -51,8 +51,7 @@ Every `<Condition/>` tag in the `<TreeNodesModel/>` must be provided with an arb
 
 Run the roseus server
 ```bash
-roscd roseus_bt_tutorials/euslisp
-roseus t02-conditions-action-server.l
+roslaunch roseus_bt_tutorials t02_conditions_server.launch
 ```
 
 Run the cpp client
@@ -86,8 +85,7 @@ Conditions only support input ports, as they are not meant to do any changes in 
 
 Run the roseus server
 ```bash
-roscd roseus_bt_tutorials/euslisp
-roseus t03-ports-action-server.l
+roslaunch roseus_bt_tutorials t03_ports_server.launch
 ```
 
 Run the cpp client
@@ -107,12 +105,17 @@ The fourth example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/rose
 
 Such port variables are initialized with an empty message instance and updated every time a new topic message arrives.
 
-To do this we add a `<Subscriber/>` node, specifying the input ports `topic_name` and `message_type` and the output ports `output_port` and `received_port`. The `output_port` variable is initilized with an instance of the given message type and updated every time a new message is received. The `received_port` variable is a boolean initialized with false and set to true at every new message.
+To do this we add a `<Subscriber/>` node, specifying the input ports `topic_name` and `message_type` and the output ports `output_port` and `received_port`. The `output_port` variable is initialized with an instance of the given message type and updated every time a new message is received. The `received_port` variable is a boolean initialized with false and set to true at every new message.
 
 Only proper ROS message types are supported by subscriber nodes (e.g. `std_msgs/Int64` instead of `int64`).
 
 
 #### Run the code
+
+Run the roseus server
+```bash
+roslaunch roseus_bt_tutorials t04_subscriber_server.launch
+```
 
 Publish the topic:
 ```bash
@@ -125,12 +128,6 @@ orientation:
   y: 0.0
   z: 0.0
   w: 1.0"
-```
-
-Run the roseus server
-```bash
-roscd roseus_bt_tutorials/euslisp
-roseus t04-subscriber-action-server.l
 ```
 
 Run the cpp client
@@ -156,8 +153,7 @@ Each subtree inherits a separate blackboard and accepts remaps in the `inner_nam
 
 Run the roseus server
 ```bash
-roscd roseus_bt_tutorials/euslisp
-roseus t05-subtrees-action-server.l
+roslaunch roseus_bt_tutorials t05_subtrees_server.launch
 ```
 
 Run the cpp client
@@ -177,7 +173,7 @@ The sixth example https://github.com/Affonso-Gui/jsk_roseus/blob/roseus_bt/roseu
 
 The main difference of reactive nodes (e.g. `<ReactiveSequence/>` and `<ReactiveFallback/>`) is that when a child returns RUNNING the reactive node will resume ticking from its first child. This forces the node to re-evaluate any conditions preceding the execution node, therefore achieving enhanced reactivity.
 
-In order to compose a reactive program in single-threded eus, we need to ensure that:
+In order to compose a reactive program in single-threaded eus, we need to ensure that:
 1. Condition nodes can be evaluated while executing actions
 2. Interruption requests are checked while executing actions
 
@@ -192,8 +188,7 @@ It is also possible to manually spin the monitor groupname with `(send server :s
 
 Run the roseus action server
 ```bash
-roscd roseus_bt_tutorials/euslisp
-roseus t06-reactive-action-server.l
+roslaunch roseus_bt_tutorials t06_reactive_server.launch
 ```
 
 Run the roseus condition server
