@@ -110,6 +110,6 @@
     (send ac :execute-cb)))
 
 (defun spin ()
-  (while t
+  (while (ros::ok)
     (spin-once)
     (ros::sleep)))
