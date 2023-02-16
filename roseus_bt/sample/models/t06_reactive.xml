@@ -11,7 +11,7 @@
                     <Condition ID="CheckTrue" value="${needs_drink}" name="NeedsDrink"/>
                     <SubTreePlus ID="SweepTask"/>
                 </ReactiveFallback>
-                <SubTreePlus ID="PourTask" coords="bottle_coords"/>
+                <SubTreePlus ID="PourTask" coords="${bottle_coords}"/>
             </Sequence>
         </SequenceStar>
     </BehaviorTree>
@@ -40,7 +40,7 @@
     <!-- ////////// -->
     <TreeNodesModel>
         <SubTreePlus ID="PourTask">
-            <input_port default="bottle_coords" name="coords" type=""/>
+            <input_port default="bottle_coords" name="coords" type="geometry_msgs/Pose"/>
         </SubTreePlus>
         <SubTreePlus ID="SweepTask"/>
 

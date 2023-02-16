@@ -10,9 +10,11 @@
                 <Condition ID="atSpot" spot="broom-front"/>
                 <Action ID="MoveTo" spot="broom-front"/>
             </Fallback>
-            <Timeout msec="5000">
-                <Action ID="SweepFloor"/>
-            </Timeout>
+            <ForceSuccess>
+                <Timeout msec="5000">
+                    <Action ID="SweepFloor"/>
+                </Timeout>
+            </ForceSuccess>
         </Sequence>
     </BehaviorTree>
   </xacro:macro>

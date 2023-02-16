@@ -6,7 +6,7 @@
   <xacro:include filename="$(find roseus_bt)/sample/models/t07_xacro_sweep_task.xml.xacro"
                  ns="sweep_task"/>
 
-  <xacro:property name="namespace" value="/t07_xacro"/>
+  <xacro:property name="namespace" value="/t05_subtrees"/>
 
   <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
@@ -14,7 +14,7 @@
             <Action ID="InitWithBroom" name="Initialize Task"/>
             <Action ID="setCoords" name="setBottleCoords" coords="$${bottle_coords}"/>
             <Sequence>
-                <SubTreePlus ID="PourTask" coords="bottle_coords"/>
+                <SubTreePlus ID="PourTask" coords="$${bottle_coords}"/>
                 <SubTreePlus ID="SweepTask"/>
             </Sequence>
         </SequenceStar>
