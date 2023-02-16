@@ -10,5 +10,5 @@
 
 - git:
     local-name: Groot
-    uri: https://github.com/BehaviorTree/Groot.git
-    version: master
+    uri: https://github.com/Affonso-Gui/Groot
+    version: roseus_bt

@@ -16,9 +16,10 @@ Clone related directories
 ```bash
 mkdir ~/catkin_ws/src -p
 cd ~/catkin_ws/src
-wget https://raw.githubusercontent.com/Affonso-Gui/jsk_roseus/roseus_bt/roseus_bt/roseus_bt.rosinstall -O .rosinstall
+wget https://raw.githubusercontent.com/jsk-ros-pkg/jsk_roseus/master/roseus_bt/roseus_bt.rosinstall -O .rosinstall
 wstool update
 ```
+
 
 Install dependencies
 ```bash
@@ -42,8 +43,8 @@ rosrun roseus_bt create_bt_package my_package path/to/model.xml
 catkin build my_package
 ```
 
-For more information on how to compose the model file and use the package check the [tutorials](https://github.com/Affonso-Gui/jsk_roseus/tree/roseus_bt/roseus_bt/sample) and the [BehaviorTree.CPP documentation](https://www.behaviortree.dev/bt_basics).
+For more information on how to compose the model file and use the package check the [tutorials](https://github.com/jsk-ros-pkg/jsk_roseus/master/roseus_bt/sample) and the [BehaviorTree.CPP documentation](https://www.behaviortree.dev/docs/3.8/intro).
 
 ## Samples
 
-Follow instructions at the [tutorial page](https://github.com/Affonso-Gui/jsk_roseus/tree/roseus_bt/roseus_bt/sample).
+Follow instructions at the [tutorial page](https://github.com/jsk-ros-pkg/jsk_roseus/master/roseus_bt/sample).
