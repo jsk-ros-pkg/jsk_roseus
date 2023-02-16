@@ -98,7 +98,8 @@ extern "C" {
   byte *get_string(register pointer s){
     if (isstring(s)) return(s->c.str.chars);
     if (issymbol(s)) return(s->c.sym.pname->c.str.chars);
-    else error(E_NOSTRING); return NULL; }
+    else error(E_NOSTRING);
+    return NULL; }
 }
 
 #undef class
@@ -123,6 +124,52 @@ using namespace std;
 #define isInstalledCheck \
   if( ! ros::ok() ) { error(E_USER,"You must call (ros::roseus \"name\") before creating the first NodeHandle"); }
 
+
+template<class Key, class Value>
+class SharedMap
+{
+public:
+  Value get(const Key& key) {
+    boost::shared_lock<boost::shared_mutex> lock(_mutex);
+    return(_map[key]);
+  }
+
+  void set(const Key& key, const Value& value) {
+    boost::unique_lock<boost::shared_mutex> lock(_mutex);
+    _map[key] = value;
+  }
+
+  size_t erase(const Key& key) {
+    boost::unique_lock<boost::shared_mutex> lock(_mutex);
+    return _map.erase(key);
+  }
+
+  void clear() {
+    boost::unique_lock<boost::shared_mutex> lock(_mutex);
+    _map.clear();
+  }
+
+  typename map<Key,Value>::iterator find(const Key& key) {
+    boost::shared_lock<boost::shared_mutex> lock(_mutex);
+    return(_map.find(key));
+  }
+
+  typename map<Key,Value>::iterator begin() {
+    boost::shared_lock<boost::shared_mutex> lock(_mutex);
+    return(_map.end());
+  }
+
+  typename map<Key,Value>::iterator end() {
+    boost::shared_lock<boost::shared_mutex> lock(_mutex);
+    return(_map.end());
+  }
+
+private:
+  map<Key,Value> _map;
+  boost::shared_mutex _mutex;
+};
+
+
 class RoseusStaticData
 {
 public:
@@ -131,12 +178,12 @@ public:
   }
   boost::shared_ptr<ros::NodeHandle> node;
   boost::shared_ptr<ros::Rate> rate;
-  map<string, boost::shared_ptr<Publisher> > mapAdvertised; ///< advertised topics
-  map<string, boost::shared_ptr<Subscriber> > mapSubscribed; ///< subscribed topics
-  map<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
-  map<string, Timer > mapTimered; ///< subscribed timers
+  SharedMap<string, boost::shared_ptr<Publisher> > mapAdvertised; ///< advertised topics
+  SharedMap<string, boost::shared_ptr<Subscriber> > mapSubscribed; ///< subscribed topics
+  SharedMap<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
+  SharedMap<string, Timer > mapTimered; ///< subscribed timers
 
-  map<string, boost::shared_ptr<NodeHandle> > mapHandle; ///< for grouping nodehandle
+  SharedMap<string, boost::shared_ptr<NodeHandle> > mapHandle; ///< for grouping nodehandle
 };
 
 static RoseusStaticData s_staticdata;
@@ -149,7 +196,12 @@ static bool s_bInstalled = false;
 #define s_mapTimered s_staticdata.mapTimered
 #define s_mapHandle s_staticdata.mapHandle
 
+#define s_mapSubscribedIndex 0
+#define s_mapServicedIndex 1
+#define s_mapTimeredIndex 2
+
 pointer K_ROSEUS_MD5SUM,K_ROSEUS_DATATYPE,K_ROSEUS_DEFINITION,K_ROSEUS_CONNECTION_HEADER,K_ROSEUS_SERIALIZATION_LENGTH,K_ROSEUS_SERIALIZE,K_ROSEUS_DESERIALIZE,K_ROSEUS_INIT,K_ROSEUS_GET,K_ROSEUS_REQUEST,K_ROSEUS_RESPONSE,K_ROSEUS_GROUPNAME,K_ROSEUS_ONESHOT,K_ROSEUS_LAST_EXPECTED,K_ROSEUS_LAST_REAL,K_ROSEUS_CURRENT_EXPECTED,K_ROSEUS_CURRENT_REAL,K_ROSEUS_LAST_DURATION,K_ROSEUS_SEC,K_ROSEUS_NSEC,QANON,QNOOUT,QREPOVERSION,QROSDEBUG,QROSINFO,QROSWARN,QROSERROR,QROSFATAL;
+pointer QSTATICDATAVECTOR, K_ROSEUS_ENTER, K_ROSEUS_DELETE;
 extern pointer LAMCLOSURE;
 
 /***********************************************************
@@ -207,6 +259,23 @@ int getInteger(pointer message, pointer method) {
   return 0;
 }
 
+void store_pointer(context *ctx, string name, int index, pointer value) {
+  // Stores a callback list in ros::*static-data-vector*
+  // This prevents that the callable gets collected by the gc,
+  // even if there are no other references to it.
+  vpush(value);
+  pointer p=makestring((char *)name.c_str(), name.size());
+  csend(ctx,speval(QSTATICDATAVECTOR)->c.vec.v[index],K_ROSEUS_ENTER,2,p,vpop());
+}
+
+void erase_pointer(context *ctx, string name, int index) {
+  // Removes the entry for ros::*static-data-vector*,
+  // meaning that the pointers can be deallocated if
+  // there are no other references to them.
+  pointer p=makestring((char *)name.c_str(), name.size());
+  csend(ctx,speval(QSTATICDATAVECTOR)->c.vec.v[index],K_ROSEUS_DELETE,1,p);
+}
+
 class EuslispMessage
 {
 public:
@@ -217,19 +286,17 @@ public:
   }
   EuslispMessage(const EuslispMessage &r) {
     context *ctx = current_ctx;
-    if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
+    vpush(r._message);
+    // if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     if ( isclass(r._message) ) {
       //ROS_ASSERT(isclass(r._message));
-      vpush(r._message);
       _message = makeobject(r._message);
-      vpush(_message);
       csend(ctx,_message,K_ROSEUS_INIT,0);
-      vpop();                   // _message
-      vpop();                   // r._message
     } else {
       ROS_WARN("r._message must be class");prinx(ctx,r._message,ERROUT);flushstream(ERROUT);terpri(ERROUT);
       _message = r._message;
     }
+    vpop();
   }
   virtual ~EuslispMessage() { }
 
@@ -255,7 +322,7 @@ public:
 
   uint32_t serializationLength() const {
     context *ctx = current_ctx;
-    if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
+    // if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     pointer a,curclass;
     a = (pointer)findmethod(ctx,K_ROSEUS_SERIALIZATION_LENGTH,classof(_message),&curclass);
     ROS_ASSERT(a!=NIL);
@@ -265,11 +332,9 @@ public:
   virtual uint8_t *serialize(uint8_t *writePtr, uint32_t seqid) const
   {
     context *ctx = current_ctx;
-    if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
+    // if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     pointer a,curclass;
-    vpush(_message);            // to avoid GC
     uint32_t len = serializationLength();
-    vpop();                     // pop _message
     a = (pointer)findmethod(ctx,K_ROSEUS_SERIALIZE,classof(_message),&curclass);
     ROS_ASSERT(a!=NIL);
     pointer r = csend(ctx,_message,K_ROSEUS_SERIALIZE,0);
@@ -283,7 +348,7 @@ public:
   virtual uint8_t *deserialize(uint8_t *readPtr, uint32_t sz)
   {
     context *ctx = current_ctx;
-    if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
+    // if (ctx!=euscontexts[0])ROS_WARN("ctx is not correct %d\n",thr_self());
     pointer a,curclass;
 
     if ( sz == 0 ) {
@@ -310,6 +375,7 @@ void StoreConnectionHeader(EuslispMessage *eus_msg) {
     return;
   }
   context *ctx = current_ctx;
+  vpush(eus_msg->_message);
   // store conection headers
   register pointer ret, header;
   ret = cons(ctx, NIL, NIL);
@@ -323,7 +389,8 @@ void StoreConnectionHeader(EuslispMessage *eus_msg) {
   /* (setslot obj class index newval) */
   pointer slot_args[4] = {eus_msg->_message, classof(eus_msg->_message), K_ROSEUS_CONNECTION_HEADER, ccdr(header)};
   SETSLOT(ctx, 4, slot_args);
-  vpop();
+  vpop();  // ret
+  vpop();  // eus_msg->_message
 }
 
 namespace ros{
@@ -353,7 +420,9 @@ public:
   pointer _scb,_args;
   EuslispMessage _msg;
 
-  EuslispSubscriptionCallbackHelper(pointer scb, pointer args,pointer tmpl) :  _args(args), _msg(tmpl) {
+  EuslispSubscriptionCallbackHelper(string name, pointer scb, pointer args, pointer tmpl) :
+    _args(args), _msg(tmpl)
+  {
     context *ctx = current_ctx;
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
@@ -369,8 +438,7 @@ public:
       ROS_ERROR("subscription callback function install error");
     }
     // avoid gc
-    pointer p=gensym(ctx);
-    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    store_pointer(ctx, name, s_mapSubscribedIndex, cons(ctx,scb,args));
   }
   ~EuslispSubscriptionCallbackHelper() {
       ROS_ERROR("subscription gc");
@@ -399,7 +467,6 @@ public:
     int argc=0;
     //ROS_WARN("func");prinx(ctx,_scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,argp,ERROUT);flushstream(ERROUT);terpri(ERROUT);
-    vpush(eus_msg->_message);    // to avoid GC
     if ( ! ( issymbol(_scb) || piscode(_scb) || ccar(_scb)==LAMCLOSURE ) ) {
       ROS_ERROR("%s : can't find callback function", __PRETTY_FUNCTION__);
     }
@@ -412,7 +479,6 @@ public:
     
     ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_scb,(pointer)(ctx->vsp-argc),NULL,argc);
     while(argc-->0)vpop();
-    vpop();    // remove eus_msg._message
   }
   virtual const std::type_info& getTypeInfo() {
     return typeid(EuslispMessage);
@@ -435,7 +501,9 @@ public:
   string md5, datatype, requestDataType, responseDataType,
     requestMessageDefinition, responseMessageDefinition;
 
-  EuslispServiceCallbackHelper(pointer scb, pointer args, string smd5, string sdatatype, pointer reqclass, pointer resclass) : _args(args), _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype) {
+  EuslispServiceCallbackHelper(string name, pointer scb, pointer args, string smd5, string sdatatype, pointer reqclass, pointer resclass) :
+    _args(args), _req(reqclass), _res(resclass), md5(smd5), datatype(sdatatype)
+  {
     context *ctx = current_ctx;
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
@@ -452,8 +520,7 @@ public:
       ROS_ERROR("service callback function install error");
     }
     // avoid gc
-    pointer p=gensym(ctx);
-    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    store_pointer(ctx, name, s_mapServicedIndex, cons(ctx,scb,args));
 
     requestDataType = _req.__getDataType();
     responseDataType = _res.__getDataType();
@@ -494,7 +561,6 @@ public:
     }
     // Deserialization
     EuslispMessage eus_msg(_req);
-    vpush(eus_msg._message);    // _res._message, _req._message, eus_msg._message
     eus_msg.deserialize(params.request.message_start, params.request.num_bytes);
 
     // store connection header
@@ -507,11 +573,9 @@ public:
     r = ufuncall(ctx, (ctx->callfp?ctx->callfp->form:NIL),
                  _scb, (pointer)(ctx->vsp-argc),
                  NULL, argc);
-    while(argc-->0)vpop();// _res._message, _req._message, eus_msg._message
-    vpush(r); // _res._message, _req._message, eus_msg._message, r, 
-    // Serializaion
-    EuslispMessage eus_res(_res);
-    eus_res.replaceContents(r);
+    while(argc-->0)vpop();// _res._message, _req._message
+    // Serialization
+    EuslispMessage eus_res(r);
     // check return value is valid
     pointer ret_serialize_method, ret_class;
     if (ispointer(r)) {
@@ -524,7 +588,6 @@ public:
       vpop(); // _res._message
       return false;
     }
-    vpush(eus_res._message);    // _res._message, _req._message, eus_msg._message, r, eus_res._message
     uint32_t serialized_length = eus_res.serializationLength();
     params.response.num_bytes = serialized_length + 5; // add 5 bytes of message header
     params.response.buf.reset (new uint8_t[params.response.num_bytes]);
@@ -550,9 +613,6 @@ public:
       ROS_INFO("%X", tmp[i]);
     }
 #endif
-    vpop(); // _res._message, _req._message, eus_msg._message, r, eus_res._message
-    vpop(); // _res._message, _req._message, eus_msg._message, r
-    vpop(); // _res._message, _req._message, eus_msg._message
     vpop(); // _res._message, _req._message,
     vpop(); // _res._message
     return true;
@@ -564,6 +624,7 @@ void roseusSignalHandler(int sig)
     // memoize for euslisp handler...
     context *ctx=euscontexts[thr_self()];
     ctx->intsig = sig;
+    ros::Time::shutdown();
 }
 
 /************************************************************
@@ -620,6 +681,8 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
   K_ROSEUS_LAST_DURATION = defkeyword(ctx,"LAST-DURATION");
   K_ROSEUS_SEC = defkeyword(ctx,"SEC");
   K_ROSEUS_NSEC = defkeyword(ctx,"NSEC");
+  K_ROSEUS_ENTER = defkeyword(ctx,"ENTER");
+  K_ROSEUS_DELETE = defkeyword(ctx,"DELETE");
 
   s_mapAdvertised.clear();
   s_mapSubscribed.clear();
@@ -642,12 +705,12 @@ pointer ROSEUS(register context *ctx,int n,pointer *argv)
 
   /*
     clear ros::master::g_uri which is defined in ros::master::init in __roseus.
-    this occurs if user set unix::setenv("ROS_MASTER_URI") between __roseus and
+    this occurs if user set (unix::putenv "ROS_MASTER_URI") between __roseus and
     ROSEUS.
    */
   if (!ros::master::g_uri.empty()) {
     if ( ros::master::g_uri != getenv("ROS_MASTER_URI") ) {
-      ROS_WARN("ROS master uri will be changed!!, master uri %s, which is defineed previously is differ from current ROS_MASTE_URI(%s)", ros::master::g_uri.c_str(), getenv("ROS_MASTER_URI"));
+      ROS_WARN("ROS master uri will be changed!!, master uri %s, which is defined previously is differ from current ROS_MASTER_URI(%s)", ros::master::g_uri.c_str(), getenv("ROS_MASTER_URI"));
       ros::master::g_uri.clear();
     }
   }
@@ -688,17 +751,17 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
   }
 
   if( s_mapHandle.find(groupname) != s_mapHandle.end() ) {
-    ROS_DEBUG("groupname %s is already used", groupname.c_str());
+    ROS_DEBUG("groupname \"%s\" is already used", groupname.c_str());
     return (NIL);
   }
 
   boost::shared_ptr<NodeHandle> hd;
   if ( n > 1 ) {
     hd = boost::shared_ptr<NodeHandle> (new NodeHandle(ns));
-    s_mapHandle[groupname] = hd;
+    s_mapHandle.set(groupname, hd);
   } else {
     hd = boost::shared_ptr<NodeHandle>(new NodeHandle());
-    s_mapHandle[groupname] = hd;
+    s_mapHandle.set(groupname, hd);
   }
   //add callbackqueue to hd
   hd->setCallbackQueue( new CallbackQueue() );
@@ -709,7 +772,8 @@ pointer ROSEUS_CREATE_NODEHANDLE(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_SPIN(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
-  while (ctx->intsig==0 && ros::ok()) {
+  while (ros::ok()) {
+    breakck;
     ros::spinOnce();
     s_rate->sleep();
   }
@@ -722,6 +786,7 @@ pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
   ckarg2(0, 1);
   // ;; arguments ;;
   // [ groupname ]
+  CallbackQueue* queue;
 
   if ( n > 0 ) {
     string groupname;
@@ -730,18 +795,20 @@ pointer ROSEUS_SPINONCE(register context *ctx,int n,pointer *argv)
 
     map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
     if( it == s_mapHandle.end() ) {
-      ROS_ERROR("Groupname %s is missing", groupname.c_str());
-      return (T);
+      ROS_ERROR("Groupname \"%s\" is missing", groupname.c_str());
+      error(E_USER, "groupname not found");
     }
     boost::shared_ptr<NodeHandle > hdl = (it->second);
-    // spin this nodehandle
-    ((CallbackQueue *)hdl->getCallbackQueue())->callAvailable();
-
-    return (NIL);
+    queue = (CallbackQueue *)hdl->getCallbackQueue();
   } else {
-    ros::spinOnce();
-    return (NIL);
+    queue = ros::getGlobalCallbackQueue();
   }
+  if (queue->isEmpty()) {
+    return (NIL);}
+  else {
+    // execute callbacks
+    queue->callAvailable();}
+  return (T);
 }
 
 pointer ROSEUS_TIME_NOW(register context *ctx,int n,pointer *argv)
@@ -751,10 +818,8 @@ pointer ROSEUS_TIME_NOW(register context *ctx,int n,pointer *argv)
   ros::Time t = ros::Time::now();
 
   timevec=makevector(C_INTVECTOR,2);
-  vpush(timevec);
   timevec->c.ivec.iv[0]=t.sec;
   timevec->c.ivec.iv[1]=t.nsec;
-  vpop();
   return (timevec);
 }
 
@@ -781,7 +846,19 @@ pointer ROSEUS_DURATION_SLEEP(register context *ctx,int n,pointer *argv)
   numunion nu;
   ckarg(1);
   float sleep=ckfltval(argv[0]);
-  ros::Duration(sleep).sleep();
+  // overwrite in order to check for interruptions
+  // original behaviour is stated at `ros_wallsleep', in time.cpp
+  if (ros::Time::useSystemTime()) {
+    int sleep_sec=(int)sleep;
+    int sleep_nsec=(int)(1000000000*(sleep-sleep_sec));
+    struct timespec treq,trem;
+    GC_REGION(treq.tv_sec  =  sleep_sec;
+              treq.tv_nsec =  sleep_nsec);
+    while (nanosleep(&treq, &trem)<0) {
+      breakck;
+      treq=trem;}}
+  else {
+    ros::Duration(sleep).sleep();}
   return(T);
 }
 
@@ -820,12 +897,12 @@ pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
   ROS_INFO("%s", __PRETTY_FUNCTION__);
   if( s_bInstalled ) {
     ROS_INFO("exiting roseus %ld", (n==0)?n:ckintval(argv[0]));
+    ros::shutdown();
     s_mapAdvertised.clear();
     s_mapSubscribed.clear();
     s_mapServiced.clear();
     s_mapTimered.clear();
     s_mapHandle.clear();
-    ros::shutdown();
   }
   if (n==0) _exit(0);
   else _exit(ckintval(argv[0]));
@@ -847,8 +924,9 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   if (isstring(argv[0])) topicname = ros::names::resolve((char *)get_string(argv[0]));
   else error(E_NOSTRING);
 
-  if (n > 1 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
-    if (argv[n-2] == K_ROSEUS_GROUPNAME) {
+  if (n > 1 && issymbol(argv[n-2]) && argv[n-2] == K_ROSEUS_GROUPNAME) {
+    if (argv[n-1] != NIL) {
+      if (!isstring(argv[n-1])) error(E_NOSTRING);
       string groupname;
       groupname.assign((char *)get_string(argv[n-1]));
       map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
@@ -856,12 +934,12 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
         ROS_DEBUG("subscribe with groupname=%s", groupname.c_str());
         lnode = (it->second).get();
       } else {
-        ROS_ERROR("Groupname %s is missing. Topic %s is not subscribed. Call (ros::create-nodehandle \"%s\") first.",
+        ROS_ERROR("Groupname \"%s\" is missing. Topic %s is not subscribed. Call (ros::create-nodehandle \"%s\") first.",
                   groupname.c_str(), topicname.c_str(), groupname.c_str());
         return (NIL);
       }
-      n -= 2;
     }
+    n -= 2;
   }
   if (isint(argv[n-1])) {queuesize = ckintval(argv[n-1]);n--;}
   ROS_DEBUG("subscribe %s queuesize=%d", topicname.c_str(), queuesize);
@@ -874,13 +952,13 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   EuslispMessage msg(message);
    boost::shared_ptr<SubscriptionCallbackHelper> *callback =
      (new boost::shared_ptr<SubscriptionCallbackHelper>
-      (new EuslispSubscriptionCallbackHelper(fncallback, args, message)));
+      (new EuslispSubscriptionCallbackHelper(topicname, fncallback, args, message)));
   SubscribeOptions so(topicname, queuesize, msg.__getMD5Sum(), msg.__getDataType());
   so.helper = *callback;
   Subscriber subscriber = lnode->subscribe(so);
   boost::shared_ptr<Subscriber> sub = boost::shared_ptr<Subscriber>(new Subscriber(subscriber));
   if ( !!sub ) {
-    s_mapSubscribed[topicname] = sub;
+    s_mapSubscribed.set(topicname, sub);
   } else {
     ROS_ERROR("s_mapSubscribed");
   }
@@ -897,6 +975,7 @@ pointer ROSEUS_UNSUBSCRIBE(register context *ctx,int n,pointer *argv)
   else error(E_NOSTRING);
 
   bool bSuccess = s_mapSubscribed.erase(topicname)>0;
+  erase_pointer(ctx, topicname, s_mapSubscribedIndex);
 
   return (bSuccess?T:NIL);
 }
@@ -978,7 +1057,7 @@ pointer ROSEUS_ADVERTISE(register context *ctx,int n,pointer *argv)
   Publisher publisher = s_node->advertise(ao);
   boost::shared_ptr<Publisher> pub = boost::shared_ptr<Publisher>(new Publisher(publisher));
   if ( !!pub ) {
-    s_mapAdvertised[topicname] = pub;
+    s_mapAdvertised.set(topicname, pub);
   } else {
     ROS_ERROR("s_mapAdvertised");
   }
@@ -1081,6 +1160,7 @@ pointer ROSEUS_GETTOPICPUBLISHER(register context *ctx,int n,pointer *argv)
 pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
 {
   isInstalledCheck;
+  ros::Time start_time = ros::Time::now();
   string service;
   numunion nu;
 
@@ -1093,9 +1173,28 @@ pointer ROSEUS_WAIT_FOR_SERVICE(register context *ctx,int n,pointer *argv)
   if( n > 1 && argv[1] != NIL)
     timeout = ckfltval(argv[1]);
 
-  bool bSuccess = service::waitForService(service, ros::Duration(timeout));
+  // Overwrite definition on service.cpp L87 to check for signal interruptions
+  // http://docs.ros.org/electric/api/roscpp/html/service_8cpp_source.html
+  bool printed = false;
+  bool result = false;
+  ros::Duration timeout_duration = ros::Duration(timeout);
+  while (ctx->intsig==0 && ros::ok()) {
+    if (service::exists(service, !printed)) {
+      result = true;
+      break;}
+    else {
+      printed = true;
+      if (timeout >= 0) {
+        ros::Time current_time = ros::Time::now();
+        if ((current_time - start_time) >= timeout_duration)
+          return(NIL);}
+      ros::Duration(0.02).sleep();}
+  }
 
-  return (bSuccess?T:NIL);
+  if (result && printed && ros::ok())
+    ROS_INFO("waitForService: Service [%s] is now available.", service.c_str());
+
+  return (result?T:NIL);
 }
 
 pointer ROSEUS_SERVICE_EXISTS(register context *ctx,int n,pointer *argv)
@@ -1211,8 +1310,9 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   emessage = argv[1];
   fncallback = argv[2];
 
-  if (n >= 5 && issymbol(argv[n-2]) && isstring(argv[n-1])) {
-    if (argv[n-2] == K_ROSEUS_GROUPNAME) {
+  if (n >= 5 && issymbol(argv[n-2]) && argv[n-2] == K_ROSEUS_GROUPNAME) {
+    if (argv[n-1] != NIL) {
+      if (!isstring(argv[n-1])) error(E_NOSTRING);
       string groupname;
       groupname.assign((char *)get_string(argv[n-1]));
       map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
@@ -1224,8 +1324,8 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
                   groupname.c_str(), service.c_str(), groupname.c_str());
         return (NIL);
       }
-      n -= 2;
     }
+    n -= 2;
   }
 
   args=NIL;
@@ -1235,15 +1335,16 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
     return (NIL);
   }
 
+  vpush(args);
   EuslispMessage message(emessage);
-  vpush(message._message);      // to avoid GC in csend
   pointer request(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_REQUEST));
   pointer response(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_RESPONSE));
-  vpop();                       // pop message._message
   boost::shared_ptr<EuslispServiceCallbackHelper> *callback =
     (new boost::shared_ptr<EuslispServiceCallbackHelper>
-     (new EuslispServiceCallbackHelper(fncallback, args, message.__getMD5Sum(),
+     (new EuslispServiceCallbackHelper(service, fncallback, args, message.__getMD5Sum(),
                                        message.__getDataType(), request, response)));
+  vpop();  // pop args
+
   AdvertiseServiceOptions aso;
   aso.service.assign(service);
   aso.datatype = (*callback->get()).getDataType();
@@ -1254,7 +1355,7 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
   ServiceServer server = lnode->advertiseService(aso);
   boost::shared_ptr<ServiceServer> ser = boost::shared_ptr<ServiceServer>(new ServiceServer(server));
   if ( !!ser ) {
-    s_mapServiced[service] = ser;
+    s_mapServiced.set(service, ser);
   } else {
     ROS_ERROR("s_mapServiced");
   }
@@ -1272,6 +1373,7 @@ pointer ROSEUS_UNADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
 
   ROS_DEBUG("unadvertise %s", service.c_str());
   bool bSuccess = s_mapServiced.erase(service)>0;
+  erase_pointer(ctx, service, s_mapServicedIndex);
 
   return (bSuccess?T:NIL);
 }
@@ -1747,11 +1849,11 @@ pointer ROSEUS_GETNAMESPACE(register context *ctx,int n,pointer *argv)
 
 pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
 {
-  ckarg(2);
-  string logger;
-  if (isstring(argv[0])) logger.assign((char *)get_string(argv[0]));
-  else error(E_NOSTRING);
-  int log_level = intval(argv[1]);
+  ckarg2(1,2);
+  int log_level;
+  if (n==1) log_level = intval(argv[0]);
+  else log_level = intval(argv[1]);
+
   ros::console::levels::Level  level = ros::console::levels::Debug;
   switch(log_level){
   case 1:
@@ -1773,7 +1875,10 @@ pointer ROSEUS_SET_LOGGER_LEVEL(register context *ctx, int n, pointer *argv)
     return (NIL);
   }
 
-  bool success = ::ros::console::set_logger_level(logger, level);
+  // roseus currently does not support multiple loggers
+  // which must be outputted using the 'ROS_DEBUG_NAMED'-like macros
+  // set all logging to the ROSCONSOLE_DEFAULT_NAME, independent of the argument
+  bool success = ::ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, level);
   if (success)
     {
       console::notifyLoggerLevelsChanged();
@@ -1844,10 +1949,8 @@ pointer ROSEUS_GET_TOPICS(register context *ctx,int n,pointer *argv)
   for (ros::master::V_TopicInfo::iterator it = topics.begin() ; it != topics.end(); it++) {
     const ros::master::TopicInfo& info = *it;
     pointer tmp = cons(ctx,makestring((char*)info.name.c_str(), info.name.length()), makestring((char*)info.datatype.c_str(), info.datatype.length()));
-    vpush(tmp);
     ccdr(ret) = cons(ctx, tmp, NIL);
     ret = ccdr(ret);
-    vpop(); // vpush(tmp)
   }
   vpop(); // vpush(ret)
 
@@ -1857,8 +1960,11 @@ pointer ROSEUS_GET_TOPICS(register context *ctx,int n,pointer *argv)
 class TimerFunction
 {
   pointer _scb, _args;
+  string _funcname;
+  bool _oneshot;
 public:
-  TimerFunction(pointer scb, pointer args) : _scb(scb), _args(args) {
+  TimerFunction(pointer scb, pointer args, string funcname, bool oneshot) :
+    _scb(scb), _args(args), _funcname(funcname), _oneshot(oneshot) {
     //context *ctx = current_ctx;
     //ROS_WARN("func");prinx(ctx,scb,ERROUT);flushstream(ERROUT);terpri(ERROUT);
     //ROS_WARN("argc");prinx(ctx,args,ERROUT);flushstream(ERROUT);terpri(ERROUT);
@@ -1898,6 +2004,17 @@ public:
     ufuncall(ctx,(ctx->callfp?ctx->callfp->form:NIL),_scb,(pointer)(ctx->vsp-argc),NULL,argc);
     while(argc-->0)vpop();
 
+    // unregister callback when finished
+    if (_oneshot) {
+      bool bSuccess = s_mapTimered.erase(_funcname)>0;
+      erase_pointer(ctx, _funcname, s_mapTimeredIndex);
+      if (bSuccess) {
+        ROS_DEBUG("one shot timer successfully exited: %s", _funcname.c_str());
+      }
+      else {
+        ROS_ERROR("could not unregister oneshot timer: %s", _funcname.c_str());
+      }
+    }
   }
 };
 
@@ -1918,23 +2035,26 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   {
     if (n > 1 && issymbol(argv[n-2])) {
       // ;; oneshot ;;
-      if (argv[n-2] == K_ROSEUS_ONESHOT && issymbol(argv[n-1])) {
+      if (argv[n-2] == K_ROSEUS_ONESHOT) {
         if ( argv[n-1] != NIL ) {
           oneshot = true;
         }
         n -= 2;
       }
       // ;; groupname ;;
-      else if (argv[n-2] == K_ROSEUS_GROUPNAME && isstring(argv[n-1])) {
-        groupname.assign((char *)get_string(argv[n-1]));
-        map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
-        if( it != s_mapHandle.end() ) {
-          ROS_DEBUG("create-timer with groupname=%s", groupname.c_str());
-          lnode = (it->second).get();
-        } else {
-          ROS_ERROR("Groupname %s is missing. Call (ros::create-nodehandle \"%s\") first.",
-                    groupname.c_str(), groupname.c_str());
-          return (NIL);
+      else if (argv[n-2] == K_ROSEUS_GROUPNAME) {
+        if (argv[n-1] != NIL) {
+          if (!isstring(argv[n-1])) error(E_NOSTRING);
+          groupname.assign((char *)get_string(argv[n-1]));
+          map<string, boost::shared_ptr<NodeHandle > >::iterator it = s_mapHandle.find(groupname);
+          if( it != s_mapHandle.end() ) {
+            ROS_DEBUG("create-timer with groupname=%s", groupname.c_str());
+            lnode = (it->second).get();
+          } else {
+            ROS_ERROR("Groupname %s is missing. Call (ros::create-nodehandle \"%s\") first.",
+                      groupname.c_str(), groupname.c_str());
+            return (NIL);
+          }
         }
         n -= 2;
       }
@@ -1974,12 +2094,12 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   for (int i=n-1;i>=2;i--) args=cons(ctx,argv[i],args);
 
   // avoid gc
-  pointer p=gensym(ctx);
-  setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
+  store_pointer(ctx, fncallname, s_mapTimeredIndex, cons(ctx,fncallback,args));
 
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
-  s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), TimerFunction(fncallback, args), oneshot);
+  TimerFunction t_fn(fncallback, args, fncallname, oneshot);
+  s_mapTimered.set(fncallname, lnode->createTimer(ros::Duration(period), t_fn, oneshot));
 
   return (T);
 }
@@ -2010,6 +2130,8 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   QROSWARN=defvar(ctx,"*ROSWARN*",makeint(3),rospkg);
   QROSERROR=defvar(ctx,"*ROSERROR*",makeint(4),rospkg);
   QROSFATAL=defvar(ctx,"*ROSFATAL*",makeint(5),rospkg);
+  QSTATICDATAVECTOR=intern(ctx,"*STATIC-DATA-VECTOR*",20,rospkg);
+
   defun(ctx,"SPIN",argv[0],(pointer (*)())ROSEUS_SPIN, "Enter simple event loop");
 
   defun(ctx,"SPIN-ONCE",argv[0],(pointer (*)())ROSEUS_SPINONCE,
@@ -2118,7 +2240,7 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "	(ros::subscribe \"/test\" std_msgs::String #'(lambda (m) (print m)) :groupname \"mygroup\")\n"
          "	(ros::create-timer 0.1 #'(lambda (event) (print \"timer called\")) :groupname \"mygroup\")\n"
          "	(while (ros::ok)  (ros::spin-once \"mygroup\"))\n");
-  defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL, "");
+  defun(ctx,"SET-LOGGER-LEVEL",argv[0],(pointer (*)())ROSEUS_SET_LOGGER_LEVEL, "(level)");
 
   defun(ctx,"GET-HOST",argv[0],(pointer (*)())ROSEUS_GET_HOST, "Get the hostname where the master runs.");
   defun(ctx,"GET-NODES",argv[0],(pointer (*)())ROSEUS_GET_NODES, "Retreives the currently-known list of nodes from the master.");
