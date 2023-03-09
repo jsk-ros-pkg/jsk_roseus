@@ -122,7 +122,7 @@ set_target_properties(eustf PROPERTIES PREFIX "" SUFFIX ".so")
 set_target_properties(roseus_c_util PROPERTIES PREFIX "" SUFFIX ".so")
 
 add_service_files(
-  FILES AddTwoInts.srv StringString.srv
+  FILES AddTwoInts.srv AddTwoFloats.srv AddTwoDoubles.srv StringString.srv
 )
 add_message_files(
   FILES String.msg StringStamped.msg FixedArray.msg VariableArray.msg TestName.msg
@@ -180,6 +180,8 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-add-two-ints.test)
   add_rostest(test/test-add-two-ints-server.test)
   add_rostest(test/test-add-two-ints-server-groupname.test)
+  add_rostest(test/test-add-two-floats.test)
+  add_rostest(test/test-add-two-doubles.test)
   add_rostest(test/test-service-callback.test)
   add_rostest(test/test-simple-client.test)
   add_rostest(test/test-simple-client-wait.test)
