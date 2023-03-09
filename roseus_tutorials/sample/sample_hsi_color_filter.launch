@@ -1,0 +1,36 @@
+<launch>
+  <arg name="gui" default="true"/>
+  <arg name="play_rosbag" default="true"/>
+  <arg name="input" default="/kinect_head/depth_registered/points"/>
+  <arg name="base_frame_id" default="base_footprint"/>
+  <arg name="input_bbox_array" default="/HSI_color_filter/boxes"/>
+  <arg name="camera_frame_id" default=":head_mount_kinect_rgb_optical_frame_lk"/>
+
+  <include if="$(arg play_rosbag)" 
+      file="$(find jsk_pcl_ros)/sample/include/play_rosbag_pr2_sink.xml"/>
+
+  <!-- filter red color -->
+  <include file="$(find roseus_tutorials)/launch/hsi_color_filter.launch">
+      <arg name="INPUT" value="$(arg input)"/>
+      <arg name="h_max" value="50" />
+      <arg name="h_min" value="-20" />
+      <arg name="s_max" value="255" />
+      <arg name="s_min" value="120" />
+      <arg name="i_max" value="255" />
+      <arg name="i_min" value="70" />
+  </include>
+
+  <node name="pr2_display_tf_bbox_array" pkg="roseus_tutorials" type="pr2-setting.l" output="screen">
+    <rosparam subst_value="true">
+      base_frame_id: $(arg base_frame_id)
+      input_bbox_array: $(arg input_bbox_array)
+      camera_frame_id: $(arg camera_frame_id)
+    </rosparam>
+  </node>
+
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find roseus_tutorials)/sample/rviz/hsi_color_filter.rviz"/>
+  </group>
+</launch>
