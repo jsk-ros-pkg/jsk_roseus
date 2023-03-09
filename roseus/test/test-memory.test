@@ -1,0 +1,11 @@
+<launch>
+  <node name="publisher" pkg="rostopic" type="rostopic"
+        args='pub /roseus_test/msg std_msgs/String "Hello" -r 100' />
+  <test test-name="roseus_subscriber" pkg="roseus" type="roseus" args="$(find roseus)/test/test-memory-subscriber.l"
+        time-limit="600" />
+  <test test-name="roseus_service" pkg="roseus" type="roseus" args="$(find roseus)/test/test-memory-service.l"
+        time-limit="600" />
+  <test test-name="roseus_timer" pkg="roseus" type="roseus" args="$(find roseus)/test/test-memory-timer.l"
+        time-limit="600" />
+</launch>
+

@@ -310,6 +310,7 @@ void StoreConnectionHeader(EuslispMessage *eus_msg) {
     return;
   }
   context *ctx = current_ctx;
+  vpush(eus_msg->_message);
   // store conection headers
   register pointer ret, header;
   ret = cons(ctx, NIL, NIL);
@@ -323,7 +324,8 @@ void StoreConnectionHeader(EuslispMessage *eus_msg) {
   /* (setslot obj class index newval) */
   pointer slot_args[4] = {eus_msg->_message, classof(eus_msg->_message), K_ROSEUS_CONNECTION_HEADER, ccdr(header)};
   SETSLOT(ctx, 4, slot_args);
-  vpop();
+  vpop();  // ret
+  vpop();  // eus_msg->_message
 }
 
 namespace ros{
@@ -871,10 +873,12 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   args=NIL;
   for (int i=n-1;i>=3;i--) args=cons(ctx,argv[i],args);
 
+  vpush(args);
   EuslispMessage msg(message);
    boost::shared_ptr<SubscriptionCallbackHelper> *callback =
      (new boost::shared_ptr<SubscriptionCallbackHelper>
       (new EuslispSubscriptionCallbackHelper(fncallback, args, message)));
+  vpop();
   SubscribeOptions so(topicname, queuesize, msg.__getMD5Sum(), msg.__getDataType());
   so.helper = *callback;
   Subscriber subscriber = lnode->subscribe(so);
@@ -1237,13 +1241,16 @@ pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
 
   EuslispMessage message(emessage);
   vpush(message._message);      // to avoid GC in csend
+  vpush(args);
   pointer request(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_REQUEST));
   pointer response(csend(ctx,emessage,K_ROSEUS_GET,1,K_ROSEUS_RESPONSE));
-  vpop();                       // pop message._message
   boost::shared_ptr<EuslispServiceCallbackHelper> *callback =
     (new boost::shared_ptr<EuslispServiceCallbackHelper>
      (new EuslispServiceCallbackHelper(fncallback, args, message.__getMD5Sum(),
                                        message.__getDataType(), request, response)));
+  vpop();  // pop args
+  vpop();  // pop message._message
+
   AdvertiseServiceOptions aso;
   aso.service.assign(service);
   aso.datatype = (*callback->get()).getDataType();
@@ -1974,8 +1981,10 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   for (int i=n-1;i>=2;i--) args=cons(ctx,argv[i],args);
 
   // avoid gc
+  vpush(args);
   pointer p=gensym(ctx);
   setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,fncallback,args));
+  vpop();
 
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
