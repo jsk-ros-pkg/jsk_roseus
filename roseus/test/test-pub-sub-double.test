@@ -1,0 +1,4 @@
+<launch>
+  <node name="pub_double" pkg="roseus" type="roseus" args="$(find roseus)/test/pub-double.l" />
+  <test test-name="sub_double" pkg="roseus" type="roseus" args="$(find roseus)/test/test-sub-double.l" />
+</launch>
