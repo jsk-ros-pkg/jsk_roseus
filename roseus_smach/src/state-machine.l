@@ -90,14 +90,32 @@
    (&optional gs)
    (if (null gs) (return-from :goal-state goal-state))
    (if (atom gs) (setq gs (list gs)))
-   (setq gs (mapcar #'(lambda(g) (instance state :init g nil)) gs))
-   (dolist (n gs) (send self :add-node n))
+   (setq gs (mapcar #'(lambda (g)
+                        ;; g might be either state or symbol
+                        ;; if g is not found in nodes, create and add it.
+                        (if (symbolp g) ;; g is symbol
+                            (if (not (member g (send-all nodes :name))) ;; not found in ndoe
+                                (progn
+                                  (setq g (instance state :init g nil))
+                                  (send self :add-node g))
+                              (progn
+                                (setq g (mapcan #'(lambda (x) (if (eq (send x :name) g) (list x))) nodes))
+                                (if (> (length g) 1) (warning-message 2 "found multiple node for goal ~A (~A)~%" g nodes))
+                                (setq g (car g)))))
+                        (if (derivedp g state) ;; g is state
+                            (if (not (member g nodes)) ;; not found in node
+                                (progn
+                                  (send self :add-node g))
+                              (progn
+                                (setq g (mapcan #'(lambda (x) (if (eq x g) (list g))) nodes))
+                                (if (> (length g) 1) (warning-message 2 "found multiple node for goal ~A (~A)~%" g nodes))
+                                (setq g (car g)))))
+                        g)
+                    gs))
    (send-super :goal-state gs))
   (:append-goal-state (gs)
-   (if (atom gs) (setq gs (list gs)))
-   (setq gs (mapcar #'(lambda(g) (instance state :init g nil)) gs))
-   (dolist (n gs) (send self :add-node n))
-   (send-super :goal-state (append goal-state gs)))
+   (let ((org-goal-state goal-state))
+     (send-super :goal-state (append org-goal-state (send self :goal-state gs)))))
   (:goal-test (gs) (not (null (intersection (flatten (list gs)) goal-state))))
   (:goal-reached () (send self :goal-test active-state))
   ;;
