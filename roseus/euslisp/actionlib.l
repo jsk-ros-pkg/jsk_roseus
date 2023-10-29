@@ -221,7 +221,12 @@
      (if (eq (send self :get-state) actionlib_msgs::GoalStatus::*preempted*)
          (ros::ros-warn "[~A] :wait-for-result finished with preempted status" name-space))
      (eq (send self :get-state) actionlib_msgs::GoalStatus::*succeeded*)))
-  (:get-result () (send (send comm-state :latest-result) :result))
+  (:get-result ()
+   (if (send comm-state :latest-result)
+       (send (send comm-state :latest-result) :result)
+       (progn
+         (ros::ros-error "[~A] :get-result called without sending goal, returns null result" name-space)
+         nil))) ;; return nil instead of (instance action-result-class :init)
   (:get-state ()
     (let (state)
       (setq state (send (send comm-state :latest-goal-status) :status))

@@ -3,5 +3,7 @@
   <node name="fibonacci_client" pkg="roseus" type="roseus" args="$(find roseus)/test/fibonacci-client.l" />
   <test test-name="test_actionlib_client" pkg="roseus" type="roseus" args="$(find roseus)/test/test-actionlib.l"
         time-limit="600" retry="3"/>
+  <test test-name="test_actionlib_client_result_before_start" pkg="roseus" type="roseus" args="$(find roseus)/test/test-actionlib-get-result-before-start.l"
+        time-limit="60" retry="1"/>
 </launch>
 
