@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="test_console_bridge" pkg="roseus" type="test-console-bridge.l" name="test_console_bridge" />
+</launch>
