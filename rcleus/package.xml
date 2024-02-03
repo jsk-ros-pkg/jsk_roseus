@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>rcleus</name>
+  <version>0.0.0</version>
+  <description>ROS2 Client Library for EusLisp</description>
+  <author email="obinata@jsk.imi.i.u-tokyo.ac.jp">Yoshiki Obinata</author>
+  <maintainer email="obinata@jsk.imi.i.u-tokyo.ac.jp">Yoshiki Obinata</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>ament_cmake_auto</depend>
+  <!-- <depend>euslisp</depend> Send PR to rosdistro-->
+  <depend>rclcpp</depend>
+  <depend>rlwrap</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
