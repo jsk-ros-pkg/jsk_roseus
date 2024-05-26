@@ -810,10 +810,15 @@ pointer ROSEUS_OK(register context *ctx,int n,pointer *argv)
   }
 
 def_rosconsole_formatter(ROSEUS_ROSDEBUG, ROS_DEBUG)
+def_rosconsole_formatter(ROSEUS_ROSDEBUG_ONCE, ROS_DEBUG_ONCE)
 def_rosconsole_formatter(ROSEUS_ROSINFO,  ROS_INFO)
+def_rosconsole_formatter(ROSEUS_ROSINFO_ONCE, ROS_INFO_ONCE)
 def_rosconsole_formatter(ROSEUS_ROSWARN,  ROS_WARN)
+def_rosconsole_formatter(ROSEUS_ROSWARN_ONCE,  ROS_WARN_ONCE)
 def_rosconsole_formatter(ROSEUS_ROSERROR, ROS_ERROR)
+def_rosconsole_formatter(ROSEUS_ROSERROR_ONCE,  ROS_ERROR_ONCE)
 def_rosconsole_formatter(ROSEUS_ROSFATAL, ROS_FATAL)
+def_rosconsole_formatter(ROSEUS_ROSFATAL_ONCE,  ROS_FATAL_ONCE)
 
 pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
 {
@@ -2025,10 +2030,18 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
          "write mesage to debug output\n"
          "\n"
          "	(ros::ros-debug \"this is error ~A\" 0)\n");
+  defun(ctx,"ROS-DEBUG-ONCE",argv[0],(pointer (*)())ROSEUS_ROSDEBUG_ONCE,
+         "write mesage to debug output once\n"
+         "\n"
+         "	(ros::ros-debug-once \"this is error ~A\" 0)\n");
   defun(ctx,"ROS-INFO",argv[0],(pointer (*)())ROSEUS_ROSINFO, "write mesage to info output");
+  defun(ctx,"ROS-INFO-ONCE",argv[0],(pointer (*)())ROSEUS_ROSINFO_ONCE, "write mesage to info output once");
   defun(ctx,"ROS-WARN",argv[0],(pointer (*)())ROSEUS_ROSWARN, "write mesage to warn output");
+  defun(ctx,"ROS-WARN-ONCE",argv[0],(pointer (*)())ROSEUS_ROSWARN_ONCE, "write mesage to warn output once");
   defun(ctx,"ROS-ERROR",argv[0],(pointer (*)())ROSEUS_ROSERROR, "write mesage to error output");
+  defun(ctx,"ROS-ERROR-ONCE",argv[0],(pointer (*)())ROSEUS_ROSERROR_ONCE, "write mesage to error output once");
   defun(ctx,"ROS-FATAL",argv[0],(pointer (*)())ROSEUS_ROSFATAL, "write mesage to fatal output");
+  defun(ctx,"ROS-FATAL-ONCE",argv[0],(pointer (*)())ROSEUS_ROSFATAL_ONCE, "write mesage to fatal output once");
   defun(ctx,"EXIT",argv[0],(pointer (*)())ROSEUS_EXIT, "Exit ros clinet");
 
   defun(ctx,"SUBSCRIBE",argv[0],(pointer (*)())ROSEUS_SUBSCRIBE,
