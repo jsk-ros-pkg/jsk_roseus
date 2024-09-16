@@ -1,0 +1,24 @@
+<package>
+  <name>eusbullet</name>
+  <version>0.1.0</version>
+  <description>EusLisp Interface for the Bullet Physics.</description>
+  <maintainer email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://pr.willowgarage.com/wiki/eusbullet</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>euslisp</build_depend>
+  <build_depend>jskeus</build_depend>
+  <build_depend>bullet</build_depend>
+
+  <run_depend>euslisp</run_depend>
+  <run_depend>jskeus</run_depend>
+  <run_depend>bullet</run_depend>
+
+</package>
