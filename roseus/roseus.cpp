@@ -123,6 +123,12 @@ using namespace std;
 #define isInstalledCheck \
   if( ! ros::ok() ) { error(E_USER,"You must call (ros::roseus \"name\") before creating the first NodeHandle"); }
 
+class EusSubscriber : public ros::Subscriber {
+public:
+  EusSubscriber(Subscriber e) : ros::Subscriber(e) {
+  }
+  pointer _funcp;
+};
 class RoseusStaticData
 {
 public:
@@ -132,7 +138,7 @@ public:
   boost::shared_ptr<ros::NodeHandle> node;
   boost::shared_ptr<ros::Rate> rate;
   map<string, boost::shared_ptr<Publisher> > mapAdvertised; ///< advertised topics
-  map<string, boost::shared_ptr<Subscriber> > mapSubscribed; ///< subscribed topics
+  map<string, boost::shared_ptr<EusSubscriber> > mapSubscribed; ///< subscribed topics
   map<string, boost::shared_ptr<ServiceServer> > mapServiced; ///< subscribed topics
   map<string, Timer > mapTimered; ///< subscribed timers
 
@@ -350,7 +356,7 @@ template<> struct Serializer<EuslispMessage> {
  ************************************************************/
 class EuslispSubscriptionCallbackHelper : public ros::SubscriptionCallbackHelper {
 public:
-  pointer _scb,_args;
+  pointer _scb,_args,_funcp;
   EuslispMessage _msg;
 
   EuslispSubscriptionCallbackHelper(pointer scb, pointer args,pointer tmpl) :  _args(args), _msg(tmpl) {
@@ -370,7 +376,8 @@ public:
     }
     // avoid gc
     pointer p=gensym(ctx);
-    setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    _funcp=intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg);
+    set_special(ctx,_funcp,cons(ctx,scb,args));
   }
   ~EuslispSubscriptionCallbackHelper() {
       ROS_ERROR("subscription gc");
@@ -878,8 +885,18 @@ pointer ROSEUS_SUBSCRIBE(register context *ctx,int n,pointer *argv)
   SubscribeOptions so(topicname, queuesize, msg.__getMD5Sum(), msg.__getDataType());
   so.helper = *callback;
   Subscriber subscriber = lnode->subscribe(so);
-  boost::shared_ptr<Subscriber> sub = boost::shared_ptr<Subscriber>(new Subscriber(subscriber));
+  boost::shared_ptr<EusSubscriber> sub = boost::shared_ptr<EusSubscriber>(new EusSubscriber(static_cast<EusSubscriber>(subscriber)));
+  sub->_funcp = boost::dynamic_pointer_cast<EuslispSubscriptionCallbackHelper>(*callback)->_funcp;
   if ( !!sub ) {
+    if( s_mapSubscribed.find(topicname) != s_mapSubscribed.end() ) {
+      pointer dest=(pointer)mkstream(ctx,K_OUT,makebuffer(64));
+      prinx(ctx,speval(boost::dynamic_pointer_cast<EuslispSubscriptionCallbackHelper>(*callback)->_funcp),dest);
+      pointer str = makestring((char *)dest->c.stream.buffer->c.str.chars,
+                               intval(dest->c.stream.count));
+      ROS_DEBUG("topic %s already subscribed, release previous call back functions %s", topicname.c_str(), get_string(str));
+      // clean up pointer to avoid gc
+      set_special(ctx,s_mapSubscribed[topicname]->_funcp,NIL);
+    }
     s_mapSubscribed[topicname] = sub;
   } else {
     ROS_ERROR("s_mapSubscribed");
@@ -911,7 +928,7 @@ pointer ROSEUS_GETNUMPUBLISHERS(register context *ctx,int n,pointer *argv)
   else error(E_NOSTRING);
 
   bool bSuccess = false;
-  map<string, boost::shared_ptr<Subscriber> >::iterator it = s_mapSubscribed.find(topicname);
+  map<string, boost::shared_ptr<EusSubscriber> >::iterator it = s_mapSubscribed.find(topicname);
   if( it != s_mapSubscribed.end() ) {
     boost::shared_ptr<Subscriber> subscriber = (it->second);
     ret = subscriber->getNumPublishers();
@@ -937,7 +954,7 @@ pointer ROSEUS_GETTOPICSUBSCRIBER(register context *ctx,int n,pointer *argv)
   else error(E_NOSTRING);
 
   bool bSuccess = false;
-  map<string, boost::shared_ptr<Subscriber> >::iterator it = s_mapSubscribed.find(topicname);
+  map<string, boost::shared_ptr<EusSubscriber> >::iterator it = s_mapSubscribed.find(topicname);
   if( it != s_mapSubscribed.end() ) {
     boost::shared_ptr<Subscriber> subscriber = (it->second);
     ret = subscriber->getTopic();
