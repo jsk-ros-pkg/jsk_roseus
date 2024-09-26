@@ -369,8 +369,11 @@ public:
       ROS_ERROR("subscription callback function install error");
     }
     // avoid gc
+    vpush(scb); vpush(args);
     pointer p=gensym(ctx);
     setval(ctx,intern(ctx,(char*)(p->c.sym.pname->c.str.chars),strlen((char*)(p->c.sym.pname->c.str.chars)),lisppkg),cons(ctx,scb,args));
+    vpop(); // args
+    vpop(); // scb
   }
   ~EuslispSubscriptionCallbackHelper() {
       ROS_ERROR("subscription gc");
