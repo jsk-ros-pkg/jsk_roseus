@@ -1,4 +1,4 @@
-<package>
+<package format="3">
   <name>roseus</name>
   <version>1.7.5</version>
   <description>EusLisp client for ROS Robot Operating System.</description>
@@ -11,61 +11,69 @@
 
   <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
 
-  <build_depend>geneus</build_depend>
-  <build_depend>rosbash</build_depend>
-  <build_depend>roslang</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rosnode</build_depend>
-  <build_depend>rospack</build_depend>
-  <build_depend>rostest</build_depend>
-  <build_depend>rosmsg</build_depend>
-  <build_depend>rostopic</build_depend>
-  <build_depend>euslisp</build_depend>
-  <build_depend>jskeus</build_depend>
-  <build_depend>actionlib</build_depend>
-  <build_depend>actionlib_msgs</build_depend>
-  <build_depend>angles</build_depend>
-  <build_depend>visualization_msgs</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>tf2_ros</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>mk</build_depend>
-  <build_depend>rosbuild</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>std_srvs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>shape_msgs</build_depend>
-  <build_depend>message_generation</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
-  <build_depend>actionlib_tutorials</build_depend>
-  <build_depend>coreutils</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">geneus</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rosbash</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">roslang</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">roscpp</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rosnode</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rospack</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rostest</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rosmsg</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rostopic</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">euslisp</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">jskeus</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">actionlib</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">actionlib_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">angles</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">visualization_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">tf</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">tf2_ros</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">geometry_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">mk</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rosbuild</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">std_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">std_srvs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">sensor_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">shape_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">message_generation</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">dynamic_reconfigure</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">actionlib_tutorials</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">coreutils</build_depend>
 
-  <run_depend>geneus</run_depend>
-  <run_depend>rosbash</run_depend>
-  <run_depend>roslang</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>rosnode</run_depend>
-  <run_depend>rospack</run_depend>
-  <run_depend>rostest</run_depend>
-  <run_depend>rosmsg</run_depend>
-  <run_depend>euslisp</run_depend>
-  <run_depend>jskeus</run_depend>
-  <run_depend>actionlib</run_depend>
-  <run_depend>actionlib_msgs</run_depend>
-  <run_depend>visualization_msgs</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>tf2_ros</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>std_srvs</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>shape_msgs</run_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>actionlib_tutorials</run_depend>
+  <exec_depend condition="$ROS_VERSION == 1">geneus</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rosbash</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">roslang</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">roscpp</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rosnode</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rospack</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rostest</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rosmsg</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">euslisp</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jskeus</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">actionlib</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">actionlib_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">visualization_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">tf</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">tf2_ros</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">geometry_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">std_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">std_srvs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">sensor_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">shape_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">message_runtime</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">dynamic_reconfigure</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">actionlib_tutorials</exec_depend>
+
+  <depend condition="$ROS_VERSION == 2">ament_cmake_auto</depend>
+  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
 
   <test_depend>xvfb</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 
 </package>
