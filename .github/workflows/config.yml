@@ -193,3 +193,86 @@ jobs:
           NOT_TEST_INSTALL : ${{ matrix.NOT_TEST_INSTALL }}
           TEST_PKGS : ${{ matrix.TEST_PKGS }}
           BEFORE_SCRIPT : ${{ matrix.BEFORE_SCRIPT }}
+
+  # ROS-O setup https://github.com/v4hn/ros-o-builder/blob/jammy-one/README.md#install-instructions
+  ros-o:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - DISTRO: ubuntu:22.04
+            ROS_REPOSITORY_URL: https://raw.githubusercontent.com/v4hn/ros-o-builder/jammy-one/repository
+
+    container: ${{ matrix.DISTRO }}
+
+    env:
+      DEBIAN_FRONTEND : noninteractive
+
+    steps:
+      - name: Chcekout Source
+        uses: actions/checkout@v3.0.2
+
+      - name: Setup ROS-O deb repository
+        run: |
+          set -x
+          apt update && apt install -qq -y ca-certificates
+          echo "deb [trusted=yes] ${{ matrix.ROS_REPOSITORY_URL }}/ ./" | tee /etc/apt/sources.list.d/ros-o-builder.list
+          ##
+          # https://github.com/v4hn/ros-deb-builder-action/blob/b7c0ed93fde3a86b5b1027bf8f7145cad6067c90/prepare.sh#L27-L28
+          # Canonical dropped the Debian ROS packages from 24.04 for political reasons. Wow.
+          test "${{ matrix.DISTRO }}" = "ubuntu:24.04" && apt install -y software-properties-common retry && retry -d 50,10,30,300 -t 12 add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/ros
+          ##
+          apt update
+          apt install -qq -y python3-rosdep2
+          echo "yaml ${{ matrix.ROS_REPOSITORY_URL }}/local.yaml debian" | tee /etc/ros/rosdep/sources.list.d/1-ros-o-builder.list
+          rosdep update
+
+      - name: Setup catkin-tools
+        run: |
+          set -x
+          # setup catkin tools
+          apt install -qq -y python3-pip
+          pip3 install catkin-tools
+          # setup build tools
+          apt install -qq -y cmake build-essential catkin ros-one-rosbash
+
+      - name: override rosdep rule to use system euslisp
+        run: |
+          set -x
+          apt install -qq -y curl
+          curl -L https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_amd64 -o /usr/local/bin/yq
+          chmod a+x /usr/local/bin/yq
+          yq eval -n '.euslisp.ubuntu = "euslisp-dev" | .jskeus.ubuntu = "jskeus-dev"' | tee rosdep.yaml
+          echo "yaml file:///$(pwd)/rosdep.yaml" | tee /etc/ros/rosdep/sources.list.d/01-local.list
+          rosdep update
+        shell: bash
+
+      - name: Setup Workspace
+        run: |
+          source /opt/ros/one/setup.bash
+          set -x
+          # setup workspace
+          mkdir -p ~/ws/src
+          cd ~/ws/src
+          ln -sf $GITHUB_WORKSPACE .
+          rosdep install -qq -r -y --from-path . --ignore-src || echo "OK"
+        shell: bash
+
+      - name: Compile Packages
+        run: |
+          source /opt/ros/one/setup.bash
+          set -x
+          cd ~/ws/
+          catkin build --no-status -sv ${{ matrix.CATKIN_OPTIONS }} ${{ matrix.CMAKE_OPTIONS }}
+        shell: bash
+
+      - name: Test Packages
+        run: |
+          source /opt/ros/one/setup.bash
+          source ~/ws/devel/setup.bash
+          roscd roseus
+          set -x
+          catkin test --no-status -sv roseus
+        shell: bash
