@@ -387,6 +387,10 @@ always the rank of list is 2"
 ;;
 ;; first look under "~A/roseus/${ROS_DISTRO}/${PKG}" and if not check CMAKE_PREFIX_PATH/share/roseus/ros/${PKG}
 (defun ros::find-load-msg-path (pkg)
+  (when (and (string= *eusdir* "/usr/share/euslisp/") (member pkg '("euslisp" "jskeus") :test #'string=))
+    (warning-message 3 "on system installed euslisp, (ros::find-load-msg-path \"~A\") is skipped~%"
+		     *eusdir* pkg)
+    (return-from  ros::find-load-msg-path :no-msg-package))
   (let ((dirs (list ))
         (ppath (unix::getenv "CMAKE_PREFIX_PATH"))
         (s 0) i)
