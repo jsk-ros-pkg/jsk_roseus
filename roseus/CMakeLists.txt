@@ -58,6 +58,13 @@ if(APPLE)
 elseif((NOT ${euslisp_FOUND}) AND (NOT ${jskeus_FOUND}) AND (EXISTS ${EUS_EXECUTABLE}) AND (EXISTS ${JSKEUS_EXECUTABLE}) AND (EXISTS /usr/share/euslisp/include))
   set(euslisp_PACKAGE_PATH /usr/share/euslisp)
   set(euslisp_INCLUDE_DIRS /usr/share/euslisp/include)
+  message("-- Set euslisp_PACKAGE_PATH to ${euslisp_PACKAGE_PATH}, this might be system installed euslisp")
+  execute_process(COMMAND dpkg-query -W -f='\${Version}' euslisp
+    OUTPUT_VARIABLE euslisp_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+  string(REPLACE "'" "" euslisp_VERSION "${euslisp_VERSION}")
+  execute_process(COMMAND dpkg-query -W -f='\${Version}' jskeus
+    OUTPUT_VARIABLE jskeus_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+  string(REPLACE "'" "" jskeus_VERSION "${jskeus_VERSION}")
 else()
   find_package(euslisp REQUIRED)
   find_package(jskeus REQUIRED)
