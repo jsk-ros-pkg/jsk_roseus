@@ -1,7 +1,33 @@
 # http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.8)
 project(roseus)
 
+if($ENV{ROS_VERSION} STREQUAL "2")
+  find_package(ament_cmake_auto REQUIRED)
+  ament_auto_find_build_dependencies()
+  add_compile_definitions(ROS2)
+  set(ENV_EUSDIR $ENV{EUSDIR})
+  if(ENV_EUSDIR)
+    set(EUSDIR $ENV_EUSDIR)
+  else()
+    set(EUSDIR /usr/share/euslisp) # for debian/ubuntu
+  endif()
+  if(EXISTS ${EUSDIR})
+    message(STATUS "Found EusLisp: ${EUSDIR}")
+  else()
+    message(FATAL_ERROR "EusLisp not found")
+  endif()
+  set(euslisp_INCLUDE_DIRS ${EUSDIR}/include)
+
+  ament_auto_add_library(roseus SHARED
+    roseus.cpp)
+  target_compile_options(roseus
+    PRIVATE -O2 -DNDEBUG -DLinux -D_REENTRANT -DTHREADED -DPTHREAD -DX11R6_1 -Dx86_64 -Wno-comment)
+  target_include_directories(roseus
+    PUBLIC ${euslisp_INCLUDE_DIRS})
+
+  ament_auto_package()
+else()
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin REQUIRED COMPONENTS message_generation roslang roscpp rospack topic_tools actionlib actionlib_msgs visualization_msgs tf geometry_msgs std_msgs std_srvs sensor_msgs visualization_msgs tf2_ros dynamic_reconfigure actionlib_tutorials geneus)
@@ -221,4 +247,5 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-geneus.test)
   add_rostest(test/test-compile-message.test)
   add_rostest(test/test-print-ros-msg.test)
+endif()
 endif()
