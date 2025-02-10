@@ -1,7 +1,6 @@
 ;; state-machine-ros.l
 
 (require :state-machine "package://roseus_smach/src/state-machine.l")
-(require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
 (require :pickle "pickle.l")
 
 (ros::roseus-add-msgs "smach_msgs")
