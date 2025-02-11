@@ -3,4 +3,7 @@
   <test test-name="test_roseus_smach_samples" pkg="roseus" type="roseus"
         args="$(find roseus_smach)/test/test-samples.l"
         time-limit="120" />
+  <test test-name="test_roseus_smach_graph_samples" pkg="roseus" type="roseus"
+        args="$(find roseus_smach)/test/test-graph-samples.l"
+        time-limit="120" />
 </launch>
