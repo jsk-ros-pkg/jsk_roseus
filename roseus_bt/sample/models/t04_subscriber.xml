@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <SequenceStar name="InitSequence">
+            <Action ID="Init" name="Initialize Task"/>
+            <Action ID="setSubscriber" name="setBottleCoords" output_port="bottle_coords" received_port="found_coords" topic_name="/petbottle/coords"/>
+            <Sequence name="MainSequence">
+                <Fallback name="MoveToTable">
+                    <Condition ID="atSpot" spot="table-front"/>
+                    <Action ID="MoveTo" name="MoveToSpot" spot="table-front"/>
+                </Fallback>
+                <RetryUntilSuccessful name="WaitForTopicMessage" num_attempts="-1">
+                    <Fallback>
+                        <Condition ID="CheckCoords" name="CheckBottleCoords"
+                                   found_coords="${found_coords}"/>
+                        <Delay delay_msec="1000" name="Sleep">
+                            <AlwaysFailure/>
+                        </Delay>
+                    </Fallback>
+                </RetryUntilSuccessful>
+                <Action ID="PickBottleAt" coords="${bottle_coords}" name="PickBottleAtCoords"/>
+                <Action ID="PourBottle"/>
+                <Action ID="PlaceBottle"/>
+            </Sequence>
+        </SequenceStar>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="Init" server_name="/t04_subscriber/init"/>
+        <Action ID="MoveTo" server_name="/t04_subscriber/moveto">
+            <input_port name="spot" type="string"/>
+        </Action>
+        <Action ID="PickBottleAt" server_name="/t04_subscriber/pickbottleat">
+            <input_port name="coords" type="geometry_msgs/Pose"/>
+        </Action>
+        <Action ID="PourBottle" server_name="/t04_subscriber/pourbottle"/>
+        <Action ID="PlaceBottle" server_name="/t04_subscriber/placebottle"/>
+
+        <Condition ID="CheckCoords" service_name="t04_subscriber/checkcoords">
+            <input_port name="found_coords" type="bool"/>
+        </Condition>
+        <Condition ID="atSpot" service_name="/t04_subscriber/atspot">
+            <input_port name="spot" type="string"/>
+        </Condition>
+
+        <Subscriber ID="setSubscriber" message_type="geometry_msgs/Pose">
+            <output_port name="output_port" type=""/>
+            <output_port name="received_port" type=""/>
+            <input_port name="topic_name" type=""/>
+        </Subscriber>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
+
