@@ -14,7 +14,7 @@ generate_messages(
 
 catkin_package(
 #    DEPENDS 
-    CATKIN_DEPENDS euslisp roseus smach smach_ros smach_msgs # TODO
+    CATKIN_DEPENDS roseus smach smach_ros smach_msgs # TODO
 #    INCLUDE_DIRS # TODO include
 #    LIBRARIES # TODO
 )
