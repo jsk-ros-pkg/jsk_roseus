@@ -4,6 +4,8 @@
 (require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
 (require :pickle "pickle.l")
 
+(require :base64 "lib/llib/base64.l")
+
 (ros::roseus-add-msgs "smach_msgs")
 
 ;;
@@ -119,6 +121,7 @@
      )
   (:set-initial-state-cb
    (msg)
+   (ros::ros-error "start -cb")
    (let ((path (send msg :path))
      ;; this smach takes only one state
      (name (car (send msg :initial_states))))
@@ -127,6 +130,7 @@
        (return-from :set-initial-state-cb))
      (setq path (format nil "~A/~A"
                         (subseq path (1+ (length root-name))) name))
+     (ros::ros-error "path =~A init-tm " path init-tm)
      ;; initialize can be called every 5 sec
      (when init-tm
        (when (< (send (ros::time- (ros::time-now) init-tm) :to-sec) 5)
@@ -147,7 +151,12 @@
          (send sm :reset-state)
          (ros::ros-info "Set initial/active state [~a]" nd)))
      ;; TODO apply userdata
+     (print "------------------------")
+     (print (send msg :initial_states))
+     (print (send msg :local_data))
+     (print (pickle::load (base64decode (send msg :local_data))))
      (setq init-tm (ros::time-now))
+     (ros::ros-error "start -cb done")
      ))
   (:exit-state () exit-state)
   (:exit-signal-hook () exit-signal-hook)
@@ -197,10 +206,14 @@
    (send self :publish-all-status user-data))
   (:exec-state-machine (&key (user-data) (reset-state))
    (send self :reset-state :user-data user-data :on-state reset-state)
+   (ros::ros-error "start exec-state-machine")
    (while (not (send sm :goal-reached))
+     (ros::ros-error "start exec")
      (send self :spin-once)
      (send self :publish-status user-data)
-     (send self :state-machine :execute user-data :step -1))
+     (send self :state-machine :execute user-data :step -1)
+     (ros::ros-error "start exec done")
+     )
    (warn ";; goal reached at ~A~%" (send sm :active-state))
    (send self :publish-all-status user-data)
    (send sm :active-state))
