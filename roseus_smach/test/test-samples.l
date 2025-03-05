@@ -59,6 +59,19 @@
   (assert (cdr (assoc :result userdata))
           "action-client-state sets action result to userdata for key :result"))
 
+;; TEST T/NIL in user-data for checking Python2/3 pickle error below
+;; [ERROR][1741141498.382268][/smach_image_publisher:rosout]: bad callback: <bound method SmachViewerBase._status_msg_update of <__main__.SmachImagePublisher object at 0x7fcf504b50a0>>
+;; Traceback (most recent call last):
+;;   File "/opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py", line 750, in _invoke_callback
+;;     cb(msg)
+;;   File "/home/obinata/ros/catkin_ws/src/ros-visualization/executive_smach_visualization/smach_viewer/src/smach_viewer/smach_viewer_base.py", line 494, in _status_msg_update
+;;     if container.update_status(msg):
+;;   File "/home/obinata/ros/catkin_ws/src/ros-visualization/executive_smach_visualization/smach_viewer/src/smach_viewer/smach_viewer_base.py", line 106, in update_status
+;;     self._local_data._data = self._load_local_data(msg)
+;;   File "/home/obinata/ros/catkin_ws/src/ros-visualization/executive_smach_visualization/smach_viewer/src/smach_viewer/smach_viewer_base.py", line 80, in _load_local_data
+;;     local_data = pickle.loads(msg.local_data.encode('utf-8'))
+;; _pickle.UnpicklingError: invalid load key, '\xef'.
+
 (run-all-tests)
 
 (exit)
