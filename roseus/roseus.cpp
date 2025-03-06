@@ -795,18 +795,60 @@ pointer ROSEUS_OK(register context *ctx,int n,pointer *argv)
 }
 
 
-#define def_rosconsole_formatter(funcname, rosfuncname)         \
-  pointer funcname(register context *ctx,int n,pointer *argv)   \
-  { pointer *argv2,msg;                                         \
-    int argc2;                                                  \
-    argc2 = n+1;                                                \
-    argv2 = (pointer *)malloc(sizeof(pointer)*argc2);           \
-    argv2[0] = NIL;                                             \
-    for(int i=0;i<n;i++) argv2[i+1]=argv[i] ;                   \
-    msg = XFORMAT(ctx, argc2, argv2);                           \
-    rosfuncname("%s", msg->c.str.chars);                        \
-    free(argv2);                                                \
-    return (T);                                                 \
+#define def_rosconsole_formatter(funcname, rosfuncname)                   \
+  pointer funcname(register context *ctx,int n,pointer *argv)             \
+  { pointer *argv2,msg;                                                   \
+    int argc2;                                                            \
+    argc2 = n+1;                                                          \
+    argv2 = (pointer *)malloc(sizeof(pointer)*argc2);                     \
+    argv2[0] = NIL;                                                       \
+    for(int i=0;i<n;i++) argv2[i+1]=argv[i] ;                             \
+    msg = XFORMAT(ctx, argc2, argv2);                                     \
+    rosfuncname("%s", msg->c.str.chars);                                  \
+    free(argv2);                                                          \
+    return (T);                                                           \
+  }
+#define def_rosconsole_formatter_named(funcname, rosfuncname)             \
+  pointer funcname(register context *ctx,int n,pointer *argv)             \
+  { pointer *argv2,msg;                                                   \
+    int argc2;                                                            \
+    argc2 = n;                                                            \
+    argv2 = (pointer *)malloc(sizeof(pointer)*argc2);                     \
+    argv2[0] = NIL;                                                       \
+    for(int i=1;i<n;i++) argv2[i]=argv[i] ;                               \
+    msg = XFORMAT(ctx, argc2, argv2);                                     \
+    rosfuncname((char *)get_string(argv[0]), "%s", msg->c.str.chars);     \
+    free(argv2);                                                          \
+    return (T);                                                           \
+  }
+#define def_rosconsole_formatter_period(funcname, rosfuncname)            \
+  pointer funcname(register context *ctx,int n,pointer *argv)             \
+  { pointer *argv2,msg;                                                   \
+    numunion nu;                                                          \
+    int argc2;                                                            \
+    argc2 = n;                                                            \
+    argv2 = (pointer *)malloc(sizeof(pointer)*argc2);                     \
+    argv2[0] = NIL;                                                       \
+    for(int i=1;i<n;i++) argv2[i]=argv[i] ;                               \
+    msg = XFORMAT(ctx, argc2, argv2);                                     \
+    rosfuncname((double)ckfltval(argv[0]), "%s", msg->c.str.chars);       \
+    free(argv2);                                                          \
+    return (T);                                                           \
+  }
+#define def_rosconsole_formatter_period_named(funcname, rosfuncname)      \
+  pointer funcname(register context *ctx,int n,pointer *argv)             \
+  { pointer *argv2,msg;                                                   \
+    numunion nu;                                                          \
+    int argc2;                                                            \
+    argc2 = n-1;                                                          \
+    argv2 = (pointer *)malloc(sizeof(pointer)*argc2);                     \
+    argv2[0] = NIL;                                                       \
+    for(int i=2;i<n;i++) argv2[i-1]=argv[i] ;                             \
+    msg = XFORMAT(ctx, argc2, argv2);                                     \
+    rosfuncname((double)ckfltval(argv[0]), (char *)get_string(argv[1]),   \
+                "%s", msg->c.str.chars);                                  \
+    free(argv2);                                                          \
+    return (T);                                                           \
   }
 
 def_rosconsole_formatter(ROSEUS_ROSDEBUG, ROS_DEBUG)
@@ -814,6 +856,49 @@ def_rosconsole_formatter(ROSEUS_ROSINFO,  ROS_INFO)
 def_rosconsole_formatter(ROSEUS_ROSWARN,  ROS_WARN)
 def_rosconsole_formatter(ROSEUS_ROSERROR, ROS_ERROR)
 def_rosconsole_formatter(ROSEUS_ROSFATAL, ROS_FATAL)
+
+def_rosconsole_formatter_named(ROSEUS_ROSDEBUG_NAMED, ROS_DEBUG_NAMED)
+def_rosconsole_formatter_named(ROSEUS_ROSINFO_NAMED,  ROS_INFO_NAMED)
+def_rosconsole_formatter_named(ROSEUS_ROSWARN_NAMED,  ROS_WARN_NAMED)
+def_rosconsole_formatter_named(ROSEUS_ROSERROR_NAMED, ROS_ERROR_NAMED)
+def_rosconsole_formatter_named(ROSEUS_ROSFATAL_NAMED, ROS_FATAL_NAMED)
+
+def_rosconsole_formatter(ROSEUS_ROSDEBUG_ONCE, ROS_DEBUG_ONCE)
+def_rosconsole_formatter(ROSEUS_ROSINFO_ONCE,  ROS_INFO_ONCE)
+def_rosconsole_formatter(ROSEUS_ROSWARN_ONCE,  ROS_WARN_ONCE)
+def_rosconsole_formatter(ROSEUS_ROSERROR_ONCE, ROS_ERROR_ONCE)
+def_rosconsole_formatter(ROSEUS_ROSFATAL_ONCE, ROS_FATAL_ONCE)
+
+def_rosconsole_formatter_named(ROSEUS_ROSDEBUG_ONCE_NAMED, ROS_DEBUG_ONCE_NAMED)
+def_rosconsole_formatter_named(ROSEUS_ROSINFO_ONCE_NAMED,  ROS_INFO_ONCE_NAMED)
+def_rosconsole_formatter_named(ROSEUS_ROSWARN_ONCE_NAMED,  ROS_WARN_ONCE_NAMED)
+def_rosconsole_formatter_named(ROSEUS_ROSERROR_ONCE_NAMED, ROS_ERROR_ONCE_NAMED)
+def_rosconsole_formatter_named(ROSEUS_ROSFATAL_ONCE_NAMED, ROS_FATAL_ONCE_NAMED)
+
+def_rosconsole_formatter_period(ROSEUS_ROSDEBUG_THROTTLE, ROS_DEBUG_THROTTLE)
+def_rosconsole_formatter_period(ROSEUS_ROSINFO_THROTTLE,  ROS_INFO_THROTTLE)
+def_rosconsole_formatter_period(ROSEUS_ROSWARN_THROTTLE,  ROS_WARN_THROTTLE)
+def_rosconsole_formatter_period(ROSEUS_ROSERROR_THROTTLE, ROS_ERROR_THROTTLE)
+def_rosconsole_formatter_period(ROSEUS_ROSFATAL_THROTTLE, ROS_FATAL_THROTTLE)
+
+def_rosconsole_formatter_period_named(ROSEUS_ROSDEBUG_THROTTLE_NAMED, ROS_DEBUG_THROTTLE_NAMED)
+def_rosconsole_formatter_period_named(ROSEUS_ROSINFO_THROTTLE_NAMED,  ROS_INFO_THROTTLE_NAMED)
+def_rosconsole_formatter_period_named(ROSEUS_ROSWARN_THROTTLE_NAMED,  ROS_WARN_THROTTLE_NAMED)
+def_rosconsole_formatter_period_named(ROSEUS_ROSERROR_THROTTLE_NAMED, ROS_ERROR_THROTTLE_NAMED)
+def_rosconsole_formatter_period_named(ROSEUS_ROSFATAL_THROTTLE_NAMED, ROS_FATAL_THROTTLE_NAMED)
+
+def_rosconsole_formatter_period(ROSEUS_ROSDEBUG_DELAYED_THROTTLE, ROS_DEBUG_DELAYED_THROTTLE)
+def_rosconsole_formatter_period(ROSEUS_ROSINFO_DELAYED_THROTTLE,  ROS_INFO_DELAYED_THROTTLE)
+def_rosconsole_formatter_period(ROSEUS_ROSWARN_DELAYED_THROTTLE,  ROS_WARN_DELAYED_THROTTLE)
+def_rosconsole_formatter_period(ROSEUS_ROSERROR_DELAYED_THROTTLE, ROS_ERROR_DELAYED_THROTTLE)
+def_rosconsole_formatter_period(ROSEUS_ROSFATAL_DELAYED_THROTTLE, ROS_FATAL_DELAYED_THROTTLE)
+
+def_rosconsole_formatter_period_named(ROSEUS_ROSDEBUG_DELAYED_THROTTLE_NAMED, ROS_DEBUG_DELAYED_THROTTLE_NAMED)
+def_rosconsole_formatter_period_named(ROSEUS_ROSINFO_DELAYED_THROTTLE_NAMED,  ROS_INFO_DELAYED_THROTTLE_NAMED)
+def_rosconsole_formatter_period_named(ROSEUS_ROSWARN_DELAYED_THROTTLE_NAMED,  ROS_WARN_DELAYED_THROTTLE_NAMED)
+def_rosconsole_formatter_period_named(ROSEUS_ROSERROR_DELAYED_THROTTLE_NAMED, ROS_ERROR_DELAYED_THROTTLE_NAMED)
+def_rosconsole_formatter_period_named(ROSEUS_ROSFATAL_DELAYED_THROTTLE_NAMED, ROS_FATAL_DELAYED_THROTTLE_NAMED)
+
 
 pointer ROSEUS_EXIT(register context *ctx,int n,pointer *argv)
 {
@@ -1972,6 +2057,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   // ;; arguments ;;
   args=NIL;
   for (int i=n-1;i>=2;i--) args=cons(ctx,argv[i],args);
+  vpush(args); // avoid gc
 
   // avoid gc
   pointer p=gensym(ctx);
@@ -1980,6 +2066,7 @@ pointer ROSEUS_CREATE_TIMER(register context *ctx,int n,pointer *argv)
   // ;; store mapTimered
   ROS_DEBUG("create timer %s at %f (oneshot=%d) (groupname=%s)", fncallname.c_str(), period, oneshot, groupname.c_str());
   s_mapTimered[fncallname] = lnode->createTimer(ros::Duration(period), TimerFunction(fncallback, args), oneshot);
+  vpop();  // pop args
 
   return (T);
 }
@@ -2029,6 +2116,49 @@ pointer ___roseus(register context *ctx, int n, pointer *argv, pointer env)
   defun(ctx,"ROS-WARN",argv[0],(pointer (*)())ROSEUS_ROSWARN, "write mesage to warn output");
   defun(ctx,"ROS-ERROR",argv[0],(pointer (*)())ROSEUS_ROSERROR, "write mesage to error output");
   defun(ctx,"ROS-FATAL",argv[0],(pointer (*)())ROSEUS_ROSFATAL, "write mesage to fatal output");
+
+  defun(ctx,"ROS-DEBUG-NAMED",argv[0],(pointer (*)())ROSEUS_ROSDEBUG_NAMED, "write mesage to debug output with name");
+  defun(ctx,"ROS-INFO-NAMED",argv[0],(pointer (*)())ROSEUS_ROSINFO_NAMED, "write mesage to info output with name");
+  defun(ctx,"ROS-WARN-NAMED",argv[0],(pointer (*)())ROSEUS_ROSWARN_NAMED, "write mesage to warn output with name");
+  defun(ctx,"ROS-ERROR-NAMED",argv[0],(pointer (*)())ROSEUS_ROSERROR_NAMED, "write mesage to error output with name");
+  defun(ctx,"ROS-FATAL-NAMED",argv[0],(pointer (*)())ROSEUS_ROSFATAL_NAMED, "write mesage to fatal output with name");
+
+  defun(ctx,"ROS-DEBUG-ONCE",argv[0],(pointer (*)())ROSEUS_ROSDEBUG_ONCE, "write mesage to debug output once");
+  defun(ctx,"ROS-INFO-ONCE",argv[0],(pointer (*)())ROSEUS_ROSINFO_ONCE, "write mesage to info output once");
+  defun(ctx,"ROS-WARN-ONCE",argv[0],(pointer (*)())ROSEUS_ROSWARN_ONCE, "write mesage to warn output once");
+  defun(ctx,"ROS-ERROR-ONCE",argv[0],(pointer (*)())ROSEUS_ROSERROR_ONCE, "write mesage to error output once");
+  defun(ctx,"ROS-FATAL-ONCE",argv[0],(pointer (*)())ROSEUS_ROSFATAL_ONCE, "write mesage to fatal output once");
+
+  defun(ctx,"ROS-DEBUG-ONCE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSDEBUG_ONCE_NAMED, "write mesage to debug output once with name");
+  defun(ctx,"ROS-INFO-ONCE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSINFO_ONCE_NAMED, "write mesage to info output once with name");
+  defun(ctx,"ROS-WARN-ONCE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSWARN_ONCE_NAMED, "write mesage to warn output once with name");
+  defun(ctx,"ROS-ERROR-ONCE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSERROR_ONCE_NAMED, "write mesage to error output once with name");
+  defun(ctx,"ROS-FATAL-ONCE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSFATAL_ONCE_NAMED, "write mesage to fatal output once with name");
+
+  defun(ctx,"ROS-DEBUG-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSDEBUG_THROTTLE, "write mesage to debug output periodically");
+  defun(ctx,"ROS-INFO-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSINFO_THROTTLE, "write mesage to info output periodically");
+  defun(ctx,"ROS-WARN-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSWARN_THROTTLE, "write mesage to warn output periodically");
+  defun(ctx,"ROS-ERROR-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSERROR_THROTTLE, "write mesage to error output periodically");
+  defun(ctx,"ROS-FATAL-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSFATAL_THROTTLE, "write mesage to fatal output periodically");
+
+  defun(ctx,"ROS-DEBUG-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSDEBUG_THROTTLE_NAMED, "write mesage to debug output periodically with name");
+  defun(ctx,"ROS-INFO-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSINFO_THROTTLE_NAMED, "write mesage to info output periodically with name");
+  defun(ctx,"ROS-WARN-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSWARN_THROTTLE_NAMED, "write mesage to warn output periodically with name");
+  defun(ctx,"ROS-ERROR-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSERROR_THROTTLE_NAMED, "write mesage to error output periodically with name");
+  defun(ctx,"ROS-FATAL-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSFATAL_THROTTLE_NAMED, "write mesage to fatal output periodically with name");
+
+  defun(ctx,"ROS-DEBUG-DELAYED-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSDEBUG_DELAYED_THROTTLE, "write mesage to debug output periodically");
+  defun(ctx,"ROS-INFO-DELAYED-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSINFO_DELAYED_THROTTLE, "write mesage to info output periodically");
+  defun(ctx,"ROS-WARN-DELAYED-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSWARN_DELAYED_THROTTLE, "write mesage to warn output periodically");
+  defun(ctx,"ROS-ERROR-DELAYED-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSERROR_DELAYED_THROTTLE, "write mesage to error output periodically");
+  defun(ctx,"ROS-FATAL-DELAYED-THROTTLE",argv[0],(pointer (*)())ROSEUS_ROSFATAL_DELAYED_THROTTLE, "write mesage to fatal output periodically");
+
+  defun(ctx,"ROS-DEBUG-DELAYED-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSDEBUG_DELAYED_THROTTLE_NAMED, "write mesage to debug output periodically with name");
+  defun(ctx,"ROS-INFO-DELAYED-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSINFO_DELAYED_THROTTLE_NAMED, "write mesage to info output periodically with name");
+  defun(ctx,"ROS-WARN-DELAYED-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSWARN_DELAYED_THROTTLE_NAMED, "write mesage to warn output periodically with name");
+  defun(ctx,"ROS-ERROR-DELAYED-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSERROR_DELAYED_THROTTLE_NAMED, "write mesage to error output periodically with name");
+  defun(ctx,"ROS-FATAL-DELAYED-THROTTLE-NAMED",argv[0],(pointer (*)())ROSEUS_ROSFATAL_DELAYED_THROTTLE_NAMED, "write mesage to fatal output periodically with name");
+
   defun(ctx,"EXIT",argv[0],(pointer (*)())ROSEUS_EXIT, "Exit ros clinet");
 
   defun(ctx,"SUBSCRIBE",argv[0],(pointer (*)())ROSEUS_SUBSCRIBE,
