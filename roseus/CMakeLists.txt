@@ -177,10 +177,12 @@ install(DIRECTORY euslisp test scripts cmake
 
 include(cmake/roseus.cmake)
 
-generate_eusdoc(euslisp/roseus.l "ROS")
-generate_eusdoc(euslisp/roseus-utils.l)
-generate_eusdoc(euslisp/eustf.l)
-generate_eusdoc(euslisp/actionlib.l)
+if(NOT DISABLE_DOCUMENTATION)
+  generate_eusdoc(euslisp/roseus.l "ROS")
+  generate_eusdoc(euslisp/roseus-utils.l)
+  generate_eusdoc(euslisp/eustf.l)
+  generate_eusdoc(euslisp/actionlib.l)
+endif()
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
