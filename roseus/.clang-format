@@ -1,0 +1,20 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+
+ColumnLimit: 0
+SortIncludes: Never
+IncludeBlocks: Preserve
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReflowComments: false
+AlignTrailingComments: true
+AlignEscapedNewlines: Left
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortBlocksOnASingleLine: Always
+AllowShortLoopsOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+BinPackArguments: true
+BinPackParameters: true
+...

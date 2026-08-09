@@ -1,0 +1,19 @@
+#!/usr/bin/env roseus
+;;;
+;;; euslisp version of https://github.com/ros2/demos/blob/rolling/demo_nodes_py/demo_nodes_py/topics/talker.py
+;;;
+
+(ros::load-ros-manifest "roseus")
+
+(ros::roseus "talker")
+(ros::advertise "chatter" std_msgs::string 1)
+(ros::rate 100)
+(while (ros::ok)
+  (setq msg (instance std_msgs::string :init))
+  (send msg :data (format nil "hello world ~a" (send (ros::time-now) :sec-nsec)))
+  (ros::ros-info "msg [~A]" (send msg :data))
+  (ros::publish "chatter" msg)
+  (ros::sleep)
+  )
+(ros::roseus "shutdown")
+(exit)

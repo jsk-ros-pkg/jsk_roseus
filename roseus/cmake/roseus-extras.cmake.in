@@ -1,0 +1,12 @@
+# roseus-extras.cmake
+# Loaded by downstream packages via find_package(roseus).
+# Registers an ament_package() hook that auto-generates .l files
+# for all dependency message packages.
+
+find_package(rosidl_generator_eus QUIET)
+find_package(rosidl_cmake QUIET)
+
+if(rosidl_generator_eus_FOUND AND rosidl_cmake_FOUND)
+  ament_register_extension("ament_package" "roseus"
+    "roseus_generate_dep_msgs.cmake")
+endif()

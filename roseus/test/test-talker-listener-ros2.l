@@ -1,0 +1,45 @@
+#!/usr/bin/env roseus
+;;;
+;;; ROS 2 version of test-talker-listener.l
+;;; Excluded: test-talker-listener-connection-header (connection-header not in ROS 2 DDS)
+
+(require :unittest "lib/llib/unittest.l")
+
+(ros::load-ros-manifest "roseus")
+
+;;;
+;;;
+(setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
+(init-unit-test)
+
+;; method call
+(defclass string-cb-class
+  :super propertied-object
+  :slots (msg-camep))
+(defmethod string-cb-class
+  (:init
+    ()
+    (setq msg-camep nil)
+    (ros::subscribe "chatter" std_msgs::string #'send self :string-cb))
+  (:string-cb
+   (msg)
+   (setq msg-camep t)
+   (print (list 'cb self (send msg :data)) *error-output*)
+   (assert (substringp "hello world" (send msg :data))))
+  )
+
+(deftest test-talker-listener
+  (ros::roseus "listener")
+  (setq m (instance string-cb-class :init))
+
+  (ros::rate 10)
+  (dotimes (i 25)
+    (ros::spin-once)
+    (ros::sleep)
+    (sys::gc)
+    )
+  (assert (send m :get-val 'msg-camep))
+  )
+
+(run-all-tests)
+(exit)
