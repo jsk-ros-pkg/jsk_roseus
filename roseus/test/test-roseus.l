@@ -149,6 +149,13 @@
     (assert (string= (send rcvimg :entity) (send sndimg :entity)) "eq image :entity")
     ))
 
+(deftest test-exit-hook ()
+  (let ((command '(let ((sys:*exit-hook*
+                         #'(lambda (&optional (val 0))
+                             (unix::_exit (1+ val)))))
+                   (exit 0))))
+    (assert (= 256 (unix:system (format nil "roseus \"~S\"" command))))))
+
 (run-all-tests)
 
 (exit)
