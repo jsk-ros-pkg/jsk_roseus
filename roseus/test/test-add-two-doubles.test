@@ -1,0 +1,5 @@
+<launch>
+  <node name="a2i_server" pkg="roseus" type="roseus" args="$(find roseus)/test/add-two-doubles-server.l" />
+  <test test-name="add_two_doubles" pkg="roseus" type="roseus" args="$(find roseus)/test/test-add-two-doubles.l"
+        time-limit="120" />
+</launch>
