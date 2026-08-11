@@ -11,7 +11,7 @@
 ;;      https://raw.githubusercontent.com/rhaschke/executive_smach_tutorials/indigo-devel/examples/state_machine_simple.py
 ;;
 (setq count 0)
-(defun func-foo (&rest args)
+(defun func-foo (&rest args) "document foo"
   (format t "Execute state FOO~%")
   (cond ((< count 3) (incf count) :outcome1)
 	(t :outcome2)))
