@@ -6,40 +6,31 @@
 (ros::roseus-add-srvs "dynamic_reconfigure")
 (ros::roseus-add-msgs "dynamic_reconfigure")
 
-(defun print-ros-msg (msg &optional (rp (find-package "ROS"))
-                          (ro ros::object) (nest 0) (padding "  "))
+(defun print-ros-msg (msg &optional (strm *standard-output*) (tab 0) (padding "  "))
+  (assert (streamp strm) (format nil "Stream Expected in: ~s~%" strm))
   (dolist (s (let ((slt (send msg :slots)))
                ;; `s' is a list of slots unique to the msg object
                ;; i.e. slots present in `ro' and inherited by `msg' are filtered
                (map nil #'(lambda (obj) (setq slt (remove obj slt :key #'car :count 1)))
-                    (send ro :slots))
+                    (send ros::object :slots))
                slt))
     (let ((sm (car s)))
-      (when (and (symbolp sm) (eq (symbol-package sm) rp))
+      (when (symbolp sm)
+        (dotimes (i tab) (format strm padding))
+        (format strm "~A: " (string-downcase (string-left-trim "_" (symbol-string sm))))
         (cond
-         ((derivedp (cdr s) ro)
-          (dotimes (i nest) (format t padding))
-          (format t ":~A -- ~A~%"
-                  (string-downcase (string-left-trim "_" (symbol-string sm)))
-                  (send (class (cdr s)) :name))
-          (print-ros-msg (cdr s) rp ro (1+ nest) padding))
+         ((derivedp (cdr s) ros::object)
+          (terpri strm)
+          (print-ros-msg (cdr s) strm (1+ tab) padding))
          ((and (listp (cdr s))
-               (derivedp (cadr s) ro))
-          (dotimes (i nest) (format t padding))
-          (format t ":~A [ ~A ]~%"
-                  (string-downcase (string-left-trim "_" (symbol-string sm)))
-                  (send (class (cadr s)) :name))
-          (dotimes (i (1+ nest)) (format t padding)) (format t "[~%")
+               (derivedp (cadr s) ros::object))
+          (terpri strm)
           (dolist (ss (cdr s))
-            (print-ros-msg ss rp ro (+ nest 2) padding))
-          (dotimes (i (1+ nest)) (format t padding)) (format t "]~%")
-          )
+            (dotimes (i (1+ tab)) (format strm padding))
+            (format strm "- ~%")
+            (print-ros-msg ss strm (+ tab 2) padding)))
          (t
-          (dotimes (i nest) (format t padding))
-          (format t ":~A~%" (string-downcase (string-left-trim "_" (symbol-string sm))))
-          (dotimes (i nest) (format t padding))
-          (print (cdr s)))
-         )))))
+          (format strm "~S~%" (cdr s))))))))
 
 ;; Sensors
 (ros::roseus-add-msgs "sensor_msgs")
@@ -1132,21 +1123,36 @@
       (unless (ros r :success) (ros::ros-warn "Call \"~A\" fails, it returns \"~A\"" srvname (send r :message)))
       r)))
 
+(defclass one-shot-subscribe-msg
+  :super propertied-object
+  :slots (msg-)
+  :documentation "The purpose of this class is to register class closures for callback function of (one-shot-subscribe). This allows the callback function to be accessed safely from anyscope. For detail, please refer to https://github.com/jsk-ros-pkg/jsk_roseus/issues/666
+"
+  )
+(defmethod one-shot-subscribe-msg
+  (:init () self)
+  (:update (msg) (setq msg- msg))
+  (:update-after-stamp (after-stamp msg)
+    (let ((st (send msg :header :stamp)))
+      (when (> (send st :to-sec)
+               (send after-stamp :to-sec))
+        (send self :update msg))))
+  (:get () msg-))
+
 (defun one-shot-subscribe (topic-name mclass &key (timeout) (after-stamp) (unsubscribe t))
   "Subscribe message, just for once"
-  (let (lmsg)
-    (unless (ros::get-num-publishers topic-name)
+  (let ((lmsg (instance one-shot-subscribe-msg :init)))
+    (if (ros::get-topic-subscriber topic-name)
+      (progn
+        (ros::ros-error (format nil "There is already subscriber for ~A. If you want to use this function, please (ros::unsubscribe \"~A\")." topic-name topic-name))
+        (return-from one-shot-subscribe))
       (cond
        (after-stamp
         (ros::subscribe topic-name mclass
-                        #'(lambda (msg)
-                            (let ((st (send msg :header :stamp)))
-                              (when (> (send st :to-sec)
-                                       (send after-stamp :to-sec))
-                                (setq lmsg msg))))))
+                        #'send lmsg :update-after-stamp after-stamp))
        (t
         (ros::subscribe topic-name mclass
-                        #'(lambda (msg) (setq lmsg msg))))))
+                        #'send lmsg :update))))
     (let ((finishtm (if timeout (ros::time-now))))
       (when finishtm
         (setq finishtm (ros::time+ finishtm (ros::time (/ timeout 1000.0)))))
@@ -1154,9 +1160,9 @@
                        (< (send (ros::time- finishtm (ros::time-now)) :to-Sec) 0)))
         (unix::usleep (* 50 1000))
         (ros::spin-once)
-        (if lmsg (return))))
+        (if (send lmsg :get) (return))))
     (if unsubscribe (ros::unsubscribe topic-name))
-    lmsg))
+    (send lmsg :get)))
 
 (defun one-shot-publish (topic-name msg &key (wait 500) (after-stamp) (unadvertise t))
   "Publish message just for once"
