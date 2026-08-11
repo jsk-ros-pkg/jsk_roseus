@@ -300,7 +300,9 @@
 			       ((:alpha a) 1.0)
                                ((:id idx) 0) ns lifetime rainbow)
   "Convert euslisp body object to visualization_msgs::Marker"
-  (let ((bodies (if (find-method obj :bodies) (send obj :bodies) (list obj))))
+  (let ((bodies (if (find-method obj :bodies)
+		    (mapcan #'(lambda (b) (cond ((find-method b :faces) (list b))
+						(t nil))) (send obj :bodies)) (list obj))))
     (send-all bodies :worldcoords) ;; make sure to update vertices
     (let* ((msg (instance visualization_msgs::Marker :init
 			  :type visualization_msgs::Marker::*TRIANGLE_LIST*
@@ -337,7 +339,7 @@
 	   (colors
 	    (mapcar #'(lambda (c)
 			(if (derivedp c gl::colormaterial) (setq c (send c :diffuse))) ;; jsk
-			(vector->rgba c a))
+			(vector->rgba c (if (= (length c) 4) (elt c 3) a)))
 		    (apply #'append color-list)))
 	   )
       (send msg :frame_locked t)
@@ -350,6 +352,18 @@
       (if ns (send msg :ns ns))
       (if lifetime (send msg :lifetime (ros::time lifetime)))
       msg)))
+
+(defun object->marker-array-msg (obj header &rest args)
+  (let* ((bodies (mapcan #'(lambda (b)
+                             (cond ((find-method b :faces) (list b))
+                                   (t nil)))
+                         (send obj :bodies)))
+         (b1 (mapcan #'(lambda (b) (let ((c (get b :face-color))) (if (not (and (vectorp c) (= (length c) 4) (< (elt c 3) 1.0))) (list b)))) bodies)) ;; flat color
+         (b2 (mapcan #'(lambda (b) (let ((c (get b :face-color))) (if (and (vectorp c) (= (length c) 4) (< (elt c 3) 1.0)) (list b)))) bodies))) ;; transparent color
+    (instance visualization_msgs::MarkerArray :init
+              :markers
+              (list (apply #'object->marker-msg (instance bodyset-link :init obj :bodies b1) header :id 1 args)
+                    (apply #'object->marker-msg (instance bodyset-link :init obj :bodies b2) header :id 2 args)))))
 
 (defun wireframe->marker-msg (wf header &rest args)
   "Convert euslisp object to visualization_msgs::Marker as wireframe"
