@@ -1,5 +1,7 @@
 ;; state-machine-utils.l
 
+(require :state-machine-ros "package://roseus_smach/src/state-machine-ros")
+
 (defun exec-state-machine (sm &optional (mydata '(nil))
                            &key (spin t) (hz 1) (root-name "SM_ROOT") (srv-name "/server_name")
                                 iterate exit-state
