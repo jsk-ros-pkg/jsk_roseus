@@ -19,6 +19,7 @@ jobs:
           - ROS_DISTRO: indigo
             CONTAINER: jskrobotics/ros-ubuntu:14.04
             USE_DEB: true
+            INSTALL_SRC: "http://github.com/jsk-ros-pkg/jsk_common"
           - ROS_DISTRO: indigo
             CONTAINER: jskrobotics/ros-ubuntu:14.04
             USE_DEB: false
@@ -36,14 +37,17 @@ jobs:
             CONTAINER: jskrobotics/ros-ubuntu:14.04
             USE_DEB: false
             NOT_TEST_INSTALL : false
-            BEFORE_SCRIPT: "wget https://raw.githubusercontent.com/tork-a/jskeus-release/master/patches/CMakeLists.txt -O jskeus/CMakeLists.txt"
+            BEFORE_SCRIPT: "mkdir jskeus; wget https://raw.githubusercontent.com/tork-a/jskeus-release/master/patches/CMakeLists.txt -O jskeus/CMakeLists.txt"
+            INSTALL_SRC: "http://github.com/jsk-ros-pkg/jsk_common"
           - ROS_DISTRO: indigo
             CONTAINER: jskrobotics/ros-ubuntu:14.04
             USE_DEB: source
             NOT_TEST_INSTALL : false
+            INSTALL_SRC: "http://github.com/jsk-ros-pkg/jsk_common"
           - ROS_DISTRO: kinetic
             CONTAINER: ubuntu:16.04
             USE_DEB: true
+            INSTALL_SRC: "http://github.com/jsk-ros-pkg/jsk_common"
           - ROS_DISTRO: kinetic
             CONTAINER: ubuntu:16.04
             USE_DEB: false
@@ -54,7 +58,7 @@ jobs:
             CONTAINER: ubuntu:16.04
             USE_DEB: false
             NOT_TEST_INSTALL : true
-            INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_pr2eus"
+            INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_pr2eus http://github.com/jsk-ros-pkg/jsk_common"
             TEST_PKGS : "pr2eus pr2eus_moveit"
             BEFORE_SCRIPT: "echo 'deb http://packages.osrfoundation.org/gazebo/ubuntu xenial main' | sudo tee /etc/apt/sources.list.d/gazebo-stable.list; wget --no-check-certificate https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt update -y"
           - ROS_DISTRO: kinetic
@@ -65,6 +69,7 @@ jobs:
             CONTAINER: ubuntu:16.04
             USE_DEB: source
             NOT_TEST_INSTALL : true
+            INSTALL_SRC : "http://github.com/jsk-ros-pkg/jsk_common"
           - ROS_DISTRO: melodic
             CONTAINER: ubuntu:18.04
             USE_DEB: true

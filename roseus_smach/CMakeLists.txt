@@ -32,5 +32,6 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test_roseus_smach_utils.test)
   add_rostest(test/test_async_join_state_machine_actionlib.test)
   add_rostest(test/test_parallel_state_machine_sample.test)
+  add_rostest(test/test_unpickle_userdata.test)
 endif()
 

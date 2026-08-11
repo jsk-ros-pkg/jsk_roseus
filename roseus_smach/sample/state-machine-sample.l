@@ -157,4 +157,34 @@
     (send sm :add-transition :BAR :FOO :outcome2)
     sm ))
 
-(warn ";;(smach-simple)~%;;(smach-nested)~%;;(smach-userdata)~%")
+(setq bar-executed nil)
+(defun func-foo-check-bar (args)
+  (format t "Execute state FOO~%")
+  (format t "args ~A~%" args)
+  (cond ((cdr (assoc 'bar-executed args))
+        :outcome3)
+        (t :outcome1)))
+
+(defun func-bar-set-flag (args)
+  (format t "Execute state BAR~%")
+  (if (not (cdr (assoc 'bar-executed args)))
+      (setf (cdr (assoc 'bar-executed args)) t)
+      )
+  :outcome2)
+
+(defun smach-userdata-bool ()
+  (let ((sm (instance state-machine :init)))
+    ;; declare use all userdata keyword
+    (send sm :arg-keys 'bar-executed)
+    ;; remap from variable names in function to names in userdata
+    (send sm :add-node (instance state :init :FOO 'func-foo-check-bar))
+    (send sm :add-node (instance state :init :BAR 'func-bar-set-flag))
+
+    (send sm :goal-state (list :outcome4))
+    (send sm :start-state :FOO)
+    (send sm :add-transition :FOO :BAR :outcome1)
+    (send sm :add-transition :FOO :outcome4 :outcome3)
+    (send sm :add-transition :BAR :FOO :outcome2)
+    sm ))
+
+(warn ";;(smach-simple)~%;;(smach-nested)~%;;(smach-userdata)~%;;(smach-userdata-bool)~%")

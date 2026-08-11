@@ -40,8 +40,7 @@
   <run_depend>actionlib_tutorials</run_depend>
   <run_depend>message_runtime</run_depend>
 
-  <!-- <test_depend>euslisp</test_depend> -->
-  <!-- <test_depend>roseus</test_depend> -->
+  <test_depend>jsk_tools</test_depend>
 
   <export>
 

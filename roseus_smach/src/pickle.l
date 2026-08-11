@@ -21,8 +21,8 @@
 (defconstant PICKLE::_TUPLE        #\t)
 (defconstant PICKLE::_DICT         #\d)
 (defconstant PICKLE::_SETITEM      #\s)
-(defconstant PICKLE::_T           #x88)
-(defconstant PICKLE::_NIL         #x89)
+(defconstant PICKLE::_T            #\1)
+(defconstant PICKLE::_NIL          #\0)
 
 (defclass pickler
   :super propertied-object
@@ -53,7 +53,7 @@
          ((symbolp obj) (send self :save-string (string obj)))
          (t (send self :save-string (format nil "~a" obj)))
          ))
-  (:save-bool (obj) (format ss "~c" (if obj _T _NIL)))
+  (:save-bool (obj) (format ss "~c~c~c~c" #\I #\0 (if obj _T _NIL) #\newline))
   (:save-int (obj) (format ss "~c~a~c" _INT obj #\newline))
   (:save-float (obj) (format ss "~c~a~c" _FLOAT obj #\newline))
   (:save-string (obj) (format ss "~c~c~a~c~c" _STRING #\' obj #\' #\newline))
