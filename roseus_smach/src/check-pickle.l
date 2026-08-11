@@ -1,0 +1,33 @@
+(load "pickle.l")
+(require :base64 "lib/llib/base64.l")
+
+(dolist (data `(
+		(t . "STAxCi4=")
+		(nil . "STAwCi4=")
+		(nil . "Ti4=")
+		("hello" . "UydoZWxsbycKcDAKLg==")
+		(10 . "STEwCi4=")
+		(12.3 . "RjEyLjMKLg==")
+		(,(format nil "Hello~%World") . "UydIZWxsb1xuV29ybGQnCnAwCi4==")
+		((1 2 3) . "KGxwMApJMQphSTIKYUkzCmEu")
+		((1 12.3 "Hello" t nil) . "KGxwMApJMQphRjEyLjMKYVMnSGVsbG8nCnAxCmFJMDEKYUkwMAphLg==")
+		((1 2 3 (4 5)) . "KGxwMApJMQphSTIKYUkzCmEobHAxCkk0CmFJNQphYS4=")
+		((1 2 3 ("Hello" "World")) . "KGxwMApJMQphSTIKYUkzCmEobHAxClMnSGVsbG8nCnAyCmFTJ1dvcmxkJwpwMwphYS4=")
+		                                    ;; KGRJMTIzClMnSGVsbG8nCnNTJ1dvcmxkJwpGMTIuMwpzLg==
+		(((0 . "zero") ("Hello" . "World")) . "KGRwMApJMApTJ3plcm8nCnAxCnNTJ0hlbGxvJwpwMgpTJ1dvcmxkJwpwMwpzLg==")
+		))
+  (print data)
+  (let (str obj)
+    (setq str (user::base64decode (cdr data)))
+    (setq obj (pickle::load str))
+    ;(print "describe 1")
+    ;(describe (car data))
+    ;(print "describe 2")
+    ;(describe obj)
+    (warning-message 2 "check ~A == ~A (from ~A ~A)~%" (car data) obj str (cdr data))
+    (unless (equal (car data) obj)
+      (warning-message 1 "pickle load/save failed [~A] -> ~A~%" obj (equal (car data) obj)))
+    ))
+(exit)
+
+

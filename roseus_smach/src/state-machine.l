@@ -127,6 +127,7 @@
 
   (:execute-impl
    (userdata &key (step 0))
+   (ros::ros-error "execute-impl ... ")
    ;; check if goal reached and returns goal state name
    (when (send self :goal-reached)
        (return-from :execute-impl
@@ -185,12 +186,14 @@
                       (send-all active-state :name) (send-all (flatten trans-list) :name) (send-all next-active-state :name)
                       (if userdata (format nil " with userdata '~A'" userdata) ""))
      (setq active-state (unique next-active-state))
+     (ros::ros-error "execute-impl ... done")
      ret))
 
   ;; set :step to execute once at selected depth.
   ;; 0->this 1->sub 2->subsub ... -1->deepest
   (:execute
    (userdata &key (step nil))
+   (ros::ros-error "execute->")
    (let ((args (if arg-keys (mapcar #'(lambda (k) (cons k (cdr (assoc k userdata)))) arg-keys) userdata))
          result)
      (when (null active-state)
@@ -199,12 +202,16 @@
            (prog1
                (cond ((null step)
                       (while (not (send self :goal-reached))
-                             (send self :execute-impl args))
+			(ros::ros-error "call execute-impl")
+			(send self :execute-impl args)
+			(ros::ros-error "call execute-impl done")
+			)
                       (send-all active-state :name)) ;; reached state
                      (t (send self :execute-impl args :step step)))
              (dolist (item args) (set-alist (car item) (cdr item) userdata))
              )
            )
+     (ros::ros-error "execute-<")
      (case (length result)
        (1 (car result))
        (t result))))
@@ -236,6 +243,7 @@
   (:execute
    (userdata &key (step nil))
    (let (res)
+     (ros::ros-error "call execute rempa")
      (send self :remap userdata :invert nil) ;; remap
      (setq res
            (cond ((send self :submachine)
@@ -243,6 +251,7 @@
                  ((functionp action) (funcall action userdata))
                  (t (send self :name))))
      (send self :remap userdata :invert t) ;; unremap
+     (ros::ros-error "call execute rempa done")
      res ))
   )
 
