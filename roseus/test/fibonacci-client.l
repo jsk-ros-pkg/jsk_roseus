@@ -6,7 +6,7 @@
 (ros::load-ros-manifest "actionlib_tutorials")
 
 (ros::roseus "fibonacci_client")
-(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
+(setq sys::*gc-debug* t)
 
 (ros::service-call "~set_logger_level"
                    (instance roscpp::SetLoggerLevelRequest

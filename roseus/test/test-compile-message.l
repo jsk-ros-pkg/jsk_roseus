@@ -4,7 +4,7 @@
 (require :unittest "lib/llib/unittest.l")
 (ros::roseus "test-compile-message")
 
-;(setq sys::*gc-hook* #'(lambda (a b) (format *error-output* ";; gc ~A ~A~%" a b)))
+;(setq sys::*gc-debug* t)
 
 (init-unit-test)
 

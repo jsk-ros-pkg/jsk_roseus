@@ -6,7 +6,7 @@
 (ros::load-ros-manifest "actionlib_tutorials")
 
 (ros::roseus "test_actionlib")
-(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
+(setq sys::*gc-debug* t)
 
 (require :unittest "lib/llib/unittest.l")
 (init-unit-test)
