@@ -1190,12 +1190,14 @@ pointer ROSEUS_SERVICE_CALL(register context *ctx,int n,pointer *argv)
   }
   vpop();                       // pop response._message
   vpop();                       // pop request._message
-  if ( ! bSuccess ) {
+  if ( bSuccess ) {
+    return (response._message);
+  }
+  else {
     ROS_ERROR("attempted to call service  %s, but failed ",
               ros::names::resolve(service).c_str());
+    return (NIL);
   }
-
-  return (response._message);
 }
 
 pointer ROSEUS_ADVERTISE_SERVICE(register context *ctx,int n,pointer *argv)
