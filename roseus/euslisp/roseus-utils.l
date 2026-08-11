@@ -1173,6 +1173,10 @@
   msg)
 
 
+(defun ros::wait-for-dynamic-reconfigure-server (srv &optional (timeout -1))
+  "wait for dynamic_reconfugre server."
+  (ros::wait-for-service (format nil "~A/set_parameters" srv) timeout))
+
 (defun ros::set-dynamic-reconfigure-param (srv name type value)
   "set dynamic_reconfugre parameter."
   (let ((req (instance dynamic_reconfigure::ReconfigureRequest :init)))
