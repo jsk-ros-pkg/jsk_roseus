@@ -1,0 +1,11 @@
+;; get / set parameters of the other node (rclpy node "param_target")
+(ros::roseus "node_param_test")
+(format t "~%GET ~A~%" (ros::get-node-param "/param_target" "gain" 0))
+(format t "~%SET ~A~%" (ros::set-node-param "/param_target" "gain" 2.5))
+(format t "~%SETDR ~A~%" (ros::set-dynamic-reconfigure-param "/param_target" "name" :string "eus"))
+(format t "~%GET2 ~A ~A~%" (ros::get-node-param "/param_target" "gain") (ros::get-node-param "/param_target" "name"))
+;; own parameters
+(ros::set-param "~foo" 10)
+(ros::set-param "~bar/baz" "s")
+(format t "~%OWN ~A ~A ~A~%" (ros::get-param "~foo") (ros::get-param "~bar") (ros::has-param "~nothing"))
+(exit 0)

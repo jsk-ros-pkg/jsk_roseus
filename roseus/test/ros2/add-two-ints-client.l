@@ -1,0 +1,7 @@
+(ros::roseus-add-srvs "example_interfaces")
+(ros::roseus "add_two_ints_client")
+(unless (ros::wait-for-service "add_two_ints" 30) (exit 2))
+(setq req (instance example_interfaces::AddTwoIntsRequest :init :a 3 :b 1234567890123))
+(setq res (ros::service-call "add_two_ints" req))
+(format t "result ~A~%" (send res :sum))
+(exit (if (= (send res :sum) 1234567890126) 0 1))

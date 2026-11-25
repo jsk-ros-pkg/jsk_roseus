@@ -7,8 +7,10 @@
 
 
 (setq *container-active-status* nil)
-(ros::subscribe "/server_name/smach/container_status" smach_msgs::SmachContainerStatus
-                #'(lambda (msg) (push (send msg :active_states) *container-active-status*)))
+;; smach_msgs may not be available on ROS 2, see state-machine-ros.l
+(when *smach-introspection*
+  (ros::subscribe "/server_name/smach/container_status" smach_msgs::SmachContainerStatus
+                  #'(lambda (msg) (push (send msg :active_states) *container-active-status*))))
 
 (defmacro run-test-smach (func outcome active-states)
   (let ((test-func-name (read-from-string (format nil "test-~A" func))))
@@ -21,7 +23,7 @@
          (assert (eq (send result :name) ,outcome) "expected result is ~A, but returns ~A" ,outcome result)
          (setq elapsed-tm (ros::time- (ros::time-now) start-tm))
          (format *error-output* "received container-active-status is ~A, and takes ~A sec~%" *container-active-status* (send elapsed-tm :to-sec))
-         (assert (= (length (remove nil *container-active-status*)) (length (remove nil ,active-states))) (format nil "length of container active status is ~A, but ~A~%" (length (remove nil ,active-states)) (length (remove nil *container-active-status*))))
+         (assert (or (not *smach-introspection*) (= (length (remove nil *container-active-status*)) (length (remove nil ,active-states))) (format nil "length of container active status is ~A, but ~A~%" (length (remove nil ,active-states)) (length (remove nil *container-active-status*)))))
          (assert (eps= (send elapsed-tm :to-sec) (float (length ,active-states)) 5.0) (format nil "duration of container active status is equal to length of container active status (~A), but ~A~%" (length ,active-states) (send elapsed-tm :to-sec)))
          ))
     ))

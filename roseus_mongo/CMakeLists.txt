@@ -1,5 +1,30 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10)
 project(roseus_mongo)
+
+if("$ENV{ROS_VERSION}" STREQUAL "")
+  if(NOT "$ENV{AMENT_PREFIX_PATH}" STREQUAL "")
+    set(ENV{ROS_VERSION} 2)
+  else()
+    set(ENV{ROS_VERSION} 1)
+  endif()
+  message(WARNING "ROS_VERSION is not set, assuming ROS_VERSION=$ENV{ROS_VERSION}")
+endif()
+
+if($ENV{ROS_VERSION} EQUAL 2)
+
+find_package(ament_cmake REQUIRED)
+install(DIRECTORY euslisp test
+  DESTINATION share/${PROJECT_NAME}
+  USE_SOURCE_PERMISSIONS)
+if(BUILD_TESTING)
+  # the test of mongo-client.l is skipped when mongodb_store (not released
+  # for ROS 2 yet) or mongod is not found
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_roseus_mongo_ros2 test/ros2/test_roseus_mongo_ros2.py TIMEOUT 300)
+endif()
+ament_package()
+
+else() # if($ENV{ROS_VERSION} EQUAL 2)
 
 find_package(mongodb_store QUIET)
 if(mongodb_store_FOUND)
@@ -40,3 +65,5 @@ if(CATKIN_ENABLE_TESTING AND mongodb_store_FOUND)
     add_rostest(test/test_mongo_client.test)
   endif()
 endif()
+
+endif() # if($ENV{ROS_VERSION} EQUAL 2)

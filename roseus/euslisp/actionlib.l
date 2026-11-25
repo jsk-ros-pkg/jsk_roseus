@@ -1,18 +1,28 @@
 (in-package "ROS")
 
+;; ROS 2 actions
+#+:ros2
+(load "actionlib-ros2.l")
+
+#-:ros2
 (if (not (find-package "ACTIONLIB_MSGS")) (ros::roseus-add-msgs "actionlib_msgs"))
 
 ;;;; actionlib
+#-:ros2
 (setq ros::*simple-goal-state-pending* 0
       ros::*simple-goal-state-active*  1
       ros::*simple-goal-state-done*    2)
+#-:ros2
 (defun simple-goal-states-to-string (i)
   (elt '(ros::*simple-goal-state-pending* ros::*simple-goal-state-active* ros::*simple-goal-state-done*) i))
 
+#-:ros2
 (load "actionlib-commstate.l")
 
 ;; for https://github.com/jsk-ros-pkg/jsk_roseus/pull/519
+#-:ros2
 (unless (find-package "ROSACTIONLIB") (make-package "ROSACTIONLIB"))
+#-:ros2
 (defclass ros::simple-action-client
   :super ros::object
   :slots (name-space action-spec simple-state comm-state status-stamp
@@ -20,6 +30,7 @@
                      action-done-cb action-active-cb action-feedback-cb
                      goal_id groupname seq-count))
 
+#-:ros2
 (defmethod ros::simple-action-client
   (:goal-status-cb
    (msg)
@@ -256,6 +267,7 @@
   )
 
 
+#-:ros2
 (defclass ros::simple-action-server
   :super ros::object
   :slots (name-space action-spec status
@@ -265,6 +277,7 @@
                      seq-id feed-seq-id
                      groupname))
 
+#-:ros2
 (defmethod ros::simple-action-server
   (:execute-cb
    ()

@@ -1,0 +1,12 @@
+;; publish std_msgs/String on chatter
+(ros::roseus-add-msgs "std_msgs")
+(ros::roseus "talker")
+(ros::advertise "chatter" std_msgs::string 10)
+(ros::rate 10)
+(setq i 0)
+(while (and (ros::ok) (< i 200))
+  (ros::publish "chatter" (instance std_msgs::string :init :data (format nil "hello world ~A" i)))
+  (incf i)
+  (ros::spin-once)
+  (ros::sleep))
+(exit 0)

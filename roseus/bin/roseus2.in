@@ -1,0 +1,61 @@
+#!/bin/bash
+# roseus for ROS 2
+set -e
+
+if [ "$EUSDIR" = "" ]; then
+  EUSLISP_EXE=`find -L /usr/bin/*eus* -type f -name irteusgl | head -1`
+else
+  EUSLISP_EXE=`find -L $EUSDIR -type f -name irteusgl | head -1`
+fi
+if [ "$EUSLISP_EXE" = "" ]; then
+  EUSLISP_EXE=`which irteusgl`
+fi
+
+ROSEUS_DIR=""
+IFS=':' read -ra _PREFIXES <<< "$AMENT_PREFIX_PATH"
+for _prefix in "${_PREFIXES[@]}"; do
+  if [ -e "$_prefix/share/roseus/euslisp/roseus.l" ]; then
+    ROSEUS_DIR="$_prefix/share/roseus"
+    break
+  fi
+done
+if [ "$ROSEUS_DIR" = "" ]; then
+  # this script is installed in <prefix>/bin or <prefix>/lib/roseus
+  _dir=$(cd $(dirname $(readlink -f $0)); pwd)
+  for _d in "$_dir/../share/roseus" "$_dir/../../share/roseus"; do
+    if [ -e "$_d/euslisp/roseus.l" ]; then ROSEUS_DIR=$(cd $_d; pwd); break; fi
+  done
+fi
+if [ "$ROSEUS_DIR" = "" ]; then
+  echo "could not find roseus, source the setup.bash of ROS 2" 1>&2
+  exit 1
+fi
+
+ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
+        ${ROSEUS_DIR}/euslisp/roseus.l ${ROSEUS_DIR}/euslisp/eustf.l ${ROSEUS_DIR}/euslisp/actionlib.l ${ROSEUS_DIR}/euslisp/roseus-utils.l)
+
+LAUNCH_PREFIX="exec"
+case $1 in
+    --gdb)
+        shift # past argument
+        GDB_OPTIONS=/tmp/roseus_gdbinit
+        cat <<EOG > $GDB_OPTIONS
+break -qualified error
+commands
+where
+end
+run
+EOG
+        LAUNCH_PREFIX="gdb -x $GDB_OPTIONS --args"
+esac
+
+# line editing and history (C-p, C-r, ...) with rlwrap, when roseus is used
+# interactively from a terminal, but not in emacs (rlwrap does not work with
+# the terminal of emacs). ROSEUS_NO_RLWRAP=1 to disable it.
+if [ "$LAUNCH_PREFIX" = "exec" -a -t 0 -a -t 1 -a -z "$ROSEUS_NO_RLWRAP" \
+     -a -z "$INSIDE_EMACS" -a "$TERM" != "dumb" ] && which rlwrap > /dev/null 2>&1; then
+  exec rlwrap -c -b "(){}[],^%\$#@\";'|\\" -H "${ROSEUS_HISTORY:-$HOME/.roseus_history}" -s 10000 \
+       ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
+fi
+
+${LAUNCH_PREFIX} ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"

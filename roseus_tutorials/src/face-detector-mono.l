@@ -21,7 +21,9 @@
 
         (send mrk :type image_view2::ImageMarker2::*POLYGON*)
         (send mrk :outline_colors (list (instance std_msgs::ColorRGBA :init :R 0 :G 1 :B 0)))
-        (send mrk :lifetime (ros::time 5))
+        ;; ROS 2 image_view2 has lifetime_sec and lifetime_nsec instead of lifetime
+        #-:ros2 (send mrk :lifetime (ros::time 5))
+        #+:ros2 (send mrk :lifetime_sec 5)
         (send mrk :points (list
                            (instance geometry_msgs::Point :init
                                      :x (- cx w/2) :y (- cy h/2))

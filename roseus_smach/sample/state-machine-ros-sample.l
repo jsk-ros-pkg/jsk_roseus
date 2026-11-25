@@ -10,17 +10,24 @@
 (ros::roseus "smach_sample")
 
 ;; sample for
-(ros::roseus-add-msgs "actionlib_tutorials")
+;; Fibonacci action: actionlib_tutorials on ROS 1, example_interfaces on ROS 2
+(unless (find-package "ACTIONLIB_TUTORIALS") (make-package "ACTIONLIB_TUTORIALS"))
+(unless (find-package "EXAMPLE_INTERFACES") (make-package "EXAMPLE_INTERFACES"))
+#-:ros2 (ros::roseus-add-msgs "actionlib_tutorials")
+#+:ros2 (ros::roseus-add-actions "example_interfaces")
 (load "package://roseus_smach/src/state-machine-actionlib.l")
 (defun smach-action-client-state ()
-  (let* ((client (instance ros::simple-action-client :init "/fibonacci" actionlib_tutorials::FibonacciAction))
+  (let* ((client (instance ros::simple-action-client :init "/fibonacci"
+                         #-:ros2 actionlib_tutorials::FibonacciAction
+                         #+:ros2 example_interfaces::FibonacciAction))
          (sm (instance state-machine :init)))
     (send sm :arg-keys :goal :cancel :result :feedback)
 
     (send sm :add-node
           (instance state :init :INITIAL
                     '(lambda (arg)
-                      (let ((goal (instance actionlib_tutorials::FibonacciActionGoal :init)))
+                      (let ((goal (instance #-:ros2 actionlib_tutorials::FibonacciActionGoal
+                                           #+:ros2 example_interfaces::FibonacciActionGoal :init)))
                         (send goal :goal :order 10)
                         (set-alist :goal goal arg))
                       (print 'initialized) t)

@@ -20,6 +20,29 @@
 (defvar *mongo-service-delete* "/message_store/delete")
 (defvar *mongo-service-timeout* (floor (ros::get-param "~mongodb_timeout" 1)))
 
+;; ROS 2 mongodb_store stores rclpy.serialization.serialize_message(), which
+;; has the 4 bytes of the CDR encapsulation header
+(defun serialize-message (msg)
+  #+:ros2 (concatenate string (coerce '(0 1 0 0) string) (send msg :serialize))
+  #-:ros2 (send msg :serialize))
+(defun deserialize-message (msg buf)
+  #+:ros2 (send msg :deserialize (subseq buf 4))
+  #-:ros2 (send msg :deserialize buf))
+
+;; mongodb_store of ROS 2 stores a message as {"message": {...}, "_meta": {...}},
+;; while ROS 1 stores the fields at the top level, so the keys of the queries on
+;; the message content are prefixed with "message." on ROS 2.
+(defun message-query (query)
+  #-:ros2 query
+  #+:ros2
+  (mapcar #'(lambda (kv)
+              (let ((k (string-downcase (string (car kv)))))
+                (if (or (= (length k) 0) (member (elt k 0) '(#\_ #\$))
+                        (and (>= (length k) 8) (string= (subseq k 0 8) "message.")))
+                    kv
+                  (cons (format nil "message.~A" k) (cdr kv)))))
+          query))
+
 (defun wait-for-server (&optional (timeout 30))
   "Wait for mongodb server to be ready"
   (when (ros::get-param "/mongodb_use_daemon" nil)
@@ -105,11 +128,11 @@
            (send req :limit limit) ;; valid on ROS indigo and later
         (ros::ros-warn "feature :limit is provided only indigo and later")))
     (when query
-      (send req :message_query (apply-to-ros-query encoder query)))
+      (send req :message_query (apply-to-ros-query encoder (message-query query))))
     (when meta
       (send req :meta_query (apply-to-ros-query encoder meta)))
     (when sort
-      (send req :sort_query (apply-to-ros-query encoder sort)))
+      (send req :sort_query (apply-to-ros-query encoder (message-query sort))))
     (unless (ros::wait-for-service *mongo-service-query* *mongo-service-timeout*)
       (ros::ros-warn "wait-for-service ~A timeout." *mongo-service-query*)
       (return-from query nil))
@@ -117,7 +140,7 @@
     (mapcar #'(lambda (message meta-pair)
                 (let ((msg (instance msg-type :init))
                       (meta-raw-string (send (car (send meta-pair :pairs)) :second)))
-                  (send msg :deserialize (send message :msg))
+                  (deserialize-message msg (send message :msg))
                   (if msg-only msg
                       (cons msg (json::parse-from-string meta-raw-string)))))
             (send res :messages) (send res :metas))))
@@ -139,12 +162,17 @@
      wait: waits for server to insert data if enabled."
   (let ((data (instance mongodb_store_msgs::SerialisedMessage :init
                         :type (send msg :datatype-)
-                        :msg (send msg :serialize)))
+                        :msg (serialize-message msg)))
         (meta-data (apply-to-ros-query encoder meta)))
     (unless wait
       (unless (ros::get-topic-publisher *mongo-service-insert*)
         (ros::advertise *mongo-service-insert* mongodb_store_msgs::Insert 10)
         (unix:sleep 1))
+      ;; wait for the connection to message_store, the discovery of ROS 2 may take a while
+      (let ((start (ros::time-now)))
+        (while (and (= (ros::get-num-subscribers *mongo-service-insert*) 0)
+                    (< (send (ros::time- (ros::time-now) start) :to-sec) 5))
+          (unix:usleep 100000)))
       (ros::publish
        *mongo-service-insert*
        (instance mongodb_store_msgs::Insert :init
@@ -184,14 +212,14 @@
     (send req :collection *mongo-collection*)
 
     (when query
-      (send req :message_query (apply-to-ros-query encoder query)))
+      (send req :message_query (apply-to-ros-query encoder (message-query query))))
     (when meta-query
       (send req :meta_query (apply-to-ros-query encoder meta-query)))
     (send req :upsert upsert)
 
     (send req :message (instance mongodb_store_msgs::SerialisedMessage :init
                                  :type (send msg :datatype-)
-                                 :msg (send msg :serialize)))
+                                 :msg (serialize-message msg)))
     (when meta
       (send req :meta (apply-to-ros-query encoder meta)))
 
@@ -224,6 +252,10 @@
                     (collections (list *mongo-collection*))
                     (move-before (ros::time (* 60 60 24)))
                     (delete-after-move nil))
+  #+:ros2
+  (progn
+    (ros::ros-error "replicate (move_mongodb_entries) is not supported by mongodb_store of ROS 2")
+    (return-from replicate nil))
   (let ((c (instance ros::simple-action-client :init
                      "/move_mongodb_entries" mongodb_store_msgs::MoveEntriesAction :groupname "move_entries"))
         (goal (instance mongodb_store_msgs::MoveEntriesActionGoal :init

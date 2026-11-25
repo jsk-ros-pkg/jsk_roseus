@@ -1,6 +1,157 @@
-# http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10)
 project(roseus)
+
+# $ENV{ROS_VERSION} is set by ros_environment. When it is not set (e.g.
+# the buildfarm's binary jobs, which do not source a ROS environment),
+# guess it: ament sets AMENT_PREFIX_PATH, catkin never does.
+if("$ENV{ROS_VERSION}" STREQUAL "")
+  if(NOT "$ENV{AMENT_PREFIX_PATH}" STREQUAL "")
+    set(ENV{ROS_VERSION} 2)
+  else()
+    set(ENV{ROS_VERSION} 1)
+  endif()
+  message(WARNING "ROS_VERSION is not set, assuming ROS_VERSION=$ENV{ROS_VERSION}")
+endif()
+
+if($ENV{ROS_VERSION} EQUAL 2)
+
+find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+find_package(rcl REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rcpputils REQUIRED)
+find_package(rcutils REQUIRED)
+find_package(rosidl_runtime_cpp REQUIRED)
+find_package(rosidl_typesupport_introspection_cpp REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+# generates the euslisp messages of roseus in rosidl_generate_interfaces()
+find_package(rosidl_generator_eus REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+# euslisp
+find_program(EUS_EXECUTABLE eus)
+find_program(JSKEUS_EXECUTABLE irteusgl)
+if(EXISTS /usr/share/euslisp/include/eus.h)
+  set(euslisp_INCLUDE_DIRS /usr/share/euslisp/include)
+else()
+  find_package(euslisp REQUIRED)
+  set(euslisp_INCLUDE_DIRS ${euslisp_PREFIX}/share/euslisp/jskeus/eus/include)
+endif()
+message(STATUS "euslisp_INCLUDE_DIRS: ${euslisp_INCLUDE_DIRS}")
+
+set(ENV{LANG} "C")
+execute_process(COMMAND git describe --tags HEAD
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  OUTPUT_VARIABLE REPOVERSION ERROR_QUIET
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT REPOVERSION)
+  execute_process(COMMAND grep -m1 "<version>" ${PROJECT_SOURCE_DIR}/package.xml
+    COMMAND sed -e s/[^0-9.]//g
+    OUTPUT_VARIABLE REPOVERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+message(STATUS "Build repo revision: ${REPOVERSION}")
+
+# the interfaces of roseus (for tests), ros2/ has the ROS 2 variants of msg/ and srv/
+rosidl_generate_interfaces(${PROJECT_NAME}_interfaces
+  "${CMAKE_CURRENT_SOURCE_DIR}/ros2:msg/String.msg"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ros2:msg/StringStamped.msg"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ros2:msg/FixedArray.msg"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ros2:msg/VariableArray.msg"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ros2:msg/TestName.msg"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ros2:srv/AddTwoInts.srv"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ros2:srv/StringString.srv"
+  DEPENDENCIES builtin_interfaces std_msgs
+  LIBRARY_NAME ${PROJECT_NAME}
+)
+
+set(ROSEUS_COMPILE_DEFINITIONS
+  -Di486 -DLinux -D_REENTRANT -DVERSION="9.00" -DTHREADED -DPTHREAD -DX11R6_1
+  -DREPOVERSION="${REPOVERSION}")
+if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "amd64(.*)|x86_64(.*)|aarch64(.*)")
+  list(APPEND ROSEUS_COMPILE_DEFINITIONS -Dx86_64)
+endif()
+
+# update function using defun() for https://github.com/euslisp/EusLisp/pull/116
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test-defun.c "#include \"eus.h\"\npointer TEST(context *ctx, int n, pointer *argv);\nvoid test(void) {context *ctx = 0; pointer mod = 0; defun(ctx,\"TEST\",mod,TEST,NULL);}")
+execute_process(COMMAND ${CMAKE_C_COMPILER} -std=gnu17 -I${euslisp_INCLUDE_DIRS} -Di486 -DLinux -D_REENTRANT -DTHREADED -DPTHREAD -Dx86_64 -c test-defun.c
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  RESULT_VARIABLE TEST_DEFUN OUTPUT_QUIET ERROR_QUIET)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/include/defun.h "// redefine defun for update defun() API (https://github.com/euslisp/EusLisp/pull/116)\n")
+if(${TEST_DEFUN})
+  file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/include/defun.h "#undef defun\n#define defun(a, b, c, d, e) defun(a, b, c, d) // for EusLisp < 9.24\n")
+endif()
+
+add_library(roseus_eus MODULE roseus_ros2.cpp)
+set_target_properties(roseus_eus PROPERTIES OUTPUT_NAME roseus PREFIX "" SUFFIX ".so")
+target_include_directories(roseus_eus PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include ${euslisp_INCLUDE_DIRS})
+target_compile_options(roseus_eus PRIVATE ${ROSEUS_COMPILE_DEFINITIONS}
+  -O2 -Wno-write-strings -Wno-unused-but-set-variable -Wno-comment -Wno-register)
+target_compile_features(roseus_eus PRIVATE cxx_std_17)
+target_link_libraries(roseus_eus
+  ament_index_cpp::ament_index_cpp
+  rcl::rcl
+  rclcpp::rclcpp
+  rcpputils::rcpputils
+  rcutils::rcutils
+  ${rosidl_typesupport_introspection_cpp_TARGETS}
+  ${rosidl_runtime_cpp_TARGETS})
+
+add_library(eustf_eus MODULE eustf_ros2.cpp)
+set_target_properties(eustf_eus PROPERTIES OUTPUT_NAME eustf PREFIX "" SUFFIX ".so")
+target_include_directories(eustf_eus PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include ${euslisp_INCLUDE_DIRS})
+target_compile_options(eustf_eus PRIVATE ${ROSEUS_COMPILE_DEFINITIONS}
+  -O2 -Wno-write-strings -Wno-unused-but-set-variable -Wno-comment -Wno-register)
+target_compile_features(eustf_eus PRIVATE cxx_std_17)
+target_link_libraries(eustf_eus
+  rclcpp::rclcpp
+  tf2::tf2
+  tf2_ros::tf2_ros
+  tf2_geometry_msgs::tf2_geometry_msgs
+  ${geometry_msgs_TARGETS})
+
+add_library(roseus_c_util MODULE roseus_c_util.c)
+set_target_properties(roseus_c_util PROPERTIES PREFIX "" SUFFIX ".so")
+target_include_directories(roseus_c_util PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include ${euslisp_INCLUDE_DIRS})
+# K&R style definitions, which are removed in C23 (the default of GCC 15)
+target_compile_options(roseus_c_util PRIVATE ${ROSEUS_COMPILE_DEFINITIONS} -O2 -w -std=gnu17)
+
+# the euslisp messages of roseus are generated by rosidl_generator_eus, the
+# others are generated on demand at the first time they are loaded (in
+# $ROS_HOME/roseus/$ROS_DISTRO), unless they are built with rosidl_generator_eus
+
+configure_file(bin/roseus2.in ${CMAKE_CURRENT_BINARY_DIR}/roseus @ONLY)
+
+# not in the build directory, where "import roseus" of python finds roseus.so
+set_target_properties(roseus_eus eustf_eus roseus_c_util PROPERTIES
+  LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/euslisp)
+install(TARGETS roseus_eus eustf_eus roseus_c_util
+  LIBRARY DESTINATION share/${PROJECT_NAME}/euslisp)
+install(DIRECTORY euslisp test scripts cmake
+  DESTINATION share/${PROJECT_NAME}
+  USE_SOURCE_PERMISSIONS)
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/roseus
+  DESTINATION bin)
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/roseus
+  DESTINATION lib/${PROJECT_NAME})
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_roseus_ros2 test/ros2/test_roseus_ros2.py
+    TIMEOUT 300)
+endif()
+
+ament_export_dependencies(rosidl_default_runtime)
+ament_package()
+
+else() # if($ENV{ROS_VERSION} EQUAL 2)
+# http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
 
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
@@ -222,3 +373,5 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-compile-message.test)
   add_rostest(test/test-print-ros-msg.test)
 endif()
+
+endif() # if($ENV{ROS_VERSION} EQUAL 2)

@@ -1,0 +1,8 @@
+<!-- ROS 2: ros2 launch roseus_tutorials face-detector-mono.launch.xml image:=/camera/image_raw -->
+<launch>
+  <arg name="image" default="image_rect_color"/>
+  <include file="$(find-pkg-share opencv_apps)/launch/face_detection.launch.xml">
+    <arg name="image" value="$(var image)"/>
+  </include>
+  <executable cmd="roseus $(find-pkg-share roseus_tutorials)/src/face-detector-mono.l" output="screen" name="face_detector_client"/>
+</launch>

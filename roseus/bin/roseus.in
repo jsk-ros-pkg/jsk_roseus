@@ -28,5 +28,14 @@ EOF
         LAUNCH_PREFIX="gdb -x $GDB_OPTIONS --args"
 esac
 
+# line editing and history (C-p, C-r, ...) with rlwrap, when roseus is used
+# interactively from a terminal, but not in emacs (rlwrap does not work with
+# the terminal of emacs). ROSEUS_NO_RLWRAP=1 to disable it.
+if [ "$LAUNCH_PREFIX" = "exec" -a -t 0 -a -t 1 -a -z "$ROSEUS_NO_RLWRAP" \
+     -a -z "$INSIDE_EMACS" -a "$TERM" != "dumb" ] && which rlwrap > /dev/null 2>&1; then
+  exec rlwrap -c -b "(){}[],^%\$#@\";'|\\" -H "${ROSEUS_HISTORY:-$HOME/.roseus_history}" -s 10000 \
+       ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
+fi
+
 ${LAUNCH_PREFIX} ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
 exit $?

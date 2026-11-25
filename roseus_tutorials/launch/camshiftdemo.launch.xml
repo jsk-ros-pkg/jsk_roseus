@@ -1,0 +1,8 @@
+<!-- ROS 2: ros2 launch roseus_tutorials camshiftdemo.launch.xml image:=/camera/image_raw -->
+<launch>
+  <arg name="image" default="image_rect_color"/>
+  <include file="$(find-pkg-share opencv_apps)/launch/camshift.launch.xml">
+    <arg name="image" value="$(var image)"/>
+  </include>
+  <executable cmd="roseus $(find-pkg-share roseus_tutorials)/src/camshiftdemo.l" output="screen" name="camshiftdemo_client"/>
+</launch>
