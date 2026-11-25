@@ -1,4 +1,5 @@
-<package>
+<?xml version="1.0"?>
+<package format="3">
   <name>roseus_tutorials</name>
   <version>1.7.5</version>
   <description>roseus_tutorials
@@ -15,31 +16,44 @@
   <author>Tsukasa Ito</author>
   <author>Kei Okada</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ros_environment</buildtool_depend>
 
   <build_depend>roseus</build_depend>
 
-  <run_depend>uvc_camera</run_depend>
-  <run_depend>ar_track_alvar</run_depend>
-  <run_depend>opencv_apps</run_depend>
+  <exec_depend condition="$ROS_VERSION == 1">uvc_camera</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">ar_track_alvar</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">opencv_apps</exec_depend>
   <!-- <run_depend>saliency_tracking<run_depend> -->
   <!-- <depend package="cmvision" /> -->
-  <!-- <run_depend>checkerboard_pose</run_depend> -->
+  <!-- <exec_depend condition="$ROS_VERSION == 1">checkerboard_pose</exec_depend> -->
   <!-- <run_depend>face_detector_mono<run_depend> -->
   <!-- <depend package="aques_talk" /> -->
-  <run_depend>checkerboard_detector</run_depend>
+  <exec_depend condition="$ROS_VERSION == 1">checkerboard_detector</exec_depend>
   <!-- run depends on pr2eus has circular dependencies, so removed from package.xml -->
-  <!-- <run_depend>pr2eus</run_depend> -->
-  <run_depend>image_proc</run_depend>
-  <run_depend>image_view2</run_depend>
-  <run_depend>posedetection_msgs</run_depend>
-  <!-- <run_depend>jsk_perception</run_depend> -->
-  <run_depend>visualization_msgs</run_depend>
-  <run_depend>jsk_recognition_msgs</run_depend>
-  <!-- <run_depend>tabletop_object_detector</run_depend> -->
+  <!-- <exec_depend condition="$ROS_VERSION == 1">pr2eus</exec_depend> -->
+  <exec_depend condition="$ROS_VERSION == 1">image_proc</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">image_view2</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">posedetection_msgs</exec_depend>
+  <!-- <exec_depend condition="$ROS_VERSION == 1">jsk_perception</exec_depend> -->
+  <exec_depend condition="$ROS_VERSION == 1">visualization_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">jsk_recognition_msgs</exec_depend>
+  <!-- <exec_depend condition="$ROS_VERSION == 1">tabletop_object_detector</exec_depend> -->
 
-  <test_depend>jsk_pcl_ros</test_depend>
-  <test_depend>rostest</test_depend>
+  <test_depend condition="$ROS_VERSION == 1">jsk_pcl_ros</test_depend>
+  <test_depend condition="$ROS_VERSION == 1">rostest</test_depend>
+  <!-- ROS 2: the tutorials which do not need the ROS 1 only packages -->
+  <exec_depend condition="$ROS_VERSION == 2">visualization_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">rviz2</exec_depend>
+  <!-- camshiftdemo.l, face-detector-mono.l: released for jazzy and kilted,
+       add the other distributions when they are released -->
+  <exec_depend condition="$ROS_DISTRO == jazzy or $ROS_DISTRO == kilted">image_view2</exec_depend>
+  <exec_depend condition="$ROS_DISTRO == jazzy or $ROS_DISTRO == kilted">opencv_apps</exec_depend>
+  <test_depend condition="$ROS_VERSION == 2">ament_cmake_pytest</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">rclpy</test_depend>
   <export>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
   </export>
 </package>

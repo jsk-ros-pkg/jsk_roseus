@@ -1,9 +1,7 @@
 <launch>
-  <node name="camshiftdemo" pkg="jsk_perception"
-	type="camshiftdemo" output="screen">
-    <remap from="image" to="image_rect_color" />
-    <remap from="screenrectangle" to="image_rect_color/screenrectangle" />
-  </node>
+  <include file="$(find opencv_apps)/launch/camshift.launch">
+    <arg name="image" value="image_rect_color" />
+  </include>
 
   <sphinxdoc><![CDATA[
 This script starts camshift demo

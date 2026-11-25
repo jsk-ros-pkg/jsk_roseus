@@ -1,0 +1,6 @@
+<!-- ROS 2: ros2 launch roseus_tutorials publish-marker.launch.xml -->
+<launch>
+  <arg name="rviz" default="true"/>
+  <executable cmd="roseus $(find-pkg-share roseus_tutorials)/src/publish-marker.l" output="screen" name="publish_marker"/>
+  <node pkg="rviz2" exec="rviz2" name="rviz" if="$(var rviz)"/>
+</launch>
