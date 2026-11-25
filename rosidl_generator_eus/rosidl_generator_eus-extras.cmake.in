@@ -1,0 +1,8 @@
+# generated from rosidl_generator_eus/rosidl_generator_eus-extras.cmake.in
+
+include("${CMAKE_CURRENT_LIST_DIR}/register_eus.cmake")
+rosidl_generator_eus_extras(
+  "${rosidl_generator_eus_DIR}/../../../lib/rosidl_generator_eus/rosidl_generator_eus"
+  "${rosidl_generator_eus_DIR}/../../../@PYTHON_INSTALL_DIR@/rosidl_generator_eus/__init__.py"
+  "${rosidl_generator_eus_DIR}"
+)

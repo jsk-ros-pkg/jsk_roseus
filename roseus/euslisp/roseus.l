@@ -245,6 +245,9 @@
 
 (defun ros::roseus-add-msgs (pkg) (ros::roseus-add-files pkg "msg"))
 (defun ros::roseus-add-srvs (pkg) (ros::roseus-add-files pkg "srv"))
+(defun ros::roseus-add-actions (pkg)
+  (require :actionlib2 "actionlib2.l")
+  (ros::roseus-add-files pkg "action"))
 
 (unless (fboundp 'load-org-for-ros)
   (setf (symbol-function 'load-org-for-ros) (symbol-function 'load)))
@@ -386,14 +389,20 @@ always the rank of list is 2"
 ;; load functions
 ;;
 ;; first look under "~A/roseus/${ROS_DISTRO}/${PKG}" and if not check CMAKE_PREFIX_PATH/share/roseus/ros/${PKG}
+;; ROS 2: also check AMENT_PREFIX_PATH
 (defun ros::find-load-msg-path (pkg)
   (when (and (string= *eusdir* "/usr/share/euslisp/") (member pkg '("euslisp" "jskeus") :test #'string=))
     (warning-message 3 "on system installed euslisp, (ros::find-load-msg-path \"~A\") is skipped~%"
 		     *eusdir* pkg)
     (return-from  ros::find-load-msg-path :no-msg-package))
   (let ((dirs (list ))
-        (ppath (unix::getenv "CMAKE_PREFIX_PATH"))
+        (ppath (or (unix::getenv "CMAKE_PREFIX_PATH")
+                   (unix::getenv "AMENT_PREFIX_PATH")
+                   ""))
         (s 0) i)
+    (when (string= ppath "")
+      (ros::ros-error "Neither CMAKE_PREFIX_PATH nor AMENT_PREFIX_PATH is set")
+      (return-from ros::find-load-msg-path nil))
     (while (setq i (position #\: ppath :start s))
       (setq dirs (nconc dirs (list (format nil "~A/share" (subseq ppath s i)))))
       (setq s (1+ i)))
@@ -410,7 +419,7 @@ always the rank of list is 2"
 	  (return-from ros::find-load-msg-path :no-msg-package))
       (if (probe-file (format nil "~A/roseus/ros/~A/" dir pkg))
 	  (return-from ros::find-load-msg-path (format nil "~A/roseus/ros/~A" dir pkg))))
-    (ros::ros-error "Could not find roseus messages for ~A under ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" pkg dirs pkg)
+    (ros::ros-error "Could not find roseus messages for ~A under ~A~%Please rebuild the package that depends on roseus: colcon build --packages-select <your-package>" pkg dirs)
     nil))
 
 (defun ros::load-ros-manifest (pkg)
@@ -429,16 +438,19 @@ always the rank of list is 2"
 	   (ros::ros-debug "Loading ~A" manifest)
 	   (load-org-for-ros manifest))
 	  (t
-	   (ros::ros-error "Could not find ~A~%try rosrun roseus generate-all-msg-srv.sh ~A" manifest pkg)))))
+	   (ros::ros-error "Could not find ~A~%Please rebuild the package that depends on roseus: colcon build --packages-select <your-package>" manifest pkg)))))
 
 (defun ros::load-ros-package (pkg)
   "load required roseus files for given package"
   (unless (find-package (string-upcase pkg))
     (make-package (string-upcase pkg)))
-  (when (probe-file (format nil "~A/msg" (ros::find-load-msg-path pkg)))
-    (ros::roseus-add-msgs pkg))
-  (when (probe-file (format nil "~A/srv" (ros::find-load-msg-path pkg)))
-    (ros::roseus-add-srvs pkg)))
+  (let ((msg-path (ros::find-load-msg-path pkg)))
+    (when (probe-file (format nil "~A/msg" msg-path))
+      (ros::roseus-add-msgs pkg))
+    (when (probe-file (format nil "~A/srv" msg-path))
+      (ros::roseus-add-srvs pkg))
+    (when (probe-file (format nil "~A/action" msg-path))
+      (ros::roseus-add-actions pkg))))
 
 (setq sys::*exit-hook* 'ros::exit)
 

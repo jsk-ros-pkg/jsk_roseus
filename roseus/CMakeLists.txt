@@ -1,3 +1,144 @@
+if($ENV{ROS_VERSION} EQUAL 2)
+cmake_minimum_required(VERSION 3.8)
+project(roseus)
+
+find_package(ament_cmake_auto REQUIRED)
+
+ament_auto_find_build_dependencies()
+
+set(ENV_EUSDIR $ENV{EUSDIR})
+if(ENV_EUSDIR)
+  set(EUSDIR $ENV_EUSDIR)
+else()
+  set(EUSDIR /usr/share/euslisp) # for debian/ubuntu default package
+endif()
+
+if(EXISTS ${EUSDIR})
+  message(STATUS "Found EusLisp: ${EUSDIR}")
+else()
+  message(FATAL_ERROR "EusLisp not found")
+endif()
+set(euslisp_INCLUDE_DIRS ${EUSDIR}/include)
+
+ament_auto_add_library(roseus SHARED roseus2.cpp)
+set_target_properties(roseus PROPERTIES
+  PREFIX ""
+)
+list(REMOVE_ITEM ${PROJECT_NAME}_LIBRARIES roseus) # not export as library for other packages, because roseus is not a library but a plugin for euslisp
+
+ament_generate_version_header(roseus)
+target_compile_options(roseus
+  PRIVATE -O2 -DNDEBUG -DLinux -D_REENTRANT -DTHREADED -DPTHREAD -DX11R6_1 -Dx86_64 -Wno-comment -Wno-deprecated-declarations)
+target_include_directories(roseus PUBLIC ${euslisp_INCLUDE_DIRS})
+
+# Generate ROS 2 interfaces from .msg/.srv files
+# Use ${PROJECT_NAME}_interfaces to avoid target name conflict with the roseus library
+# TestFixedArray/TestVariableArray are ROS 2 versions of FixedArray/VariableArray
+# (replacing ROS 1 'time'/'duration' with builtin_interfaces equivalents)
+rosidl_generate_interfaces(${PROJECT_NAME}_interfaces
+  msg/String.msg
+  msg/StringStamped2.msg
+  msg/TestFixedArray.msg
+  msg/TestVariableArray.msg
+  msg/TestName2.msg
+  srv/AddTwoInts.srv
+  srv/StringString.srv
+  action/Fibonacci.action
+  DEPENDENCIES std_msgs builtin_interfaces action_msgs unique_identifier_msgs
+)
+
+# Create typesupport symlinks: runtime looks for roseus__* but libraries are roseus_interfaces__*
+# because rosidl_generate_interfaces target is named roseus_interfaces (to avoid name conflict)
+set(_typesupport_suffixes
+  rosidl_generator_c rosidl_typesupport_c rosidl_typesupport_cpp
+  rosidl_typesupport_fastrtps_c rosidl_typesupport_fastrtps_cpp
+  rosidl_typesupport_introspection_c rosidl_typesupport_introspection_cpp)
+foreach(_suffix ${_typesupport_suffixes})
+  install(CODE "execute_process(COMMAND \${CMAKE_COMMAND} -E create_symlink
+    lib${PROJECT_NAME}_interfaces__${_suffix}.so
+    \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}__${_suffix}.so)")
+endforeach()
+
+if(BUILD_TESTING)
+  ament_auto_find_test_dependencies()
+  ament_clang_format(
+    CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/.clang-format"
+    roseus2.cpp
+  )
+  set(_test_eus_l_dir "${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_eus/${PROJECT_NAME}")
+  add_test(
+    NAME test_rosidl_generator_eus
+    COMMAND roseus
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/test-rosidl-generator-eus.l
+    ${_test_eus_l_dir}
+  )
+  add_test(NAME test_compile_message
+    COMMAND roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/test-compile-message.l)
+  add_test(NAME test_mark_lock
+    COMMAND roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/test-mark-lock-ros2.l)
+  add_test(NAME test_unadvertise_service
+    COMMAND roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/test-unadvertise-service.l)
+  add_test(NAME test_roseus
+    COMMAND roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/test-roseus-ros2.l)
+  add_test(NAME test_nodename
+    COMMAND roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/test-nodename-ros2.l test_nodename)
+  add_test(NAME test_nodename_dash
+    COMMAND roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/test-nodename-ros2.l test-nodename)
+  add_test(NAME test_namespace_root
+    COMMAND roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/test-namespace-ros2.l /)
+  add_test(NAME test_namespace_custom
+    COMMAND bash -c "roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/test-namespace-ros2.l /ns --ros-args -r __ns:=/ns")
+  add_test(NAME test_parameter
+    COMMAND roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/param-test-ros2.l)
+  add_test(NAME test_msg_serialize
+    COMMAND roseus ${CMAKE_CURRENT_SOURCE_DIR}/test/test-msg-serialize-ros2.l)
+
+  # Smoke tests finish in well under 10 s; 20 s leaves room for DDS discovery.
+  add_launch_test(test/talker-listener.test.py TIMEOUT 20)
+  add_launch_test(test/add-two-ints-server.test.py TIMEOUT 20)
+  add_launch_test(test/add-two-ints-server-groupname.test.py TIMEOUT 20)
+  add_launch_test(test/service-callback.test.py TIMEOUT 20)
+  add_launch_test(test/multi-queue.test.py TIMEOUT 20)
+  add_launch_test(test/fibonacci-action.test.py TIMEOUT 20)
+  add_launch_test(test/fibonacci-action-ros2-api.test.py TIMEOUT 30)
+  # Stress tests: the high iteration counts are the point
+  add_launch_test(test/add-two-ints.test.py TIMEOUT 120)
+  add_launch_test(test/follow-joint-trajectory.test.py TIMEOUT 60)
+  add_launch_test(test/cdr-nested-empty-array.test.py TIMEOUT 60)
+
+  set_tests_properties(
+    test_mark_lock
+    PROPERTIES TIMEOUT 20)
+endif()
+
+include(cmake/roseus_generate_dep_msgs.cmake)
+
+install(FILES
+  cmake/roseus_generate_dep_msgs.cmake
+  DESTINATION share/${PROJECT_NAME}/cmake/
+)
+
+configure_file(bin/roseus2.in ${CMAKE_CURRENT_BINARY_DIR}/bin/roseus @ONLY)
+file(CHMOD ${CMAKE_CURRENT_BINARY_DIR}/bin/roseus PERMISSIONS
+  OWNER_READ OWNER_WRITE OWNER_EXECUTE
+  GROUP_READ GROUP_EXECUTE
+  WORLD_READ WORLD_EXECUTE)
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/roseus
+  DESTINATION bin)
+
+# Install roseus.so in euslisp/ dir (EusLisp load-library expects "roseus.so" in same dir as roseus.l)
+install(
+  TARGETS roseus
+  LIBRARY DESTINATION "share/${PROJECT_NAME}/euslisp"
+)
+
+ament_auto_package(
+  CONFIG_EXTRAS cmake/roseus-extras.cmake.in
+  INSTALL_TO_SHARE cmake euslisp
+)
+
+else() # if($ENV{ROS_VERSION} EQUAL 2)
+
 # http://ros.org/doc/groovy/api/catkin/html/user_guide/supposed.html
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus)
@@ -222,3 +363,4 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test-compile-message.test)
   add_rostest(test/test-print-ros-msg.test)
 endif()
+endif() # if($ENV{ROS_VERSION} EQUAL 2)

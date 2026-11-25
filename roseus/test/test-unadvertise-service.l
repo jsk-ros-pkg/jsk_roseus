@@ -4,6 +4,7 @@
 
 (require :unittest "lib/llib/unittest.l")
 (ros::load-ros-manifest "roseus")
+(ros::roseus-add-srvs "std_srvs")
 ;;;
 ;;;
 (init-unit-test)

@@ -1,3 +1,19 @@
+if($ENV{ROS_VERSION} EQUAL 2)
+cmake_minimum_required(VERSION 3.8)
+project(roseus_tutorials)
+
+find_package(ament_cmake_auto REQUIRED)
+
+ament_auto_find_build_dependencies()
+
+install(
+  DIRECTORY src
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_auto_package()
+
+else() # if($ENV{ROS_VERSION} EQUAL 2)
 cmake_minimum_required(VERSION 2.8.3)
 project(roseus_tutorials)
 
@@ -27,3 +43,4 @@ install(DIRECTORY launch src img config
 # rosbuild_download_data(http://www.boj.or.jp/note_tfjgs/note/valid/img/bn_5000f_e.jpg img/5000yen.jpg d3118921dea5eafd296ae8130933ca1f)
 # rosbuild_download_data(http://www.boj.or.jp/note_tfjgs/note/valid/img/bn_10000f_e.jpg img/10000yen.jpg 7ebda101f67a3f1a192ef096202e53f1)
 
+endif() # if($ENV{ROS_VERSION} EQUAL 2)

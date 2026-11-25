@@ -1,0 +1,58 @@
+#!/bin/bash
+set -e
+
+# Find EusLisp executable
+if [ -z "$EUSDIR" ]; then
+  EUSDIR=@EUSDIR@
+fi
+EUSLISP_EXE=$(find -L $EUSDIR -type f -name irteusgl 2>/dev/null | head -1)
+
+# Fallback: look for irteusgl on PATH
+if [ -z "$EUSLISP_EXE" ]; then
+  EUSLISP_EXE=$(command -v irteusgl 2>/dev/null || true)
+fi
+
+if [ -z "$EUSLISP_EXE" ]; then
+  echo "Error: could not find irteusgl executable in $EUSDIR or on PATH" >&2
+  exit 1
+fi
+
+# Find roseus share directory from AMENT_PREFIX_PATH
+ROSEUS_DIR=""
+IFS=: read -ra PREFIXES <<< "$AMENT_PREFIX_PATH"
+for prefix in "${PREFIXES[@]}"; do
+  if [ -d "$prefix/share/roseus/euslisp" ]; then
+    ROSEUS_DIR="$prefix/share/roseus"
+    break
+  fi
+done
+
+if [ -z "$ROSEUS_DIR" ]; then
+  echo "Error: could not find roseus package in AMENT_PREFIX_PATH" >&2
+  echo "Make sure you have sourced the workspace setup script" >&2
+  exit 1
+fi
+
+# Build EusLisp argument string
+# Add euslisp/ to *load-path* (roseus.so symlink lives there alongside roseus.l)
+ARG_STR=("(pushnew \"${ROSEUS_DIR}/euslisp/\" *load-path* :test #'equal)" \
+         ${ROSEUS_DIR}/euslisp/roseus.l)
+
+LAUNCH_PREFIX="exec"
+case $1 in
+    --gdb)
+        shift
+        GDB_OPTIONS=/tmp/roseus_gdbinit
+        cat <<EOF > $GDB_OPTIONS
+break -qualified error
+commands
+where
+end
+run
+EOF
+        LAUNCH_PREFIX="gdb -x $GDB_OPTIONS --args"
+        ;;
+esac
+
+${LAUNCH_PREFIX} ${EUSLISP_EXE} "${ARG_STR[@]}" "$@"
+exit $?

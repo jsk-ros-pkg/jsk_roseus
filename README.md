@@ -52,6 +52,29 @@ To use euslisp built from source, we need to create upstream workspace and then 
     source ~/ros/$ROS_DISTRO/devel/setup.bash
     ```
 
+### ROS 2 Jazzy on Ubuntu Noble
+
+Ubuntu Noble does not provide `jskeus` in the standard archive.
+Use [k-okada's PPA](https://launchpad.net/~k-okada/+archive/ubuntu/euslisp) to install `euslisp-dev` and `jskeus-dev`.
+These packages are skipped by rosdep because Noble does not yet have rosdep rules for them.
+
+```bash
+sudo apt update
+sudo apt install -y software-properties-common
+sudo add-apt-repository --yes ppa:k-okada/euslisp
+sudo apt update
+sudo apt install -y euslisp-dev jskeus-dev
+source /opt/ros/jazzy/setup.bash
+
+cd <path to your colcon workspace>
+rosdep update
+rosdep install --from-paths src --ignore-src -r -y \
+  --skip-keys="euslisp-dev jskeus-dev"
+
+colcon build --packages-select rosidl_generator_eus roseus --symlink-install
+source install/setup.bash
+```
+
 ## Deb Status
 
 | Package | Indigo (Saucy) | Indigo (Trusty) | Jade (Trusty) | Jade (Vivid) | Kinetic (Wily) | Kinetic (Xenial) |

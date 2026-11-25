@@ -278,3 +278,47 @@ jobs:
           set -x
           catkin test --no-status -sv roseus
         shell: bash
+
+  ros2:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            ros_distro: rolling
+          - runner: ubuntu-24.04-arm
+            ros_distro: rolling
+          - runner: ubuntu-latest
+            ros_distro: jazzy
+            before_init: >-
+              export DEBIAN_FRONTEND=noninteractive;
+              export TZ=Etc/UTC;
+              apt-get update &&
+              apt-get install -q -y software-properties-common &&
+              add-apt-repository --yes ppa:k-okada/euslisp &&
+              apt-get update &&
+              apt-get install -q -y euslisp-dev jskeus-dev
+            rosdep_skip_keys: euslisp-dev jskeus-dev
+          - runner: ubuntu-24.04-arm
+            ros_distro: jazzy
+            before_init: >-
+              export DEBIAN_FRONTEND=noninteractive;
+              export TZ=Etc/UTC;
+              apt-get update &&
+              apt-get install -q -y software-properties-common &&
+              add-apt-repository --yes ppa:k-okada/euslisp &&
+              apt-get update &&
+              apt-get install -q -y euslisp-dev jskeus-dev
+            rosdep_skip_keys: euslisp-dev jskeus-dev
+          - runner: ubuntu-latest
+            ros_distro: lyrical
+          - runner: ubuntu-24.04-arm
+            ros_distro: lyrical
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ros-industrial/industrial_ci@master
+        env:
+          ROS_DISTRO: ${{ matrix.ros_distro }}
+          BEFORE_INIT: ${{ matrix.before_init }}
+          ROSDEP_SKIP_KEYS: ${{ matrix.rosdep_skip_keys }}
