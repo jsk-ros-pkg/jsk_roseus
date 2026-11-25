@@ -4,7 +4,15 @@
 (require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
 (require :pickle "pickle.l")
 
-(ros::roseus-add-msgs "smach_msgs")
+;; smach_msgs is used to publish the status for smach_viewer. On ROS 2,
+;; smach_msgs is not released for all distributions, the introspection is
+;; disabled when it is not found.
+(unless (find-package "SMACH_MSGS") (make-package "SMACH_MSGS"))
+#-:ros2 (ros::roseus-add-msgs "smach_msgs")
+#+:ros2 (when (ros::rospack-find "smach_msgs") (ros::roseus-add-msgs "smach_msgs"))
+(defvar *smach-introspection* (and (find-package "SMACH_MSGS::SMACHCONTAINERSTATUS") t))
+(unless *smach-introspection*
+  (ros::ros-warn "smach_msgs is not found, state-machine-inspector does not publish the status for smach_viewer"))
 
 ;;
 ;; inspector publishes structure and status of state-machine
@@ -21,6 +29,7 @@
    (setq sm sm-obj root-name rn srv-name sn groupname gp)
    (setq state-counter 0 structure-counter 0)
    (if groupname (ros::create-nodehandle groupname))
+   (unless *smach-introspection* (return-from :init self))
    (ros::advertise
     (concatenate string srv-name "/smach/container_status")
     smach_msgs::SmachContainerStatus 100)
@@ -44,11 +53,12 @@
   ;;
   (:publish-status
    (&optional (userdata nil) (machine sm) (path (format nil "/~A" root-name)))
+   (unless *smach-introspection* (return-from :publish-status nil))
    (let ((msg (instance smach_msgs::SmachContainerStatus :init))
          (initial (send-all (flatten (list (send machine :start-state))) :name))
          (active (send-all (flatten (list (send machine :active-state))) :name)))
      (if (send machine :goal-reached) (setq active "None"))
-     (send msg :header :seq (incf state-counter))
+     #-:ros2 (send msg :header :seq (incf state-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
      (send msg :initial_states (mapcar #'string initial))
@@ -72,7 +82,7 @@
       ((send machine :goal-reached) (setq active "None"))
       ((null (send machine :active-state)) (setq active "None"))
       (t (setq active (send-all (flatten (list (send machine :active-state))) :name))))
-     (send msg :header :seq (incf state-counter))
+     #-:ros2 (send msg :header :seq (incf state-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
      (send msg :initial_states (mapcar #'string initial))
@@ -89,6 +99,7 @@
      ))
   (:publish-structure
    (&optional (machine sm) (path (format nil "/~A" root-name)))
+   (unless *smach-introspection* (return-from :publish-structure nil))
    (let ((msg (instance smach_msgs::SmachContainerStructure :init))
          transitions from-nodes to-nodes exec-nodes)
      ;; we need to sleep a bit to avoid too quick publication in the same topic name 
@@ -96,7 +107,7 @@
      ;; which causes to quick publication in the same topic name
      ;; https://github.com/jsk-ros-pkg/jsk_roseus/pull/695
      (unix::usleep (round (* 0.1 1e6)))
-     (send msg :header :seq (incf structure-counter))
+     #-:ros2 (send msg :header :seq (incf structure-counter))
      (send msg :header :stamp (ros::time-now))
      (send msg :path path)
      (setq exec-nodes (remove-if #'(lambda(n)(send machine :goal-test n)) (send machine :nodes)))

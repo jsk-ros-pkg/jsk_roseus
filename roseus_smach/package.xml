@@ -1,4 +1,5 @@
-<package>
+<?xml version="1.0"?>
+<package format="3">
   <name>roseus_smach</name>
   <version>1.7.5</version>
   <description>roseus_smach
@@ -17,33 +18,48 @@
 
   <author>Manabu Saito</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">rosidl_default_generators</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ros_environment</buildtool_depend>
 
   <build_depend>roseus</build_depend>
-  <build_depend>rostest</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">rostest</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>actionlib</build_depend>
-  <build_depend>smach</build_depend>
-  <build_depend>smach_ros</build_depend>
-  <build_depend>smach_msgs</build_depend>
-  <build_depend>actionlib_tutorials</build_depend>
-  <build_depend>message_generation</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">actionlib</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">smach</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">smach_ros</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">smach_msgs</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">actionlib_tutorials</build_depend>
+  <build_depend condition="$ROS_VERSION == 1">message_generation</build_depend>
 
-  <run_depend>euslisp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>actionlib</run_depend>
-  <run_depend>roseus</run_depend>
-  <run_depend>rostest</run_depend>
-  <run_depend>smach</run_depend>
-  <run_depend>smach_ros</run_depend>
-  <run_depend>smach_msgs</run_depend>
-  <run_depend>actionlib_tutorials</run_depend>
-  <run_depend>message_runtime</run_depend>
+  <exec_depend>euslisp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">actionlib</exec_depend>
+  <exec_depend>roseus</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">rostest</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">smach</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">smach_ros</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">smach_msgs</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">actionlib_tutorials</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 1">message_runtime</exec_depend>
 
   <!-- <test_depend>euslisp</test_depend> -->
   <!-- <test_depend>roseus</test_depend> -->
 
-  <export>
+  <!-- ROS 2 -->
+  <depend condition="$ROS_VERSION == 2">action_msgs</depend>
+  <!-- for smach_viewer, optional at runtime, not built for rolling yet -->
+  <exec_depend condition="$ROS_VERSION == 2 and $ROS_DISTRO != rolling">smach_msgs</exec_depend>
+  <build_depend condition="$ROS_VERSION == 2">rosidl_generator_eus</build_depend>
+  <exec_depend condition="$ROS_VERSION == 2">rosidl_default_runtime</exec_depend>
+  <member_of_group condition="$ROS_VERSION == 2">rosidl_interface_packages</member_of_group>
+  <test_depend condition="$ROS_VERSION == 2">ament_cmake_pytest</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">rclpy</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">example_interfaces</test_depend>
 
+  <export>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
   </export>
 </package>
