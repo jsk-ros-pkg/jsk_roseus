@@ -1,0 +1,32 @@
+name: ROS 2
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Ubuntu 24.04: jskeus is not in the Ubuntu archive of noble yet
+          # (https://bugs.launchpad.net/ubuntu/+source/jskeus/+bug/2154663),
+          # install it from ppa:k-okada/euslisp.
+          - ROS_DISTRO: jazzy
+            NOBLE: true
+          - ROS_DISTRO: kilted
+            NOBLE: true
+          # Ubuntu 26.04: euslisp and jskeus are in the Ubuntu archive
+          - ROS_DISTRO: lyrical
+          - ROS_DISTRO: rolling
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ros-industrial/industrial_ci@master
+        env:
+          ROS_DISTRO: ${{ matrix.ROS_DISTRO }}
+          BEFORE_INSTALL_TARGET_DEPENDENCIES: ${{ matrix.NOBLE && 'apt-get update -qq && apt-get install -y -qq software-properties-common && add-apt-repository -y ppa:k-okada/euslisp && apt-get update -qq && apt-get install -y -qq jskeus' || '' }}
+          ROSDEP_SKIP_KEYS: ${{ matrix.NOBLE && 'jskeus' || '' }}
