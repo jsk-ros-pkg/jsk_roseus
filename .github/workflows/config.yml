@@ -106,7 +106,7 @@ jobs:
     container:
       image: ${{ matrix.CONTAINER }}
       volumes:
-        - /tmp/node20:/__e/node20
+        - /tmp/node24:/__e/node24
 
     steps:
       - name: Install latest git ( use sudo for ros-ubuntu )
@@ -130,20 +130,20 @@ jobs:
              git config --global --add safe.directory $GITHUB_WORKSPACE
           fi
 
-      - name: Try to replace `node` with an glibc 2.17
+      - name: Try to replace `node` (node24, forced by the runner) with a glibc 2.17 build
         shell: bash
         run: |
           if [ "${{ matrix.CONTAINER }}" = "jskrobotics/ros-ubuntu:14.04" ]; then
              export USER=$(whoami)
-             sudo chmod 777 -R /__e/node20
-             sudo chown -R $USER /__e/node20
+             sudo chmod 777 -R /__e/node24
+             sudo chown -R $USER /__e/node24
           fi
-          ls -lar /__e/node20 &&
+          ls -lar /__e/node24 &&
           sudo apt-get install -y curl &&
-          curl -Lo /tmp/node.tar.gz https://unofficial-builds.nodejs.org/download/release/v20.17.0/node-v20.17.0-linux-x64-glibc-217.tar.gz &&
-          cd /__e/node20 &&
+          curl -Lo /tmp/node.tar.gz https://unofficial-builds.nodejs.org/download/release/v24.22.3/node-v24.22.3-linux-x64-glibc-217.tar.gz &&
+          cd /__e/node24 &&
           tar -x --strip-components=1 -f /tmp/node.tar.gz &&
-          ls -lar /__e/node20/bin/
+          ls -lar /__e/node24/bin/
 
       - name: Checkout
         uses: actions/checkout@v3.0.2
