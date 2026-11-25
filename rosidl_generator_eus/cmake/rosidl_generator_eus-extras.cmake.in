@@ -1,0 +1,11 @@
+# generated from rosidl_generator_eus/cmake/rosidl_generator_eus-extras.cmake.in
+
+find_package(ament_cmake_core QUIET REQUIRED)
+ament_register_extension(
+  "rosidl_generate_idl_interfaces"
+  "rosidl_generator_eus"
+  "rosidl_generator_eus_generate_interfaces.cmake")
+
+set(rosidl_generator_eus_BIN
+  "${rosidl_generator_eus_DIR}/../../../lib/rosidl_generator_eus/gen_eus_ros2.py")
+normalize_path(rosidl_generator_eus_BIN "${rosidl_generator_eus_BIN}")

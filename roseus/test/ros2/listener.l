@@ -1,0 +1,15 @@
+;; subscribe chatter, echo it to chatter_echo, exit after 5 messages
+(ros::roseus-add-msgs "std_msgs")
+(ros::roseus "listener")
+(setq *count* 0)
+(ros::advertise "chatter_echo" std_msgs::string 10)
+(ros::subscribe "chatter" std_msgs::string
+                #'(lambda (msg)
+                    (ros::ros-info "I heard ~A" (send msg :data))
+                    (ros::publish "chatter_echo" (instance std_msgs::string :init :data (send msg :data)))
+                    (incf *count*)))
+(ros::rate 20)
+(while (and (ros::ok) (< *count* 5))
+  (ros::spin-once)
+  (ros::sleep))
+(exit 0)

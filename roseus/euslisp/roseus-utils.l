@@ -3,8 +3,8 @@
 
 ;; load c-binding library
 (load-library "roseus_c_util.so" '("roseus_c_util"))
-(ros::roseus-add-srvs "dynamic_reconfigure")
-(ros::roseus-add-msgs "dynamic_reconfigure")
+#-:ros2 (ros::roseus-add-srvs "dynamic_reconfigure")
+#-:ros2 (ros::roseus-add-msgs "dynamic_reconfigure")
 
 (defun print-ros-msg (msg &optional (rp (find-package "ROS"))
                           (ro ros::object) (nest 0) (padding "  "))
@@ -1173,6 +1173,87 @@
   msg)
 
 
+;; ROS 2: parameters of other nodes, via <node>/get_parameters and
+;; <node>/set_parameters (rcl_interfaces), which replace dynamic_reconfigure.
+;; the reader of euslisp reads the forms skipped by #+ too, so make the package
+(unless (find-package "RCL_INTERFACES") (make-package "RCL_INTERFACES"))
+#+:ros2 (ros::roseus-add-msgs "rcl_interfaces")
+#+:ros2 (ros::roseus-add-srvs "rcl_interfaces")
+#+:ros2
+(progn
+(defun ros::make-parameter-value (value &optional type)
+  "make rcl_interfaces::ParameterValue, type is one of :bool :int :double :string, or guessed from value"
+  (let ((v (instance rcl_interfaces::ParameterValue :init)))
+    (unless type
+      (setq type
+            (cond ((or (eq value t) (null value)) :bool)
+                  ((integerp value) :int)
+                  ((floatp value) :double)
+                  ((stringp value) :string)
+                  ((and (listp value) (every #'integerp value)) :int-array)
+                  ((and (listp value) (every #'numberp value)) :double-array)
+                  ((and (listp value) (every #'stringp value)) :string-array)
+                  ((listp value) :bool-array)
+                  ((integer-vector-p value) :int-array)
+                  ((float-vector-p value) :double-array)
+                  (t (error "unknown parameter type of ~A" value)))))
+    (case type
+      (:bool (send v :type 1) (send v :bool_value (if value t nil)))
+      ((:int :integer) (send v :type 2) (send v :integer_value (round value)))
+      ((:double :float) (send v :type 3) (send v :double_value (float value)))
+      ((:string :str) (send v :type 4) (send v :string_value value))
+      (:bool-array (send v :type 6) (send v :bool_array_value (mapcar #'(lambda (x) (if x t nil)) value)))
+      (:int-array (send v :type 7) (send v :integer_array_value (coerce (map cons #'round value) integer-vector)))
+      (:double-array (send v :type 8) (send v :double_array_value (coerce (map cons #'float value) float-vector)))
+      (:string-array (send v :type 9) (send v :string_array_value (coerce value cons)))
+      (t (error "unknown parameter type ~A" type)))
+    v))
+(defun ros::parameter-value-to-eus (v)
+  (case (send v :type)
+    (1 (send v :bool_value))
+    (2 (send v :integer_value))
+    (3 (send v :double_value))
+    (4 (send v :string_value))
+    (5 (coerce (send v :byte_array_value) cons))
+    (6 (send v :bool_array_value))
+    (7 (coerce (send v :integer_array_value) cons))
+    (8 (coerce (send v :double_array_value) cons))
+    (9 (send v :string_array_value))
+    (t nil)))
+(defun ros::set-node-param (node name value &optional type (timeout 5))
+  "set parameter name of node (e.g. \"/camera/driver\"), returns t when succeeded"
+  (let ((srv (format nil "~A/set_parameters" node))
+        (req (instance rcl_interfaces::SetParametersRequest :init)) res)
+    (unless (ros::wait-for-service srv timeout)
+      (ros::ros-error "~A is not available" srv)
+      (return-from ros::set-node-param nil))
+    (send req :parameters (list (instance rcl_interfaces::Parameter :init :name name
+                                          :value (ros::make-parameter-value value type))))
+    (setq res (ros::service-call srv req))
+    (let ((r (car (send res :results))))
+      (unless (and r (send r :successful))
+        (ros::ros-error "failed to set ~A of ~A: ~A" name node (if r (send r :reason))))
+      (and r (send r :successful)))))
+(defun ros::get-node-param (node name &optional default (timeout 5))
+  "get parameter name of node, returns default when it is not set"
+  (let ((srv (format nil "~A/get_parameters" node))
+        (req (instance rcl_interfaces::GetParametersRequest :init :names (list name))) res v)
+    (unless (ros::wait-for-service srv timeout)
+      (ros::ros-error "~A is not available" srv)
+      (return-from ros::get-node-param default))
+    (setq res (ros::service-call srv req))
+    (setq v (car (send res :values)))
+    (if (or (null v) (= (send v :type) 0)) default (ros::parameter-value-to-eus v))))
+(defun ros::set-dynamic-reconfigure-param (srv name type value)
+  "set parameter of the node srv, which was dynamic_reconfigure on ROS 1."
+  (ros::set-node-param srv name value type))
+)
+
+;; dynamic_reconfigure is not available on ROS 2, the reader of euslisp
+;; reads the forms skipped by #- too, so it requires the package.
+#+:ros2
+(unless (find-package "DYNAMIC_RECONFIGURE") (make-package "DYNAMIC_RECONFIGURE"))
+#-:ros2
 (defun ros::set-dynamic-reconfigure-param (srv name type value)
   "set dynamic_reconfugre parameter."
   (let ((req (instance dynamic_reconfigure::ReconfigureRequest :init)))
